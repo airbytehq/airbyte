@@ -46,9 +46,12 @@ import io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
+import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -62,6 +65,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -70,8 +74,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -181,6 +187,46 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     }
 
     return catalog;
+  }
+
+  @Override
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final JsonNode state)
+      throws Exception {
+    final AirbyteStateType supportedStateType = getSupportedStateType(config);
+    final StateManager stateManager =
+        StateManagerFactory.createStateManager(supportedStateType,
+            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+    final Instant emittedAt = Instant.now();
+
+    final JdbcDatabase database = createDatabase(config);
+
+    logPreSyncDebugData(database, catalog);
+
+    final Map<String, TableInfo<CommonField<MysqlType>>> fullyQualifiedTableNameToInfo =
+        discoverWithoutSystemTables(database)
+            .stream()
+            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()),
+                Function
+                    .identity()));
+
+    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
+
+    DbSourceDiscoverUtil.logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog, this::getAirbyteType);
+
+    final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
+        getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
+            emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
+        getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
+            emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream
+        .of(incrementalIterators, fullRefreshIterators)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+
+    return iteratorList;
   }
 
   @Override

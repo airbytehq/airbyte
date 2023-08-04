@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from dagster import Definitions, ScheduleDefinition, load_assets_from_modules
+from dagster import Definitions, ScheduleDefinition, EnvVar, load_assets_from_modules
+from dagster_slack import SlackResource
 
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_file_blob, gcs_file_manager
 from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory, github_workflow_runs
@@ -55,6 +56,10 @@ ASSETS = load_assets_from_modules(
     ]
 )
 
+SLACK_RESOURCE_TREE = {
+    "slack": SlackResource(token=EnvVar("SLACK_TOKEN")),
+}
+
 GITHUB_RESOURCE_TREE = {
     "github_client": github_client.configured({"github_token": {"env": "GITHUB_METADATA_SERVICE_TOKEN"}}),
     "github_connector_repo": github_connector_repo.configured({"connector_repo_name": CONNECTOR_REPO_NAME}),
@@ -80,6 +85,7 @@ GCS_RESOURCE_TREE = {
 }
 
 METADATA_RESOURCE_TREE = {
+    **SLACK_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
     "all_metadata_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*/{METADATA_FILE_NAME}$"}
@@ -90,6 +96,7 @@ METADATA_RESOURCE_TREE = {
 }
 
 REGISTRY_RESOURCE_TREE = {
+    **SLACK_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
     "latest_oss_registry_gcs_blob": gcs_file_blob.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}
@@ -100,6 +107,7 @@ REGISTRY_RESOURCE_TREE = {
 }
 
 REGISTRY_ENTRY_RESOURCE_TREE = {
+    **SLACK_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
     "latest_cloud_registry_entries_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/cloud.json$"}
@@ -140,13 +148,13 @@ SENSORS = [
         job=generate_oss_registry,
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
         gcs_blobs_resource_key="latest_oss_registry_entries_file_blobs",
-        interval=30,
+        interval=60,
     ),
     new_gcs_blobs_sensor(
         job=generate_cloud_registry,
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
         gcs_blobs_resource_key="latest_cloud_registry_entries_file_blobs",
-        interval=30,
+        interval=60,
     ),
     new_gcs_blobs_sensor(
         job=generate_nightly_reports,

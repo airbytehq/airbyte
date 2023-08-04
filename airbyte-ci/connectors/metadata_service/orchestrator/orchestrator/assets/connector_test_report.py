@@ -147,7 +147,7 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
     nightly_report_complete_md = render_connector_nightly_report_md(nightly_report_connector_matrix_df, nightly_report_complete_df)
     slack_webhook_url = os.getenv("NIGHTLY_REPORT_SLACK_WEBHOOK_URL")
     if slack_webhook_url:
-        send_slack_webhook(slack_webhook_url, nightly_report_complete_md)
+        send_slack_webhook(slack_webhook_url, nightly_report_complete_md, wrap_in_code_block=True)
 
     return Output(
         nightly_report_connector_matrix_df,
