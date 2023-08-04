@@ -247,6 +247,9 @@ class CsvParser(AbstractFileParser):
                 pa.csv.ConvertOptions(**self._convert_options(schema)),
             )
         except ArrowInvalid as e:
+            if "try to increase block size?" in str(e):
+                error_message = "Unable to determine two block bounderies. Try to change Block Size value"
+                raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error) from e
             raise AirbyteTracedException(message=str(e), failure_type=FailureType.config_error) from e
         still_reading = True
         while still_reading:
