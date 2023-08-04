@@ -17,6 +17,7 @@ The IBM Db2 source does not alter the schema present in your warehouse. Dependin
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
 | Namespaces | Yes |  |
+| SSH Tunnel Connection | Yes |  |
 
 ## Getting started
 
@@ -56,11 +57,71 @@ Your database user should now be ready for use with Airbyte.
 To set up an SSL connection, you need to use a client certificate. Add it to the "SSL PEM file" field and the connector will automatically add it to the secret keystore.
 You can also enter your own password for the keystore, but if you don't, the password will be generated automatically.
 
+## Connection to DB2 via an SSH Tunnel
+
+Airbyte has the ability to connect to a DB2 instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
+
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a. a bastion sever\) that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+
+Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
+
+1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
+2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use an
+
+   SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
+
+   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
+
+      establishing the SSH Tunnel \(see below for more information on generating this key\).
+
+   2. Choose `Password Authentication` if you will be using a password as your secret for establishing
+
+      the SSH Tunnel.
+
+3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should
+
+   be a hostname or an IP Address.
+
+4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for
+
+   SSH connections is `22`, so unless you have explicitly changed something, go with the default.
+
+5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the
+
+   DB2 username.
+
+6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the
+
+   password of the User from the previous step. If you are using `SSH Key Authentication` leave this
+
+   blank. Again, this is not the DB2 password, but the password for the OS-user that Airbyte is
+
+   using to perform commands on the bastion.
+
+7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA
+
+   private Key that you are using to create the SSH connection. This should be the full contents of
+
+   the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending
+
+   with `-----END RSA PRIVATE KEY-----`.
+
+### Generating an SSH Key Pair
+
+The connector expects an RSA key in PEM format. To generate this key:
+
+```text
+ssh-keygen -t rsa -m PEM -f myuser_rsa
+```
+
+This produces the private key in pem format, and the public key remains in the standard format used by the `authorized_keys` file on your bastion host. The public key should be added to your bastion host to whichever user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen, so it may log in to the bastion.
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
-| 0.1.20  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                                                  |
+| 0.1.21  | 2023-08-04 | [29088](https://github.com/airbytehq/airbyte/pull/29088) | Add ssh connectivity and schemas selection to spec |
+| 0.1.20  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase |
 | 0.1.19  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting   |
 | 0.1.18  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
 | 0.1.17  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                          |

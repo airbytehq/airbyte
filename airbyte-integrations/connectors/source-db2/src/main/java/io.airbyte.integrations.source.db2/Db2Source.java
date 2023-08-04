@@ -15,8 +15,16 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
+import io.airbyte.protocol.models.CommonField;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -30,9 +38,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
@@ -43,12 +48,18 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
+  private List<String> schemas;
+
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new Db2Source(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
+  }
+
   public Db2Source() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new Db2SourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = new Db2Source();
+    final Source source = Db2Source.sshWrappedSource();
     LOGGER.info("starting source: {}", Db2Source.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", Db2Source.class);
@@ -84,6 +95,14 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
       ((ObjectNode) result).put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
+    if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
+      schemas = new ArrayList<>();
+      for (final JsonNode schema : config.get(JdbcUtils.SCHEMAS_KEY)) {
+        schemas.add(schema.asText());
+      }
+    }
+
+
     return result;
   }
 
@@ -95,8 +114,32 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   }
 
   @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+    if (schemas != null && !schemas.isEmpty()) {
+      // process explicitly selected (from UI) schemas
+      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+
+      for (final String schema : schemas) {
+        LOGGER.debug("Checking schema: {}", schema);
+
+        final List<TableInfo<CommonField<JDBCType>>> tables = super.discoverInternal(database, schema);
+        internals.addAll(tables);
+
+        for (final TableInfo<CommonField<JDBCType>> table : tables) {
+          LOGGER.debug("Found table: {}.{}", table.getNameSpace(), table.getName());
+        }
+      }
+
+      return internals;
+    } else {
+      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      return super.discoverInternal(database);
+    }
+  }
+
+  @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {
+    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(schema), sourceOperations::rowToJson)) {
       return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
     }
   }
@@ -116,9 +159,30 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
     return "RECORD_COUNT";
   }
 
-  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
-    return connection -> connection.prepareStatement(
-        "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(final String schema) {
+    final StringBuilder query = new StringBuilder(
+            "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA " +
+                    "FROM SYSIBMADM.PRIVILEGES " +
+                    "WHERE OBJECTTYPE = 'TABLE' " +
+                    "AND PRIVILEGE = 'SELECT'");
+
+    final List<String> params = new ArrayList<>();
+
+    if (StringUtils.isEmpty(schema)) {
+      query.append(" AND AUTHID = SESSION_USER");
+    } else {
+      query.append(" AND OBJECTSCHEMA = ?");
+      params.add(schema);
+    }
+
+    return connection -> {
+      final PreparedStatement statement = connection.prepareStatement(query.toString());
+      int i = 0;
+      for (final String param : params) {
+        statement.setString(++i, param);
+      }
+      return statement;
+    };
   }
 
   private JdbcPrivilegeDto getPrivilegeDto(final JsonNode jsonNode) {
