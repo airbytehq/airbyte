@@ -408,7 +408,7 @@ wait_for_rediscovery_scenario_single_stream = (
         "read": [
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a.csv validation_policy=ValidationPolicy.wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a.csv validation_policy=Wait for Discover n_skipped=0",
             },
         ]
     })
@@ -459,11 +459,11 @@ wait_for_rediscovery_scenario_multi_stream = (
         "read": [
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a/a1.csv validation_policy=ValidationPolicy.wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a/a1.csv validation_policy=Wait for Discover n_skipped=0",
             },
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=ValidationPolicy.wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=Wait for Discover n_skipped=0",
             },
         ]
     })
