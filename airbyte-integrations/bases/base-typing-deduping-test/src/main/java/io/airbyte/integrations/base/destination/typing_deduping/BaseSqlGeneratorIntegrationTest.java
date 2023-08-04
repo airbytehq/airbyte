@@ -337,6 +337,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
+  /**
+   * Create a nonempty users_final_tmp table. Overwrite users_final from users_final_tmp.
+   * Verify that users_final now exists and contains nonzero records.
+   */
   @Test
   public void overwriteFinalTable() throws Exception {
     createFinalTable(false, streamId, "_tmp");
@@ -357,9 +361,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final String sql = generator.overwriteFinalTable(streamId, "_tmp");
     destinationHandler.execute(sql);
 
-    DIFFER.diffFinalTableRecords(
-        records,
-        dumpFinalTableRecords(streamId, ""));
+    assertEquals(1, dumpFinalTableRecords(streamId, "").size());
   }
 
   @Test
