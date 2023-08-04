@@ -275,7 +275,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         .findFirst();
     Map<String, String> columns = database.queryJsons(
         """
-            SELECT column_name, data_type
+            SELECT column_name, data_type, numeric_precision, numeric_scale
             FROM information_schema.columns
             WHERE table_catalog = ?
               AND table_schema = ?
@@ -287,7 +287,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         "users_final").stream()
         .collect(toMap(
             record -> record.get("COLUMN_NAME").asText(),
-            record -> record.get("DATA_TYPE").asText()));
+            record -> {
+              String type = record.get("DATA_TYPE").asText();
+              if (type.equals("NUMBER")) {
+                return String.format("NUMBER(%s, %s)", record.get("NUMERIC_PRECISION").asText(), record.get("NUMERIC_SCALE").asText());
+              }
+              return type;
+            }));
     assertAll(
         () -> assertEquals(Optional.of("TABLE"), tableKind, "Table should be permanent, not transient"),
         () -> assertEquals(
@@ -295,14 +301,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                 .put("_airbyte_raw_id", "TEXT")
                 .put("_airbyte_extracted_at", "TIMESTAMP_TZ")
                 .put("_airbyte_meta", "VARIANT")
-                .put("id1", "NUMBER")
-                .put("id2", "NUMBER")
+                .put("id1", "NUMBER(38, 0)")
+                .put("id2", "NUMBER(38, 0)")
                 .put("updated_at", "TIMESTAMP_TZ")
                 .put("struct", "OBJECT")
                 .put("array", "ARRAY")
                 .put("string", "TEXT")
                 .put("number", "FLOAT")
-                .put("integer", "NUMBER")
+                .put("integer", "NUMBER(38, 0)")
                 .put("boolean", "BOOLEAN")
                 .put("timestamp_with_timezone", "TIMESTAMP_TZ")
                 .put("timestamp_without_timezone", "TIMESTAMP_NTZ")
