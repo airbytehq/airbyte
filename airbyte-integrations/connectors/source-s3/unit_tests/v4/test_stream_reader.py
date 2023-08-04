@@ -147,7 +147,6 @@ def test_open_file_without_config_raises_exception():
     with pytest.raises(ValueError):
         with SourceS3StreamReader().open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, None, logger) as fp:
             fp.read()
-    assert False
 
 @patch("smart_open.open")
 def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
