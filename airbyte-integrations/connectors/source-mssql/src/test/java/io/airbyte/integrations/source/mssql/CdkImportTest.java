@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.airbyte.cdk.CDKConstants;
 import org.junit.jupiter.api.Test;
 
-class CDKVersionTest {
+class CdkImportTest {
 
   /**
    * This test ensures that the CDK is able to be imported and that its version number matches the expected pinned version.
