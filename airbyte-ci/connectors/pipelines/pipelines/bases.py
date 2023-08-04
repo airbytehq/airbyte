@@ -13,18 +13,18 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Set
 
 import anyio
 import asyncer
 from anyio import Path
-from connector_ops.utils import console
+from connector_ops.utils import Connector, console
 from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines import sentry_utils
 from pipelines.actions import remote_storage
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
-from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result
+from pipelines.utils import METADATA_FILE_NAME, check_path_in_workdir, format_duration, get_exec_result
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -34,6 +34,15 @@ from tabulate import tabulate
 
 if TYPE_CHECKING:
     from pipelines.contexts import PipelineContext
+
+
+@dataclass(frozen=True)
+class ConnectorWithModifiedFiles(Connector):
+    modified_files: Set[Path] = field(default_factory=frozenset)
+
+    @property
+    def has_metadata_change(self) -> bool:
+        return any(path.name == METADATA_FILE_NAME for path in self.modified_files)
 
 
 class CIContext(str, Enum):
@@ -368,7 +377,7 @@ class Report:
 
     @property
     def success(self) -> bool:  # noqa D102
-        return len(self.failed_steps) == 0
+        return len(self.failed_steps) == 0 and (len(self.skipped_steps) > 0 or len(self.successful_steps) > 0)
 
     @property
     def run_duration(self) -> timedelta:  # noqa D102
@@ -439,6 +448,7 @@ class Report:
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
                 "pull_request_url": self.pipeline_context.pull_request.html_url if self.pipeline_context.pull_request else None,
+                "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
             }
         )
 
@@ -476,6 +486,9 @@ class Report:
                 sub_panels.append(sub_panel)
             failures_group = Group(*sub_panels)
             to_render.append(failures_group)
+
+        if self.pipeline_context.dagger_cloud_url:
+            self.pipeline_context.logger.info(f"🔗 View runs for commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
@@ -535,6 +548,7 @@ class ConnectorReport(Report):
                 "ci_context": self.pipeline_context.ci_context,
                 "cdk_version": self.pipeline_context.cdk_version,
                 "html_report_url": self.html_report_url,
+                "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
             }
         )
 
@@ -551,6 +565,10 @@ class ConnectorReport(Report):
         ]
         markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n\n"
         markdown_comment += f"🔗 [View the logs here]({self.html_report_url})\n\n"
+
+        if self.pipeline_context.dagger_cloud_url:
+            markdown_comment += f"☁️ [View runs for commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})\n\n"
+
         markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
         markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/README.md) tool with the following command**\n"
         markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
@@ -580,6 +598,7 @@ class ConnectorReport(Report):
             template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
             template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
+            template_context["dagger_cloud_url"] = self.pipeline_context.dagger_cloud_url
             template_context[
                 "icon_url"
             ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
@@ -617,6 +636,9 @@ class ConnectorReport(Report):
 
         details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
         to_render = [step_results_table, details_instructions]
+
+        if self.pipeline_context.dagger_cloud_url:
+            self.pipeline_context.logger.info(f"🔗 View runs for commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)

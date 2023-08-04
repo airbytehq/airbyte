@@ -63,7 +63,6 @@ class MetadataValidation(PoetryRun):
 
 
 class MetadataUpload(PoetryRun):
-
     # When the metadata service exits with this code, it means the metadata is valid but the upload was skipped because the metadata is already uploaded
     skipped_exit_code = 5
 
