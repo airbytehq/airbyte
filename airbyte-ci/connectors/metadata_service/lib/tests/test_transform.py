@@ -27,6 +27,7 @@ def get_all_dict_key_paths(dict_to_traverse, key_path=""):
 
     return key_paths
 
+
 def have_same_keys(dict1, dict2):
     """Check if two dicts have the same keys.
 
@@ -55,5 +56,3 @@ def test_transform_to_json_does_not_mutate_keys(valid_metadata_upload_files, val
 
         # assert same keys in both dicts, deep compare, and that the values are the same
         assert have_same_keys(metadata_yaml_dict, new_yaml_dict)
-
-

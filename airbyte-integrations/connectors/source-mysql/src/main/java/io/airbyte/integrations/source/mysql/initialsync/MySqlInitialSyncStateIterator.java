@@ -16,7 +16,6 @@ import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Objects;
 import javax.annotation.CheckForNull;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +57,7 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   protected AirbyteMessage computeNext() {
     if (messageIterator.hasNext()) {
       if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
-          && Objects.nonNull(lastPk)
-          && StringUtils.isNotBlank(lastPk)) {
+          && Objects.nonNull(lastPk)) {
         final PrimaryKeyLoadStatus pkStatus = new PrimaryKeyLoadStatus()
             .withVersion(MYSQL_STATUS_VERSION)
             .withStateType(StateType.PRIMARY_KEY)

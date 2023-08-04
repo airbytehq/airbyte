@@ -60,6 +60,7 @@ public class MySqlInitialLoadHandler {
       final MySqlInitialLoadStateManager initialLoadStateManager,
       final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
       final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
+      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
@@ -186,7 +187,6 @@ public class MySqlInitialLoadHandler {
       // Since a pk is unique, we can issue a > query instead of a >=, as there cannot be two records with the same pk.
       final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
           quotedCursorField, quotedCursorField, numRowsToFetchPerQuery);
-
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
       final MysqlType cursorFieldType = pkInfo.fieldType();
       sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());

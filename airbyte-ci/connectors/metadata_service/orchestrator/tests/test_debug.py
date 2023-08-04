@@ -4,8 +4,9 @@ from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_
 from orchestrator.assets.connector_test_report import generate_nightly_report, persist_connectors_test_summary_files
 from orchestrator.assets.registry_entry import registry_entry, metadata_entry
 from orchestrator.assets.registry import persisted_oss_registry
+from orchestrator.assets.github import github_metadata_file_md5s, stale_gcs_latest_metadata_file
 from orchestrator.config import NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME, NIGHTLY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME, REPORT_FOLDER
-from orchestrator import REGISTRY_ENTRY_RESOURCE_TREE
+from orchestrator import REGISTRY_ENTRY_RESOURCE_TREE, GITHUB_RESOURCE_TREE, METADATA_RESOURCE_TREE
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
 
@@ -35,6 +36,17 @@ def debug_nightly_report():
 def debug_registry():
     context = build_op_context(resources=REGISTRY_ENTRY_RESOURCE_TREE)
     persisted_oss_registry(context).value
+
+
+def debug_github_folders():
+    context = build_op_context(
+        resources={
+            **GITHUB_RESOURCE_TREE,
+            **METADATA_RESOURCE_TREE,
+        }
+    )
+    github_md5s = github_metadata_file_md5s(context).value
+    stale_gcs_latest_metadata_file(context, github_md5s).value
 
 
 def debug_badges():

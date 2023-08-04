@@ -16,16 +16,16 @@ public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
 
   private final String transactionTimestamp;
   private final Optional<MysqlDebeziumStateAttributes> debeziumStateAttributes;
+  private final Optional<CdcMetadataInjector> metadataInjector;
 
-  public MySqlInitialLoadSourceOperations(final String transactionTimestamp, final Optional<MysqlDebeziumStateAttributes> debeziumStateAttributes) {
+  public MySqlInitialLoadSourceOperations(final Optional<CdcMetadataInjector> metadataInjector) {
     super();
-    this.transactionTimestamp = transactionTimestamp;
-    this.debeziumStateAttributes = debeziumStateAttributes;
+    this.metadataInjector = metadataInjector;
   }
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    if (debeziumStateAttributes.isPresent()) {
+    if (metadataInjector.isPresent()) {
       // the first call communicates with the database. after that the result is cached.
       final ResultSetMetaData metadata = queryContext.getMetaData();
       final int columnCount = metadata.getColumnCount();
@@ -35,11 +35,28 @@ public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
         copyToJsonField(queryContext, i, jsonNode);
       }
 
-      final MySqlCdcConnectorMetadataInjector metadataInjector = new MySqlCdcConnectorMetadataInjector();
-      metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(jsonNode, transactionTimestamp, debeziumStateAttributes.get());
+      metadataInjector.get().inject(jsonNode);
       return jsonNode;
     } else {
       return super.rowToJson(queryContext);
+    }
+  }
+
+  public static class CdcMetadataInjector {
+
+    private final String transactionTimestamp;
+    private final MysqlDebeziumStateAttributes stateAttributes;
+    private final MySqlCdcConnectorMetadataInjector metadataInjector;
+
+    public CdcMetadataInjector(final String transactionTimestamp, final MysqlDebeziumStateAttributes stateAttributes,
+        final MySqlCdcConnectorMetadataInjector metadataInjector) {
+      this.transactionTimestamp = transactionTimestamp;
+      this.stateAttributes = stateAttributes;
+      this.metadataInjector = metadataInjector;
+    }
+
+    private void inject(final ObjectNode record) {
+      metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(record, transactionTimestamp, stateAttributes);
     }
   }
 }
