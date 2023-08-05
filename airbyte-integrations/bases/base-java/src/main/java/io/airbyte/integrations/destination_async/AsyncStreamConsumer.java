@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination_async;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
@@ -44,6 +45,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   private final BufferEnqueue bufferEnqueue;
   private final FlushWorkers flushWorkers;
   private final Set<StreamDescriptor> streamNames;
+  private final String defaultNamespace;
   private final FlushFailure flushFailure;
 
   private boolean hasStarted;
@@ -60,8 +62,9 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final OnCloseFunction onClose,
                              final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
-                             final BufferManager bufferManager) {
-    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure());
+                             final BufferManager bufferManager,
+                             final String defaultNamespace) {
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, defaultNamespace, new FlushFailure());
   }
 
   @VisibleForTesting
@@ -71,6 +74,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
                              final BufferManager bufferManager,
+                             final String defaultNamespace,
                              final FlushFailure flushFailure) {
     hasStarted = false;
     hasClosed = false;
@@ -80,6 +84,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     this.catalog = catalog;
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
+    this.defaultNamespace = defaultNamespace;
     this.flushFailure = flushFailure;
     flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager());
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
@@ -108,6 +113,10 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     deserializeAirbyteMessage(messageString)
         .ifPresent(message -> {
           if (Type.RECORD.equals(message.getType())) {
+            if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
+              message.getRecord().setNamespace(defaultNamespace);
+            }
+
             validateRecord(message);
           }
           bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
