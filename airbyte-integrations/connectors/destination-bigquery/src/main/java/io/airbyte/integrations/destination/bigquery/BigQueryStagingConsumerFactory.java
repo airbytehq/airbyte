@@ -94,7 +94,8 @@ public class BigQueryStagingConsumerFactory {
                                        final Function<String, String> tmpTableNameTransformer,
                                        final Function<String, String> targetTableNameTransformer,
                                        final TyperDeduper typerDeduper,
-                                       final ParsedCatalog parsedCatalog) {
+                                       final ParsedCatalog parsedCatalog,
+                                       final String defaultNamespace) {
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigsByPair = createWriteConfigs(
         config,
         catalog,
@@ -122,7 +123,8 @@ public class BigQueryStagingConsumerFactory {
         () -> onCloseFunction(bigQueryGcsOperations, writeConfigsByPair, typerDeduper).accept(false),
         flusher,
         catalog,
-        new BufferManager());
+        new BufferManager(),
+        defaultNamespace);
   }
 
   private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
