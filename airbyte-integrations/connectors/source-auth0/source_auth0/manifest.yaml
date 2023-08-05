@@ -75,44 +75,38 @@ definitions:
 
   organization_members_stream:
     $ref: "#/definitions/base_stream"
-    name: "organization_members"
-    primary_key: "user_id"
+    $parameters:
+      name: "organization_members"
+      primary_key: "user_id"
+      path: "organizations/{{ stream_partition.parent_id }}/members"
     retriever:
       $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "organizations/{{ stream_partition.parent_id }}/members"
       partition_router:
         $ref: "#/definitions/organization_members_partition_router"
-      record_selector:
-        $ref: "#/definitions/selector"
 
-  # organization_member_roles_partition_router:
-  #   type: SubstreamPartitionRouter
-  #   parent_stream_configs:
-  #     - stream: "#/definitions/organization_members_stream"
-  #       parent_key: "user_id"
-  #       partition_field: "parent_user_id"
+  organization_member_roles_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/organization_members_stream"
+        parent_key: "user_id"
+        partition_field: "parent_user_id"
 
-  # organization_member_roles_stream:
-  #   $ref: "#/definitions/base_stream"
-  #   name: "organization_member_roles"
-  #   primary_key: "id"
-  #   retriever:
-  #     $ref: "#/definitions/retriever"
-  #     requester:
-  #       $ref: "#/definitions/requester"
-  #       path: "organizations/{{ stream_partition.parent_slice.parent_id }}/members/{{ stream_partition.parent_user_id }}/roles"
-  #     partition_router:
-  #       $ref: "#/definitions/organization_member_roles_partition_router"
-  #     record_selector:
-  #       $ref: "#/definitions/selector"
+  organization_member_roles_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "organization_member_roles"
+      primary_key: "id"
+      path: "organizations/{{ stream_partition.parent_slice.parent_id }}/members/{{ stream_partition.parent_user_id }}/roles"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/organization_member_roles_partition_router"
 
 streams:
   - "#/definitions/clients_stream"
   - "#/definitions/users_stream"
   - "#/definitions/organizations_stream"
-  # - "#/definitions/organization_member_roles_stream"
+  - "#/definitions/organization_member_roles_stream"
   - "#/definitions/organization_members_stream"
 
 check:
@@ -121,5 +115,5 @@ check:
     - "clients"
     - "users"
     - "organizations"
-    # - "organization_member_roles"
+    - "organization_member_roles"
     - "organization_members"
