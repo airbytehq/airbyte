@@ -191,7 +191,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
         "dataset_location", datasetLocation,
-        "final_table_id", stream.id().finalTableId(suffix, QUOTE),
+        "final_table_id", stream.id().finalTableId(QUOTE, suffix),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig)).replace(
             """
@@ -453,7 +453,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", stream.id().rawTableId(QUOTE),
-        "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
@@ -495,7 +495,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
         "cursor_name", cursor.name(QUOTE))
         ).replace(
@@ -531,7 +531,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "pk_list", pkList,
         "pk_extracts", pkCasts,
@@ -556,7 +556,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE))).replace(
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
             // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
             // would be painful,
             // and it only matters in a few edge cases.
@@ -584,10 +584,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String overwriteFinalTable(final StreamId streamId, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
-        "final_table_id", streamId.finalTableId(QUOTE),
-        "tmp_final_table", streamId.finalTableId(finalSuffix, QUOTE),
-        "real_final_table", streamId.finalName(QUOTE))).replace(
-        """
+            "final_table_id", streamId.finalTableId(QUOTE),
+            "tmp_final_table", streamId.finalTableId(QUOTE, finalSuffix),
+            "real_final_table", streamId.finalName(QUOTE))).replace(
+            """
             DROP TABLE IF EXISTS ${final_table_id};
             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
             """);
