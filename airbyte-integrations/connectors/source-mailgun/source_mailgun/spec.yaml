@@ -17,12 +17,13 @@ connectionSpecification:
       description: Domain region code. 'EU' or 'US' are possible values. The default
         is 'US'.
       title: Domain Region Code
+      default: "US"
     start_date:
       title: Replication Start Date
       description: UTC date and time in the format 2020-10-01 00:00:00. Any data before
         this date will not be replicated. If omitted, defaults to 3 days ago.
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$"
       examples:
-      - '2020-10-01 00:00:00'
+      - '2023-08-01T00:00:00Z'
       type: string
       format: date-time

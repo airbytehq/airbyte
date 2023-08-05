@@ -5,14 +5,22 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: []
+      field_path: ["items"]
+
   requester:
     type: HttpRequester
-    url_base: "https://api.mailgun.net"
+    url_base: |
+      {{
+        'https://api.mailgun.net/v3'
+        if config['domain_region'] == 'US'
+        else 'https://api.eu.mailgun.net/v3'
+      }}
     http_method: "GET"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
+      type: "BasicHttpAuthenticator"
+      username: "api"
+      password: "{{ config['private_key'] }}"
+
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -21,36 +29,50 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
+
   base_stream:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
-  customers_stream:
+
+  incremental_sync_base:
+    type: DatetimeBasedCursor
+    cursor_field: "{{ parameters.incremental_cursor }}"
+    datetime_format: "%s"
+    cursor_granularity: "PT0.000001S"
+    lookback_window: "P31D"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P1M"
+
+  domains_stream:
     $ref: "#/definitions/base_stream"
-    name: "customers"
+    name: "domains"
     primary_key: "id"
     $parameters:
-      path: "/example"
+      path: "/domains"
+
+  events_stream:
+    $ref: "#/definitions/base_stream"
+    name: "events"
+    primary_key: "id"
+    $parameters:
+      path: "/events"
+      incremental_cursor: "timestamp"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"  
 
 streams:
-  - "#/definitions/customers_stream"
+  - "#/definitions/domains_stream"
+  - "#/definitions/events_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
-
-spec:
-  type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/mailgun
-  connection_specification:
-    title: Mailgun Spec
-    type: object
-    required:
-      - api_key
-    additionalProperties: true
-    properties:
-      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-      api_key:
-        type: string
-        description: API Key
+    - "domains"
+    - "events"
+    
