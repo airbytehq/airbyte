@@ -1,4 +1,5 @@
 {
   "api_key": "awesome-api-key",
-  "subdomain": "invalid"
+  "subdomain": "invalid",
+  "custom_reports_fields" :["firstName", "lastName", "bestEmail"]
 }

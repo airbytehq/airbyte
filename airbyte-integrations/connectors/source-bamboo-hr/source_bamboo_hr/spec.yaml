@@ -1,0 +1,85 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/bamboo-hr
+connectionSpecification:
+  "$schema": http://json-schema.org/draft-07/schema#
+  title: Bamboo HR Spec
+  type: object
+  required:
+    - api_key
+    - subdomain
+    - custom_reports_fields
+  properties:
+    api_key:
+      type: string
+      description: Api key of bamboo hr
+      order: 0
+      title: api_key
+      airbyte_secret: true
+    subdomain:
+      type: string
+      description: Sub Domain of bamboo hr
+      order: 2
+      title: subdomain
+    custom_reports_fields:
+      type: array
+      order: 3
+      title: custom_reports_fields
+      default:
+        - bestEmail
+        - firstName
+        - lastName
+        - age
+        - bonusAmount
+        - bonusDate
+        - city
+        - commissionAmount
+        - commisionDate
+        - country
+        - createdByUserId
+        - dateOfBirth
+        - department
+        - division
+        - eeo
+        - employeeNumber
+        - employmentHistoryStatus
+        - exempt
+        - fullName1
+        - gender
+        - hireDate
+        - originalHireDate
+        - homeEmail
+        - homePhone
+        - isPhotoUploaded
+        - jobTitle
+        - lastChanged
+        - location
+        - maritalStatus
+        - middleName
+        - mobilePhone
+        - nationalId
+        - nationality
+        - nin
+        - payChangeReason
+        - payGroup
+        - payGroupId
+        - payRate
+        - payRateEffectiveDate
+        - payType
+        - paySchedule
+        - payScheduleId
+        - payFrequency
+        - ssn
+        - sin
+        - standardHoursPerWeek
+        - state
+        - stateCode
+        - status
+        - supervisor
+        - supervisorId
+        - supervisorEId
+        - supervisorEmail
+        - terminationDate
+        - workEmail
+        - workPhone
+        - zipcode
+      description: List of fields to include in custom reports
+  additionalProperties: true

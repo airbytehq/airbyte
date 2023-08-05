@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "PyBambooHR"]
+MAIN_REQUIREMENTS = ["airbyte-cdk"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",

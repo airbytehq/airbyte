@@ -3,7 +3,7 @@
 connector_image: airbyte/source-bamboo-hr:dev
 tests:
   spec:
-    - spec_path: "source_bamboo_hr/spec.json"
+    - spec_path: "source_bamboo_hr/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

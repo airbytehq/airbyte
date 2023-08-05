@@ -1,0 +1,274 @@
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/bamboo-hr
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - subdomain
+      - custom_reports_fields
+    properties:
+      api_key:
+        type: string
+        description: Api key of bamboo hr
+        order: 0
+        title: api_key
+        airbyte_secret: true
+      subdomain:
+        type: string
+        description: Sub Domain of bamboo hr
+        order: 2
+        title: subdomain
+        description: mycompany
+      custom_reports_fields:
+        type: array
+        order: 3
+        title: custom_reports_fields
+        default:
+          - bestEmail
+          - firstName
+          - lastName
+          - age
+          - bonusAmount
+          - bonusDate
+          - city
+          - commissionAmount
+          - commisionDate
+          - country
+          - createdByUserId
+          - dateOfBirth
+          - department
+          - division
+          - eeo
+          - employeeNumber
+          - employmentHistoryStatus
+          - exempt
+          - fullName1
+          - gender
+          - hireDate
+          - originalHireDate
+          - homeEmail
+          - homePhone
+          - isPhotoUploaded
+          - jobTitle
+          - lastChanged
+          - location
+          - maritalStatus
+          - middleName
+          - mobilePhone
+          - nationalId
+          - nationality
+          - nin
+          - payChangeReason
+          - payGroup
+          - payGroupId
+          - payRate
+          - payRateEffectiveDate
+          - payType
+          - paySchedule
+          - payScheduleId
+          - payFrequency
+          - ssn
+          - sin
+          - standardHoursPerWeek
+          - state
+          - stateCode
+          - status
+          - supervisor
+          - supervisorId
+          - supervisorEId
+          - supervisorEmail
+          - terminationDate
+          - workEmail
+          - workPhone
+          - zipcode
+        description: List of fields to include in custom reports
+    additionalProperties: true
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - meta_fields_stream
+streams:
+  - name: employees_directory_stream
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: employees/directory
+        type: HttpRequester
+        url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: ''
+          username: '{{ config[''api_key''] }}'
+        request_headers:
+          accept: application/json
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - employees
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          division:
+            type:
+              - 'null'
+              - string
+          jobTitle:
+            type:
+              - 'null'
+              - string
+          lastName:
+            type: string
+          linkedIn:
+            type:
+              - 'null'
+              - string
+          location:
+            type: string
+          photoUrl:
+            type: string
+          firstName:
+            type: string
+          instagram:
+            type:
+              - 'null'
+              - string
+          workEmail:
+            type:
+              - 'null'
+              - string
+          workPhone:
+            type:
+              - 'null'
+              - string
+          department:
+            type: string
+          supervisor:
+            type: string
+          displayName:
+            type: string
+          mobilePhone:
+            type:
+              - 'null'
+              - string
+          photoUploaded:
+            type: boolean
+          preferredName:
+            type:
+              - 'null'
+              - string
+          canUploadPhoto:
+            type: number
+          workPhoneExtension:
+            type:
+              - 'null'
+              - string
+  - name: custom_reports_stream
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: reports/custom
+        type: HttpRequester
+        url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
+        http_method: POST
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: ''
+          username: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json:
+          title: Airbyte
+          fields: '{{ config[''custom_reports_fields''] }}'
+        request_parameters:
+          format: JSON
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - employees
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          lastName:
+            type: string
+          bestEmail:
+            type: string
+          firstName:
+            type: string
+  - name: meta_fields_stream
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: meta/fields
+        type: HttpRequester
+        url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: ''
+          username: '{{ config[''api_key''] }}'
+        request_headers:
+          accept: application/json
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - number
+              - string
+          name:
+            type: string
+          type:
+            type: string
+          alias:
+            type: string
+          deprecated:
+            type: boolean
+version: 0.47.2
+metadata:
+  autoImportSchema:
+    meta_fields_stream: false
+    custom_reports_stream: true
+    employees_directory_stream: false
