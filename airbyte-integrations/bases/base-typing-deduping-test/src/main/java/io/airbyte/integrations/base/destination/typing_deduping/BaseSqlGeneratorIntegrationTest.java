@@ -104,6 +104,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected String namespace;
 
   private StreamId streamId;
+  private List<ColumnId> primaryKey;
+  private ColumnId cursor;
 
   protected abstract SqlGenerator<DialectTableDefinition> getSqlGenerator();
 
@@ -128,6 +130,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * Create a final table usingi the StreamId's finalTableId. Subclasses are recommended to hardcode the columns from
    * {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The only difference between those two column lists is the inclusion
    * of the _ab_cdc_deleted_at column, which is controlled by the includeCdcDeletedAt parameter.
+   * Create a final table usingi the StreamId's finalTableId. Subclasses are recommended to hardcode
+   * the columns from {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The
+   * only difference between those two column lists is the inclusion of the _ab_cdc_deleted_at column,
+   * which is controlled by the includeCdcDeletedAt parameter.
    */
   protected abstract void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception;
 
@@ -139,8 +145,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
       throws Exception;
 
   /**
-   * The two dump methods are defined identically as in {@link BaseTypingDedupingTest}, but with slightly different method signature. This test
-   * expects subclasses to respect the raw/finalTableId on the StreamId object, rather than hardcoding e.g. the airbyte_internal dataset.
+   * The two dump methods are defined identically as in {@link BaseTypingDedupingTest}, but with
+   * slightly different method signature. This test expects subclasses to respect the raw/finalTableId
+   * on the StreamId object, rather than hardcoding e.g. the airbyte_internal dataset.
    */
   protected abstract List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception;
 
@@ -168,8 +175,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     destinationHandler = getDestinationHandler();
     ColumnId id1 = generator.buildColumnId("id1");
     ColumnId id2 = generator.buildColumnId("id2");
-    List<ColumnId> primaryKey = List.of(id1, id2);
-    ColumnId cursor = generator.buildColumnId("updated_at");
+    primaryKey = List.of(id1, id2);
+    cursor = generator.buildColumnId("updated_at");
 
     LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
     columns.put(id1, AirbyteProtocolType.INTEGER);
@@ -452,8 +459,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         // We keep the newest raw record per PK
         6,
         dumpRawTableRecords(streamId),
-        5,
-        dumpFinalTableRecords(streamId, ""));
+        4,
+        dumpFinalTableRecords(streamId, "")
+    );
   }
 
   /**
@@ -575,6 +583,44 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             actualFinalRecords.stream().noneMatch(record -> record.has("_ab_cdc_deleted_at")),
             "_ab_cdc_deleted_at column was expected to be dropped. Actual final table had: " + actualFinalRecords
         )
+    );
+  }
+
+  @Test
+  public void weirdColumnNames() throws Exception {
+    createRawTable(streamId);
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/weirdcolumnnames_inputrecords_raw.jsonl")
+    );
+    StreamConfig stream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND_DEDUP,
+        primaryKey,
+        Optional.of(cursor),
+        new LinkedHashMap<>() {
+
+          {
+            put(generator.buildColumnId("id1"), AirbyteProtocolType.INTEGER);
+            put(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER);
+            put(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+            put(generator.buildColumnId("$starts_with_dollar_sign"), AirbyteProtocolType.STRING);
+          }
+
+        }
+    );
+
+    String createTable = generator.createTable(stream, "");
+    destinationHandler.execute(createTable);
+    final String updateTable = generator.updateTable(stream, "");
+    destinationHandler.execute(updateTable);
+
+    verifyRecords(
+        "sqlgenerator/weirdcolumnnames_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/weirdcolumnnames_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, "")
     );
   }
 
