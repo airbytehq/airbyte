@@ -244,7 +244,7 @@ The Snowflake destination supports the following sync modes:
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-apped-deduped)
 
 ## Snowflake tutorials
 
@@ -270,7 +270,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 ## Changelog
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
-|:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| :-------------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.2.8           | 2023-08-03 | [\#29047](https://github.com/airbytehq/airbyte/pull/29047) | Avoid logging record if the format is invalid                                                                                                       |
 | 1.2.7           | 2023-08-02 | [\#28976](https://github.com/airbytehq/airbyte/pull/28976) | Fix composite PK handling in v1 mode                                                                                                                |
 | 1.2.6           | 2023-08-01 | [\#28618](https://github.com/airbytehq/airbyte/pull/28618) | Reduce logging noise                                                                                                                                |

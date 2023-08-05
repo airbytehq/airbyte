@@ -95,7 +95,7 @@ The Redshift destination connector supports the following [sync modes](https://d
 
 - Full Refresh
 - Incremental - Append Sync
-- Incremental - Deduped History
+- Incremental - Append + Deduped
 
 ## Performance considerations
 
@@ -155,7 +155,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | 0.6.2   | 2023-07-24 | [\#28618](https://github.com/airbytehq/airbyte/pull/28618) | Add hooks in preparation for destinations v2 implementation                                                                                                                                                      |
 | 0.6.1   | 2023-07-14 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                                                                                                             |
 | 0.6.0   | 2023-06-27 | [\#27993](https://github.com/airbytehq/airbyte/pull/27993) | destination-redshift will fail syncs if records or properties are too large, rather than silently skipping records and succeeding                                                                                |
