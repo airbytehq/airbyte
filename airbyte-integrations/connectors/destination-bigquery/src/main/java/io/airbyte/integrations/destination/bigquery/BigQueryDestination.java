@@ -269,6 +269,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
   throws Exception {
+    final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
+    if (uploadingMethod != UploadingMethod.GCS) {
+      return Destination.super.getSerializedMessageConsumer(config, catalog, outputRecordCollector);
+    }
+
     // COPIED code start
 
     // Set the default namespace on streams with null namespace. This means we don't need to repeat this
@@ -330,24 +335,21 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     // COPIED code end
 
-    final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
-    if (uploadingMethod == UploadingMethod.GCS) {
-      return new BigQueryStagingConsumerFactory().createAsync(
-        config,
-        catalog,
-        outputRecordCollector,
-        bigQueryGcsOperations,
-        onCreateBuffer,
-        getRecordFormatterCreator(namingResolver),
-        namingResolver::getTmpTableName,
-        getTargetTableNameTransformer(namingResolver),
-        typerDeduper,
-        parsedCatalog
-      );
-    }
+    LOGGER.info("Creating BigQuery Serialized Message Consumer 420.");
 
-    return Destination.super.getSerializedMessageConsumer(config, catalog, outputRecordCollector);
-
+    return new BigQueryStagingConsumerFactory().createAsync(
+      config,
+      catalog,
+      outputRecordCollector,
+      bigQueryGcsOperations,
+      onCreateBuffer,
+      getRecordFormatterCreator(namingResolver),
+      namingResolver::getTmpTableName,
+      getTargetTableNameTransformer(namingResolver),
+      typerDeduper,
+      parsedCatalog,
+      BigQueryUtils.getDatasetId(config)
+    );
   }
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
