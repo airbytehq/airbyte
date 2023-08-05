@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -78,11 +79,10 @@ public class CursorBasedCtidUtils {
       });
     }
 
-    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs);
-    final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs);
-    streamsForCtidSync.addAll(newlyAddedStreams);
-
-    final List<ConfiguredAirbyteStream> streamsForCursorBasedSync = getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs);
+    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> streamsForCursorBasedSync = getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs, SyncMode.INCREMENTAL);
+    streamsForCtidSync.addAll(newlyAddedIncrementalStreams);
 
     return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync),
         new CursorBasedStreams(streamsForCursorBasedSync, statesFromCursorBasedSync));

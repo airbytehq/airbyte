@@ -36,6 +36,7 @@ from source_amazon_seller_partner.streams import (
     FbaSnsForecastReport,
     FbaSnsPerformanceReport,
     FbaStorageFeesReports,
+    FlatFileActionableOrderDataShipping,
     FlatFileArchivedOrdersDataByOrderDate,
     FlatFileOpenListingsReports,
     FlatFileOrdersReports,
@@ -54,6 +55,7 @@ from source_amazon_seller_partner.streams import (
     MerchantListingsReport,
     MerchantListingsReportBackCompat,
     MerchantListingsReports,
+    OrderReportDataShipping,
     Orders,
     RestockInventoryReports,
     SellerAnalyticsSalesAndTrafficReports,
@@ -134,8 +136,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         """
         try:
             stream_kwargs = self._get_stream_kwargs(config)
-            stream_to_check = VendorSalesReports(**stream_kwargs)
-            next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
+            orders_stream = Orders(**stream_kwargs)
+            next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
 
             return True, None
         except Exception as e:
@@ -143,8 +145,11 @@ class SourceAmazonSellerPartner(AbstractSource):
             if isinstance(e, StopIteration):
                 return True, None
 
-            # Additional check, since Vendor-ony accounts within Amazon Seller API will not pass the test without this exception
+            # Additional check, since Vendor-only accounts within Amazon Seller API
+            # will not pass the test without this exception
             if "403 Client Error" in str(e):
+                stream_to_check = VendorSalesReports(**stream_kwargs)
+                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
                 return True, None
 
             return False, e
@@ -154,7 +159,6 @@ class SourceAmazonSellerPartner(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         stream_kwargs = self._get_stream_kwargs(config)
-
         return [
             FbaCustomerReturnsReports(**stream_kwargs),
             FbaAfnInventoryReports(**stream_kwargs),
@@ -164,6 +168,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             FbaReplacementsReports(**stream_kwargs),
             FbaStorageFeesReports(**stream_kwargs),
             RestockInventoryReports(**stream_kwargs),
+            FlatFileActionableOrderDataShipping(**stream_kwargs),
             FlatFileOpenListingsReports(**stream_kwargs),
             FlatFileOrdersReports(**stream_kwargs),
             FlatFileOrdersReportsByLastUpdate(**stream_kwargs),
@@ -174,6 +179,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorInventoryReports(**stream_kwargs),
             VendorSalesReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            OrderReportDataShipping(**stream_kwargs),
             SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),
             BrandAnalyticsMarketBasketReports(**stream_kwargs),

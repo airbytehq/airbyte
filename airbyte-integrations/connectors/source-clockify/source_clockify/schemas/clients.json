@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
   "properties": {
     "address": {
       "type": ["null", "string"]
@@ -9,6 +10,9 @@
     },
     "id": {
       "type": "string"
+    },
+    "email": {
+      "type": ["null", "string"]
     },
     "name": {
       "type": "string"

@@ -16,7 +16,10 @@ CONNECTOR_DIR="$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME"
 
 if [ -n "$FETCH_SECRETS" ]; then
   cd $ROOT_DIR
-  VERSION=dev $ROOT_DIR/tools/.venv/bin/ci_credentials $CONNECTOR_NAME write-to-storage || true
+  pip install pipx
+  pipx ensurepath
+  pipx install airbyte-ci/connectors/ci_credentials
+  VERSION=dev ci_credentials $CONNECTOR_NAME write-to-storage || true
   cd -
 fi
 
