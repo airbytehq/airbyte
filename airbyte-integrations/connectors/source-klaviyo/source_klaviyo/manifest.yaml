@@ -11,47 +11,6 @@ definitions:
       type: DpathExtractor
       field_path: [data]
 
-  page_increment_paginator1:
-    type: DefaultPaginator
-    page_token_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: page
-    page_size_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: count
-    pagination_strategy:
-      type: PageIncrement
-      start_from_page: 0
-      page_size: 50
-
-  page_increment_paginator2:
-    type: DefaultPaginator
-    page_size_option:
-      type: RequestOption
-      field_name: count
-      inject_into: request_parameter
-    pagination_strategy:
-      type: PageIncrement
-      page_size: 50
-
-  cursor_paginator:
-    type: DefaultPaginator
-    page_token_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: page[cursor]
-    page_size_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: page[size]
-    pagination_strategy:
-      type: CursorPagination
-      page_size: 20
-      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-  
   requester:
     type: HttpRequester
     url_base: https://a.klaviyo.com/api/
@@ -73,18 +32,62 @@ definitions:
 
   base_stream:
     type: DeclarativeStream
-    name: '{{ parameters.stream_name }}'
     primary_key:
       - '{{ parameters.primary_key or "id" }}'
     schema_loader:
       $ref: "#/definitions/schema_loader"
+
+  base_page_increment_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      field_name: count
+      inject_into: request_parameter
+    pagination_strategy:
+      type: PageIncrement
+      start_from_page: 0
+      page_size: 50
+
+  page_increment_paginator:
+    $ref: "#/definitions/base_page_increment_paginator"
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+
+  cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page[cursor]
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page[size]
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 20
+      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+  
+  base_incremental_sync:
+    type: DatetimeBasedCursor
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%SZ'') }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
 
   campaigns_stream:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
-        $ref: "#/definitions/page_increment_paginator1"
+        $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/requester"
         request_parameters: {}
@@ -92,46 +95,36 @@ definitions:
     $parameters:
       name: "campaigns"
       path: "v1/campaigns"
-      stream_name: "Campaigns"
 
   events_stream:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
-        $ref: "#/definitions/page_increment_paginator2"
+        $ref: "#/definitions/base_page_increment_paginator"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
           sort: asc
         request_headers: {}
     incremental_sync:
-      type: DatetimeBasedCursor
+      $ref: "#/definitions/base_incremental_sync"
       cursor_field: timestamp
       datetime_format: '%s'
       start_time_option:
         type: RequestOption
         field_name: since
         inject_into: request_parameter
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
     $parameters:
       name: "events"
       path: "v1/metrics/timeline"
-      stream_name: "Events"
 
   globalexclusions_stream:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
-        $ref: "#/definitions/page_increment_paginator1"
+        $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
@@ -140,7 +133,6 @@ definitions:
     $parameters:
       name: "global_exclusions"
       path: "v1/people/exclusions"
-      stream_name: "GlobalExclusions"
       primary_key: "email"
 
   lists_stream:
@@ -156,14 +148,13 @@ definitions:
     $parameters:
       name: "lists"
       path: "v1/lists"
-      stream_name: "Lists"
 
   metrics_stream:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
-        $ref: "#/definitions/page_increment_paginator1"
+        $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/requester"
         request_parameters: {}
@@ -171,7 +162,6 @@ definitions:
     $parameters:
       name: "metrics"
       path: "v1/metrics"
-      stream_name: "Metrics"
 
   flows_stream:
     $ref: "#/definitions/base_stream"
@@ -185,66 +175,62 @@ definitions:
           sort: asc
         request_headers: {}
     incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+      $ref: "#/definitions/base_incremental_sync"
       cursor_field: created
+      datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
       start_time_option:
-        inject_into: request_parameter
-        field_name: since
         type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        field_name: since
+        inject_into: request_parameter
     $parameters:
       name: "flows"
       path: "v1/flows"
-      stream_name: "Flows"
 
   profiles_stream:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
-        $ref: "#/definitions/cursor_paginator"
+        type: NoPagination
       requester:
-        $ref: "#/definitions/requester"
+        type: HttpRequester
+        url_base: https://a.klaviyo.com/api/
+        path: profiles/
+        http_method: GET
         request_parameters:
           sort: updated
+          filter: greater-than(updated,{{stream_interval.start_time}})
         request_headers:
           revision: '2023-07-15'
-          Authorization: Klaviyo-API-Key {{ config['api_key'] }}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: 'Klaviyo-API-Key {{ config[''api_key''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: Authorization
+        request_body_json: {}
     incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%d %H:%M:%S'
+      $ref: "#/definitions/base_incremental_sync"
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
       cursor_field: updated
-      start_time_option:
-        inject_into: request_parameter
-        field_name: filter
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updated
+            value: >-
+              {{ format_datetime(record['attributes']['updated'],'%Y-%m-%dT%H:%M:%S.%fZ') }}
     $parameters:
       name: "profiles"
-      path: "profiles/"
-      stream_name: "Profiles"
+
 
   email_templates_stream:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
-        $ref: "#/definitions/page_increment_paginator1"
+        $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/requester"
         request_parameters: {}
@@ -252,7 +238,6 @@ definitions:
     $parameters:
       name: "email_templates"
       path: "v1/email-templates"
-      stream_name: "EmailTemplates"
 
 # Streams
 streams:
@@ -269,7 +254,7 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - Campaigns
+    - "campaigns"
 
 # Connection Specification
 spec:
