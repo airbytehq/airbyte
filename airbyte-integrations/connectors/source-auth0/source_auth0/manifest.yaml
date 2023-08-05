@@ -38,22 +38,22 @@ definitions:
 
   users_stream:
     $ref: "#/definitions/base_stream"
-    name: "users"
-    # incremental_sync:
-    #   type: DatetimeBasedCursor
-    #   cursor_field: "updated_at"
-    #   datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    #   cursor_granularity: "PT0.000001S"
-    #   start_datetime:
-    #     datetime: "{{ config['start_date'] }}"
-    #     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    #   end_datetime:
-    #     datetime: "{{ today_utc() }}"
-    #     datetime_format: "%Y-%m-%d"
-    #   step: "P1M"
-    primary_key: "user_id"
     $parameters:
+      name: "users"
+      primary_key: "user_id"
       path: "users"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "PT0.000001S"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: "P1M"
 
   organizations_stream:
     $ref: "#/definitions/base_stream"
