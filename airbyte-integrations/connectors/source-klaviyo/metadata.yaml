@@ -5,8 +5,8 @@ data:
       - klaviyo.com
   connectorSubtype: api
   connectorType: source
-  definitionId: 683d1662-6814-446b-a268-5a6a4edbb4da
-  dockerImageTag: 0.1.0
+  definitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-klaviyo
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg

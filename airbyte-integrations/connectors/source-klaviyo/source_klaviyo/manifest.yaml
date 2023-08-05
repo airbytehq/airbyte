@@ -33,7 +33,7 @@ definitions:
   base_stream:
     type: DeclarativeStream
     primary_key:
-      - '{{ parameters.primary_key or "id" }}'
+      - '{{ parameters.primary_key }}'
     schema_loader:
       $ref: "#/definitions/schema_loader"
 
@@ -95,6 +95,7 @@ definitions:
     $parameters:
       name: "campaigns"
       path: "v1/campaigns"
+      primary_key: "id"
 
   events_stream:
     $ref: "#/definitions/base_stream"
@@ -118,6 +119,7 @@ definitions:
     $parameters:
       name: "events"
       path: "v1/metrics/timeline"
+      primary_key: "id"
 
   globalexclusions_stream:
     $ref: "#/definitions/base_stream"
@@ -148,6 +150,7 @@ definitions:
     $parameters:
       name: "lists"
       path: "v1/lists"
+      primary_key: "id"
 
   metrics_stream:
     $ref: "#/definitions/base_stream"
@@ -162,6 +165,7 @@ definitions:
     $parameters:
       name: "metrics"
       path: "v1/metrics"
+      primary_key: "id"
 
   flows_stream:
     $ref: "#/definitions/base_stream"
@@ -185,6 +189,7 @@ definitions:
     $parameters:
       name: "flows"
       path: "v1/flows"
+      primary_key: "id"
 
   profiles_stream:
     $ref: "#/definitions/base_stream"
@@ -223,6 +228,7 @@ definitions:
               {{ format_datetime(record['attributes']['updated'],'%Y-%m-%dT%H:%M:%S.%fZ') }}
     $parameters:
       name: "profiles"
+      primary_key: "id"
 
 
   email_templates_stream:
@@ -238,6 +244,7 @@ definitions:
     $parameters:
       name: "email_templates"
       path: "v1/email-templates"
+      primary_key: "id"
 
 # Streams
 streams:
