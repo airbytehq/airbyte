@@ -1,8 +1,8 @@
 package io.airbyte.integrations.destination.iceberg.config.storage;
 
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_BUCKET_LOCATION_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCP_LOCATION_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_WAREHOUSE_URI_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_PROJECT_ID_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCP_PROJECT_ID_CONFIG_KEY;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -47,7 +47,7 @@ public class GCSConfig implements StorageConfig {
   private Storage gcsClient;
 
   public static GCSConfig fromDestinationConfig(@Nonnull final JsonNode config) {
-    GCSConfigBuilder builder = new GCSConfigBuilder().bucketLocation(getProperty(config, GCS_BUCKET_LOCATION_CONFIG_KEY));
+    GCSConfigBuilder builder = new GCSConfigBuilder().bucketLocation(getProperty(config, GCP_LOCATION_CONFIG_KEY));
     
     String warehouseUri = getProperty(config, GCS_WAREHOUSE_URI_CONFIG_KEY);
     if (isBlank(warehouseUri)) {
@@ -58,7 +58,7 @@ public class GCSConfig implements StorageConfig {
     }
     builder.warehouseUri(warehouseUri);
 
-    String projectId = getProperty(config, GCS_PROJECT_ID_CONFIG_KEY);
+    String projectId = getProperty(config, GCP_PROJECT_ID_CONFIG_KEY);
     if (isBlank(projectId)) {
       throw new IllegalArgumentException("Project ID cannot be blank");
     }
@@ -121,6 +121,7 @@ public class GCSConfig implements StorageConfig {
   public Map<String, String> sparkConfigMap(String catalogName) {
     Map<String, String> sparkConfig = new HashMap<>();
     sparkConfig.put("spark.sql.catalog." + catalogName + ".warehouse", this.warehouseUri);
+    sparkConfig.put("spark.sql.catalog." + catalogName + ".gcp_location", this.bucketLocation);
     return sparkConfig;
   }
 

@@ -43,7 +43,7 @@ class BigLakeCatalogConfigTest {
   @BeforeEach
   void setup() throws IOException {
     cloudStorage = mock(Storage.class);
-    JsonNode jsonNode = Jsons.jsonNode(ofEntries(entry(IcebergConstants.GCS_PROJECT_ID_CONFIG_KEY, FAKE_PROJECT_ID)));
+    JsonNode jsonNode = Jsons.jsonNode(ofEntries(entry(IcebergConstants.GCP_PROJECT_ID_CONFIG_KEY, FAKE_PROJECT_ID)));
     config = new BigLakeCatalogConfig(jsonNode);
     config.setStorageConfig(GCSConfig.builder()
         .warehouseUri(FAKE_WAREHOUSE_URI)
@@ -62,7 +62,8 @@ class BigLakeCatalogConfigTest {
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.catalog-impl")).isEqualTo(BigLakeCatalog.class.getName());
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.warehouse")).isEqualTo(FAKE_WAREHOUSE_URI);
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.gcp_project")).isEqualTo(FAKE_PROJECT_ID);
-    // assertThat(sparkConfig.get("spark.sql.catalog.iceberg.gcp_location")).isEqualTo(FAKE_LOCATION);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.gcp_location")).isEqualTo(FAKE_LOCATION);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.blms_catalog")).isEqualTo("iceberg");
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg")).isEqualTo(SparkCatalog.class.getName());
 
   }

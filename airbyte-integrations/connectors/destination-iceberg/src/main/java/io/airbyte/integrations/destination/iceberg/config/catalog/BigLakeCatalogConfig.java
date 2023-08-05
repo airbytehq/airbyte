@@ -1,7 +1,7 @@
 package io.airbyte.integrations.destination.iceberg.config.catalog;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.CATALOG_NAME;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_PROJECT_ID_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCP_PROJECT_ID_CONFIG_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ public class BigLakeCatalogConfig extends IcebergCatalogConfig {
   private final String biglake_project_id;
 
   public BigLakeCatalogConfig(@NotNull JsonNode catalogConfigJson) {
-    this.biglake_project_id = catalogConfigJson.get(GCS_PROJECT_ID_CONFIG_KEY).asText();
+    this.biglake_project_id = catalogConfigJson.get(GCP_PROJECT_ID_CONFIG_KEY).asText();
   }
 
   @Override
@@ -47,12 +47,6 @@ public class BigLakeCatalogConfig extends IcebergCatalogConfig {
   public Catalog genCatalog() {
     BigLakeCatalog catalog = new BigLakeCatalog();
     Map<String, String> properties = new HashMap<>(this.storageConfig.catalogInitializeProperties());
-    // properties.put("spark.jars.packages", "org.apache.iceberg:iceberg-spark-runtime-3.3_2.12:1.2.0");
-    // properties.put("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
-    // properties.put("spark.sql.catalog." + CATALOG_NAME + ".catalog-impl", "org.apache.iceberg.gcp.biglake.BigLakeCatalog");
-    // properties.put("spark.sql.catalog." + CATALOG_NAME + ".gcp_project", this.biglake_project_id);
-    // properties.put("spark.sql.catalog." + CATALOG_NAME + ".blms_catalog", CATALOG_NAME);
-    // properties.put("spark.sql.catalog."+CATALOG_NAME+".blms_catalog", CATALOG_NAME);
     properties.put("gcp_project", this.biglake_project_id);
     properties.put("warehouse", this.storageConfig.getWarehouseUri());
     properties.putAll(this.storageConfig.catalogInitializeProperties());
