@@ -51,21 +51,21 @@ definitions:
     $parameters:
       path: "/conversations"
 
-  # users_stream:
-  #   $ref: "#/definitions/base_stream"
-  #   name: "conversations"
-  #   primary_key: "id"
-  #   $parameters:
-  #     path: "/users"
+  users_stream:
+    $ref: "#/definitions/base_stream"
+    name: "users"
+    primary_key: "id"
+    $parameters:
+      path: "/users"
 
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/conversations_stream"
-  # - "#/definitions/users_stream"
+  - "#/definitions/users_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "accounts"
     - "conversations"
-    # - "users"
+    - "users"
