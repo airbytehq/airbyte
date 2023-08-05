@@ -30,11 +30,19 @@ definitions:
       $ref: "#/definitions/retriever"
 
   accounts_stream:
-    $ref: "#/definitions/base_stream"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "accounts"]
     name: "accounts"
-    primary_key: "id"
+    primary_key: "ownerId"
     $parameters:
       path: "/accounts"
+
 
   conversations_stream:
     $ref: "#/definitions/base_stream"
@@ -43,21 +51,21 @@ definitions:
     $parameters:
       path: "/conversations"
 
-  users_stream:
-    $ref: "#/definitions/base_stream"
-    name: "conversations"
-    primary_key: "id"
-    $parameters:
-      path: "/users"
+  # users_stream:
+  #   $ref: "#/definitions/base_stream"
+  #   name: "conversations"
+  #   primary_key: "id"
+  #   $parameters:
+  #     path: "/users"
 
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/conversations_stream"
-  - "#/definitions/users_stream"
+  # - "#/definitions/users_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "accounts"
     - "conversations"
-    - "users"
+    # - "users"
