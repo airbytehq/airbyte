@@ -29,7 +29,8 @@ public class BigQueryV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefin
 
   @Override
   protected boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig) {
-    return bq.getDataset(streamConfig.id().rawNamespace()).exists();
+    final var dataset = bq.getDataset(streamConfig.id().rawNamespace());
+    return dataset != null && dataset.exists();
   }
 
   @Override

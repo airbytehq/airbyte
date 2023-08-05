@@ -1,7 +1,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static io.airbyte.integrations.base.destination.typing_deduping.Constants.RAW_TABLE_EXPECTED_V1_COLUMNS;
-import static io.airbyte.integrations.base.destination.typing_deduping.Constants.RAW_TABLE_EXPECTED_V2_COLUMNS;
+import static io.airbyte.integrations.base.JavaBaseConstants.LEGACY_COLUMN_NAMES;
+import static io.airbyte.integrations.base.JavaBaseConstants.V2_COLUMN_NAMES;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Optional;
@@ -92,12 +92,12 @@ public class DestinationV1V2MigratorTest {
     Mockito.when(migrator.doesAirbyteInternalNamespaceExist(Mockito.any())).thenReturn(v2NamespaceExists);
     final var existingTable = v2TableExists ? Optional.of("v2_raw") : Optional.empty();
     Mockito.when(migrator.getTableIfExists("raw", "raw_table")).thenReturn(existingTable);
-    Mockito.when(migrator.schemaMatchesExpectation("v2_raw", RAW_TABLE_EXPECTED_V2_COLUMNS)).thenReturn(v2RawSchemaMatches);
+    Mockito.when(migrator.schemaMatchesExpectation("v2_raw", V2_COLUMN_NAMES)).thenReturn(v2RawSchemaMatches);
 
     Mockito.when(migrator.convertToV1RawName(Mockito.any())).thenReturn(new NamespacedTableName("v1_raw_namespace", "v1_raw_table"));
     final var existingV1RawTable = v1RawTableExists ? Optional.of("v1_raw") : Optional.empty();
     Mockito.when(migrator.getTableIfExists("v1_raw_namespace", "v1_raw_table")).thenReturn(existingV1RawTable);
-    Mockito.when(migrator.schemaMatchesExpectation("v1_raw", RAW_TABLE_EXPECTED_V1_COLUMNS)).thenReturn(v1RawTableSchemaMatches);
+    Mockito.when(migrator.schemaMatchesExpectation("v1_raw", LEGACY_COLUMN_NAMES)).thenReturn(v1RawTableSchemaMatches);
     return migrator;
   }
 
