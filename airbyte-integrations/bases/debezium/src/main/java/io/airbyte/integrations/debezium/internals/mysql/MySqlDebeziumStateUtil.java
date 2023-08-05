@@ -38,7 +38,8 @@ public class MySqlDebeziumStateUtil {
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-    // We use the schema_only_recovery property cause using this mode will instruct Debezium to construct the db schema history.
+    // We use the schema_only_recovery property cause using this mode will instruct Debezium to
+    // construct the db schema history.
     properties.setProperty("snapshot.mode", "schema_only_recovery");
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
@@ -103,7 +104,7 @@ public class MySqlDebeziumStateUtil {
     return jsonNode;
   }
 
-  public MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  public static MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MysqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
         resultSet -> {
@@ -126,7 +127,7 @@ public class MySqlDebeziumStateUtil {
     }
   }
 
-  private Optional<String> removeNewLineChars(final String gtidSet) {
+  private static Optional<String> removeNewLineChars(final String gtidSet) {
     if (gtidSet != null && !gtidSet.trim().isEmpty()) {
       // Remove all the newline chars that exist in the GTID set string ...
       return Optional.of(gtidSet.replace("\n", "").replace("\r", ""));

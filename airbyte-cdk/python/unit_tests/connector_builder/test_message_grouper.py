@@ -367,25 +367,6 @@ def test_get_grouped_messages_no_records(mock_entrypoint_read: Mock) -> None:
         assert actual_page == expected_pages[i]
 
 
-@patch('airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read')
-def test_get_grouped_messages_invalid_group_format(mock_entrypoint_read: Mock) -> None:
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-
-    mock_source = make_mock_source(mock_entrypoint_read, iter(
-            [
-                response_log_message(response),
-                record_message("hashiras", {"name": "Shinobu Kocho"}),
-                record_message("hashiras", {"name": "Muichiro Tokito"}),
-            ]
-        )
-    )
-
-    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
-
-    with pytest.raises(ValueError):
-        api.get_message_groups(source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"))
-
-
 @pytest.mark.parametrize(
     "log_message, expected_response",
     [
@@ -588,7 +569,7 @@ def test_given_multiple_control_messages_with_same_timestamp_then_stream_read_ha
 
 
 @patch('airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read')
-def test_given_auxiliary_requests_then_return_global_request(mock_entrypoint_read: Mock) -> None:
+def test_given_auxiliary_requests_then_return_auxiliary_request(mock_entrypoint_read: Mock) -> None:
     mock_source = make_mock_source(mock_entrypoint_read, iter(
         any_request_and_response_with_a_record() +
         [
@@ -601,6 +582,17 @@ def test_given_auxiliary_requests_then_return_global_request(mock_entrypoint_rea
     )
 
     assert len(stream_read.auxiliary_requests) == 1
+
+
+@patch('airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read')
+def test_given_no_slices_then_return_empty_slices(mock_entrypoint_read: Mock) -> None:
+    mock_source = make_mock_source(mock_entrypoint_read, iter([auxiliary_request_log_message()]))
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    stream_read: StreamRead = connector_builder_handler.get_message_groups(
+        source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
+    )
+
+    assert len(stream_read.slices) == 0
 
 
 def make_mock_source(mock_entrypoint_read: Mock, return_value: Iterator[AirbyteMessage]) -> MagicMock:

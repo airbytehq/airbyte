@@ -21,9 +21,12 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Install ci-connector-ops package
-        run: pip install --quiet -e ./tools/ci_connector_ops
+        run: |
+          pip install pipx
+          pipx ensurepath
+          pipx install airbyte-ci/connectors/connector_ops
       - name: Write review requirements file
         id: write-review-requirements-file
         run: write-review-requirements-file >> $GITHUB_OUTPUT

@@ -7,7 +7,10 @@ package io.airbyte.integrations.destination.snowflake;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.DestinationConfig;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SnowflakeInternalStagingSqlOperationsTest {
@@ -17,8 +20,14 @@ class SnowflakeInternalStagingSqlOperationsTest {
   private static final String STAGE_PATH = "stagePath/2022/";
   private static final String FILE_PATH = "filepath/filename";
 
-  private final SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations =
-      new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
+  private SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations;
+
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
+    snowflakeStagingSqlOperations =
+        new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
+  }
 
   @Test
   void createStageIfNotExists() {
@@ -45,7 +54,7 @@ class SnowflakeInternalStagingSqlOperationsTest {
   @Test
   void copyIntoTmpTableFromStage() {
     final String expectedQuery = "COPY INTO schemaName.tableName FROM '@" + STAGE_NAME + "/" + STAGE_PATH + "' "
-        + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "
+        + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF=('') ) "
         + "files = ('filename1','filename2');";
     final String actualCopyQuery =
         snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
