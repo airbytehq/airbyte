@@ -28,8 +28,7 @@ public class BigLakeCatalogConfig extends IcebergCatalogConfig {
   private final String biglake_project_id;
 
   public BigLakeCatalogConfig(@NotNull JsonNode catalogConfigJson) {
-    //this.biglake_project_id = catalogConfigJson.get(GCS_PROJECT_ID_CONFIG_KEY).asText();
-    this.biglake_project_id = "thomas-van-latum-sndbx-l";
+    this.biglake_project_id = catalogConfigJson.get(GCS_PROJECT_ID_CONFIG_KEY).asText();
   }
 
   @Override

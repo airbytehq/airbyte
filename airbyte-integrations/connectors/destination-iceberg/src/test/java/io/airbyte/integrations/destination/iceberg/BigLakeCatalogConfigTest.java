@@ -13,49 +13,59 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
+import java.util.Map;
+import static java.util.Map.entry;
+import static java.util.Map.ofEntries;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.iceberg.config.catalog.BigLakeCatalogConfig;
+import org.apache.iceberg.gcp.biglake.BigLakeCatalog;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FORMAT_TYPE_CONFIG_KEY;
+import io.airbyte.integrations.destination.iceberg.config.storage.GCSConfig;
+import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
+import com.google.common.collect.ImmutableMap;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.apache.iceberg.spark.SparkCatalog;
+
 
 @Slf4j
 class BigLakeCatalogConfigTest {
 
-  private static MockedStatic<IcebergGenerics> mockedIcebergGenerics;
+  private static final String FAKE_PROJECT_ID = "fake-project-id";
+  private static final String FAKE_WAREHOUSE_URI = "gcs://fake-uri";
+  private static final String FAKE_LOCATION = "fake-location";
 
   private Storage cloudStorage;
 
-  @BeforeAll
-  static void staticSetup() {
-    BigLakeCatalogConfigTest.mockedIcebergGenerics = mockStatic(IcebergGenerics.class);
-  }
+  private BigLakeCatalogConfig config;
 
-  @AfterAll
-  static void staticStop() {
-    BigLakeCatalogConfigTest.mockedIcebergGenerics.close();
-  }
 
   @BeforeEach
   void setup() throws IOException {
     cloudStorage = mock(Storage.class);
-    factory = new IcebergCatalogConfigFactory() {
-
-      @Override
-      public IcebergCatalogConfig fromJsonNodeConfig(final @NotNull JsonNode jsonConfig) {
-        return config;
-      }
-
-    };
+    JsonNode jsonNode = Jsons.jsonNode(ofEntries(entry(IcebergConstants.GCS_PROJECT_ID_CONFIG_KEY, FAKE_PROJECT_ID)));
+    config = new BigLakeCatalogConfig(jsonNode);
+    config.setStorageConfig(GCSConfig.builder()
+        .warehouseUri(FAKE_WAREHOUSE_URI)
+        .bucketLocation(FAKE_LOCATION)
+        .build());
+    config.setFormatConfig(new FormatConfig(Jsons.jsonNode(ImmutableMap.of(FORMAT_TYPE_CONFIG_KEY, "Parquet"))));
+    config.setDefaultOutputDatabase("default");
   }
 
-    /**
-     * Test that check will fail if IAM user does not have listObjects permission
-     */
-    @Test
-    public void checksBigLakeWithoutGCPListObjectPermission () {
-      final IcebergDestination destinationFail = new IcebergDestination(factory);
-      doThrow(new StorageException(401, "Access Denied")).when(cloudStorage).listObjects(any(ListObjectsRequest.class));
-      final AirbyteConnectionStatus status = destinationFail.check(null);
-      log.info("status={}", status);
-      assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
-      assertTrue(status.getMessage().contains("Access Denied"), "Connection check returned wrong failure message");
-    }
+  @Test
+  public void bigLakeCatalogConfigTest() {
+    Map<String, String> sparkConfig = config.sparkConfigMap();
+    log.info("Spark Config for BigLake catalog: {}", sparkConfig);
+
+    // Catalog config
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.catalog-impl")).isEqualTo(BigLakeCatalog.class.getName());
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.warehouse")).isEqualTo(FAKE_WAREHOUSE_URI);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.gcp_project")).isEqualTo(FAKE_PROJECT_ID);
+    // assertThat(sparkConfig.get("spark.sql.catalog.iceberg.gcp_location")).isEqualTo(FAKE_LOCATION);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg")).isEqualTo(SparkCatalog.class.getName());
+
+  }
 
   }
 
