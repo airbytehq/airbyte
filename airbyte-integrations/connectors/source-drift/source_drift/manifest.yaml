@@ -13,7 +13,7 @@ definitions:
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config['access_token'] }}"
+      api_token: "{{ config['credentials']['access_token'] }}"
 
   retriever:
     type: SimpleRetriever
@@ -43,12 +43,21 @@ definitions:
     $parameters:
       path: "/conversations"
 
+  users_stream:
+    $ref: "#/definitions/base_stream"
+    name: "conversations"
+    primary_key: "id"
+    $parameters:
+      path: "/users"
+
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/conversations_stream"
+  - "#/definitions/users_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "accounts"
     - "conversations"
+    - "users"
