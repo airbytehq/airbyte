@@ -1,24 +1,25 @@
 data:
+  allowedHosts:
+    hosts:
+      - https://api.appfollow.io
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: b4375641-e270-41d3-9c20-4f9cecad87a8
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-appfollow
   githubIssueLabel: source-appfollow
   icon: appfollow.svg
   license: MIT
   name: Appfollow
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  releaseDate: TODO
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/appfollow
   tags:
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 200
-  supportLevel: community
+    - language:lowcode
 metadataSpecVersion: "1.0"
