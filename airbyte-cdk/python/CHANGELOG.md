@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.50.2
+Fix title and description of datetime_format fields
+
 ## 0.50.1
 File-based CDK cursor and entrypoint updates
 
