@@ -10,7 +10,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ["data"]
+      field_path: ["{{ parameters.path_extractor }}"]
 
   oauth_authenticator:
     type: OAuthAuthenticator
@@ -58,6 +58,8 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_data"
       paginator:
         type: NoPagination
     name: "campaigns"
@@ -120,6 +122,7 @@ definitions:
         type: NoPagination
     name: "reports"
     $parameters:
+      path_extractor: "data"
       path: "reports"
 
   nps_stream:
@@ -132,6 +135,7 @@ definitions:
         type: NoPagination
     name: "nps"
     $parameters:
+      path_extractor: "data"
       path: "nps/score"
 
   templates_stream:
@@ -143,6 +147,7 @@ definitions:
         $ref: "#/definitions/selector_data"
     primary_key: "id"
     $parameters:
+      path_extractor: "data"
       path: "templates"
 
 streams:
