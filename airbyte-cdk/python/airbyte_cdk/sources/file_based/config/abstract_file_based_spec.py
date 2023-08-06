@@ -4,11 +4,16 @@
 
 import copy
 from abc import abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
 from pydantic import AnyUrl, BaseModel, Field
+
+from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 
 
 class AbstractFileBasedSpec(BaseModel):
@@ -51,6 +56,7 @@ class AbstractFileBasedSpec(BaseModel):
         additional validation that an incoming config only matches exactly one of a field's types.
         """
         objects_to_check = schema["properties"]["streams"]["items"]["properties"]["format"]
+        objects_to_check["type"] = "object"
         objects_to_check["oneOf"] = objects_to_check.pop("anyOf", [])
         for format in objects_to_check["oneOf"]:
             for key in format["properties"]:
@@ -59,10 +65,11 @@ class AbstractFileBasedSpec(BaseModel):
                     object_property["enum"] = object_property["allOf"][0]["enum"]
                     object_property.pop("allOf")
 
-        properties_to_change = ["primary_key", "validation_policy"]
+        properties_to_change = ["validation_policy"]
         for property_to_change in properties_to_change:
             property_object = schema["properties"]["streams"]["items"]["properties"][property_to_change]
             if "anyOf" in property_object:
+                schema["properties"]["streams"]["items"]["properties"][property_to_change]["type"] = "object"
                 schema["properties"]["streams"]["items"]["properties"][property_to_change]["oneOf"] = property_object.pop("anyOf")
             if "allOf" in property_object and "enum" in property_object["allOf"][0]:
                 property_object["enum"] = property_object["allOf"][0]["enum"]

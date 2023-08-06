@@ -40,7 +40,7 @@ class FileBasedStreamConfig(BaseModel):
         title="Input Schema",
         description="The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
     )
-    primary_key: PrimaryKeyType = Field(
+    primary_key: Optional[str] = Field(
         title="Primary Key", description="The column or columns (for a composite key) that serves as the unique identifier of a record."
     )
     days_to_sync_if_history_is_full: int = Field(

@@ -88,17 +88,7 @@ single_csv_scenario = (
                                 "primary_key": {
                                     "title": "Primary Key",
                                     "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    ]
+                                    "type": "string"
                                 },
                                 "days_to_sync_if_history_is_full": {
                                     "title": "Days To Sync If History Is Full",
@@ -109,9 +99,10 @@ single_csv_scenario = (
                                 "format": {
                                     "title": "Format",
                                     "description": "The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
+                                    "type": "object",
                                     "oneOf": [
                                         {
-                                            "title": "AvroFormat",
+                                            "title": "Avro Format",
                                             "type": "object",
                                             "properties": {
                                                 "filetype": {
@@ -131,7 +122,7 @@ single_csv_scenario = (
                                             }
                                         },
                                         {
-                                            "title": "CsvFormat",
+                                            "title": "CSV Format",
                                             "type": "object",
                                             "properties": {
                                                 "filetype": {
@@ -247,7 +238,7 @@ single_csv_scenario = (
                                             }
                                         },
                                         {
-                                            "title": "JsonlFormat",
+                                            "title": "Jsonl Format",
                                             "type": "object",
                                             "properties": {
                                                 "filetype": {
@@ -261,7 +252,7 @@ single_csv_scenario = (
                                             }
                                         },
                                         {
-                                            "title": "ParquetFormat",
+                                            "title": "Parquet Format",
                                             "type": "object",
                                             "properties": {
                                                 "filetype": {

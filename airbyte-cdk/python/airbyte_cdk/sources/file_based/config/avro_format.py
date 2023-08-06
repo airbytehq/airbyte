@@ -7,6 +7,9 @@ from typing_extensions import Literal
 
 
 class AvroFormat(BaseModel):
+    class Config:
+        title = "Avro Format"
+
     filetype: Literal["avro"] = "avro"
 
     # This option is not recommended, but necessary for backwards compatibility
