@@ -165,6 +165,10 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/jsonl.jsonl
       timeout_seconds: 1800
+    - config_path: secrets/v4_jsonl_config.json
+      expect_records:
+        path: integration_tests/expected_records/v4_jsonl.jsonl
+      timeout_seconds: 1800
     - config_path: secrets/jsonl_newlines_config.json
       expect_records:
         path: integration_tests/expected_records/jsonl_newlines.jsonl
