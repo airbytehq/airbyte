@@ -30,7 +30,7 @@ class InsightConfig(BaseModel):
     name: str = Field(
         title="Name",
         description="The name of the custom insight. This will be used as the Airbyte stream name.",
-        order=0
+        order=0,
     )
 
     level: str = Field(
@@ -38,28 +38,28 @@ class InsightConfig(BaseModel):
         description="The granularity level for data retrieval of the custom insight from the API.", 
         default="ad",
         enum=["ad", "adset", "campaign", "account"],
-        order=1
+        order=1,
     )
 
     fields: Optional[List[ValidFields]] = Field(
         title="Fields",
         description="Use the dropdown menu to add the desired fields for your custom insight.",
         default=[],
-        order=2
+        order=2,
     )
 
     breakdowns: Optional[List[ValidBreakdowns]] = Field(
         title="Breakdowns",
         description="Use the dropdown menu to add the desired breakdowns for your custom insight.",
         default=[],
-        order=3
+        order=3,
     )
 
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
         description="Use the dropdown menu to add the desired action breakdowns for your custom insight.",
         default=[],
-        order=4
+        order=4,
     )
 
     action_report_time: str = Field(
@@ -73,7 +73,7 @@ class InsightConfig(BaseModel):
         ),
         default="mixed",
         enum=["conversion", "impression", "mixed"],
-        order=5
+        order=5,
     )
 
     time_increment: Optional[PositiveInt] = Field(
@@ -84,7 +84,7 @@ class InsightConfig(BaseModel):
         ),
         exclusiveMaximum=90,
         default=1,
-        order=6
+        order=6,
     )
 
     start_date: Optional[datetime] = Field(
@@ -92,7 +92,7 @@ class InsightConfig(BaseModel):
         description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. Leaving this field blank will replicate all data.",
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
-        order=7
+        order=7,
     )
 
     end_date: Optional[datetime] = Field(
@@ -104,7 +104,7 @@ class InsightConfig(BaseModel):
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
-        order=8
+        order=8,
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Custom Insights Lookback Window",
@@ -115,7 +115,7 @@ class InsightConfig(BaseModel):
         maximum=28,
         mininum=1,
         default=28,
-        order=9
+        order=9,
     )
 
 
@@ -230,7 +230,6 @@ class ConnectorConfig(BaseConfig):
             "Most users do not need to set this field unless they need to tune the connector to address specific issues or use cases. "
             "Batch requests are limited to a maximum of 50 requests per batch by Facebook."
         ),
-        maximum=50,
         default=50,
     )
 
