@@ -110,7 +110,9 @@ This connector outputs the following incremental streams:
 
 ### Custom Reports
 
-Custom reports allow for flexibility in the reporting dimensions and metrics to meet your specific use case. We recommend using the [GA4 Query Explorer](https://ga-dev-tools.google/ga4/query-explorer/) to help build your report. To ensure your dimensions and metrics are compatible, you can also refer to the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/).
+Custom reports allow for flexibility in the reporting dimensions and metrics to meet your specific use case. A full list of dimensions and metrics supported in the API can be found in [the GA4 documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema).
+
+We recommend using the [GA4 Query Explorer](https://ga-dev-tools.google/ga4/query-explorer/) to help build your report. To ensure your dimensions and metrics are compatible, you can also refer to the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/).
 
 Custom reports should be constructed in the following format:
 
@@ -126,8 +128,8 @@ Custom reports should be constructed in the following format:
 ]
 ```
 
-- Both `pivots` and `cohortSpec` are optional properties. For detailed descriptions of the `cohortSpec` and the `pivots` objects, refer to the official documentation [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) and [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
-- To enable Incremental sync for Custom reports, you must include the `date` dimension (except for custom Cohort reports).
+- Both `cohortSpec` and `pivots` are optional properties. For detailed descriptions of the `cohortSpec` and the `pivots` objects, refer to the official documentation [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) and [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
+- If you want to enable Incremental sync for Custom reports, you _must_ include the `date` dimension within your query. The only exception to this requirement is for custom Cohort reports.
 
 ### Data Sampling and Data Request Intervals
 
