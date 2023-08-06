@@ -5,32 +5,12 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
+      field_path: ["data", "{{ parameters.path_extractor }}"]
+  selector_data:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
       field_path: ["data"]
-  selector_campaigns:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["campaigns"]
-  selector_customers:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["data","subscribers"]
-  selector_companies:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["data","companies"]
-  selector_feedback:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["data","responses"]
-  selector_outbox:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["data","surveys"]
 
   oauth_authenticator:
     type: OAuthAuthenticator
@@ -78,35 +58,28 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_campaigns"
       paginator:
         type: NoPagination
     name: "campaigns"
     primary_key: "id"
     $parameters:
+      path_extractor: "campaigns"
       path: "campaigns"
 
   companies_stream:
     $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_companies"
     name: "companies"
     primary_key: "id"
     $parameters:
+      path_extractor: "companies"
       path: "companies"
 
   customers_stream:
     $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_customers"
     name: "customers"
     primary_key: "id"
     $parameters:
+      path_extractor: "subscribers"
       path: "nps/customers"
   
 
@@ -114,8 +87,6 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_feedback"
       paginator:
         type: "DefaultPaginator"
         pagination_strategy:
@@ -129,16 +100,14 @@ definitions:
     name: "feedback"
     primary_key: "id"
     $parameters:
+      path_extractor: "responses"
       path: "feedback"
 
   outbox_stream:
     $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_outbox"
     name: "outbox"
     $parameters:
+      path_extractor: "surveys"
       path: "nps/outbox"
 
   reports_stream:
@@ -146,7 +115,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "#/definitions/selector_data"
       paginator:
         type: NoPagination
     name: "reports"
@@ -158,7 +127,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "#/definitions/selector_data"
       paginator:
         type: NoPagination
     name: "nps"
@@ -167,11 +136,11 @@ definitions:
 
   templates_stream:
     $ref: "#/definitions/base_stream"
+    name: "templates"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
-        $ref: "#/definitions/selector"
-    name: "templates"
+        $ref: "#/definitions/selector_data"
     primary_key: "id"
     $parameters:
       path: "templates"
