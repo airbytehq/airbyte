@@ -1,0 +1,2 @@
+{"stream": "test", "data": {"id": "row1", "duration": 1200, "_ab_source_file_last_modified": "2023-08-06T19:50:45.000000Z", "_ab_source_file_url": "avro_tests/sample_duration.avro"}, "emitted_at": 10000000}
+{"stream": "test", "data": {"id": "row2", "duration": 4500, "_ab_source_file_last_modified": "2023-08-06T19:50:45.000000Z", "_ab_source_file_url": "avro_tests/sample_duration.avro"}, "emitted_at": 10000000}

@@ -1,0 +1,2 @@
+{"stream": "test", "data": {"id": "row1", "value": "12.345","_ab_source_file_last_modified": "2023-08-06T20:12:56.000000Z", "_ab_source_file_url": "avro_tests/sample_decimal.avro"}, "emitted_at": 10000000}
+{"stream": "test", "data": {"id": "row2", "value": "67.89", ",_ab_source_file_last_modified": "2023-08-06T20:12:56.000000Z", "_ab_source_file_url": "avro_tests/sample_decimal.avro"}, "emitted_at": 10000000}
