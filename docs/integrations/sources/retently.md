@@ -11,6 +11,11 @@ Several output streams are available from this source:
 - [Customers](https://www.retently.com/api/#api-get-customers-get)
 - [Companies](https://www.retently.com/api/#api-get-companies-get)
 - [Reports](https://www.retently.com/api/#api-get-reports-get)
+- [Campaigns](https://www.retently.com/api/#api-get-campaigns)
+- [Feedback](https://www.retently.com/api/#api-get-feedback-get)
+- [NPS](https://www.retently.com/api/#api-get-latest-score)
+- [Outbox](https://www.retently.com/api/#api-get-sent-surveys)
+- [Templates](https://www.retently.com/api/#api-get-templates-get)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
