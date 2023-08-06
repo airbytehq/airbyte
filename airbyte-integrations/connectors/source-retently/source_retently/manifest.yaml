@@ -34,7 +34,7 @@ definitions:
 
   oauth_authenticator:
     type: OAuthAuthenticator
-    token_refresh_endpoint: https://connect.squareup.com/oauth2/token
+    token_refresh_endpoint: https://app.retently.com/api/oauth/token
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
