@@ -13,6 +13,11 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/legacy_csv_custom_encoding.jsonl
       timeout_seconds: 1800
+##    - config_path: secrets/v4_csv_custom_encoding_config.json
+##      # This test fails because custom encoding isn't implemented
+##      expect_records:
+##        path: integration_tests/expected_records/v4_csv_custom_encoding.jsonl
+##      timeout_seconds: 1800
     - config_path: secrets/legacy_csv_custom_format_config.json
       expect_records:
         path: integration_tests/expected_records/legacy_csv_custom_format.jsonl
@@ -115,31 +120,33 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/v4_parquet_decimal_as_float.jsonl
       timeout_seconds: 1800
-#    - config_path: secrets/legacy_parquet_duration_list_struct_config.json
-#      expect_records:
-#        path: integration_tests/expected_records/legacy_parquet_duration_list_struct_config.jsonl
-#      timeout_seconds: 1800
-#    - config_path: secrets/v4_parquet_duration_list_struct_config.json
-#      expect_records:
-#        path: integration_tests/expected_records/v4_parquet_decimal_as_float.jsonl
-#      timeout_seconds: 1800
-#    - config_path: secrets/avro_config.json
-#      expect_records:
-#        path: integration_tests/expected_records/avro.jsonl
-#      timeout_seconds: 1800
-#    - config_path: secrets/v4_avro_config.json
-#      expect_records:
-#        path: integration_tests/expected_records/v4_avro.jsonl
-#      timeout_seconds: 1800
+##    - config_path: secrets/legacy_parquet_duration_list_struct_config.json
+##      # This test fails because durations are expected to be integers
+##      expect_records:
+##        path: integration_tests/expected_records/legacy_parquet_duration_list_struct.jsonl
+##      timeout_seconds: 1800
+##    - config_path: secrets/v4_parquet_duration_list_struct_config.json
+##      # This test fails because durations are expected to be integers
+##      expect_records:
+##        path: integration_tests/expected_records/v4_parquet_duration_list_struct.jsonl
+##      timeout_seconds: 1800
+    - config_path: secrets/avro_config.json
+      expect_records:
+        path: integration_tests/expected_records/avro.jsonl
+      timeout_seconds: 1800
+    - config_path: secrets/v4_avro_config.json
+      expect_records:
+        path: integration_tests/expected_records/v4_avro.jsonl
+      timeout_seconds: 1800
 ##    - config_path: secrets/legacy_avro_duration_config.json
 ##      # This test fails because the parser isn't able to properly parse the file
 ##      expect_records:
 ##        path: integration_tests/expected_records/legacy_duration_avro.jsonl
 ##      timeout_seconds: 1800
-#    - config_path: secrets/v4_avro_duration_config.json
-#      expect_records:
-#        path: integration_tests/expected_records/v4_avro_duration.jsonl
-#      timeout_seconds: 1800
+    - config_path: secrets/v4_avro_duration_config.json
+      expect_records:
+        path: integration_tests/expected_records/v4_avro_duration.jsonl
+      timeout_seconds: 1800
 ##    - config_path: secrets/legacy_avro_decimal_config.json
 ##      #      # This test fails because the parser isn't able to properly parse the file
 ##      expect_records:
@@ -151,18 +158,18 @@ acceptance_tests:
 ##        path: integration_tests/expected_records/v4_avro_decimal.jsonl
 ##      timeout_seconds: 1800
 ##    - config_path: secrets/v4_avro_decimal_as_float_config.json
-      # This test fails because the connector detects the type as a string but leaves it as a float
+##      # This test fails because the connector detects the type as a string but leaves it as a float
 ##      expect_records:
 ##        path: integration_tests/expected_records/v4_avro_decimal_as_float.jsonl
 ##      timeout_seconds: 1800
-#    - config_path: secrets/jsonl_config.json
-#      expect_records:
-#        path: integration_tests/expected_records/jsonl.jsonl
-#      timeout_seconds: 1800
-#    - config_path: secrets/jsonl_newlines_config.json
-#      expect_records:
-#        path: integration_tests/expected_records/jsonl_newlines.jsonl
-#      timeout_seconds: 1800
+    - config_path: secrets/jsonl_config.json
+      expect_records:
+        path: integration_tests/expected_records/jsonl.jsonl
+      timeout_seconds: 1800
+    - config_path: secrets/jsonl_newlines_config.json
+      expect_records:
+        path: integration_tests/expected_records/jsonl_newlines.jsonl
+      timeout_seconds: 1800
 #
 #  connection:
 #    tests:
