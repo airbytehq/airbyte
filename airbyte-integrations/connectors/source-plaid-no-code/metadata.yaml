@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 827a2414-f53d-48d1-a9e4-8eed46812468
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-plaid-no-code
+  githubIssueLabel: source-plaid-no-code
+  icon: plaid-no-code.svg
+  license: MIT
+  name: Plaid No Code
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/plaid-no-code
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"
