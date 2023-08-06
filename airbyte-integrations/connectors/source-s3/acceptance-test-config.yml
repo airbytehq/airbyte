@@ -106,11 +106,10 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/parquet_dataset.jsonl
       timeout_seconds: 1800
-##    - config_path: secrets/legacy_parquet_decimal_config.json
-      ##      # This test does not pass because the values are not converted
-##      expect_records:
-##        path: integration_tests/expected_records/legacy_parquet_decimal.jsonl
-##      timeout_seconds: 1800
+    - config_path: secrets/legacy_parquet_decimal_config.json
+      expect_records:
+        path: integration_tests/expected_records/legacy_parquet_decimal.jsonl
+      timeout_seconds: 1800
 ##    - config_path: secrets/v4_parquet_decimal_config.json
       ##      # This test does not pass because the values are not converted
 ##      expect_records:
