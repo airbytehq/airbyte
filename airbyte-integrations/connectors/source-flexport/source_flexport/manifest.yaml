@@ -152,7 +152,6 @@ spec:
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 1
-
     additionalProperties: true
   documentation_url: "https://docs.airbyte.com/integrations/sources/flexport"
   type: Spec
