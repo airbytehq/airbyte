@@ -15,13 +15,13 @@ import unicodedata
 from glob import glob
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, FrozenSet, List, Optional, Set, Tuple, Union
 
 import anyio
 import asyncer
 import click
 import git
-from connector_ops.utils import get_all_connectors_in_repo, get_changed_connectors
+from connector_ops.utils import get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -40,7 +40,6 @@ METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
-ALL_CONNECTOR_DEPENDENCIES = [(connector, connector.get_local_dependency_paths()) for connector in get_all_connectors_in_repo()]
 STATIC_REPORT_PREFIX = "airbyte-ci"
 
 
@@ -324,16 +323,19 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
 
-def _find_modified_connectors(file_path: Union[str, Path], dependency_scanning: bool = True) -> Set[Connector]:
+def _find_modified_connectors(
+    file_path: Union[str, Path], all_connectors: Set[Connector], dependency_scanning: bool = True
+) -> Set[Connector]:
     """Find all connectors impacted by the file change."""
     modified_connectors = set()
-    for connector, connector_dependencies in ALL_CONNECTOR_DEPENDENCIES:
+
+    for connector in all_connectors:
         if Path(file_path).is_relative_to(Path(connector.code_directory)):
             main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
             modified_connectors.add(connector)
 
         if dependency_scanning:
-            for connector_dependency in connector_dependencies:
+            for connector_dependency in connector.get_local_dependency_paths():
                 if Path(file_path).is_relative_to(Path(connector_dependency)):
                     # Add the connector to the modified connectors
                     modified_connectors.add(connector)
@@ -341,10 +343,10 @@ def _find_modified_connectors(file_path: Union[str, Path], dependency_scanning: 
     return modified_connectors
 
 
-def get_modified_connectors(modified_files: Set[Path], dependency_scanning: bool = True) -> Set[Connector]:
+def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Connector], dependency_scanning: bool) -> Set[Connector]:
     """Create a mapping of modified connectors (key) and modified files (value).
-    As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
-    The get_local_dependencies_paths function currently computes dependencies for Java connectors only.
+    If dependency scanning is enabled any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
+    It currently works only for Java connectors .
     It's especially useful to trigger tests of strict-encrypt variant when a change is made to the base connector.
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
@@ -353,17 +355,17 @@ def get_modified_connectors(modified_files: Set[Path], dependency_scanning: bool
     modified_connectors = set()
     for modified_file in modified_files:
         if not _is_ignored_file(modified_file):
-            modified_connectors.update(_find_modified_connectors(modified_file, dependency_scanning))
+            modified_connectors.update(_find_modified_connectors(modified_file, all_connectors, dependency_scanning))
     return modified_connectors
 
 
-def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> Set[Path]:
+def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> FrozenSet[Path]:
     connector_modified_files = set()
     for modified_file in all_modified_files:
         modified_file_path = Path(modified_file)
         if modified_file_path.is_relative_to(connector.code_directory):
             connector_modified_files.add(modified_file)
-    return connector_modified_files
+    return frozenset(connector_modified_files)
 
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
