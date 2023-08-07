@@ -377,25 +377,25 @@ This command runs the Python tests for a airbyte-ci poetry package.
 `airbyte-ci tests connectors/pipelines`
 
 ## Changelog
-
-| Version | PR                                                        | Description                                                                                  |
-|---------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.4.6   | [#28729](https://github.com/airbytehq/airbyte/pull/28729) | Use keyword args instead of positional argument for optional  paramater in Dagger's API      |
-| 0.4.5   | [#29034](https://github.com/airbytehq/airbyte/pull/29034) | Disable Dagger terminal UI when running publish.                                             |
-| 0.4.4   | [#29064](https://github.com/airbytehq/airbyte/pull/29064) | Make connector modified files a frozen set.                                                  |
-| 0.4.3   | [#29033](https://github.com/airbytehq/airbyte/pull/29033) | Disable dependency scanning for Java connectors.                                             |
-| 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030) | Make report path always have the same prefix: `airbyte-ci/`.                                 |
-| 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855) | Improve the selected connectors detection for connectors commands.                           |
-| 0.4.0   | [#28947](https://github.com/airbytehq/airbyte/pull/28947) | Show Dagger Cloud run URLs in CI                                                             |
-| 0.3.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789) | Do not consider empty reports as successfull.                                                |
-| 0.3.1   | [#28938](https://github.com/airbytehq/airbyte/pull/28938) | Handle 5 status code on MetadataUpload as skipped                                            |
-| 0.3.0   | [#28869](https://github.com/airbytehq/airbyte/pull/28869) | Enable the Dagger terminal UI on local `airbyte-ci` execution                                |
-| 0.2.3   | [#28907](https://github.com/airbytehq/airbyte/pull/28907) | Make dagger-in-dagger work for `airbyte-ci tests` command                                    |
-| 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897) | Sentry: Ignore error logs without exceptions from reporting                                  |
-| 0.2.1   | [#28767](https://github.com/airbytehq/airbyte/pull/28767) | Improve pytest step result evaluation to prevent false negative/positive.                    |
-| 0.2.0   | [#28857](https://github.com/airbytehq/airbyte/pull/28857) | Add the `airbyte-ci tests` command to run the test suite on any `airbyte-ci` poetry package. |
-| 0.1.1   | [#28858](https://github.com/airbytehq/airbyte/pull/28858) | Increase the max duration of Connector Package install to 20mn.                              |
-| 0.1.0   |                                                           | Alpha version not in production yet. All the commands described in this doc are available.   |
+| Version | PR                                                        | Description                                                                                               |
+| ------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 0.4.7   | [#29156](https://github.com/airbytehq/airbyte/pull/29156) | Improve how we check existence of requirement.txt or setup.py file to not raise early pip install errors. |
+| 0.4.6   | [#28729](https://github.com/airbytehq/airbyte/pull/28729) | Use keyword args instead of positional argument for optional  paramater in Dagger's API                   |
+| 0.4.5   | [#29034](https://github.com/airbytehq/airbyte/pull/29034) | Disable Dagger terminal UI when running publish.                                                          |
+| 0.4.4   | [#29064](https://github.com/airbytehq/airbyte/pull/29064) | Make connector modified files a frozen set.                                                               |
+| 0.4.3   | [#29033](https://github.com/airbytehq/airbyte/pull/29033) | Disable dependency scanning for Java connectors.                                                          |
+| 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030) | Make report path always have the same prefix: `airbyte-ci/`.                                              |
+| 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855) | Improve the selected connectors detection for connectors commands.                                        |
+| 0.4.0   | [#28947](https://github.com/airbytehq/airbyte/pull/28947) | Show Dagger Cloud run URLs in CI                                                                          |
+| 0.3.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789) | Do not consider empty reports as successfull.                                                             |
+| 0.3.1   | [#28938](https://github.com/airbytehq/airbyte/pull/28938) | Handle 5 status code on MetadataUpload as skipped                                                         |
+| 0.3.0   | [#28869](https://github.com/airbytehq/airbyte/pull/28869) | Enable the Dagger terminal UI on local `airbyte-ci` execution                                             |
+| 0.2.3   | [#28907](https://github.com/airbytehq/airbyte/pull/28907) | Make dagger-in-dagger work for `airbyte-ci tests` command                                                 |
+| 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897) | Sentry: Ignore error logs without exceptions from reporting                                               |
+| 0.2.1   | [#28767](https://github.com/airbytehq/airbyte/pull/28767) | Improve pytest step result evaluation to prevent false negative/positive.                                 |
+| 0.2.0   | [#28857](https://github.com/airbytehq/airbyte/pull/28857) | Add the `airbyte-ci tests` command to run the test suite on any `airbyte-ci` poetry package.              |
+| 0.1.1   | [#28858](https://github.com/airbytehq/airbyte/pull/28858) | Increase the max duration of Connector Package install to 20mn.                                           |
+| 0.1.0   |                                                           | Alpha version not in production yet. All the commands described in this doc are available.                |
 
 ## More info
 This project is owned by the Connectors Operations team.
