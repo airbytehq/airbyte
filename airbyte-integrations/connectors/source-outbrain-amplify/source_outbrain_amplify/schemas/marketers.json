@@ -21,6 +21,14 @@
     "lastModified":{
       "type":["string", "null"]
     },
+    "campaignDefaults": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": ["string", "null"]
+        }
+      }
+    },
     "blockedSites":{
       "type":"object",
       "properties":{

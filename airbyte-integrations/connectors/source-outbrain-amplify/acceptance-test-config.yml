@@ -20,13 +20,13 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 2400
         empty_streams:
-          - name: campaigns_by_marketers
+          - name: campaigns
             bypass_reason: "no records"
           - name: campaigns_geo_location
             bypass_reason: "no records"
-          - name: budgets_for_marketers
+          - name: budgets
             bypass_reason: "no records"
-          - name: promoted_links_for_campaigns
+          - name: promoted_links
             bypass_reason: "no records"
           - name: promoted_links_sequence_for_campaigns
             bypass_reason: "no records"
@@ -36,7 +36,7 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: performance_report_periodic_by_marketers_campaign
             bypass_reason: "no records"
-          - name: performance_report_periodic_content_by_promoted_links_campaign
+          - name: performance_promoted_links
             bypass_reason: "no records"
           - name: performance_report_marketers_by_publisher
             bypass_reason: "no records"

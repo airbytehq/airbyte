@@ -2,13 +2,13 @@
   "marketers": {
     "id": "$#@!1"
   },
-  "campaigns_by_marketers": {
+  "campaigns": {
     "id": "$#@!1"
   },
-  "promoted_links_for_campaigns": {
+  "promoted_links": {
     "id": "$#@!1"
   },
-  "budgets_for_marketers": {
+  "budgets": {
     "id": "$#@!1"
   }
 }

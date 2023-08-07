@@ -113,8 +113,11 @@ class CampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream):
 
     @property
     def cache_filename(self):
-
         return "campaigns.yml"
+
+    @property
+    def name(self) -> str:
+        return "campaigns"
 
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -213,6 +216,10 @@ class PromotedLinksForCampaigns(OutbrainAmplifyStream, HttpSubStream):
         self._authenticator = authenticator
         self._session = requests.sessions.Session()
 
+    @property
+    def name(self) -> str:
+        return "promoted_links"
+
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -300,6 +307,10 @@ class BudgetsForMarketers(OutbrainAmplifyStream, HttpSubStream):
         self.config = config
         self._authenticator = authenticator
         self._session = requests.sessions.Session()
+
+    @property
+    def name(self) -> str:
+        return "budgets"
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -542,6 +553,10 @@ class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStr
         self.config = config
         self._authenticator = authenticator
         self._session = requests.sessions.Session()
+
+    @property
+    def name(self) -> str:
+        return "performance_promoted_links"
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
