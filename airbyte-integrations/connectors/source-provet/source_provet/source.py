@@ -187,6 +187,26 @@ class Consultations(IncrementalProvetStream):
         return "consultation"
 
 
+class ConsultationItems(IncrementalProvetStream):
+
+    primary_key = "url"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "consultationitem"
+
+
+class Departments(ProvetStream):
+
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "department"
+
+
 class Invoices(IncrementalProvetStream):
 
     primary_key = "id"
@@ -216,6 +236,17 @@ class InvoicePayments(IncrementalProvetStream):
     ) -> str:
         return "invoicepayment"
 
+
+class Users(IncrementalProvetStream):
+
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "invoicepayment"
+
+
 # Source
 
 
@@ -237,4 +268,13 @@ class SourceProvet(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Patients(config), Clients(config), Consultations(config), Invoices(config), InvoiceRows(config), InvoicePayments(config)]
+        return [Patients(config),
+                Clients(config),
+                Consultations(config),
+                ConsultationItems(config),
+                Departments(config),
+                Invoices(config),
+                InvoiceRows(config),
+                InvoicePayments(config),
+                Users(config)
+                ]
