@@ -13,7 +13,7 @@ from dagger import ExecError, File, QueryError
 class BuildConnectorDistributionTar(GradleTask):
 
     title = "Build connector tar"
-    gradle_task_name = "distTar"
+    gradle_task_name = "publishMavenLocal"
 
     async def _run(self) -> StepResult:
         with_built_tar = (

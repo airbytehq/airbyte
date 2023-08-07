@@ -32,6 +32,7 @@ publishing {
     }
     repositories {
         maven {
+            name 'cloudrepo'
             url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
             credentials {
                 username System.getenv('CLOUDREPO_USER')
@@ -43,6 +44,12 @@ publishing {
 
 // Ensures that connectors can use snapshot versions of the CDK in MavenLocal.
 build.dependsOn(publishToMavenLocal)
+// Confirm local publish status by running:
+// $ ls -la ~/.m2/repository/io/airbyte/airbyte-cdk*
+// Confirm jar contents by running:
+// $ jar tf ~/.m2/repository/io/airbyte/airbyte-cdk/0.0.1-SNAPSHOT/airbyte-cdk-0.0.1-SNAPSHOT.jar
+// Remove CDK artifacts from MavenLocal by running:
+// $ rm -rf ~/.m2/repository/io/airbyte/airbyte-cdk*
 
 test {
     useJUnitPlatform()

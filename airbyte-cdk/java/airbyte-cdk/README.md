@@ -56,3 +56,23 @@ TODO: More detailed instructions needed.
 
 Add screenshots and additional details for IntelliJ IDEA and/or VS Code.
 -->
+
+## Publish and release
+
+\_⚠️ These steps should only be performed after all testing and approvals are in place on the PR. ⚠️\_
+
+1. Remove `-SNAPSHOT` suffix from CDK version.
+   - e.g. by running `nano airbyte-cdk/java/airbyte-cdk/src/main/resources/
+version.properties`.
+2. Publish the CDK to Maven ([mycloudrepo](https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/airbyte-cdk/))
+   - `./gradlew :airbyte-cdk:java:airbyte-cdk:publish`
+   - Note: you will need to export the env vars `CLOUDREPO_USER` and `CLOUDREPO_PASSWORD` before publishing.
+3. Remove the `-SNAPSHOT` suffix from any connector(s) using the latest version.
+   - E.g. If modifying `source-mysql`, then remove `-SNAPSHOT` from the CDK `implements` declaration in `airbyte-integrations/connectors/source-mysql/build.gradle`.
+4. Publish the modified connector(s), as per the normal process.
+
+Note:
+
+- This is documented as a manual process, but we will automate it into a CI workflow.
+- You can view and administer published CDK versions here: https://admin.cloudrepo.io/repository/airbyte-public-jars/io/airbyte/airbyte-cdk
+- The corresponding public endpoint for published CDK versions is here: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/airbyte-cdk/
