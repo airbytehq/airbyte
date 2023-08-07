@@ -547,6 +547,7 @@ spec:
         order: 0
         title: Access Token
         description: The end-user's Link access token.
+        airbyte_secret: true
       api_key:
         type: string
         order: 1
