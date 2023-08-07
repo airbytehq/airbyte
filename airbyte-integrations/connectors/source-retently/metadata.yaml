@@ -17,7 +17,7 @@ data:
   license: MIT
   name: Retently
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/retently
+  documentationUrl: https://docs.airbyte.com/integrations/sources/retently
   tags:
-    - language: lowcode
+    - language: low-code
 metadataSpecVersion: "1.0"
