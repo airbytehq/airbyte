@@ -8,7 +8,7 @@ import json
 import logging
 import os
 from unittest import mock
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
@@ -42,8 +42,8 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -569,8 +569,8 @@ def manifest_declarative_source():
 
 def test_list_streams(manifest_declarative_source):
     manifest_declarative_source.streams.return_value = [
-        create_mock_declarative_stream(create_mock_http_stream("a name", "https://a-url-base.com", "a-path")),
-        create_mock_declarative_stream(create_mock_http_stream("another name", "https://another-url-base.com", "another-path")),
+        create_mock_declarative_stream(create_mock_retriever("a name", "https://a-url-base.com", "a-path")),
+        create_mock_declarative_stream(create_mock_retriever("another name", "https://another-url-base.com", "another-path")),
     ]
 
     result = list_streams(manifest_declarative_source, {})
@@ -605,7 +605,7 @@ def test_given_declarative_stream_retriever_is_not_http_when_list_streams_then_r
 
     assert error_message.type == MessageType.TRACE
     assert error_message.trace.error.message.startswith("Error listing streams")
-    assert "A declarative stream should only have a retriever of type HttpStream" in error_message.trace.error.internal_message
+    assert "A declarative stream should only have a retriever of type SimpleRetriever" in error_message.trace.error.internal_message
 
 
 def test_given_unexpected_error_when_list_streams_then_return_exception_message(manifest_declarative_source):
@@ -632,11 +632,13 @@ def test_list_streams_integration_test():
     }
 
 
-def create_mock_http_stream(name, url_base, path):
-    http_stream = mock.Mock(spec=HttpStream, autospec=True)
+def create_mock_retriever(name, url_base, path):
+    http_stream = mock.Mock(spec=SimpleRetriever, autospec=True)
     http_stream.name = name
-    http_stream.url_base = url_base
-    http_stream.path.return_value = path
+    http_stream.requester = MagicMock()
+    http_stream.requester.get_url_base.return_value = url_base
+    http_stream.requester.get_path.return_value = path
+    http_stream._paginator_path.return_value = None
     return http_stream
 
 
@@ -674,7 +676,7 @@ def test_create_source():
     assert isinstance(source, ManifestDeclarativeSource)
     assert source._constructor._limit_pages_fetched_per_slice == limits.max_pages_per_slice
     assert source._constructor._limit_slices_fetched == limits.max_slices
-    assert source.streams(config={})[0].retriever.max_retries == 0
+    assert source.streams(config={})[0].retriever.requester.max_retries == 0
 
 
 def request_log_message(request: dict) -> AirbyteMessage:
@@ -700,12 +702,12 @@ def _create_response(body, request):
     return response
 
 
-def _create_page(response_body):
+def _create_page_response(response_body):
     request = _create_request()
-    return request, _create_response(response_body, request)
+    return _create_response(response_body, request)
 
 
-@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
+@patch.object(requests.Session, "send", side_effect=(_create_page_response({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page_response({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
 def test_read_source(mock_http_stream):
     """
     This test sort of acts as an integration test for the connector builder.
@@ -746,7 +748,7 @@ def test_read_source(mock_http_stream):
         assert isinstance(s.retriever, SimpleRetrieverTestReadDecorator)
 
 
-@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})))
+@patch.object(requests.Session, "send", side_effect=(_create_page_response({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page_response({"result": [{"id": 2}],"_metadata": {"next": "next"}})))
 def test_read_source_single_page_single_slice(mock_http_stream):
     max_records = 100
     max_pages_per_slice = 1

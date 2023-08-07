@@ -5,17 +5,31 @@
 
 from typing import Any
 
+import requests
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError
 
 
-class HubspotError(HTTPError):
+class HubspotError(AirbyteTracedException):
     """
     Base error class.
     Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
     """
 
+    def __init__(
+        self,
+        internal_message: str = None,
+        message: str = None,
+        failure_type: FailureType = FailureType.system_error,
+        exception: BaseException = None,
+        response: requests.Response = None,
+    ):
+        super().__init__(internal_message, message, failure_type, exception)
+        self.response = response
 
-class HubspotTimeout(HubspotError):
+
+class HubspotTimeout(HTTPError):
     """502/504 HubSpot has processing limits in place to prevent a single client from causing degraded performance,
     and these responses indicate that those limits have been hit. You'll normally only see these timeout responses
     when making a large number of requests over a sustained period. If you get one of these responses,
@@ -33,6 +47,10 @@ class HubspotAccessDenied(HubspotError):
 
 class HubspotRateLimited(HubspotError):
     """429 Rate Limit Reached"""
+
+
+class HubspotBadRequest(HubspotError):
+    """400 Bad Request"""
 
 
 class InvalidStartDateConfigError(Exception):
