@@ -623,9 +623,9 @@ multiple_streams_avro_scenario = (
     )
 ).build()
 
-avro_file_with_decimal_as_float_scenario = (
+avro_file_with_double_as_number_scenario = (
     TestScenarioBuilder()
-    .set_name("avro_file_with_decimal_as_float_stream")
+    .set_name("avro_file_with_double_as_number_stream")
     .set_config(
         {
             "streams": [
@@ -637,7 +637,7 @@ avro_file_with_decimal_as_float_scenario = (
                     "format": {
                         "avro": {
                             "filetype": "avro",
-                            "decimal_as_float": True
+                            "double_as_string": False
                         }
                     }
                 }

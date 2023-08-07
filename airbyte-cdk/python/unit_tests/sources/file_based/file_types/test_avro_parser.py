@@ -10,7 +10,7 @@ from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.file_types import AvroParser
 
 _default_avro_format = AvroFormat()
-_decimal_as_float_avro_format = AvroFormat(decimal_as_float=True)
+_double_as_numer_avro_format = AvroFormat(double_as_string=False)
 
 
 @pytest.mark.parametrize(
@@ -23,7 +23,7 @@ _decimal_as_float_avro_format = AvroFormat(decimal_as_float=True)
         pytest.param(_default_avro_format, "long", {"type": "integer"}, None, id="test_long"),
         pytest.param(_default_avro_format, "float", {"type": "number"}, None, id="test_float"),
         pytest.param(_default_avro_format, "double", {"type": "string"}, None, id="test_double"),
-        pytest.param(_decimal_as_float_avro_format, "double", {"type": "number"}, None, id="test_double_as_float"),
+        pytest.param(_double_as_numer_avro_format, "double", {"type": "number"}, None, id="test_double_as_float"),
         pytest.param(_default_avro_format, "bytes", {"type": "string"}, None, id="test_bytes"),
         pytest.param(_default_avro_format, "string", {"type": "string"}, None, id="test_string"),
         pytest.param(_default_avro_format, "void", None, ValueError, id="test_invalid_type"),
@@ -175,24 +175,25 @@ def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_js
 
 @pytest.mark.parametrize(
     "avro_format, record_type, record_value, expected_value", [
-        pytest.param(AvroFormat(), "boolean", True, True, id="test_boolean"),
-        pytest.param(AvroFormat(), "int", 123, 123, id="test_int"),
-        pytest.param(AvroFormat(), "long", 123, 123, id="test_long"),
-        pytest.param(AvroFormat(), "float", 123.456, 123.456, id="test_float"),
-        pytest.param(AvroFormat(), "double", 123.456, "123.456", id="test_double_default_config"),
-        pytest.param(AvroFormat(decimal_as_float=True), "double", 123.456, 123.456, id="test_double_as_number"),
-        pytest.param(AvroFormat(), "bytes", b"hello world", b"hello world", id="test_bytes"),
-        pytest.param(AvroFormat(), "string", "hello world", "hello world", id="test_string"),
-        pytest.param(AvroFormat(), {"logicalType": "decimal"}, 3.1415, "3.1415", id="test_decimal"),
-        pytest.param(AvroFormat(), {"logicalType": "uuid"}, b"abcdefghijklmnop", uuid.UUID(bytes=b"abcdefghijklmnop"), id="test_uuid"),
-        pytest.param(AvroFormat(), {"logicalType": "time-millis"}, 70267068, 70267068, id="test_time_millis"),
-        pytest.param(AvroFormat(), {"logicalType": "time-micros"}, 70267068, 70267068, id="test_time_micros"),
-        pytest.param(AvroFormat(),
+        pytest.param(_double_as_numer_avro_format, "boolean", True, True, id="test_boolean"),
+        pytest.param(_double_as_numer_avro_format, "int", 123, 123, id="test_int"),
+        pytest.param(_double_as_numer_avro_format, "long", 123, 123, id="test_long"),
+        pytest.param(_double_as_numer_avro_format, "float", 123.456, 123.456, id="test_float"),
+        pytest.param(_default_avro_format, "double", 123.456, "123.456", id="test_double_default_config"),
+        pytest.param(_double_as_numer_avro_format, "double", 123.456, 123.456, id="test_double_as_number"),
+        pytest.param(_double_as_numer_avro_format, "bytes", b"hello world", b"hello world", id="test_bytes"),
+        pytest.param(_double_as_numer_avro_format, "string", "hello world", "hello world", id="test_string"),
+        pytest.param(_double_as_numer_avro_format, {"logicalType": "decimal"}, 3.1415, "3.1415", id="test_decimal"),
+        pytest.param(_double_as_numer_avro_format, {"logicalType": "uuid"}, b"abcdefghijklmnop", uuid.UUID(bytes=b"abcdefghijklmnop"), id="test_uuid"),
+        pytest.param(_double_as_numer_avro_format, {"logicalType": "date"}, "abcdefghijklmnop", "", id="test_date"),
+        pytest.param(_double_as_numer_avro_format, {"logicalType": "time-millis"}, 70267068, 70267068, id="test_time_millis"),
+        pytest.param(_double_as_numer_avro_format, {"logicalType": "time-micros"}, 70267068, 70267068, id="test_time_micros"),
+        pytest.param(_double_as_numer_avro_format,
                      {"logicalType": "local-timestamp-millis"},
                      datetime.datetime(2023, 8, 7, 19, 31, 7, 68000, tzinfo=datetime.timezone.utc),
                      1691436667068,
                      id="test_timestamp_millis"),
-        pytest.param(AvroFormat(),
+        pytest.param(_double_as_numer_avro_format,
                      {"logicalType": "local-timestamp-micros"},
                      datetime.datetime(2023, 8, 7, 19, 31, 7, 68000, tzinfo=datetime.timezone.utc),
                      1691436667068000,
