@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Upgrading to Destinations V2
 
 ## What is Destinations V2?
@@ -80,23 +83,26 @@ These steps allow you to dual-write for connections incrementally syncing data w
 
 1. Copy the raw data you've already replicated to the new schema being used by your newly created connection. You need to do this for every stream in the connection with an incremental sync mode. Sample SQL you can run in your data warehouse:
 
+<Tabs defaultValue="bigquery">
+  <TabItem value="bigquery" label="BigQuery">
+
 ```mysql
 BEGIN
 DECLARE gcp_project STRING;
-DECLARE target_dataset STRING;
-DECLARE target_table STRING;
-DECLARE source_dataset STRING;
-DECLARE source_table STRING;
+DECLARE target_namespace STRING;
+DECLARE target_stream STRING;
+DECLARE source_namespace STRING;
+DECLARE source_stream STRING;
 DECLARE old_table STRING;
 DECLARE new_table STRING;
 
 SET gcp_project = '';
-SET target_dataset = 'airbyte_internal';
-SET target_table = ''; 
-SET source_dataset = '';
-SET source_table = '';
-SET old_table = CONCAT(gcp_project, '.', source_dataset, '.', source_table);
-SET new_table = CONCAT(gcp_project, '.', target_dataset, '.', target_table);
+SET target_namespace = 'airbyte_internal';
+SET target_stream = ''; 
+SET source_namespace = '';
+SET source_stream = '';
+SET old_table = CONCAT(gcp_project, '.', source_namespace, '.', source_stream);
+SET new_table = CONCAT(gcp_project, '.', target_namespace, '.', target_stream);
 
 EXECUTE IMMEDIATE FORMAT('''
 CREATE OR REPLACE TABLE `%s` (_airbyte_raw_id STRING, _airbyte_data JSON, _airbyte_extracted_at TIMESTAMP, _airbyte_loaded_at TIMESTAMP)
@@ -114,6 +120,47 @@ AS (
 
 END;
 ```
+  </TabItem>
+  <TabItem value="snowflake" label="Snowflake">
+
+```mysql
+BEGIN
+DECLARE gcp_project STRING;
+DECLARE target_namespace STRING;
+DECLARE target_stream STRING;
+DECLARE source_namespace STRING;
+DECLARE source_stream STRING;
+DECLARE old_table STRING;
+DECLARE new_table STRING;
+
+SET gcp_project = '';
+SET target_namespace = 'airbyte_internal';
+SET target_stream = ''; 
+SET source_namespace = '';
+SET source_stream = '';
+SET old_table = CONCAT(gcp_project, '.', source_namespace, '.', source_stream);
+SET new_table = CONCAT(gcp_project, '.', target_namespace, '.', target_stream);
+
+EXECUTE IMMEDIATE FORMAT('''
+CREATE OR REPLACE TABLE `%s` (_airbyte_raw_id STRING, _airbyte_data JSON, _airbyte_extracted_at TIMESTAMP, _airbyte_loaded_at TIMESTAMP)
+PARTITION BY DATE(_airbyte_extracted_at)
+CLUSTER BY _airbyte_extracted_at
+AS (
+    SELECT
+        _airbyte_ab_id AS _airbyte_raw_id,
+        PARSE_JSON(_airbyte_data) AS _airbyte_data,
+        _airbyte_emitted_at AS _airbyte_extracted_at,
+        CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
+    FROM `%s`
+) 
+''', new_table, old_table);
+
+END;
+```
+
+  </TabItem>
+</Tabs>
+
 
 2. Go to your newly created connection, and navigate to the `Settings` tab.
 3. Open the `Advanced` settings to see the connection state (which manages incremental syncs). Select the existing connection you are duplicating, then click `Inherit State`. This will ensure historical data is not replicated again.
