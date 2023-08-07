@@ -189,12 +189,14 @@
       "stream": {
         "name": "deployments",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["name"]]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["name"]]
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -204,7 +206,8 @@
         "source_defined_primary_key": [["name"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"],
       "primary_key": [["name"]]
     },
     {
