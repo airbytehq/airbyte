@@ -58,7 +58,10 @@ class ParquetParser(FileTypeParser):
                 batch = reader.read_row_group(row_group)
                 for i in range(batch.num_rows):
                     row_dict = {
-                        column: ParquetParser._to_output_value(batch.column(column)[i], parquet_format) for column in batch.column_names
+                        **{
+                            column: ParquetParser._to_output_value(batch.column(column)[i], parquet_format) for column in batch.column_names
+                        },
+                        **partition_columns,
                     }
                     yield row_dict
 
