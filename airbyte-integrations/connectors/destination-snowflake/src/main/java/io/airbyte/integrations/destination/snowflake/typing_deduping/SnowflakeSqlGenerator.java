@@ -193,7 +193,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                     THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
                   WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
                     THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
-                  ELSE TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT)
+                  ELSE TRY_CAST("_airbyte_data":"${column_name}"::TEXT AS TIMESTAMP_TZ)
                 END
                 """);
         // try_cast doesn't support variant/array/object, so handle them specially
