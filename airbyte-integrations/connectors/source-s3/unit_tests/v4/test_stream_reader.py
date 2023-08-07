@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import patch
 
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -13,6 +13,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
 from pydantic import AnyUrl
+
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
@@ -148,6 +149,7 @@ def test_open_file_without_config_raises_exception():
         with SourceS3StreamReader().open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, None, logger) as fp:
             fp.read()
 
+
 @patch("smart_open.open")
 def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     smart_open_mock.return_value = io.BytesIO()
@@ -169,7 +171,6 @@ def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
         fp.read()
 
     smart_open_mock.assert_called_once_with('s3://test/', transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding)
-
 
 
 def test_get_s3_client_without_config_raises_exception():
