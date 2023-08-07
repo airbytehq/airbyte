@@ -39,7 +39,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
 5. To authenticate the connection:
 
    <!-- env:cloud -->
-   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
+   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Facebook account. Make sure you are logged into the right account, as Airbyte will authenticate the account you are currently logged in to.
    <!-- /env:cloud -->
    <!-- env:oss -->
    **For Airbyte Open Source**: In the **Access Token** field, enter the access token you generated with your Facebook app.
@@ -81,7 +81,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
         - `conversion`: Actions are attributed to the time the action was taken (Jan 2nd).
         - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
 
-    7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day. 
+    7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day.
     8. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
     9. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
     10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
@@ -89,7 +89,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
    :::warning
    Additional data streams for your Facebook Marketing connector are dynamically generated according to the Custom Insights you specify. If you have an existing Facebook Marketing source and you decide to update or remove some of your Custom Insights, you must also adjust the connections that sync to these streams. Specifically, you should either disable these connections or refresh the source schema associated with them to reflect the changes.
    :::
-   
+
 7. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
 8. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 9. (Optional) You can set a **Maximum size of Batched Requests** for the connector. This is the maximum number of records that will be sent in a single request to the Facebook Marketing API. Most users do not need to configure this field, unless specific issues arise of there are unique use cases that require tuning the connector's settings. The maximum number of requests per batch allowed by the API is 50. More information on this topic can be found in the [Facebook documentation](https://developers.facebook.com/docs/graph-api/batch-requests).
@@ -117,7 +117,7 @@ The Facebook Marketing source connector supports the following sync modes:
 - [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 - [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
-Airbyte also supports the following Prebuilt Facebook AdInsights Reports:
+Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 
 | Stream                                            |                           Breakdowns                           |                    Action Breakdowns                    |
 | :------------------------------------------------ | :------------------------------------------------------------: | :-----------------------------------------------------: |
@@ -141,7 +141,7 @@ Airbyte also supports the following Prebuilt Facebook AdInsights Reports:
 | Ad Insights Platform And Device                   | `publisher_platform`, `platform_position`, `impression_device` |                      `action_type`                      |
 | Ad Insights Region                                |                            `region`                            | `action_type`, `action_target_id`, `action_destination` |
 
-You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
+You can segment the Ad Insights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
 - Country
 - DMA (Designated Market Area)
@@ -151,9 +151,11 @@ You can segment the AdInsights table into parts based on the following informati
 
 For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 
+<!-- Christo: the note below was commented out as its accuracy could not be verified. If it can be verified and clarified for users, it should be added back in.
+
 :::note
-Please note that not all fields, such as `conversions` and `conversion_values`, will be returned when accessing AdInsights. Refer to the [Facebook documentation](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) for more information. To retrieve all available fields, it is recommended to use Custom Insights and specify the necessary **breakdowns**.
-:::
+Please be aware that some fields, such as `conversions` and `conversion_values`, may not be directly accessible when querying Ad Insights. For comprehensive access to all available fields, we recommend using a Custom Insight and specifying the necessary **breakdowns**.
+::: -->
 
 ## Facebook Marketing Attribution Reporting
 
