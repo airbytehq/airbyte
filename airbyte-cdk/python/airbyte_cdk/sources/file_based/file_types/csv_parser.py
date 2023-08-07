@@ -5,6 +5,7 @@
 import csv
 import json
 import logging
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from functools import partial
 from io import IOBase
@@ -67,9 +68,9 @@ class _CsvReader:
             reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=headers)  # type: ignore
             try:
                 for row in reader:
-                    # The row was not properly parsed if any of the values are None. This will most likely occur if there are more columns than
-                    # headers
-                    if None in row:
+                    # The row was not properly parsed if any of the values are None. This will most likely occur if there are more columns
+                    # than headers or more headers dans columns
+                    if None in row or None in row.values():
                         raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD)
                     yield row
             finally:
@@ -119,11 +120,21 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Dict[str, Any]:
+        if config.input_schema:
+            # FIXME: what happens if it's a string
+            return config.input_schema
+
         # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
         config_format = _extract_config_format(config)
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
-            lambda: _TypeInferrer(config_format.true_values, config_format.false_values)
+            lambda: _JsonTypeInferrer(
+                config_format.true_values,
+                config_format.false_values,
+                config_format.null_values,
+                config_format.infer_datatypes and not config_format.infer_datatypes_legacy
+            ) if config_format.infer_datatypes or config_format.infer_datatypes_legacy
+            else _DisabledTypeInferrer()
         )
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         read_bytes = 0
@@ -241,7 +252,26 @@ class CsvParser(FileTypeParser):
         return result
 
 
-class _TypeInferrer:
+class _TypeInferrer(ABC):
+    @abstractmethod
+    def add_value(self, value: Any) -> None:
+        pass
+
+    @abstractmethod
+    def infer(self) -> str:
+        pass
+
+
+class _DisabledTypeInferrer(_TypeInferrer):
+    def add_value(self, value: Any) -> None:
+        pass
+
+    def infer(self) -> str:
+        return "string"
+
+
+class _JsonTypeInferrer(_TypeInferrer):
+    _NULL_TYPE = "null"
     _BOOLEAN_TYPE = "boolean"
     _INTEGER_TYPE = "integer"
     _NUMBER_TYPE = "number"
@@ -249,9 +279,11 @@ class _TypeInferrer:
     _OBJECT_TYPE = "object"
     _STRING_TYPE = "string"
 
-    def __init__(self, boolean_trues: Set[str], boolean_falses: Set[str]) -> None:
+    def __init__(self, boolean_trues: Set[str], boolean_falses: Set[str], null_values: Set[str], allow_for_objects_and_arrays: bool) -> None:
         self._boolean_trues = boolean_trues
         self._boolean_falses = boolean_falses
+        self._null_values = null_values
+        self._allow_for_objects_and_arrays = allow_for_objects_and_arrays
         self._values: Set[str] = set()
 
     def add_value(self, value: Any) -> None:
@@ -259,18 +291,29 @@ class _TypeInferrer:
 
     def infer(self) -> str:
         types = {self._infer_type(value) for value in self._values}
+        if types == {self._NULL_TYPE}:
+            # this is highly unusual but we will consider the column as a string
+            return self._STRING_TYPE
 
+        types.discard(self._NULL_TYPE)
         if types == {self._BOOLEAN_TYPE}:
             return self._BOOLEAN_TYPE
         elif types == {self._INTEGER_TYPE}:
             return self._INTEGER_TYPE
         elif types == {self._NUMBER_TYPE} or types == {self._INTEGER_TYPE, self._NUMBER_TYPE}:
             return self._NUMBER_TYPE
-        # to keep backward compatibility with PyArrow, we will not parse types
+        elif not self._allow_for_objects_and_arrays:
+            return self._STRING_TYPE
+        elif types == {self._ARRAY_TYPE}:
+            return self._ARRAY_TYPE
+        elif self._ARRAY_TYPE in types or self._OBJECT_TYPE in types:
+            return self._OBJECT_TYPE
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> str:
-        if self._is_boolean(value):
+        if value in self._null_values:
+            return self._NULL_TYPE
+        elif self._is_boolean(value):
             return self._BOOLEAN_TYPE
         elif self._is_integer(value):
             return self._INTEGER_TYPE

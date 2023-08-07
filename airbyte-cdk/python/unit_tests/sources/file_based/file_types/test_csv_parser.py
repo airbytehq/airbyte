@@ -87,12 +87,19 @@ _DEFAULT_TRUE_VALUES = {"yes", "yeah", "right"}
 _DEFAULT_FALSE_VALUES = {"no", "nop", "wrong"}
 
 
-class SchemaInferrenceTestCase(TestCase):
+class SchemaInferenceTestCase(TestCase):
+    _A_NULL_VALUE = "null"
+    _HEADER_NAME = "header"
+
     def setUp(self) -> None:
         self._config_format = CsvFormat()
         self._config_format.true_values = _DEFAULT_TRUE_VALUES
         self._config_format.false_values = _DEFAULT_FALSE_VALUES
+        self._config_format.null_values = {self._A_NULL_VALUE}
+        self._config_format.infer_datatypes = False
+        self._config_format.infer_datatypes_legacy = False
         self._config = Mock()
+        self._config.input_schema = None
         self._config.format.get.return_value = self._config_format
 
         self._file = Mock(spec=RemoteFile)
@@ -101,40 +108,82 @@ class SchemaInferrenceTestCase(TestCase):
         self._csv_reader = Mock(spec=_CsvReader)
         self._parser = CsvParser(self._csv_reader)
 
+    def test_given_user_schema_defined_when_infer_schema_then_return_user_schema(self) -> None:
+        self._config.input_schema = {self._HEADER_NAME: {"type": "potato"}}
+        self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "potato")
+
+
     def test_given_booleans_only_when_infer_schema_then_type_is_boolean(self) -> None:
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "boolean")
+
+    def test_given_legacy_and_booleans_only_when_infer_schema_then_type_is_boolean(self) -> None:
+        self._config_format.infer_datatypes_legacy = True
         self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "boolean")
 
     def test_given_integers_only_when_infer_schema_then_type_is_integer(self) -> None:
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema(["2", "90329", "5645"], "integer")
+
+    def test_given_legacy_and_integers_only_when_infer_schema_then_type_is_integer(self) -> None:
+        self._config_format.infer_datatypes_legacy = True
         self._test_infer_schema(["2", "90329", "5645"], "integer")
 
     def test_given_numbers_and_integers_when_infer_schema_then_type_is_number(self) -> None:
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema(["2", "90329", "2.312"], "number")
+
+    def test_given_legacy_and_numbers_and_integers_when_infer_schema_then_type_is_number(self) -> None:
+        self._config_format.infer_datatypes_legacy = True
         self._test_infer_schema(["2", "90329", "2.312"], "number")
 
     def test_given_arrays_only_when_infer_schema_then_type_is_array(self) -> None:
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema(['["first_item", "second_item"]', '["first_item_again", "second_item_again"]'], "array")
+
+    def test_given_arrays_only_when_infer_schema_then_type_is_string(self) -> None:
+        self._config_format.infer_datatypes_legacy = True
         self._test_infer_schema(['["first_item", "second_item"]', '["first_item_again", "second_item_again"]'], "string")
 
     def test_given_objects_only_when_infer_schema_then_type_is_object(self) -> None:
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema(['{"object1_key": 1}', '{"object2_key": 2}'], "object")
+
+    def test_given_legacy_and_objects_only_when_infer_schema_then_type_is_string(self) -> None:
+        self._config_format.infer_datatypes_legacy = True
         self._test_infer_schema(['{"object1_key": 1}', '{"object2_key": 2}'], "string")
 
     def test_given_arrays_and_objects_only_when_infer_schema_then_type_is_object(self) -> None:
-        self._test_infer_schema(['["first_item", "second_item"]', '{"an_object_key": "an_object_value"}'], "string")
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema(['["first_item", "second_item"]', '{"an_object_key": "an_object_value"}'], "object")
 
     def test_given_strings_and_objects_only_when_infer_schema_then_type_is_object(self) -> None:
-        self._test_infer_schema(['["first_item", "second_item"]', "this is a string"], "string")
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema(['["first_item", "second_item"]', "this is a string"], "object")
 
     def test_given_strings_only_when_infer_schema_then_type_is_string(self) -> None:
+        self._config_format.infer_datatypes = True
         self._test_infer_schema(["a string", "another string"], "string")
 
-    def _test_infer_schema(self, rows: List[str], expected_type: str) -> None:
-        self._csv_reader.read_data.return_value = ({"header": row} for row in rows)
-        inferred_schema = self._infer_schema()
-        assert inferred_schema == {"header": {"type": expected_type}}
+    def test_given_a_null_value_when_infer_then_ignore_null(self) -> None:
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema(["2", "90329", "5645", self._A_NULL_VALUE], "integer")
+
+    def test_given_only_null_values_when_infer_then_type_is_string(self) -> None:
+        self._config_format.infer_datatypes = True
+        self._test_infer_schema([self._A_NULL_VALUE, self._A_NULL_VALUE, self._A_NULL_VALUE], "string")
 
     def test_given_big_file_when_infer_schema_then_stop_early(self) -> None:
-        self._csv_reader.read_data.return_value = ({"header": row} for row in ["2." + "2" * 1_000_000] + ["this is a string"])
+        self._config_format.infer_datatypes = True
+        self._csv_reader.read_data.return_value = ({self._HEADER_NAME: row} for row in ["2." + "2" * 1_000_000] + ["this is a string"])
         inferred_schema = self._infer_schema()
         # since the type is number, we know the string at the end was not considered
-        assert inferred_schema == {"header": {"type": "number"}}
+        assert inferred_schema == {self._HEADER_NAME: {"type": "number"}}
+
+    def _test_infer_schema(self, rows: List[str], expected_type: str) -> None:
+        self._csv_reader.read_data.return_value = ({self._HEADER_NAME: row} for row in rows)
+        inferred_schema = self._infer_schema()
+        assert inferred_schema == {self._HEADER_NAME: {"type": expected_type}}
 
     def _infer_schema(self):
         loop = asyncio.new_event_loop()
@@ -280,11 +329,26 @@ class CsvReaderTest(unittest.TestCase):
         data_generator.close()
         assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
 
-    def test_given_exception_when_read_data_then_unregister_dialect(self) -> None:
+    def test_given_too_many_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
         self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
             "header",
             "a value",
             "too many values,value,value,value",
+        ]).build()
+
+        data_generator = self._read_data()
+        next(data_generator)
+        assert f"{self._CONFIG_NAME}_config_dialect" in csv.list_dialects()
+
+        with pytest.raises(RecordParseError):
+            next(data_generator)
+        assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
+
+    def test_given_too_few_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
+        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
+            "header1,header2,header3",
+            "value1,value2,value3",
+            "a value",
         ]).build()
 
         data_generator = self._read_data()
