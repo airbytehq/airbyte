@@ -4,12 +4,11 @@ This page contains the setup guide and reference information for the Stripe sour
 
 ## Prerequisites
 
-- Your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account)
-- Your [Stripe `Secret Key`](https://dashboard.stripe.com/apikeys)
+- Access to the Stripe account containing the data you wish to replicate
 
 ## Setup Guide
 
-To authenticate the Stripe connector, you need a Stripe Secret Key. Although you may use an existing key, we recommend that you create a new key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate in the connector itself.
+To authenticate the Stripe connector, you need to use a Stripe Secret Key. Although you may use an existing key, we recommend that you create a new restricted key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate within Airbyte.
 
 ### Create a Stripe Secret Key
 
@@ -17,8 +16,8 @@ To authenticate the Stripe connector, you need a Stripe Secret Key. Although you
 2. In the top navigation bar, click **Developers**.
 3. In the top-left corner, click **API keys**.
 4. Click **+ Create restricted key**.
-5. Choose a **Key name**, and select **Read** for all permissions.
-6. Click **Create key**.
+5. Choose a **Key name**, and select **Read** for all available permissions.
+6. Click **Create key**. You may be prompted to enter a confirmation code sent to your email address.
 
 For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
 
@@ -29,17 +28,22 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 3. Find and select **Stripe** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
-6. For **Secret Key**, enter your Stripe API Key.
+6. For **Secret Key**, enter the restricted key you created for the connection.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-8. (Optional) For **Lookback Window**, you may specify a number of days prior to the start date for which you want to sync your data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments (tips, refunds, chargebacks, etc).
+8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments (such as tips, refunds, chargebacks, etc).
 
-    For example, if the **Replication Start Date** is set to `2021-01-01T00:00:00Z`, then:
+    - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
+    - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day, capturing any changes made in the last 24 hours.
+    - Setting the **Lookback Window** to 7 means Airbyte will re-export and capture any data changes within the last week.
 
-    - Leaving the **Lookback Window** at its default value of 0 means Airbyte will sync data starting from `2021-01-01T00:00:00Z`.
-    - Setting the **Lookback Window** to 1 means Airbyte will sync data starting from one day earlier, or `2020-12-31T00:00:00Z`.
-    - Setting the **Lookback Window** to 7 means Airbyte will sync data starting from seven days earlier, or `2020-12-25T00:00:00Z`.
+9. (Optional) For **Data Request Window**, you may specify the time window in days for data retrieval from the Stripe API. This window defines how much data is gathered in each request, with larger values retrieving more data but making fewer requests.
 
-9. (Optional) For **Data Request Window**, you may specify the time window in days used by the connector when requesting data from the Stripe API. This value represents the span of time for each data retrieval, with larger values encompassing more data in fewer requests. A larger value will lead to faster syncs as fewer requests are made, but it may also result in less frequent state persistence. Choosing the right balance can optimize both the speed and frequency of your data synchronization. The default value is 365 days.
+    For example, if you are replicating three years worth of data:
+
+    - A **Data Request Window** of 365 days means Airbyte makes 3 requests, each for a year. This is generally faster but risks needing to resync up to a year's data if something goes wrong.
+    - A **Data Request Window** of 30 days means 36 requests, each for a month. This may be slower but minimizes the amount of data that needs to be resynced if an issue occurs.
+
+    If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
 10. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -76,13 +80,13 @@ The Stripe source connector supports the following streams:
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
   :::note
-  This endpoint does not include deleted customers
+  This endpoint does _not_ include deleted customers
   :::
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 - [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list) \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
   :::warning
-  **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh sync mode, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only.
+  **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
   :::
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
