@@ -1,7 +1,7 @@
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags.CDC_VIA_CTID;
-import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.STATE_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -17,6 +17,7 @@ import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlFeatureFlags;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -39,37 +40,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
-public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
+public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
   @Override
-  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages) {
-    assertEquals(28, stateMessages.size());
-    assertStateTypes(stateMessages, 25);
-  }
-
-  @Override
-  protected void assertLsnPositionForSyncShouldIncrementLSN(final Long lsnPosition1,
-      final Long lsnPosition2, final int syncNumber) {
-    if (syncNumber == 1) {
-      assertEquals(1, lsnPosition2.compareTo(lsnPosition1));
-    } else if (syncNumber == 2) {
-      assertEquals(0, lsnPosition2.compareTo(lsnPosition1));
-    } else {
-      throw new RuntimeException("Unknown sync number " + syncNumber);
-    }
+  protected JsonNode getConfig() {
+    final JsonNode config = super.getConfig();
+    ((ObjectNode) config).put(MySqlFeatureFlags.CDC_VIA_PK, true);
+    return config;
   }
 
   @Override
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
     assertStateTypes(stateMessages, 4);
-  }
-
-  @Override
-  protected JsonNode getConfig() {
-    JsonNode config = super.getConfig();
-    ((ObjectNode) config).put(CDC_VIA_CTID, true);
-    return config;
   }
 
   @Override
@@ -88,7 +71,7 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
     assertEquals(2, stateMessages.size());
   }
 
-  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
+  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectPkState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -102,9 +85,9 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
       }
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
-      if (i <= indexTillWhichExpectCtidState) {
+      if (i <= indexTillWhichExpectPkState) {
         assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
-        assertEquals("ctid", streamState.getStreamState().get(STATE_TYPE_KEY).asText());
+        assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.getStreamState().get(STATE_TYPE_KEY).asText());
       } else {
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       }
@@ -132,7 +115,7 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
       stateMessage.getGlobal().getStreamStates().forEach(s -> {
         final JsonNode streamState = s.getStreamState();
         if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema()))) {
-          assertEquals("ctid", streamState.get(STATE_TYPE_KEY).asText());
+          assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.get(STATE_TYPE_KEY).asText());
         } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA))) {
           assertFalse(streamState.has(STATE_TYPE_KEY));
         } else {
@@ -174,8 +157,61 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
+  @Override
+  @Test
+  protected void syncShouldHandlePurgedLogsGracefully() throws Exception {
+
+    // Do an initial sync
+    final int recordsToCreate = 20;
+    // first batch of records. 20 created here and 6 created in setup method.
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+
+    final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
+
+    // Add a batch of 20 records
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    // Purge the binary logs. The current code reverts to the debezium snapshot when binary logs are purged, and does
+    // not do an initial primary key load. Thus, we only expect one state message for now.
+    purgeAllBinaryLogs();
+
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, state);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+
+    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    assertEquals(1, stateAfterSecondBatch.size());
+    assertNotNull(stateAfterSecondBatch.get(0).getData());
+    assertStateTypes(stateAfterSecondBatch, -1);
+    final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
+        dataFromSecondBatch);
+    assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount, recordsFromSecondBatch.size(),
+        "Expected 46 records to be replicated in the second sync.");
+  }
+
   @Test
   public void testTwoStreamSync() throws Exception {
+    // Add another stream models_2 and read that one as well.
     final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
 
     final List<JsonNode> MODEL_RECORDS_2 = ImmutableList.of(
@@ -236,18 +272,18 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
       }
 
       if (i <= 4) {
-        // First 4 state messages are ctid state
+        // First 4 state messages are pk state
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
-        assertEquals("ctid", streamState.getStreamState().get(STATE_TYPE_KEY).asText());
+        assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.getStreamState().get(STATE_TYPE_KEY).asText());
       } else if (i == 5) {
         // 5th state message is the final state message emitted for the stream
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       } else if (i <= 10) {
-        // 6th to 10th is the ctid state message for the 2nd stream but final state message for 1st stream
+        // 6th to 10th is the primary_key state message for the 2nd stream but final state message for 1st stream
         assertEquals(2, global.getStreamStates().size());
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
@@ -255,11 +291,11 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
             assertTrue(c.getStreamState().has(STATE_TYPE_KEY));
-            assertEquals("ctid", c.getStreamState().get(STATE_TYPE_KEY).asText());
+            assertEquals(PRIMARY_KEY_STATE_TYPE, c.getStreamState().get(STATE_TYPE_KEY).asText());
           }
         });
       } else {
-        // last 2 state messages don't contain ctid info cause ctid sync should be complete
+        // last 2 state messages don't contain primary_key info cause primary_key sync should be complete
         assertEquals(2, global.getStreamStates().size());
         global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has(STATE_TYPE_KEY)));
       }
@@ -276,7 +312,7 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
 
     assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA), firstStreamInState);
 
-    // Triggering a sync with a ctid state for 1 stream and complete state for other stream
+    // Triggering a sync with a primary_key state for 1 stream and complete state for other stream
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), configuredCatalog, Jsons.jsonNode(Collections.singletonList(stateMessages1.get(6))));
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
@@ -294,16 +330,16 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
       if (i <= 3) {
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
-          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first time
+          // First 4 state messages are primary_key state for the stream that didn't complete primary_key sync the first time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
             assertTrue(c.getStreamState().has(STATE_TYPE_KEY));
-            assertEquals("ctid", c.getStreamState().get(STATE_TYPE_KEY).asText());
+            assertEquals(PRIMARY_KEY_STATE_TYPE, c.getStreamState().get(STATE_TYPE_KEY).asText());
           }
         });
       } else {
-        // last 2 state messages don't contain ctid info cause ctid sync should be complete
+        // last 2 state messages don't contain primary_key info cause primary_key sync should be complete
         global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has(STATE_TYPE_KEY)));
       }
     }
@@ -316,5 +352,4 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
         names,
         MODELS_SCHEMA);
   }
-
 }

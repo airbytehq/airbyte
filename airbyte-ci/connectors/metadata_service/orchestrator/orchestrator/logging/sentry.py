@@ -88,9 +88,9 @@ def _with_sentry_op_asset_transaction(context: OpExecutionContext):
     op_name = context.op_def.name
     job_name = context.job_name
 
-    sentry_logger.info(f"Initializing Sentry Transaction for Dagster Op/Asset {job_name} - {op_name}")
+    sentry_logger.debug(f"Initializing Sentry Transaction for Dagster Op/Asset {job_name} - {op_name}")
     transaction = sentry_sdk.Hub.current.scope.transaction
-    sentry_logger.info(f"Current Sentry Transaction: {transaction}")
+    sentry_logger.debug(f"Current Sentry Transaction: {transaction}")
     if transaction:
         return transaction.start_child(
             op=op_name,
