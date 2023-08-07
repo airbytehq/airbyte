@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
-from unittest.mock import patch, Mock, ANY
+from unittest.mock import ANY, Mock, patch
 
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
