@@ -56,14 +56,14 @@ class ParquetParser(FileTypeParser):
             partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
             for row_group in range(reader.num_row_groups):
                 batch = reader.read_row_group(row_group)
-                for i in range(batch.num_rows):
-                    row_dict = {
+                for row in range(batch.num_rows):
+                    yield {
                         **{
-                            column: ParquetParser._to_output_value(batch.column(column)[i], parquet_format) for column in batch.column_names
+                            column: ParquetParser._to_output_value(batch.column(column)[row], parquet_format)
+                            for column in batch.column_names
                         },
                         **partition_columns,
                     }
-                    yield row_dict
 
     @staticmethod
     def _extract_partitions(filepath: str) -> List[str]:
