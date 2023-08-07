@@ -92,6 +92,7 @@ jobs:
       - name: Install CI scripts
         run: |
           pip install pipx
+          pipx ensurepath
           pipx install airbyte-ci/connectors/ci_credentials
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |

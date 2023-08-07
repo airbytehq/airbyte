@@ -377,6 +377,16 @@ class Orders(IncrementalShopifyStream):
         return params
 
 
+class Disputes(IncrementalShopifyStream):
+    data_field = "disputes"
+    filter_field = "since_id"
+    cursor_field = "id"
+    order_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"shopify_payments/{self.data_field}.json"
+
+
 class MetafieldOrders(MetafieldShopifySubstream):
     parent_stream_class: object = Orders
 
@@ -857,6 +867,7 @@ class SourceShopify(AbstractSource):
             CustomCollections(config),
             Customers(config),
             DiscountCodes(config),
+            Disputes(config),
             DraftOrders(config),
             FulfillmentOrders(config),
             Fulfillments(config),
