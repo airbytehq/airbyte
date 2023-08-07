@@ -104,6 +104,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.17.3  | 2023-08-07 | [29186](https://github.com/airbytehq/airbyte/pull/29186) | Update input field tooltips |
 | 3.17.2  | 2023-08-01 | [28911](https://github.com/airbytehq/airbyte/pull/28911) | Fix stream schemas, remove custom 403 error handling                                                                                                 |
 | 3.17.1  | 2023-08-01 | [28887](https://github.com/airbytehq/airbyte/pull/28887) | Fix `Invoices` schema                                                                                                                                |
 | 3.17.0  | 2023-07-28 | [26127](https://github.com/airbytehq/airbyte/pull/26127) | Add `Prices` stream                                                                                                                                  |
