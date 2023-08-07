@@ -103,16 +103,13 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         if next_page_token:
             return dict(next_page_token)
 
-        params = {}
+        params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
 
-        if self.replication_start_date_field is not None:
-            params.update({self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size})
+        if self._replication_start_date and self.cursor_field:
+            start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
+            params.update({self.replication_start_date_field: start_date})
 
-            if self._replication_start_date and self.cursor_field:
-                start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
-                params.update({self.replication_start_date_field: start_date})
-
-        if self.replication_end_date_field is not None and self._replication_end_date:
+        if self._replication_end_date:
             params[self.replication_end_date_field] = self._replication_end_date
 
         return params
@@ -823,7 +820,7 @@ class Orders(IncrementalAmazonSPStream):
         else:
             return self.default_backoff_time
 
-class OrderItems(IncrementalAmazonSPStream):
+class OrderItems(AmazonSPStream, ABC):
     """
     API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
     API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
@@ -832,11 +829,10 @@ class OrderItems(IncrementalAmazonSPStream):
     primary_key = "OrderItemId"
     cursor_field = "OrderItemId"
     parent_cursor_field = "LastUpdateDate"
-    replication_start_date_field = None
-    replication_end_date_field = None
     next_page_token_field = "NextToken"
     page_size_field = None
     default_backoff_time = 10
+    default_stream_slice_delay_time = 1
     cached_state: Dict = {}
 
     def __init__(self, *args, **kwargs):
@@ -846,12 +842,19 @@ class OrderItems(IncrementalAmazonSPStream):
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice['AmazonOrderId']}/orderItems"
     
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            return dict(next_page_token)
+        return {}
+    
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         orders = Orders(**self.stream_kwargs)
         for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
             self.cached_state[self.parent_cursor_field] = order_record["LastUpdateDate"]
             self.logger.info(f"OrderItems stream slice for order {order_record['AmazonOrderId']}")
-            time.sleep(1)
+            time.sleep(self.default_stream_slice_delay_time)
             yield {"AmazonOrderId": order_record["AmazonOrderId"], self.parent_cursor_field: order_record["LastUpdateDate"]}
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -859,6 +862,12 @@ class OrderItems(IncrementalAmazonSPStream):
         if current_stream_state.get(self.parent_cursor_field):
             return {self.parent_cursor_field: max(latest_benchmark, current_stream_state[self.parent_cursor_field])}
         return {self.parent_cursor_field: latest_benchmark}
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = response.json()
+        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
+        if next_page_token:
+            return {self.next_page_token_field: next_page_token}
     
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
