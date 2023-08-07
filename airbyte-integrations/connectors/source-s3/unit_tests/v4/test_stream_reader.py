@@ -13,7 +13,6 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
 from pydantic import AnyUrl
-
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
