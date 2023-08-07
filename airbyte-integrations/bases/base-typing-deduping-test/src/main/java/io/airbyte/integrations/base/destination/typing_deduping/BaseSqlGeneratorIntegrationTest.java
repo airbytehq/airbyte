@@ -8,8 +8,10 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Streams;
@@ -231,6 +233,93 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @AfterEach
   public void teardown() throws Exception {
     teardownNamespace(namespace);
+  }
+
+  /**
+   * Create a table and verify that we correctly recognize it as identical to itself.
+   */
+  @Test
+  public void detectNoSchemaChange() throws Exception {
+    String createTable = generator.createTable(incrementalDedupStream, "");
+    destinationHandler.execute(createTable);
+
+    Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
+    if (!existingTable.isPresent()) {
+      fail("Destination handler could not find existing table");
+    }
+
+    assertTrue(
+        generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
+        "Unchanged schema was incorrectly detected as a schema change."
+    );
+  }
+
+  /**
+   * Verify that adding a new column is detected as a schema change.
+   */
+  @Test
+  public void detectColumnAdded() throws Exception {
+    String createTable = generator.createTable(incrementalDedupStream, "");
+    destinationHandler.execute(createTable);
+
+    Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
+    if (!existingTable.isPresent()) {
+      fail("Destination handler could not find existing table");
+    }
+
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("new_column"),
+        AirbyteProtocolType.STRING
+    );
+
+    assertFalse(
+        generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
+        "Adding a new column was not detected as a schema change."
+    );
+  }
+
+  /**
+   * Verify that removing a column is detected as a schema change.
+   */
+  @Test
+  public void detectColumnRemoved() throws Exception {
+    String createTable = generator.createTable(incrementalDedupStream, "");
+    destinationHandler.execute(createTable);
+
+    Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
+    if (!existingTable.isPresent()) {
+      fail("Destination handler could not find existing table");
+    }
+
+    incrementalDedupStream.columns().remove(generator.buildColumnId("string"));
+
+    assertFalse(
+        generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
+        "Removing a column was not detected as a schema change."
+    );
+  }
+
+  /**
+   * Verify that changing a column's type is detected as a schema change.
+   */
+  @Test
+  public void detectColumnChanged() throws Exception {
+    String createTable = generator.createTable(incrementalDedupStream, "");
+    destinationHandler.execute(createTable);
+
+    Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
+    if (!existingTable.isPresent()) {
+      fail("Destination handler could not find existing table");
+    }
+
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("string"),
+        AirbyteProtocolType.INTEGER);
+
+    assertFalse(
+        generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
+        "Altering a column was not detected as a schema change."
+    );
   }
 
   /**
