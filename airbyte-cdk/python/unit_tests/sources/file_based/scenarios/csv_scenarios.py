@@ -8,7 +8,7 @@ from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenari
 
 single_csv_scenario = (
     TestScenarioBuilder()
-    .set_name("single_csv_stream")
+    .set_name("single_csv_scenario")
     .set_config(
         {
             "streams": [
@@ -249,7 +249,19 @@ single_csv_scenario = (
                                                                     "type": "string"
                                                                 },
                                                                 "uniqueItems": True
-                                                            }
+                                                            },
+                                                            "infer_datatypes": {
+                                                                "default": False,
+                                                                "description": "Whether to autogenerate the schema based the file content.",
+                                                                "title": "Infer Datatypes",
+                                                                "type": "boolean"
+                                                            },
+                                                            "infer_datatypes_legacy": {
+                                                                "default": False,
+                                                                "description": "Whether to autogenerate the schema based the file content. This inferrence does not support list and objects",
+                                                                "title": "Infer Datatypes (legacy)",
+                                                                "type": "boolean"
+                                                            },
                                                         }
                                                     },
                                                     {
@@ -1999,6 +2011,7 @@ csv_newline_in_values_not_quoted_scenario = (
             "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a.csv line_no=2 n_skipped=0",
         }
     ]})
+    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
 
 csv_escape_char_is_set_scenario = (

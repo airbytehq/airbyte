@@ -12,8 +12,8 @@ _base_single_stream_scenario = (
             "a.csv": {  # The records in this file do not conform to the schema
                 "contents": [
                     ("col1", "col2"),
-                    ("val_a_11", "val_a_21"),
-                    ("val_a_12", "val_a_22"),
+                    ("val_a_11", "1"),
+                    ("val_a_12", "2"),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
@@ -29,7 +29,7 @@ _base_single_stream_scenario = (
                 "contents": [
                     ("col1",),
                     ("val_c_11",),
-                    ("val_c_12","val_c_22"),  # This record doesn't conform to the schema
+                    ("val_c_12","val_c_22"),  # This record is not parsable
                     ("val_c_13",),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
@@ -55,9 +55,9 @@ _base_single_stream_scenario = (
                             "col1": {
                                 "type": "string",
                             },
-                            # "col2": {  # remove this so the record does not conform to the schema
-                            #     "type": "string",
-                            # },
+                            "col2": {
+                                "type": "number",
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
                             },
@@ -100,7 +100,7 @@ _base_multi_stream_scenario = (
                 "contents": [
                     ("col1",),
                     ("val_aa3_11",),
-                    ("val_aa3_12", "val_aa3_22"),  # This record does not conform to the schema
+                    ("val_aa3_12", "val_aa3_22"),  # This record is not parsable
                     ("val_aa3_13",),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
@@ -219,7 +219,7 @@ skip_record_scenario_single_stream = (
             {"data": {"col1": "val_b_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
             # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # Skipped since previous record is malformed
             {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
         ]
     )
@@ -230,8 +230,8 @@ skip_record_scenario_single_stream = (
                 "message": "Records in file did not pass validation policy. stream=stream1 file=a.csv n_skipped=2 validation_policy=skip_record",
             },
             {
-                "level": "WARN",
-                "message": "Records in file did not pass validation policy. stream=stream1 file=c.csv n_skipped=1 validation_policy=skip_record",
+                "level": "ERROR",
+                "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=c.csv line_no=2 n_skipped=0",
             },
         ]
     })
@@ -268,7 +268,7 @@ skip_record_scenario_multi_stream = (
             {"data": {"col1": "val_aa2_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
             # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # Skipped since previous record is malformed
             {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},  # This record is skipped because it does not conform
             {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},  # This record is skipped because it does not conform
@@ -285,8 +285,8 @@ skip_record_scenario_multi_stream = (
                 "message": "Records in file did not pass validation policy. stream=stream1 file=a/a1.csv n_skipped=2 validation_policy=skip_record",
             },
             {
-                "level": "WARN",
-                "message": "Records in file did not pass validation policy. stream=stream1 file=a/a3.csv n_skipped=1 validation_policy=skip_record",
+                "level": "ERROR",
+                "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a/a3.csv line_no=2 n_skipped=0",
             },
             {
                 "level": "WARN",
@@ -314,14 +314,14 @@ emit_record_scenario_single_stream = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val_a_11", "col2": "val_a_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_a_12", "col2": "val_a_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_a_11", "col2": "1", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_a_12", "col2": "2", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_b_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_b_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
             # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
             # {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
-            # {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
         ]
     )
     .set_expected_logs({
@@ -366,7 +366,7 @@ emit_record_scenario_multi_stream = (
             {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
             # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
             # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
-            # {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},

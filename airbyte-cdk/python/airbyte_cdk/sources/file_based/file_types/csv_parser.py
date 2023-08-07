@@ -121,7 +121,7 @@ class CsvParser(FileTypeParser):
         logger: logging.Logger,
     ) -> Dict[str, Any]:
         if config.input_schema:
-            # FIXME: what happens if it's a string
+            # FIXME change type of method to Mapping
             return config.input_schema
 
         # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
