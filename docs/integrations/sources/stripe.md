@@ -1,33 +1,46 @@
 # Stripe
 
-:::warning
-Stripe API Restriction: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events). Using the full-refresh-overwrite sync from Airbyte will delete the events data older than 30 days from your target destination.
-:::
+This page contains the setup guide and reference information for the Stripe source connector.
 
-This page guides you through the process of setting up the Stripe source connector.
+:::warning
+**Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events). If you use the Full Refresh sync, any events data older than 30 days will be **deleted** from your target destination.
+:::
 
 ## Prerequisites
 
 - Your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account)
 - Your [Stripe `Secret Key`](https://dashboard.stripe.com/apikeys)
 
-## Set up the Stripe source connector
+## Setup Guide
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Stripe** from the Source type dropdown.
-4. Enter a name for your source.
-5. For **Account ID**, enter your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account).
-6. For **Secret Key**, enter your [Stripe `Secret Key`](https://dashboard.stripe.com/apikeys)
+To authenticate the Stripe connector, you must provide a Stripe Secret Key. Although you may use an existing key, we recommend that you create a new key specifically for Airbyte and grant it **Read** priviliges. We recommend granting **Read** priviliges to all permissions, and configuring the data you would like to replicate in the connector itself. You can also use the API keys for the [test mode](https://stripe.com/docs/keys#obtain-api-keys) to try out the Stripe integration with Airbyte.
 
-   We recommend creating a secret key specifically for Airbyte to control which resources Airbyte can access. For ease of use, we recommend granting read permission to all resources and configuring which resource to replicate in the Airbyte UI. You can also use the API keys for the [test mode](https://stripe.com/docs/keys#obtain-api-keys) to try out the Stripe integration with Airbyte.
+### Create a Stripe Secret Key
 
-7. For **Replication start date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
-8. For **Lookback Window in days (Optional)**, select the number of days the value in days prior to the start date that you to sync your data with. If your data is updated after setting up this connector, you can use the this option to reload data from the past N days. Example: If the Replication start date is set to `2021-01-01T00:00:00Z`, then:
-   - If you leave the Lookback Window in days parameter to its the default value of 0, Airbyte will sync data from the Replication start date `2021-01-01T00:00:00Z`
-   - If the Lookback Window in days value is set to 1, Airbyte will consider the Replication start date to be `2020-12-31T00:00:00Z`
-   - If the Lookback Window in days value is set to 7, Airbyte will sync data from `2020-12-25T00:00:00Z`
-9. Click **Set up source**.
+1. Log in to your [Stripe account](https://dashboard.stripe.com/login).
+2. In the top navigation bar, click **Developers**.
+3. In the top-left corner, click **API keys**.
+4. Click **+ Create restricted key**.
+5. Choose a **Key name**, and select **Read** for all permissions.
+6. Click **Create key**.
+
+### Set up the Stripe source connector in Airbyte
+
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Stripe** from the list of available sources.
+4. For **Source name**, enter a name to help you identify this source.
+5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
+6. For **Secret Key**, enter your Stripe API Key.
+7. For **Replication Start Date**, use the provided datepicker or enter the UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
+8. (Optional) For **Lookback Window in days**, select the number of days prior to the start date for which you want to sync your data. This value allows the connector to retrieve data that might have been updated after its initial creation. For example, if the start date is set to `2021-01-01T00:00:00Z`, then:
+
+- Leaving the Lookback Window in days parameter at its default value of 0 means Airbyte will sync data starting from 2021-01-01T00:00:00Z.
+- Setting the Lookback Window in days value to 1 means Airbyte will consider the Replication start date to be one day earlier, or 2020-12-31T00:00:00Z.
+- Setting the Lookback Window in days value to 7 means Airbyte will sync data starting from seven days earlier, or 2020-12-25T00:00:00Z.
+
+9. (Optional) For **Data Sync Frequency**, select the time increment in days for the connector to use when requesting data from the Stripe API. Setting this value higher will reduce the number of requests, speeding up the sync process. However, this will result in data being updated less frequently. The default value is 365 days.
+10. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
