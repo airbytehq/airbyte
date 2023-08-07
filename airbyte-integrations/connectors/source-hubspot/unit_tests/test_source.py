@@ -123,7 +123,8 @@ def test_cast_datetime(common_params, caplog):
             "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: argument of type 'DateTime' is not iterable",
         },
     }
-    assert expected_warining_message["log"]["message"] in caplog.text
+    
+    assert expected_warining_message["log"]["message"] in caplog.text.__str__()
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
