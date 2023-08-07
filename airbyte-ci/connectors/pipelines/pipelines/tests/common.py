@@ -99,7 +99,7 @@ class VersionIncrementCheck(VersionCheck):
     @property
     def should_run(self) -> bool:
         for filename in self.context.modified_files:
-            relative_path = filename.replace(str(self.context.connector.code_directory) + "/", "")
+            relative_path = str(filename).replace(str(self.context.connector.code_directory) + "/", "")
             if not any([relative_path.startswith(to_bypass) for to_bypass in self.BYPASS_CHECK_FOR]):
                 return True
         return False

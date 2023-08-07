@@ -14,6 +14,7 @@ from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser
 from airbyte_cdk.sources.file_based.file_types.jsonl_parser import JsonlParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesStreamReader
 
 
@@ -52,6 +53,10 @@ class FailingSchemaValidationPolicy(AbstractSchemaValidationPolicy):
 
     def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
         return False
+
+
+class LowHistoryLimitCursor(DefaultFileBasedCursor):
+    DEFAULT_MAX_HISTORY_SIZE = 3
 
 
 def make_remote_files(files: List[str]) -> List[RemoteFile]:
