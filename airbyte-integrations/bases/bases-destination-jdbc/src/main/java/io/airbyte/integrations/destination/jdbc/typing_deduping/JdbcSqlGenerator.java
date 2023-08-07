@@ -6,12 +6,30 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
 
 public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase> {
 
+  private final NamingConventionTransformer namingTransformer;
+
+  private final SqlOperations sqlOperations;
+
+  public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer, final SqlOperations sqlOperations) {
+    this.namingTransformer = namingTransformer;
+    this.sqlOperations = sqlOperations;
+  }
+
   @Override
   public StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride) {
-    return null;
+    return new StreamId(
+        namingTransformer.getNamespace(namespace),
+        namingTransformer.convertStreamName(name),
+        namingTransformer.getNamespace(rawNamespaceOverride),
+        namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)),
+        namespace,
+        name
+    );
   }
 
   @Override
