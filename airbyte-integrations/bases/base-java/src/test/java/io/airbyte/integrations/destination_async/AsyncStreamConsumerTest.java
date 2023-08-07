@@ -117,7 +117,8 @@ class AsyncStreamConsumerTest {
         flushFunction,
         CATALOG,
         new BufferManager(),
-        flushFailure);
+        flushFailure,
+        "default_ns");
 
     when(flushFunction.getOptimalBatchSizeBytes()).thenReturn(10_000L);
   }
@@ -188,7 +189,8 @@ class AsyncStreamConsumerTest {
         flushFunction,
         CATALOG,
         new BufferManager(1024 * 10),
-        flushFailure);
+        flushFailure,
+        "default_ns");
     when(flushFunction.getOptimalBatchSizeBytes()).thenReturn(0L);
 
     final AtomicLong recordCount = new AtomicLong();
