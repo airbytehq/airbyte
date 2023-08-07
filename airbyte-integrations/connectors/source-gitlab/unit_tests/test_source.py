@@ -13,7 +13,7 @@ def test_streams(config, requests_mock):
     requests_mock.get("/api/v4/groups", json=[{"id": "g1"}, {"id": "g256"}])
     source = SourceGitlab()
     streams = source.streams(config)
-    assert len(streams) == 22
+    assert len(streams) == 23
     assert all([isinstance(stream, GitlabStream) for stream in streams])
     groups, projects, *_ = streams
     assert groups.group_ids == ["g1", "g256"]

@@ -43,6 +43,11 @@ def jobs(pipelines):
 
 
 @pytest.fixture()
+def deployments(deployments):
+    return Deployments(parent_stream=projects, **auth_params)
+
+
+@pytest.fixture()
 def merge_request_commits(merge_requests):
     return MergeRequestCommits(parent_stream=merge_requests, **auth_params)
 

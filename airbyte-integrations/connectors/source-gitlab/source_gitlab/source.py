@@ -18,6 +18,7 @@ from requests.auth import AuthBase
 from .streams import (
     Branches,
     Commits,
+    Deployments,
     EpicIssues,
     Epics,
     GitlabStream,
@@ -188,6 +189,7 @@ class SourceGitlab(AbstractSource):
             pipelines,
             PipelinesExtended(parent_stream=pipelines, **auth_params),
             Users(parent_stream=projects, **auth_params),
+            Deployments(parent_stream=projects, **auth_params),
         ]
 
         return streams
