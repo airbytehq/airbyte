@@ -273,7 +273,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       cdcConditionalOrIncludeStatement = """
       OR (
         "_airbyte_loaded_at" IS NOT NULL
-        AND "_airbyte_data":"_ab_cdc_deleted_at" IS NOT NULL
+        AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE')
       )
       """;
     }
