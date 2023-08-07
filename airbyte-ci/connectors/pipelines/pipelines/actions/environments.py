@@ -955,7 +955,7 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
         base.with_workdir("/airbyte/integration_code")
         .with_directory("/usr/local", builder.directory("/install"))
         .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
-        .with_new_file("/etc/timezone", "Etc/UTC")
+        .with_new_file("/etc/timezone", contents="Etc/UTC")
         .with_exec(["apt-get", "install", "-y", "bash"])
         .with_file("main.py", (await context.get_connector_dir(include="main.py")).file("main.py"))
         .with_directory(snake_case_name, (await context.get_connector_dir(include=snake_case_name)).directory(snake_case_name))
