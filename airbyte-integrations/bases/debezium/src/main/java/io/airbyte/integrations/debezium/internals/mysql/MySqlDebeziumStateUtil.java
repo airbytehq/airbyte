@@ -104,7 +104,7 @@ public class MySqlDebeziumStateUtil {
 
   }
 
-  public List<String> getExistingLogFiles(final JdbcDatabase database) {
+  private List<String> getExistingLogFiles(final JdbcDatabase database) {
     try (final Stream<String> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
         resultSet -> resultSet.getString(1))) {
@@ -114,7 +114,7 @@ public class MySqlDebeziumStateUtil {
     }
   }
 
-  public Optional<GtidSet> subtractGtidSet(final GtidSet set1, final GtidSet set2, final JdbcDatabase database) {
+  private Optional<GtidSet> subtractGtidSet(final GtidSet set1, final GtidSet set2, final JdbcDatabase database) {
     try (final Stream<GtidSet> stream = database.unsafeResultSetQuery(
         connection -> {
           final PreparedStatement ps = connection.prepareStatement("SELECT GTID_SUBTRACT(?, ?)");
@@ -136,7 +136,7 @@ public class MySqlDebeziumStateUtil {
     }
   }
 
-  public Optional<GtidSet> purgedGtidSet(final JdbcDatabase database) {
+  private Optional<GtidSet> purgedGtidSet(final JdbcDatabase database) {
     try (final Stream<Optional<GtidSet>> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT @@global.gtid_purged"),
         resultSet -> {
@@ -165,6 +165,10 @@ public class MySqlDebeziumStateUtil {
                                                             final ConfiguredAirbyteCatalog catalog,
                                                             final JsonNode cdcOffset,
                                                             final JsonNode config) {
+    if (Objects.isNull(cdcOffset)) {
+      return Optional.empty();
+    }
+
     final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcOffset, Optional.empty()),
         Optional.empty());
