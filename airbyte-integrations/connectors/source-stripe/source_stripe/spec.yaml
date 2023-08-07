@@ -20,8 +20,7 @@ connectionSpecification:
       title: Secret Key
       description: >-
         Stripe API key used to authenticate the connection. 
-        It usually starts with 'sk_live_'. Find yours in your <a
-        href="https://dashboard.stripe.com/apikeys">Stripe dashboard</a>).
+        Find yours in your <a href="https://dashboard.stripe.com/apikeys">Stripe dashboard</a>).
       airbyte_secret: true
       order: 1
     start_date:
