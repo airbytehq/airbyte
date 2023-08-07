@@ -634,7 +634,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "_airbyte_emitted_at", "2023-01-01T00:00:00Z",
         "_airbyte_data", "{\"hello\": \"world\"}"
     ))));
-    final String migration = getSqlGenerator().migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
+    final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
     List<JsonNode> v1RawRecords = dumpRawTableRecords(v1RawTableStreamId);
     List<JsonNode> v2RawRecords = dumpRawTableRecords(streamId);
