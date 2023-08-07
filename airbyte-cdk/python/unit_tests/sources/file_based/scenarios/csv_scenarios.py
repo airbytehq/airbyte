@@ -594,7 +594,6 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
             },
         ]
     )
-    .set_expected_logs({"discover": [{"level": "WARN", "message": "Refusing to infer schema for all 2 files; using 1 files."}]})
     .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
 ).build()
 

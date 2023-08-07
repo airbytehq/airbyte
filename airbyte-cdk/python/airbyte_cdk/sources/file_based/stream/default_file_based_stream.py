@@ -84,7 +84,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             n_skipped = line_no = 0
 
             try:
-                for record in parser.parse_records(self.config, file, self._stream_reader, self.logger):
+                for record in parser.parse_records(self.config, file, self._stream_reader, self.logger, schema):
                     line_no += 1
                     if self.config.schemaless:
                         record = {"data": record}

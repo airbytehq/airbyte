@@ -4,11 +4,11 @@
 
 import json
 import logging
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser, Schema
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, merge_schemas
 
@@ -23,7 +23,7 @@ class JsonlParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Dict[str, Any]:
+    ) -> Schema:
         """
         Infers the schema for the file by inferring the schema for each line, and merging
         it with the previously-inferred schema.
@@ -52,6 +52,7 @@ class JsonlParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
+        discovered_schema: Optional[Schema],
     ) -> Iterable[Dict[str, Any]]:
         with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
             for line in fp:

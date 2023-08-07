@@ -15,7 +15,7 @@ from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingB
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser, Schema
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING
 
@@ -119,10 +119,10 @@ class CsvParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Dict[str, Any]:
+    ) -> Schema:
         if config.input_schema:
             # FIXME change type of method to Mapping
-            return config.input_schema
+            return config.input_schema  # type: ignore # conversion to mapping is handled by pydantic and we shouldn't have a str here
 
         # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
@@ -158,10 +158,10 @@ class CsvParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
+        discovered_schema: Optional[Schema],
     ) -> Iterable[Dict[str, Any]]:
-        schema: Mapping[str, Any] = config.input_schema  # type: ignore
         config_format = _extract_config_format(config)
-        cast_fn = CsvParser._get_cast_function(schema, config_format, logger)
+        cast_fn = CsvParser._get_cast_function(discovered_schema, config_format, logger)
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         for row in data_generator:
             yield CsvParser._to_nullable(cast_fn(row), config_format.null_values)
@@ -205,6 +205,13 @@ class CsvParser(FileTypeParser):
         for key, value in row.items():
             prop_type = property_types.get(key)
             cast_value: Any = value
+
+            if isinstance(prop_type, list):
+                prop_type_distinct = set(prop_type)
+                prop_type_distinct.remove("null")
+                if len(prop_type_distinct) != 1:
+                    raise ValueError(f"Could not get non nullable type from {prop_type}")
+                (prop_type,) = prop_type_distinct
 
             if prop_type in TYPE_PYTHON_MAPPING and prop_type is not None:
                 _, python_type = TYPE_PYTHON_MAPPING[prop_type]

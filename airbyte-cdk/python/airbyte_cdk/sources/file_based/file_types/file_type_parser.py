@@ -4,13 +4,14 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
-Schema = Dict[str, str]
+# Schema example: {"column1": {"type": "string"}}
+Schema = Mapping[str, Dict[str, Any]]
 Record = Dict[str, Any]
 
 
@@ -40,6 +41,7 @@ class FileTypeParser(ABC):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
+        discovered_schema: Optional[Schema],
     ) -> Iterable[Record]:
         """
         Parse and emit each record.

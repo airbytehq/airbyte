@@ -5,14 +5,14 @@
 import json
 import logging
 import os
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 from urllib.parse import unquote
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser, Schema
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from pyarrow import Scalar
 
@@ -24,7 +24,7 @@ class ParquetParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Dict[str, Any]:
+    ) -> Schema:
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
@@ -47,6 +47,7 @@ class ParquetParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
+        discovered_schema: Optional[Schema],
     ) -> Iterable[Dict[str, Any]]:
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):

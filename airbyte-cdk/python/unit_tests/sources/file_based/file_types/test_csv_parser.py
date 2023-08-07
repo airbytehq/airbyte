@@ -28,6 +28,7 @@ PROPERTY_TYPES = {
     "col7": "array",
     "col8": "array",
     "col9": "array",
+    "col10": ["null", "string"],
 }
 
 logger = logging.getLogger()
@@ -47,6 +48,7 @@ logger = logging.getLogger()
                 "col7": '[1, 2]',
                 "col8": '["1", "2"]',
                 "col9": '[{"a": "b"}, {"a": "c"}]',
+                "col10": 'asdf',
             },
             DEFAULT_TRUE_VALUES,
             DEFAULT_FALSE_VALUES,
@@ -60,6 +62,7 @@ logger = logging.getLogger()
                 "col7": [1, 2],
                 "col8": ["1", "2"],
                 "col9": [{"a": "b"}, {"a": "c"}],
+                "col10": 'asdf',
             }, id="cast-all-cols"),
         pytest.param({"col1": "1"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col1": "1"}, id="cannot-cast-to-null"),
         pytest.param({"col2": "1"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col2": True}, id="cast-1-to-bool"),
@@ -75,7 +78,7 @@ logger = logging.getLogger()
         pytest.param({"col7": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col7": "['a', 'b']"}, id="cannot-cast-to-list-of-ints"),
         pytest.param({"col8": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col8": "['a', 'b']"}, id="cannot-cast-to-list-of-strings"),
         pytest.param({"col9": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col9": "['a', 'b']"}, id="cannot-cast-to-list-of-objects"),
-        pytest.param({"col10": "x"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col10": "x"}, id="item-not-in-props-doesn't-error"),
+        pytest.param({"col11": "x"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col11": "x"}, id="item-not-in-props-doesn't-error"),
     ]
 )
 def test_cast_to_python_type(row: Dict[str, str], true_values: Set[str], false_values: Set[str], expected_output: Dict[str, Any]) -> None:
