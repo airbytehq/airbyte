@@ -380,8 +380,9 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                        | Description                                                                                  |
 |---------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.4.6   | [#28729](https://github.com/airbytehq/airbyte/pull/28729) | Use keyword args instead of positional argument for optional  paramater in Dagger's API      |
 | 0.4.5   | [#29034](https://github.com/airbytehq/airbyte/pull/29034) | Disable Dagger terminal UI when running publish.                                             |
-| 0.4.4   | [#29064](https://github.com/airbytehq/airbyte/pull/29064) | Make connector modified files a frozen set.                                             |
+| 0.4.4   | [#29064](https://github.com/airbytehq/airbyte/pull/29064) | Make connector modified files a frozen set.                                                  |
 | 0.4.3   | [#29033](https://github.com/airbytehq/airbyte/pull/29033) | Disable dependency scanning for Java connectors.                                             |
 | 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030) | Make report path always have the same prefix: `airbyte-ci/`.                                 |
 | 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855) | Improve the selected connectors detection for connectors commands.                           |
