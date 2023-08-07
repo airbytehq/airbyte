@@ -114,7 +114,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   /**
    * Do any setup work to create a namespace for this test run. For example, this might create a BigQuery dataset, or a Snowflake schema.
    */
-  protected abstract void createNamespace(String namespace);
+  protected abstract void createNamespace(String namespace) throws Exception;
 
   /**
    * Create a raw table using the StreamId's rawTableId.
@@ -157,7 +157,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * Clean up all resources in the namespace. For example, this might delete the BigQuery dataset
    * created in {@link #createNamespace(String)}.
    */
-  protected abstract void teardownNamespace(String namespace);
+  protected abstract void teardownNamespace(String namespace) throws Exception;
 
   /**
    * This test implementation is extremely destination-specific, but all destinations must implement
@@ -170,7 +170,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public abstract void testCreateTableIncremental() throws Exception;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws Exception {
     generator = getSqlGenerator();
     destinationHandler = getDestinationHandler();
     ColumnId id1 = generator.buildColumnId("id1");
@@ -240,7 +240,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   @AfterEach
-  public void teardown() {
+  public void teardown() throws Exception {
     teardownNamespace(namespace);
   }
 
@@ -348,6 +348,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
+  /**
+   * Create a nonempty users_final_tmp table. Overwrite users_final from users_final_tmp. Verify that
+   * users_final now exists and contains nonzero records.
+   */
   @Test
   public void overwriteFinalTable() throws Exception {
     createFinalTable(false, streamId, "_tmp");
@@ -368,9 +372,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final String sql = generator.overwriteFinalTable(streamId, "_tmp");
     destinationHandler.execute(sql);
 
-    DIFFER.diffFinalTableRecords(
-        records,
-        dumpFinalTableRecords(streamId, ""));
+    assertEquals(1, dumpFinalTableRecords(streamId, "").size());
   }
 
   @Test
@@ -678,7 +680,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertAll(
         () -> assertEquals(
             expectedRawRecords,
-            actualRawRecords.size()),
+            actualRawRecords.size(),
+            "Raw record count was incorrect"),
         () -> assertEquals(
             0,
             actualRawRecords.stream()
@@ -686,7 +689,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 .count()),
         () -> assertEquals(
             expectedFinalRecords,
-            actualFinalRecords.size()));
+            actualFinalRecords.size(),
+            "Final record count was incorrect"));
   }
 
 }

@@ -85,7 +85,8 @@ public class GeneralStagingFunctions {
       AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamNamespace, streamName);
       if (!typerDeduperValve.containsKey(streamId)) {
         typerDeduperValve.addStream(streamId);
-      } else if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
+      }
+      if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
         typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
         typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
       }

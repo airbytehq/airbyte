@@ -32,7 +32,7 @@ class TestAcceptanceTests:
             secret_dir_name = str(pathlib.Path(secret_file_path).parent)
             container = container.with_exec(["mkdir", "-p", secret_dir_name])
             container = container.with_exec(["sh", "-c", f"echo foo > {secret_file_path}"])
-        return container.with_new_file("/stupid_bash_script.sh", f"echo {stdout}; echo {stderr} >&2; exit {exit_code}")
+        return container.with_new_file("/stupid_bash_script.sh", contents=f"echo {stdout}; echo {stderr} >&2; exit {exit_code}")
 
     @pytest.fixture
     def test_context(self, dagger_client):

@@ -122,16 +122,16 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                                       )).replace(
                                           """
                                               CREATE TABLE ${final_table_id} (
-                      _airbyte_raw_id STRING NOT NULL,
-                      _airbyte_extracted_at TIMESTAMP NOT NULL,
-                      _airbyte_meta JSON NOT NULL,
-                      `id1` INT64,
-                      `id2` INT64,
-                      `updated_at` TIMESTAMP,
-                      ${cdc_deleted_at}
-                      `struct` JSON,
-                      `array` JSON,
-                      `string` STRING,
+                                                _airbyte_raw_id STRING NOT NULL,
+                                                _airbyte_extracted_at TIMESTAMP NOT NULL,
+                                                _airbyte_meta JSON NOT NULL,
+                                                `id1` INT64,
+                                                `id2` INT64,
+                                                `updated_at` TIMESTAMP,
+                                                ${cdc_deleted_at}
+                                                `struct` JSON,
+                                                `array` JSON,
+                                                `string` STRING,
                       `number` NUMERIC,
                       `integer` INT64,
                       `boolean` BOOL,
@@ -257,32 +257,31 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   private String stringifyRecords(final List<JsonNode> records, List<String> columnNames) {
     return records.stream()
                   // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
-                  .map(record -> columnNames
-                      .stream()
-                      .map(record::get)
-                      .map(r -> {
-                        if (r == null) {
-                          return "NULL";
-                        }
-                        String stringContents;
-                        if (r.isTextual()) {
-                          stringContents = r.asText();
-                        } else {
-                          stringContents = r.toString();
-                        }
-                        return '"' + stringContents
-                            // Serialized json might contain backslashes and double quotes. Escape them.
-                            .replace("\\", "\\\\")
-                            .replace("\"", "\\\"") + '"';
-                      })
-                      .collect(joining(",")))
+                  .map(record -> columnNames.stream()
+                                            .map(record::get)
+                                            .map(r -> {
+                                              if (r == null) {
+                                                return "NULL";
+                                              }
+                                              String stringContents;
+                                              if (r.isTextual()) {
+                                                stringContents = r.asText();
+                                              } else {
+                                                stringContents = r.toString();
+                                              }
+                                              return '"' + stringContents
+                                                  // Serialized json might contain backslashes and double quotes. Escape them.
+                                                  .replace("\\", "\\\\")
+                                                  .replace("\"", "\\\"") + '"';
+                                            })
+                                            .collect(joining(",")))
                   .map(row -> "(" + row + ")")
                   .collect(joining(","));
   }
 
   @Override
   protected void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws InterruptedException {
-    String recordsText = stringifyRecords(records, JavaBaseConstants.V2_COLUMN_NAMES);
+    String recordsText = stringifyRecords(records, JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES);
 
     bq.query(QueryJobConfiguration.newBuilder(
                                       new StringSubstitutor(Map.of(
@@ -304,7 +303,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Override
   protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
-    String recordsText = stringifyRecords(records, JavaBaseConstants.LEGACY_COLUMN_NAMES);
+    String recordsText = stringifyRecords(records, JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS);
     bq.query(
         QueryJobConfiguration
             .newBuilder(
