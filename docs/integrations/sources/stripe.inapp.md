@@ -15,7 +15,7 @@ To authenticate the Stripe connector, you need a Stripe Secret Key with **Read**
 5. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments (such as tips, refunds, chargebacks, etc).
 
     - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
-    - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day, capturing any changes made in the last 24 hours.
+    - Setting the **Lookback Window** to 1 means Airbyte will re-export and capture any data changes within the last day.
     - Setting the **Lookback Window** to 7 means Airbyte will re-export and capture any data changes within the last week.
 
 6. (Optional) For **Data Request Window**, you may specify the time window in days for data retrieval from the Stripe API. This window defines how much data is gathered in each request, with larger values retrieving more data but making fewer requests.
