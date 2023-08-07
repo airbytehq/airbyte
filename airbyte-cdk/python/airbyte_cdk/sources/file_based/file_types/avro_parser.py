@@ -159,9 +159,11 @@ class AvroParser(FileTypeParser):
             return uuid.UUID(bytes=record_value)
         elif record_type.get("logicalType") == "decimal":
             return str(record_value)
+        elif record_type.get("logicalType") == "date":
+            return record_value.isoformat()
         elif record_type.get("logicalType") == "local-timestamp-millis":
-            return record_value.timestamp() * 1000
+            return record_value.isoformat(sep="T", timespec="milliseconds")
         elif record_type.get("logicalType") == "local-timestamp-micros":
-            return record_value.timestamp() * 1000 * 1000
+            return record_value.isoformat(sep="T", timespec="microseconds")
         else:
             return record_value
