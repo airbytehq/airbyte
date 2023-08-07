@@ -8,22 +8,20 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
-import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperations;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import java.nio.file.Path;
-import java.sql.ResultSet;
-import java.util.Collections;
 import java.util.List;
 import javax.sql.DataSource;
 
 public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedupingTest {
 
+  private static String databaseName;
   private JdbcDatabase database;
   private DataSource dataSource;
 
@@ -37,6 +35,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   @Override
   protected JsonNode generateConfig() {
     JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(getConfigPath())));
+    databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
     dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     database = SnowflakeDatabase.getDatabase(dataSource);
     return config;
@@ -54,7 +53,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
   @Override
   protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws Exception {
-    return Collections.emptyList();
+    return SnowflakeTestUtils.dumpFinalTable(database, databaseName, streamNamespace, streamName);
   }
 
   @Override
