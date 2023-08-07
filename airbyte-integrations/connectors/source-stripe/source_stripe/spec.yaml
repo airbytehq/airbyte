@@ -43,17 +43,18 @@ connectionSpecification:
       description: >-
         When set, the connector will always re-export data from the past N days,
         where N is the value set here. This is useful if your data is frequently updated
-        after creation. More info can be found <a
-        href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>.
+        after creation. More info can be found in our <a
+        href="https://docs.airbyte.com/integrations/sources/stripe">documentation</a>.
       order: 3
     slice_range:
       type: integer
-      title: Data Sync Frequency (Days)
+      title: Data Request Window (Days)
       default: 365
       minimum: 1
       examples: [1, 3, 10, 30, 180, 360]
       description: >-
-        The time increment in days used by the connector when requesting data from the Stripe API. 
-        A larger value will reduce the number of requests, speeding up the sync process but causing 
-        the state to be updated less frequently.
+        The size of the time window in days used by the connector when requesting data from the Stripe API.
+        A larger value will reduce the number of requests, as each request covers a larger period.
+        This speeds up the sync process, but may result in less frequent state persistence.
+        More info can be found in our <a href="https://docs.airbyte.com/integrations/sources/stripe">documentation</a>.
       order: 4
