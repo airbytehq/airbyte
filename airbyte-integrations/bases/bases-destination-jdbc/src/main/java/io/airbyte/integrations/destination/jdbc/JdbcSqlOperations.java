@@ -32,7 +32,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   // this adapter modifies record message before inserting them to the destination
   protected final Optional<DataAdapter> dataAdapter;
-  private final Set<String> schemaSet = new HashSet<>();
+  protected final Set<String> schemaSet = new HashSet<>();
 
   protected JdbcSqlOperations() {
     this.dataAdapter = Optional.empty();
