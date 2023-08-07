@@ -12,7 +12,7 @@
         "title": "Connection String",
         "type": "string",
         "description": "The connection string of the database that you want to replicate..",
-        "examples": ["mongodb+srv://example.mongodb.net", "mongodb://example1.host.com:27017,example2.host.com:27017,example3.host.com:27017", "mongodb://example.host.com:27017"],
+        "examples": ["mongodb+srv://example.mongodb.net/", "mongodb://example1.host.com:27017,example2.host.com:27017,example3.host.com:27017/", "mongodb://example.host.com:27017/"],
         "order": 1
       },
       "database": {

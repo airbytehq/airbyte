@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
+import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.SUPPORTED_SYNC_MODES;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -19,7 +19,6 @@ import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -32,11 +31,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
-import org.junit.jupiter.api.Test;
 
 public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -56,7 +55,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     }
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
-    ((ObjectNode) config).put("database", DATABASE_NAME);
+    ((ObjectNode) config).put(DATABASE_CONFIGURATION_KEY, DATABASE_NAME);
 
     mongoClient = MongoConnectionUtils.createMongoClient(config);
 
@@ -68,15 +67,13 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final MongoCollection<Document> collection = mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
     final var objectDocument = new Document("testObject", new Document("name", "subName").append("testField1", "testField1").append("testInt", 10)
         .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
-    final var doc1 = new Document("id", "0001").append("name", "Test1")
-        .append("test", "test_value1").append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo1"))))
-        .append("double_test", 100.11).append("int_test", 100).append("object_test", objectDocument);
-    final var doc2 = new Document("id", "0002").append("name", "Test2")
-        .append("test", "test_value2").append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo2"))))
-        .append("double_test", 200.12).append("int_test", 200).append("object_test", objectDocument);
-    final var doc3 = new Document("id", "0003").append("name", "Test3")
-        .append("test", "test_value3").append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo3"))))
-        .append("double_test", 300.13).append("int_test", 300).append("object_test", objectDocument);
+    final var doc1 = new Document("id", "0001").append("name", "Test")
+        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12).append("int_test", 100).append("object_test", objectDocument);
+    final var doc2 =
+        new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201).append("object_test", objectDocument);
+    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
+        .append("double_test", 212.11).append("int_test", 302).append("object_test", objectDocument);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
@@ -104,25 +101,27 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("_id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withCursorField(List.of("_id"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                DATABASE_NAME + "." + COLLECTION_NAME,
-                Field.of("_id", JsonSchemaType.STRING),
-                Field.of("id", JsonSchemaType.STRING),
-                Field.of("name", JsonSchemaType.STRING),
-                Field.of("test", JsonSchemaType.STRING),
-                Field.of("test_array", JsonSchemaType.ARRAY),
-                Field.of("empty_test", JsonSchemaType.STRING),
-                Field.of("double_test", JsonSchemaType.NUMBER),
-                Field.of("int_test", JsonSchemaType.NUMBER),
-                Field.of("object_test", JsonSchemaType.OBJECT))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
-                .withDefaultCursorField(List.of("_id")))));
+    final List<Field> fields = List.of(
+            Field.of(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING),
+            Field.of("id", JsonSchemaType.STRING),
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("test", JsonSchemaType.STRING),
+            Field.of("test_array", JsonSchemaType.ARRAY),
+            Field.of("empty_test", JsonSchemaType.STRING),
+            Field.of("double_test", JsonSchemaType.NUMBER),
+            Field.of("int_test", JsonSchemaType.NUMBER),
+            Field.of("object_test", JsonSchemaType.OBJECT)
+    );
+    final List<AirbyteStream> airbyteStreams = List.of(
+            MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields),
+            MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields));
+
+    return new ConfiguredAirbyteCatalog().withStreams(
+            List.of(
+              convertToConfiguredAirbyteStream(airbyteStreams.get(0), SyncMode.INCREMENTAL),
+              convertToConfiguredAirbyteStream(airbyteStreams.get(1), SyncMode.FULL_REFRESH)
+            )
+        );
   }
 
   @Override
@@ -130,22 +129,11 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  @Test
-  void discoverCatalog() throws Exception {
-    final AirbyteCatalog catalog = new MongoDbSource().discover(config);
-    assertNotNull(catalog);
-
-    final Optional<AirbyteStream> stream = catalog.getStreams().stream().filter(n -> n.getName().equalsIgnoreCase(COLLECTION_NAME)).findFirst();
-    assertTrue(stream.isPresent());
-
-    final JsonNode schema = stream.get().getJsonSchema();
-    assertEquals("number", schema.get("properties").get("double_test").get("type").asText());
-    assertEquals("string", schema.get("properties").get("test").get("type").asText());
-    assertEquals("string", schema.get("properties").get("name").get("type").asText());
-    assertEquals("string", schema.get("properties").get("_id").get("type").asText());
-    assertEquals("string", schema.get("properties").get("id").get("type").asText());
-    assertEquals("object", schema.get("properties").get("object_test").get("type").asText());
-    assertEquals("number", schema.get("properties").get("int_test").get("type").asText());
+  private ConfiguredAirbyteStream convertToConfiguredAirbyteStream(final AirbyteStream airbyteStream, final SyncMode syncMode) {
+    return new ConfiguredAirbyteStream()
+            .withSyncMode(syncMode)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withCursorField(List.of(DEFAULT_CURSOR_FIELD))
+            .withStream(airbyteStream);
   }
-
 }

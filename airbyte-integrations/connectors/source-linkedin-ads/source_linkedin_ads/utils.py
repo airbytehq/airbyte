@@ -38,7 +38,6 @@ def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
 def transform_change_audit_stamps(
     record: Dict, dict_key: str = "changeAuditStamps", props: List = ["created", "lastModified"], fields: List = ["time"]
 ) -> Mapping[str, Any]:
-
     """
     :: EXAMPLE `changeAuditStamps` input structure:
         {
@@ -96,7 +95,6 @@ def transform_date_range(
     props: List = ["start", "end"],
     fields: List = ["year", "month", "day"],
 ) -> Mapping[str, Any]:
-
     """
     :: EXAMPLE `dateRange` input structure in Analytics streams:
         {
@@ -320,7 +318,6 @@ def transform_data(records: List) -> Iterable[Mapping]:
     to be properly normalised in the destination.
     """
     for record in records:
-
         if "changeAuditStamps" in record:
             record = transform_change_audit_stamps(record)
 

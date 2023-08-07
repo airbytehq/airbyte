@@ -15,13 +15,14 @@ from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
+    RecordParseError,
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import JsonSchema
@@ -34,11 +35,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     The default file-based stream.
     """
 
+    DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, cursor: FileBasedCursor, **kwargs: Any):
+    def __init__(self, cursor: AbstractFileBasedCursor, **kwargs: Any):
         super().__init__(**kwargs)
         self._cursor = cursor
 
@@ -78,7 +80,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         parser = self.get_parser(self.config.file_type)
         for file in stream_slice["files"]:
             # only serialize the datetime once
-            file_datetime_string = file.last_modified.strftime("%Y-%m-%dT%H:%M:%SZ")
+            file_datetime_string = file.last_modified.strftime(self.DATE_TIME_FORMAT)
             n_skipped = line_no = 0
 
             try:
@@ -103,6 +105,18 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     ),
                 )
                 break
+
+            except RecordParseError:
+                # Increment line_no because the exception was raised before we could increment it
+                line_no += 1
+                yield AirbyteMessage(
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(
+                        level=Level.ERROR,
+                        message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                        stack_trace=traceback.format_exc(),
+                    ),
+                )
 
             except Exception:
                 yield AirbyteMessage(
