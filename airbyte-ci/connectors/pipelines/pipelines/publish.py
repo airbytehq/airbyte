@@ -186,7 +186,7 @@ class UploadSpecToCache(Step):
         specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, await self._get_spec_as_file(oss_spec))]
 
         if oss_spec != cloud_spec:
-            specs_to_uploads.append(self.cloud_spec_key, await self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json"))
+            specs_to_uploads.append((self.cloud_spec_key, await self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json")))
 
         for key, file in specs_to_uploads:
             exit_code, stdout, stderr = await upload_to_gcs(
