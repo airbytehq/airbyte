@@ -44,6 +44,78 @@ class AbstractFileBasedSpec(BaseModel):
         transformed_schema = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
         cls.replace_enum_allOf_and_anyOf(transformed_schema)
+        transformed_schema = {
+            'title': 'Config',
+            'description': 'Used during spec; allows the developer to configure the cloud provider specific options\nthat are needed when users configure a file-based source.',
+            'type': 'object',
+            'properties': {
+                'name': {
+                    'title': 'Name',
+                    'description': 'The name of the stream.',
+                    'type': 'string'
+                },
+                'format': {
+                    'title': 'File Format',
+                    'description': 'This is the <b>description</b> for the file format field',
+                    'default': 'csv',
+                    'type': 'object',
+                    'oneOf': [
+                        {
+                            'title': 'Avro',
+                            'type': 'object',
+                            'properties': {
+                                'filetype': {
+                                    'title': 'Filetype',
+                                    'const': 'avro',
+                                    'type': 'string'
+                                },
+                                'decimal_as_float': {
+                                    'title': 'Convert Decimal Fields to Floats',
+                                    'description': 'Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.',
+                                    'default': False,
+                                    'type': 'boolean'
+                                }
+                            }
+                        }, {
+                            'title': 'CSV',
+                            'description': 'This is the description for the CSV option',
+                            'type': 'object',
+                            'properties': {
+                                'filetype': {
+                                    'title': 'Filetype',
+                                    'const': 'csv',
+                                    'type': 'string'
+                                },
+                                'delimiter': {
+                                    'title': 'Delimiter',
+                                    'description': "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
+                                    'default': ',',
+                                    'type': 'string'
+                                }
+                            }
+                        }
+                    ]
+                },
+                'globs': {
+                    'title': 'Globs',
+                    'description': 'The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
+                    'type': 'array',
+                    'items': {'type': 'string'}
+                },
+                'validation_policy': {
+                    'title': 'Validation Policy',
+                    'description': 'The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.',
+                    'enum': ['Emit Record', 'Skip Record','Wait for Discover']
+                },
+                'bucket': {
+                    'title': 'Bucket',
+                    'description': 'Name of the S3 bucket where the file(s) exist.',
+                    'order': 0,
+                    'type': 'string'
+                },
+            },
+            'required': ['streams', 'bucket']
+        }
 
         return transformed_schema
 
