@@ -1,7 +1,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.LEGACY_COLUMN_NAMES;
-import static io.airbyte.integrations.base.JavaBaseConstants.V2_COLUMN_NAMES;
+import static io.airbyte.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+import static io.airbyte.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;
@@ -73,7 +73,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
      */
     private boolean doesV1RawTableMatchExpectedSchema(DialectTableDefinition existingV2AirbyteRawTable) {
 
-        return schemaMatchesExpectation(existingV2AirbyteRawTable, LEGACY_COLUMN_NAMES);
+        return schemaMatchesExpectation(existingV2AirbyteRawTable, LEGACY_RAW_TABLE_COLUMNS);
     }
 
     /**
@@ -82,7 +82,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
      * @param existingV2AirbyteRawTable the v2 raw table
      */
     private void validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable) {
-        if (!schemaMatchesExpectation(existingV2AirbyteRawTable, V2_COLUMN_NAMES)) {
+        if (!schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES)) {
             throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
         }
     }

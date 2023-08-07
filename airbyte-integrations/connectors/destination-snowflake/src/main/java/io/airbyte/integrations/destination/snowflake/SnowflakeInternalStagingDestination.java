@@ -167,14 +167,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
       String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
       SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
       parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
-<<<<<<< HEAD
       // TODO make a SnowflakeV1V2Migrator
       NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog,
-          migrator);
-=======
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
->>>>>>> master
+      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
     } else {
       parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
