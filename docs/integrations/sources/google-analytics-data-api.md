@@ -40,7 +40,7 @@ If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denot
 
 ### For Airbyte Open Source
 
-For **Airbyte Open Source** users, the simplest way to set up the Google Analytics 4 connector is to create a Service Account and set up a JSON key file for authentication. Please follow the steps below to set up the connector using this method.
+For **Airbyte Open Source** users, the recommended way to set up the Google Analytics 4 connector is to create a Service Account and set up a JSON key file for authentication. Please follow the steps below to set up the connector using this method.
 
 #### Create a Service Account for authentication
 
