@@ -100,6 +100,7 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
         # We exit with 5 status code to share with the CI pipeline that the upload was skipped.
         assert result.exit_code == 5
 
+
 def test_upload_prerelease(mocker, valid_metadata_yaml_files):
     runner = CliRunner()
     mocker.patch.object(commands.click, "secho")
@@ -116,9 +117,7 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files):
         commands.upload, [metadata_file_path, bucket, "--prerelease", prerelease_tag]
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
-    commands.upload_metadata_to_gcs.assert_has_calls(
-        [mocker.call(bucket, pathlib.Path(metadata_file_path), validator_opts)]
-    )
+    commands.upload_metadata_to_gcs.assert_has_calls([mocker.call(bucket, pathlib.Path(metadata_file_path), validator_opts)])
     assert result.exit_code == 0
 
 
