@@ -238,7 +238,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   protected void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws InterruptedException {
     String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
-        .map(record -> JavaBaseConstants.V2_COLUMN_NAMES.stream()
+        .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES.stream()
             .map(record::get)
             .map(r -> {
               if (r == null) {
