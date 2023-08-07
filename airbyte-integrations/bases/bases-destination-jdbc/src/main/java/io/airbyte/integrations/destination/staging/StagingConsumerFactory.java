@@ -74,7 +74,7 @@ public class StagingConsumerFactory {
                                        final TypeAndDedupeOperationValve typerDeduperValve,
                                        final TyperDeduper typerDeduper,
                                        final ParsedCatalog parsedCatalog,
-                                       String defaultNamespace) {
+                                       final String defaultNamespace) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -98,7 +98,8 @@ public class StagingConsumerFactory {
                                                       final boolean purgeStagingData,
                                                       final TypeAndDedupeOperationValve typerDeduperValve,
                                                       final TyperDeduper typerDeduper,
-                                                      final ParsedCatalog parsedCatalog, String defaultNamespace) {
+                                                      final ParsedCatalog parsedCatalog,
+                                                      final String defaultNamespace) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper);

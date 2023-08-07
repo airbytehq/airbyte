@@ -63,7 +63,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
                              final BufferManager bufferManager,
-                             String defaultNamespace) {
+                             final String defaultNamespace) {
     this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure(), defaultNamespace);
   }
 
@@ -75,7 +75,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final ConfiguredAirbyteCatalog catalog,
                              final BufferManager bufferManager,
                              final FlushFailure flushFailure,
-                             String defaultNamespace) {
+                             final String defaultNamespace) {
     this.defaultNamespace = defaultNamespace;
     hasStarted = false;
     hasClosed = false;
