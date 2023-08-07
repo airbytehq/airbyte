@@ -5,8 +5,8 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 0.0.8
-  dockerRepository: urbanjungle/gitlab-connector
+  dockerImageTag: 1.7.0
+  dockerRepository: airbyte/source-gitlab
   githubIssueLabel: source-gitlab
   icon: gitlab.svg
   license: MIT
