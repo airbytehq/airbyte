@@ -14,4 +14,4 @@ COPY main.py ./
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=1.7.0
-LABEL io.airbyte.name=urbanjungle/gitlab-connector
+LABEL io.airbyte.name=airbyte/source-gitlab
