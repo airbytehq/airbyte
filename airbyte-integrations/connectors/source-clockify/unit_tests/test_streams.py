@@ -18,32 +18,32 @@ def patch_base_class(mocker):
 
 
 def test_request_params(patch_base_class):
-    stream = ClockifyStream(workspace_id=MagicMock())
+    stream = ClockifyStream(workspace_id=MagicMock(), api_url=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_params = {"page-size": 50}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
-    stream = ClockifyStream(workspace_id=MagicMock())
+    stream = ClockifyStream(workspace_id=MagicMock(), api_url=MagicMock())
     inputs = {"response": MagicMock()}
     expected_token = {"page": 2}
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_read_records(patch_base_class):
-    stream = ClockifyStream(workspace_id=MagicMock())
+    stream = ClockifyStream(workspace_id=MagicMock(), api_url=MagicMock())
     assert stream.read_records(sync_mode=SyncMode.full_refresh)
 
 
 def test_request_headers(patch_base_class):
-    stream = ClockifyStream(workspace_id=MagicMock())
+    stream = ClockifyStream(workspace_id=MagicMock(), api_url=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
-    stream = ClockifyStream(workspace_id=MagicMock())
+    stream = ClockifyStream(workspace_id=MagicMock(), api_url=MagicMock())
     expected_method = "GET"
     assert stream.http_method == expected_method

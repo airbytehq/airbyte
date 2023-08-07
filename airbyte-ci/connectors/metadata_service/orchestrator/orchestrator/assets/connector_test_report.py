@@ -8,7 +8,7 @@ from dagster import Output, asset, OpExecutionContext, MetadataValue
 from google.cloud import storage
 from typing import List, Type, TypeVar
 
-from orchestrator.ops.slack import send_slack_webhook
+from orchestrator.ops.slack import send_slack_message
 from orchestrator.models.ci_report import ConnectorNightlyReport, ConnectorPipelineReport
 from orchestrator.config import (
     NIGHTLY_COMPLETE_REPORT_FILE_NAME,
@@ -20,6 +20,7 @@ from orchestrator.templates.render import (
     render_connector_test_badge,
 )
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.logging import sentry
 
 
 T = TypeVar("T")
@@ -125,7 +126,10 @@ def compute_connector_nightly_report_history(
 # ASSETS
 
 
-@asset(required_resource_keys={"latest_nightly_complete_file_blobs", "latest_nightly_test_output_file_blobs"}, group_name=GROUP_NAME)
+@asset(
+    required_resource_keys={"slack", "latest_nightly_complete_file_blobs", "latest_nightly_test_output_file_blobs"}, group_name=GROUP_NAME
+)
+@sentry.instrument_asset_op
 def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]:
     """
     Generate the Connector Nightly Report from the latest 10 nightly runs
@@ -143,9 +147,10 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
     nightly_report_connector_matrix_df = compute_connector_nightly_report_history(nightly_report_complete_df, nightly_report_test_output_df)
 
     nightly_report_complete_md = render_connector_nightly_report_md(nightly_report_connector_matrix_df, nightly_report_complete_df)
-    slack_webhook_url = os.getenv("NIGHTLY_REPORT_SLACK_WEBHOOK_URL")
-    if slack_webhook_url:
-        send_slack_webhook(slack_webhook_url, nightly_report_complete_md)
+
+    channel = os.getenv("NIGHTLY_REPORT_CHANNEL")
+    if channel:
+        send_slack_message(context, channel, nightly_report_complete_md, enable_code_block_wrapping=True)
 
     return Output(
         nightly_report_connector_matrix_df,
@@ -154,6 +159,7 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
 
 
 @asset(required_resource_keys={"all_connector_test_output_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFrame:
     gcs_file_blobs = context.resources.all_connector_test_output_file_blobs
 
@@ -194,6 +200,7 @@ def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFra
 
 
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_connector_test_results: OutputDataFrame) -> OutputDataFrame:
     registry_report_directory_manager = context.resources.registry_report_directory_manager
 
