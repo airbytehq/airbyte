@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+import uuid
+
 import pytest
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.file_types import AvroParser
@@ -168,3 +171,34 @@ def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_js
     else:
         actual_json_type = AvroParser._convert_avro_type_to_json(avro_format, "field_name", avro_type)
         assert actual_json_type == expected_json_type
+
+
+@pytest.mark.parametrize(
+    "avro_format, record_type, record_value, expected_value", [
+        pytest.param(AvroFormat(), "boolean", True, True, id="test_boolean"),
+        pytest.param(AvroFormat(), "int", 123, 123, id="test_int"),
+        pytest.param(AvroFormat(), "long", 123, 123, id="test_long"),
+        pytest.param(AvroFormat(), "float", 123.456, 123.456, id="test_float"),
+        pytest.param(AvroFormat(), "double", 123.456, "123.456", id="test_double_default_config"),
+        pytest.param(AvroFormat(decimal_as_float=True), "double", 123.456, 123.456, id="test_double_as_number"),
+        pytest.param(AvroFormat(), "bytes", b"hello world", b"hello world", id="test_bytes"),
+        pytest.param(AvroFormat(), "string", "hello world", "hello world", id="test_string"),
+        pytest.param(AvroFormat(), {"logicalType": "decimal"}, 3.1415, "3.1415", id="test_decimal"),
+        pytest.param(AvroFormat(), {"logicalType": "uuid"}, b"abcdefghijklmnop", uuid.UUID(bytes=b"abcdefghijklmnop"), id="test_uuid"),
+        pytest.param(AvroFormat(), {"logicalType": "time-millis"}, 70267068, 70267068, id="test_time_millis"),
+        pytest.param(AvroFormat(), {"logicalType": "time-micros"}, 70267068, 70267068, id="test_time_micros"),
+        pytest.param(AvroFormat(),
+                     {"logicalType": "local-timestamp-millis"},
+                     datetime.datetime(2023, 8, 7, 19, 31, 7, 68000, tzinfo=datetime.timezone.utc),
+                     1691436667068,
+                     id="test_timestamp_millis"),
+        pytest.param(AvroFormat(),
+                     {"logicalType": "local-timestamp-micros"},
+                     datetime.datetime(2023, 8, 7, 19, 31, 7, 68000, tzinfo=datetime.timezone.utc),
+                     1691436667068000,
+                     id="test_timestamo_micros"),
+    ]
+)
+def test_to_output_value(avro_format, record_type, record_value, expected_value):
+    parser = AvroParser()
+    assert parser._to_output_value(avro_format, record_type, record_value) == expected_value

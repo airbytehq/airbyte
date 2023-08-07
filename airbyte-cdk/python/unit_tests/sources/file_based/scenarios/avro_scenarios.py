@@ -398,7 +398,7 @@ avro_all_types_scenario = (
                         "drummer": "George Daniel",
                     },
                     "col_fixed": "\x12\x34\x56\x78",
-                    "col_decimal": 1234.56789,
+                    "col_decimal": "1234.56789",
                     "col_uuid": "123e4567-e89b-12d3-a456-426655440000",
                     "col_date": "2022-05-29",
                     "col_time_millis": "06:00:00.456000",
