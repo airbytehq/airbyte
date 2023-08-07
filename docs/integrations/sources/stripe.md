@@ -2,10 +2,6 @@
 
 This page contains the setup guide and reference information for the Stripe source connector.
 
-:::warning
-**Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events). If you use the Full Refresh sync, any events data older than 30 days will be **deleted** from your target destination.
-:::
-
 ## Prerequisites
 
 - Your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account)
@@ -13,7 +9,7 @@ This page contains the setup guide and reference information for the Stripe sour
 
 ## Setup Guide
 
-To authenticate the Stripe connector, you need a Stripe Secret Key. Although you may use an existing key, we recommend that you create a new key specifically for Airbyte and grant it **Read** priviliges. We recommend granting **Read** priviliges to all permissions, and configuring the data you would like to replicate in the connector itself.
+To authenticate the Stripe connector, you need a Stripe Secret Key. Although you may use an existing key, we recommend that you create a new key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate in the connector itself.
 
 ### Create a Stripe Secret Key
 
@@ -35,13 +31,15 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter your Stripe API Key.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-8. (Optional) For **Lookback Window in days**, select the number of days prior to the start date for which you want to sync your data. This value allows the connector to retrieve data that might have been updated after its initial creation. For example, if the start date is set to `2021-01-01T00:00:00Z`, then:
+8. (Optional) For **Lookback Window**, you may specify a number of days prior to the start date for which you want to sync your data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments (tips, refunds, chargebacks, etc).
 
-- Leaving the Lookback Window in days parameter at its default value of 0 means Airbyte will sync data starting from 2021-01-01T00:00:00Z.
-- Setting the Lookback Window in days value to 1 means Airbyte will consider the Replication start date to be one day earlier, or 2020-12-31T00:00:00Z.
-- Setting the Lookback Window in days value to 7 means Airbyte will sync data starting from seven days earlier, or 2020-12-25T00:00:00Z.
+    For example, if the **Replication Start Date** is set to `2021-01-01T00:00:00Z`, then:
 
-9. (Optional) For **Data Request Window**, select the time increment in days for the connector to use when requesting data from the Stripe API. Setting this value higher will reduce the number of requests, speeding up the sync process. However, this will result in data being updated less frequently. The default value is 365 days.
+    - Leaving the **Lookback Window** at its default value of 0 means Airbyte will sync data starting from `2021-01-01T00:00:00Z`.
+    - Setting the **Lookback Window** to 1 means Airbyte will sync data starting from one day earlier, or `2020-12-31T00:00:00Z`.
+    - Setting the **Lookback Window** to 7 means Airbyte will sync data starting from seven days earlier, or `2020-12-25T00:00:00Z`.
+
+9. (Optional) For **Data Request Window**, you may specify the time window in days used by the connector when requesting data from the Stripe API. This value represents the span of time for each data retrieval, with larger values encompassing more data in fewer requests. A larger value will lead to faster syncs as fewer requests are made, but it may also result in less frequent state persistence. Choosing the right balance can optimize both the speed and frequency of your data synchronization. The default value is 365 days.
 10. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -55,10 +53,11 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the `created` field to query for new data in your Stripe account.
 :::
 
-## Supported Streams
+## Supported streams
 
 The Stripe source connector supports the following streams:
 
+- [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
 - [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
 - [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list)
 - [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
@@ -67,18 +66,26 @@ The Stripe source connector supports the following streams:
 - [Cardholders](https://stripe.com/docs/api/issuing/cardholders/list) \(Incremental\)
 - [Cards](https://stripe.com/docs/api/issuing/cards/list) \(Incremental\)
 - [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
-  - The `amount` column defaults to the smallest currency unit. (See [charge object](https://stripe.com/docs/api/charges/object) for more details)
+  :::note
+  The `amount` column defaults to the smallest currency unit. Check [the Stripe docs](https://stripe.com/docs/api/charges/object) for more details.
+  :::
 - [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list)
 - [Checkout Sessions Line Items](https://stripe.com/docs/api/checkout/sessions/line_items)
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
-- [CreditNotes](https://stripe.com/docs/api/credit_notes/list) \(Full Refresh\)
+- [Credit Notes](https://stripe.com/docs/api/credit_notes/list) \(Full Refresh\)
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
-  - This endpoint does not include deleted customers
+  :::note
+  This endpoint does not include deleted customers
+  :::
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 - [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list) \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
-  - The Stripe API does not guarantee access to events older than 30 days, so this stream will only pull events created from the 30 days prior to the initial sync and not from the Replication start date.
+  :::warning
+  **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh sync mode, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only.
+  :::
+- [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
+- [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
@@ -92,24 +99,21 @@ The Stripe source connector supports the following streams:
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
 - [Reviews](https://stripe.com/docs/api/radar/reviews/list) \(Incremental\)
-- [SetupIntents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
-- [ShippingRates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
+- [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
+- [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
+- [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
+- [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
-- [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
-- [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
-- [TopUps](https://stripe.com/docs/api/topups/list) \(Incremental\)
-- [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
-- [FileLinks](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 
 ### Data type mapping
 
-The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
 
 ### Performance considerations
 
