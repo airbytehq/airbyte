@@ -100,7 +100,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(StreamConfig stream, SnowflakeTableDefinition existingTable) throws TableNotMigratedException {
-    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES)) {
+    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS)) {
       throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
     }
 
