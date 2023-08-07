@@ -20,11 +20,12 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_MAX_HISTORY_SIZE, FileBasedSource
+from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
 from avro import datafile
 from pydantic import AnyUrl, Field
 
@@ -41,7 +42,7 @@ class InMemoryFilesSource(FileBasedSource):
         stream_reader: Optional[AbstractFileBasedStreamReader],
         catalog: Optional[Mapping[str, Any]],
         file_write_options: Mapping[str, Any],
-        max_history_size: int,
+        cursor_cls: Optional[AbstractFileBasedCursor],
     ):
         # Attributes required for test purposes
         self.files = files
@@ -59,7 +60,7 @@ class InMemoryFilesSource(FileBasedSource):
             discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
             parsers=parsers,
             validation_policies=validation_policies or DEFAULT_SCHEMA_VALIDATION_POLICIES,
-            max_history_size=max_history_size or DEFAULT_MAX_HISTORY_SIZE,
+            cursor_cls=cursor_cls or DefaultFileBasedCursor,
         )
 
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
@@ -100,7 +101,14 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             raise NotImplementedError(f"No implementation for file type: {self.file_type}")
 
     def _make_csv_file_contents(self, file_name: str) -> IOBase:
+
+        # Some tests define the csv as an array of strings to make it easier to validate the handling
+        # of quotes, delimiter, and escpare chars.
+        if isinstance(self.files[file_name]["contents"][0], str):
+            return io.StringIO("\n".join([s.strip() for s in self.files[file_name]["contents"]]))
+
         fh = io.StringIO()
+
         if self.file_write_options:
             csv.register_dialect("in_memory_dialect", **self.file_write_options)
             writer = csv.writer(fh, dialect="in_memory_dialect")
