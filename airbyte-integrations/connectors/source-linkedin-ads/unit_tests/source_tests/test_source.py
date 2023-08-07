@@ -310,3 +310,19 @@ def test_retry_get_access_token(requests_mock):
     token = auth.get_access_token()
     assert len(requests_mock.request_history) == 3
     assert token == "token"
+
+
+@pytest.mark.parametrize(
+    "record, expected",
+    [
+        ({}, {}),
+        ({"lastModified": "2021-05-27 11:59:53.710000"}, {"lastModified": "2021-05-27T11:59:53.710000+00:00"}),
+        ({"lastModified": None}, {"lastModified": None}),
+        ({"lastModified": ""}, {"lastModified": ""}),
+    ],
+    ids=["empty_record", "transformed_record", "null_value", "empty_value"],
+)
+def test_date_time_to_rfc3339(record, expected):
+    stream = Accounts(TEST_CONFIG)
+    result = stream._date_time_to_rfc3339(record)
+    assert result == expected
