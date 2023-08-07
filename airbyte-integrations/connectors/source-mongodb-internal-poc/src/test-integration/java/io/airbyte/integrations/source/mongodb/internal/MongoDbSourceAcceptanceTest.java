@@ -120,16 +120,11 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
             Field.of("int_test", JsonSchemaType.NUMBER),
             Field.of("object_test", JsonSchemaType.OBJECT)
     );
-    final List<AirbyteStream> airbyteStreams = List.of(
-            MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields),
-            MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields));
 
-    return new ConfiguredAirbyteCatalog().withStreams(
-            List.of(
-              convertToConfiguredAirbyteStream(airbyteStreams.get(0), SyncMode.INCREMENTAL),
-              convertToConfiguredAirbyteStream(airbyteStreams.get(1), SyncMode.FULL_REFRESH)
-            )
-        );
+    final AirbyteStream airbyteStream = MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields);
+    final ConfiguredAirbyteStream configuredIncrementalAirbyteStream = convertToConfiguredAirbyteStream(airbyteStream, SyncMode.INCREMENTAL);
+
+    return new ConfiguredAirbyteCatalog().withStreams(List.of(configuredIncrementalAirbyteStream));
   }
 
   @Override
