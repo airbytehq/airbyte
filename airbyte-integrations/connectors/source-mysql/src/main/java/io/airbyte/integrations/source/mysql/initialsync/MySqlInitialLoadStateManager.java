@@ -7,10 +7,9 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 
 public interface MySqlInitialLoadStateManager {
-  public static final long MYSQL_STATUS_VERSION = 2;
-  public static final String STATE_TYPE_KEY = "state_type";
-  public static final String STATE_VER_KEY = "version";
-  public static final String PRIMARY_KEY_STATE_TYPE = "primary_key";
+  long MYSQL_STATUS_VERSION = 2;
+  String STATE_TYPE_KEY = "state_type";
+  String PRIMARY_KEY_STATE_TYPE = "primary_key";
 
   // Returns an intermediate state message for the initial sync.
   AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus);

@@ -14,8 +14,6 @@ import java.util.Optional;
 
 public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
 
-  private final String transactionTimestamp;
-  private final Optional<MysqlDebeziumStateAttributes> debeziumStateAttributes;
   private final Optional<CdcMetadataInjector> metadataInjector;
 
   public MySqlInitialLoadSourceOperations(final Optional<CdcMetadataInjector> metadataInjector) {

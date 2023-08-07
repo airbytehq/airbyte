@@ -60,7 +60,6 @@ public class MySqlInitialLoadHandler {
       final MySqlInitialLoadStateManager initialLoadStateManager,
       final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
       final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
-      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;

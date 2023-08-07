@@ -98,8 +98,8 @@ public class MySqlInitialReadUtil {
               stateToBeUsed, catalog);
       final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
       final MySqlInitialLoadSourceOperations sourceOperations =
-          new MySqlInitialLoadSourceOperations(emittedAt.toString(), Optional.of(stateAttributes));
-
+          new MySqlInitialLoadSourceOperations(
+              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, new MySqlCdcConnectorMetadataInjector())));
       // TODO : Actually populate the table block size
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,
@@ -109,8 +109,9 @@ public class MySqlInitialReadUtil {
           new HashMap<>());
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
-          new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaPk),
-          namespacePair -> Jsons.emptyObject());
+          new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
+          tableNameToTable,
+          emittedAt));
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
