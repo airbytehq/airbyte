@@ -11,6 +11,7 @@ from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams.common import AccountTypeException
+
 from .utils import command_check
 
 
