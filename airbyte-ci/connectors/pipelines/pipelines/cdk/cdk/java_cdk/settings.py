@@ -1,6 +1,6 @@
 """CI Workflow settings for Airbyte Java CDK"""
 
-from aircmd.models.base import GlobalSettings
+from aircmd.models.settings import GlobalSettings
 from pydantic import Field
 
 

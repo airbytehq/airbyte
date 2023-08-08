@@ -31,7 +31,6 @@ async def build_java_cdk_task(client: Client, settings: JavaCDKSettings, ctx: Pi
 
     repo = pygit2.Repository(".")
     repo_root = os.path.dirname(os.path.dirname(repo.path))
-    print(repo_root)
     mount_dir = client.host().directory(repo_root, include=files_from_host)
 
     gradle_command = ["./gradlew", ":airbyte-cdk:java:airbyte-cdk:assemble", "publishToMavenLocal", "--build-cache"]
@@ -51,7 +50,7 @@ async def build_java_cdk_task(client: Client, settings: JavaCDKSettings, ctx: Pi
             description="Gradle build scan",
         )
 
-    return result.sync()
+    return result
 
 
 @task

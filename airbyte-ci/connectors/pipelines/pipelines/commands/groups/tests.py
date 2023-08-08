@@ -11,7 +11,7 @@ import os
 import sys
 
 import anyio
-import click
+import asyncclick as click
 import dagger
 
 

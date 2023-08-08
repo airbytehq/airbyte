@@ -6,7 +6,7 @@
 
 from typing import List
 
-import click
+import asyncclick as click
 from aircmd.models.base import GlobalContext
 from aircmd.models.click_utils import LazyPassDecorator
 from github import PullRequest
@@ -162,6 +162,8 @@ plugin_manager = gctx.plugin_manager
 plugin_command_groups = plugin_manager.get_command_groups()
 for command_group in plugin_command_groups:
     airbyte_ci.add_command(command_group.click_group)
+
+
 
 if __name__ == "__main__":
     airbyte_ci()

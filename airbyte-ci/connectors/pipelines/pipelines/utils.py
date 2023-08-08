@@ -15,23 +15,46 @@ import unicodedata
 from glob import glob
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, FrozenSet, List, Optional, Set, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    FrozenSet,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+)
 
 import anyio
+import asyncclick as click
 import asyncer
-import click
 import git
 from connector_ops.utils import get_changed_connectors
-from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
+from dagger import (
+    Client,
+    Config,
+    Connection,
+    Container,
+    DaggerError,
+    ExecError,
+    File,
+    ImageLayerCompression,
+    QueryError,
+    Secret,
+)
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
+
 from pipelines import consts, main_logger, sentry_utils
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 if TYPE_CHECKING:
     from connector_ops.utils import Connector
     from github import PullRequest
+
     from pipelines.contexts import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)

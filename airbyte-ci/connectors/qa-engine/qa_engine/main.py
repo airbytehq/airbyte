@@ -4,7 +4,7 @@
 
 import logging
 
-import click
+import asyncclick as click
 
 from . import cloud_availability_updater, enrichments, inputs, outputs, validations
 from .constants import CLOUD_CATALOG_URL, GCS_QA_REPORT_PATH, OSS_CATALOG_URL

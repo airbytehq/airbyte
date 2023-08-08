@@ -1,6 +1,6 @@
 """CI Workflow commands for Airbyte Java CDK"""
 
-from typing import Awaitable, List, Optional
+from typing import List, Optional
 
 from aircmd.models.base import PipelineContext
 from aircmd.models.click_commands import ClickCommandMetadata, ClickFlag, ClickGroup
@@ -14,8 +14,9 @@ from .settings import JavaCDKSettings
 from .tasks import build_java_cdk_task, test_java_cdk_task
 
 settings = JavaCDKSettings()
-pass_pipeline_context = LazyPassDecorator(PipelineContext, ensure=True)
-pass_global_settings = LazyPassDecorator(settings, ensure=True)
+pass_pipeline_context = LazyPassDecorator(PipelineContext, global_settings=settings)
+pass_global_settings = LazyPassDecorator(JavaCDKSettings)
+
 
 java_group = ClickGroup(group_name="java", group_help="Commands for developing Airbyte Java CDK")
 
@@ -39,15 +40,17 @@ class TestCommand(ClickCommandMetadata):
 
 
 @java_group.command(BuildCommand())
-@pass_global_settings
 @pass_pipeline_context
+@pass_global_settings
 @flow(validate_parameters=False, name="Java CDK Build")
 async def build(
     settings: JavaCDKSettings, ctx: PipelineContext, client: Optional[Client] = None, scan: bool = False
-) -> List[Awaitable[Container]]:
-    build_client = client.pipeline(BuildCommand().command_name) if client else ctx.get_dagger_client().pipeline(BuildCommand().command_name)
-    results = await build_java_cdk_task.submit(client=build_client, settings=settings, ctx=quote(ctx), scan=scan)
-    return [results]
+) -> Container:
+    build_client = await ctx.get_dagger_client(client, ctx.prefect_flow_run_context.flow_run.name)
+    build_future = await build_java_cdk_task.submit(client=build_client, settings=settings, ctx=quote(ctx), scan=scan)
+    result = await build_future.result()
+    await result
+    return result
 
 
 @java_group.command(TestCommand())
@@ -56,7 +59,7 @@ async def build(
 @flow(validate_parameters=False, name="Java CDK Test")
 async def test(
     settings: JavaCDKSettings, ctx: PipelineContext, client: Optional[Client] = None, scan: bool = False
-) -> List[Awaitable[Container]]:
+) -> Container:
     test_client = client.pipeline(BuildCommand().command_name) if client else ctx.get_dagger_client().pipeline(BuildCommand().command_name)
     build_result = await build(scan=scan)
     results = await test_java_cdk_task.submit(
@@ -77,3 +80,4 @@ async def ci(settings: JavaCDKSettings, ctx: PipelineContext, client: Optional[C
     #      await publish_java.submit(build_result=build_result[0], client=test_client, settings=settings, ctx=quote(ctx), scan=scan)
 
     return test_result
+

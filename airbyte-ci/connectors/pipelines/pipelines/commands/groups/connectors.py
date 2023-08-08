@@ -10,8 +10,11 @@ from pathlib import Path
 from typing import List, Set, Tuple
 
 import anyio
-import click
+import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo
+from rich.table import Table
+from rich.text import Text
+
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.builds import run_connector_build_pipeline
@@ -21,9 +24,11 @@ from pipelines.github import update_global_commit_status_check_for_tests
 from pipelines.pipelines.connectors import run_connectors_pipelines
 from pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from pipelines.tests import run_connector_test_pipeline
-from pipelines.utils import DaggerPipelineCommand, get_connector_modified_files, get_modified_connectors
-from rich.table import Table
-from rich.text import Text
+from pipelines.utils import (
+    DaggerPipelineCommand,
+    get_connector_modified_files,
+    get_modified_connectors,
+)
 
 # HELPERS
 
@@ -164,7 +169,7 @@ def connectors(
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
-
+    print("ABC123")
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
     ctx.obj["concurrency"] = concurrency

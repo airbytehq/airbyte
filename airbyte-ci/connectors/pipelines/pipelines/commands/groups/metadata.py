@@ -3,7 +3,8 @@
 #
 
 import anyio
-import click
+import asyncclick as click
+
 from pipelines.bases import CIContext
 from pipelines.pipelines.metadata import (
     run_metadata_lib_test_pipeline,
