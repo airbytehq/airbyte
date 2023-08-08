@@ -101,6 +101,7 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
     single_parquet_scenario,
+    single_partitioned_parquet_scenario,
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import (
@@ -199,6 +200,7 @@ discover_scenarios = [
     avro_file_with_double_as_number_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_autogenerate_column_names_scenario,
+    single_partitioned_parquet_scenario
 ]
 
 
@@ -271,9 +273,10 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
     assert len(records) == len(expected_records)
     for actual, expected in zip(records, expected_records):
         if "record" in actual:
+            assert len(actual["record"]["data"]) == len(expected["data"])
             for key, value in actual["record"]["data"].items():
                 if isinstance(value, float):
-                    assert math.isclose(value, float(expected["data"][key]), abs_tol=1e-04)
+                    assert math.isclose(value, expected["data"][key], abs_tol=1e-04)
                 else:
                     assert value == expected["data"][key]
             assert actual["record"]["stream"] == expected["stream"]
