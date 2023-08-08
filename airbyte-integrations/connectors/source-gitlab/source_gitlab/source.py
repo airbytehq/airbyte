@@ -172,6 +172,7 @@ class SourceGitlab(AbstractSource):
             Branches(parent_stream=projects, repository_part=True, **auth_params),
             Commits(parent_stream=projects, repository_part=True, start_date=config["start_date"], **auth_params),
             epics,
+            Deployments(parent_stream=projects, **auth_params),
             EpicIssues(parent_stream=epics, **auth_params),
             GroupIssueBoards(parent_stream=groups, **auth_params),
             Issues(parent_stream=projects, start_date=config["start_date"], **auth_params),
@@ -189,7 +190,6 @@ class SourceGitlab(AbstractSource):
             pipelines,
             PipelinesExtended(parent_stream=pipelines, **auth_params),
             Users(parent_stream=projects, **auth_params),
-            Deployments(parent_stream=projects, **auth_params),
         ]
 
         return streams
