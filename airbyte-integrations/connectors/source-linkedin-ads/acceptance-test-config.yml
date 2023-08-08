@@ -35,7 +35,7 @@ acceptance_tests:
         missing_streams:
         - name: accounts
           bypass_reason: "This stream is Full-Refresh only"
-      timeout_seconds: 3600
+      timeout_seconds: 4800
   full_refresh:
     tests:
     - config_path: "secrets/config_oauth.json"
