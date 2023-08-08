@@ -107,6 +107,15 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
+  public String dropTableIfExistsQuery(final String schemaName, final String tableName) {
+    if (use1s1t) {
+      return String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";\n", schemaName, tableName);
+    } else {
+      return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
+    }
+  }
+
+  @Override
   public void insertRecordsInternal(final JdbcDatabase database,
                                     final List<AirbyteRecordMessage> records,
                                     final String schemaName,

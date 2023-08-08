@@ -49,7 +49,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
         schemaSet.add(schemaName);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -62,7 +62,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
    * @param e the exception to check.
    * @return A ConfigErrorException with a message with actionable feedback to the user.
    */
-  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(Exception e) {
+  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(final Exception e) {
     return Optional.empty();
   }
 
@@ -70,7 +70,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     try {
       database.execute(createTableQuery(database, schemaName, tableName));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -127,12 +127,12 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     try {
       database.execute(dropTableIfExistsQuery(schemaName, tableName));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
 
-  private String dropTableIfExistsQuery(final String schemaName, final String tableName) {
+  public String dropTableIfExistsQuery(final String schemaName, final String tableName) {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
