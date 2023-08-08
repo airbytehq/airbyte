@@ -80,7 +80,7 @@ valid_single_stream_user_input_schema_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "string"}',
                 }
             ]
@@ -100,7 +100,7 @@ single_stream_user_input_schema_scenario_schema_is_invalid = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "x", "col2": "string"}',
                 }
             ]
@@ -123,7 +123,7 @@ single_stream_user_input_schema_scenario_emit_nonconforming_records = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "integer", "col2": "string"}',
                 }
             ]
@@ -173,7 +173,7 @@ single_stream_user_input_schema_scenario_skip_nonconforming_records = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                     "input_schema": '{"col1": "integer", "col2": "string"}',
                 }
             ]
@@ -366,21 +366,21 @@ valid_multi_stream_user_input_schema_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "integer"}',
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "string", "col3": "string"}',
                 },
                 {
                     "name": "stream3",
                     "file_type": "csv",
                     "globs": ["c.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
 
             ]
@@ -400,21 +400,21 @@ multi_stream_user_input_schema_scenario_schema_is_invalid = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "integer"}',
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "x", "col2": "string", "col3": "string"}',  # this stream's schema is invalid
                 },
                 {
                     "name": "stream3",
                     "file_type": "csv",
                     "globs": ["c.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
 
             ]
@@ -437,21 +437,21 @@ multi_stream_user_input_schema_scenario_emit_nonconforming_records = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "integer"}',
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "integer", "col3": "string"}',  # this stream's records do not conform to the schema
                 },
                 {
                     "name": "stream3",
                     "file_type": "csv",
                     "globs": ["c.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
 
             ]
@@ -576,21 +576,21 @@ multi_stream_user_input_schema_scenario_skip_nonconforming_records = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "integer"}',
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b.csv"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                     "input_schema": '{"col1": "string", "col2": "integer", "col3": "string"}',  # this stream's records do not conform to the schema
                 },
                 {
                     "name": "stream3",
                     "file_type": "csv",
                     "globs": ["c.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
 
             ]
