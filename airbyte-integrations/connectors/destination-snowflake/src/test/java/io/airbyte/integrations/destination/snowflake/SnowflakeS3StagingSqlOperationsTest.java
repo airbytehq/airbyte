@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.s3.NoEncryption;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;

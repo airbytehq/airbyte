@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.AzureBlobStorageWriterFactory;
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.v0.AirbyteMessage;

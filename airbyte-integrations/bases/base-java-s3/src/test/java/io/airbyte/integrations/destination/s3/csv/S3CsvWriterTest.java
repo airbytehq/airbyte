@@ -23,7 +23,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter.Builder;
 import io.airbyte.integrations.destination.s3.util.CompressionType;

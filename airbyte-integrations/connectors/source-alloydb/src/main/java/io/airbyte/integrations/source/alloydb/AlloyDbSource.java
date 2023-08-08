@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.source.alloydb;
 
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.integrations.source.postgres.PostgresSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

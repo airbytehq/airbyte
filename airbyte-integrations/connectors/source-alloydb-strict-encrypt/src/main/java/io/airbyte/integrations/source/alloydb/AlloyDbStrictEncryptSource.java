@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.alloydb;
 
 import static io.airbyte.integrations.source.relationaldb.state.StateManager.LOGGER;
 
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.integrations.source.postgres_strict_encrypt.PostgresSourceStrictEncrypt;
 
 public class AlloyDbStrictEncryptSource {

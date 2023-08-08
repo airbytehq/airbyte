@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import io.airbyte.integrations.base.adaptive.AdaptiveDestinationRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveDestinationRunner;
 
 public class S3DestinationRunner {
 

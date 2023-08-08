@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base.normalization;
+package io.airbyte.cdk.integrations.base.normalization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

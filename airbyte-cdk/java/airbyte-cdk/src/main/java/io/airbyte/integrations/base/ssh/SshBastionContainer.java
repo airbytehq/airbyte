@@ -2,12 +2,12 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base.ssh;
+package io.airbyte.cdk.integrations.base.ssh;
 
-import static io.airbyte.integrations.base.ssh.SshHelpers.getInnerContainerAddress;
-import static io.airbyte.integrations.base.ssh.SshHelpers.getOuterContainerAddress;
-import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
-import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
+import static io.airbyte.cdk.integrations.base.ssh.SshHelpers.getInnerContainerAddress;
+import static io.airbyte.cdk.integrations.base.ssh.SshHelpers.getOuterContainerAddress;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;

@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.cdk.integrations.base;
 
 import com.google.common.base.Preconditions;
 import java.nio.file.Path;

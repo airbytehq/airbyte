@@ -9,7 +9,7 @@ import static io.airbyte.integrations.destination.databricks.utils.DatabricksCon
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.databricks.utils.DatabricksDatabaseUtil;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;

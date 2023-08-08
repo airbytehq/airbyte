@@ -13,7 +13,7 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfig;

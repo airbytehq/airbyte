@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.databricks;
 
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.scylla;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
