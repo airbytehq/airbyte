@@ -64,6 +64,7 @@ jobs:
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
@@ -76,6 +77,7 @@ jobs:
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

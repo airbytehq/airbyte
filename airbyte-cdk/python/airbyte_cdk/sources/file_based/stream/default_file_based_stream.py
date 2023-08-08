@@ -15,13 +15,14 @@ from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
+    RecordParseError,
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import JsonSchema
@@ -39,7 +40,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, cursor: FileBasedCursor, **kwargs: Any):
+    def __init__(self, cursor: AbstractFileBasedCursor, **kwargs: Any):
         super().__init__(**kwargs)
         self._cursor = cursor
 
@@ -105,6 +106,18 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 )
                 break
 
+            except RecordParseError:
+                # Increment line_no because the exception was raised before we could increment it
+                line_no += 1
+                yield AirbyteMessage(
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(
+                        level=Level.ERROR,
+                        message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                        stack_trace=traceback.format_exc(),
+                    ),
+                )
+
             except Exception:
                 yield AirbyteMessage(
                     type=MessageType.LOG,
@@ -155,6 +168,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         else:
             files = self.list_files()
             total_n_files = len(files)
+
+            if total_n_files == 0:
+                raise SchemaInferenceError(FileBasedSourceError.EMPTY_STREAM, stream=self.name)
+
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
             if total_n_files > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.

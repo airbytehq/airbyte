@@ -4,7 +4,7 @@
 
 import copy
 from abc import abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
@@ -16,6 +16,16 @@ class AbstractFileBasedSpec(BaseModel):
     Used during spec; allows the developer to configure the cloud provider specific options
     that are needed when users configure a file-based source.
     """
+
+    start_date: Optional[str] = Field(
+        title="Start Date",
+        description="UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified before this date will not be replicated.",
+        examples=["2021-01-01T00:00:00.000000Z"],
+        format="date-time",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$",
+        pattern_descriptor="YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
+        order=1,
+    )
 
     streams: List[FileBasedStreamConfig] = Field(
         title="The list of streams to sync",
