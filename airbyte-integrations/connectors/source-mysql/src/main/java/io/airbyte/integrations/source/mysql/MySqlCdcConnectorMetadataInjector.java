@@ -29,10 +29,9 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
 
   @Override
   public void addMetaData(final ObjectNode event, final JsonNode source) {
-    final Long cdcDefaultCursor = this.emittedAtNano + recordCounter.getAndIncrement();
     event.put(CDC_LOG_FILE, source.get("file").asText());
     event.put(CDC_LOG_POS, source.get("pos").asLong());
-    event.put(CDC_DEFAULT_CURSOR, cdcDefaultCursor);
+    event.put(CDC_DEFAULT_CURSOR, getCdcDefaultCursor());
   }
 
   @Override
@@ -42,11 +41,16 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
     record.put(CDC_LOG_FILE, debeziumStateAttributes.binlogFilename());
     record.put(CDC_LOG_POS, debeziumStateAttributes.binlogPosition());
     record.put(CDC_DELETED_AT, (String) null);
+    record.put(CDC_DEFAULT_CURSOR, getCdcDefaultCursor());
   }
 
   @Override
   public String namespace(final JsonNode source) {
     return source.get("db").asText();
+  }
+
+  private Long getCdcDefaultCursor() {
+    return this.emittedAtNano + recordCounter.getAndIncrement();
   }
 
 }

@@ -117,7 +117,7 @@ public class MySqlInitialReadUtil {
       final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
       final MySqlInitialLoadSourceOperations sourceOperations =
           new MySqlInitialLoadSourceOperations(
-              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, new MySqlCdcConnectorMetadataInjector())));
+              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, new MySqlCdcConnectorMetadataInjector(emittedAt))));
 
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,
@@ -140,7 +140,7 @@ public class MySqlInitialReadUtil {
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
         new MySqlCdcSavedInfoFetcher(stateToBeUsed),
         new MySqlCdcStateHandler(stateManager),
-        new MySqlCdcConnectorMetadataInjector(),
+        new MySqlCdcConnectorMetadataInjector(emittedAt),
         MySqlCdcProperties.getDebeziumProperties(database),
         emittedAt,
         false);
