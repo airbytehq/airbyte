@@ -115,6 +115,36 @@ After specifying your own configuration, run the following command:
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
+### (Alpha) Airbyte Pro deployment
+
+Airbyte Pro is in early alpha stages, so this section will likely evolve. That said, if you have an Airbyte Pro license key and wish to install Airbyte Pro via helm, follow these steps:
+
+1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
+
+2. Add your Airbyte Pro license key and auth configuration details to a file called `airbyte.yml` in the root directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
+```text
+cp airbyte.sample.yml airbyte.yml
+```
+Then, open up `airbyte.yml` in your text editor to fill in the indicated fields.
+
+:::caution
+
+For now, auth configurations aren't easy to modify once initially installed, so please double check them to make sure they're accurate before proceeding! This will be improved in the near future.
+
+:::
+
+3. Make sure your helm repository is up to date:
+```text
+helm repo update
+```
+
+4. Install Airbyte Pro on helm using the following command:
+```text
+RELEASE_NAME=<your release name>./tools/bin/install_airbyte_pro_on_helm.sh
+```
+If unspecified, the default release name is `airbyte-pro`. You can change this by editing the `install_airbyte_pro_on_helm.sh` script.
+
+
 ## Migrate from old charts to new ones
 
 Starting from `0.39.37-alpha` we've revisited helm charts structure and separated all components of airbyte into their own independent charts, thus by allowing our developers to test single component without deploying airbyte as a whole and by upgrading single component at a time.

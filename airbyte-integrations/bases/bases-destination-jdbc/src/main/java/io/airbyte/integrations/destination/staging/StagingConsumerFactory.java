@@ -13,6 +13,11 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
@@ -65,16 +70,19 @@ public class StagingConsumerFactory {
                                        final BufferCreateFunction onCreateBuffer,
                                        final JsonNode config,
                                        final ConfiguredAirbyteCatalog catalog,
-                                       final boolean purgeStagingData) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
+                                       final boolean purgeStagingData,
+                                       final TypeAndDedupeOperationValve typerDeduperValve,
+                                       final TyperDeduper typerDeduper,
+                                       final ParsedCatalog parsedCatalog) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
-        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
+        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
         new SerializedBufferingStrategy(
             onCreateBuffer,
             catalog,
-            SerialFlush.function(database, stagingOperations, writeConfigs, catalog)),
-        GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData),
+            SerialFlush.function(database, stagingOperations, writeConfigs, catalog, typerDeduperValve, typerDeduper)),
+        GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper),
         catalog,
         stagingOperations::isValidData);
   }
@@ -83,18 +91,20 @@ public class StagingConsumerFactory {
                                                       final JdbcDatabase database,
                                                       final StagingOperations stagingOperations,
                                                       final NamingConventionTransformer namingResolver,
-                                                      final BufferCreateFunction onCreateBuffer,
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog,
-                                                      final boolean purgeStagingData) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
+                                                      final boolean purgeStagingData,
+                                                      TypeAndDedupeOperationValve typerDeduperValve,
+                                                      final TyperDeduper typerDeduper,
+                                                      final ParsedCatalog parsedCatalog) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog);
+    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper);
     return new AsyncStreamConsumer(
         outputRecordCollector,
-        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
+        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
         // todo (cgardens) - wrapping the old close function to avoid more code churn.
-        () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
+        () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
         flusher,
         catalog,
         new BufferManager());
@@ -141,21 +151,30 @@ public class StagingConsumerFactory {
    */
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
                                                       final JsonNode config,
-                                                      final ConfiguredAirbyteCatalog catalog) {
+                                                      final ConfiguredAirbyteCatalog catalog,
+                                                      final ParsedCatalog parsedCatalog) {
 
-    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config)).collect(toList());
+    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config, parsedCatalog)).collect(toList());
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final NamingConventionTransformer namingResolver,
-                                                                              final JsonNode config) {
+                                                                              final JsonNode config,
+                                                                              final ParsedCatalog parsedCatalog) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
-
-      final String outputSchema = getOutputSchema(abStream, config.get("schema").asText(), namingResolver);
-
       final String streamName = abStream.getName();
-      final String tableName = namingResolver.getRawTableName(streamName);
+
+      final String outputSchema;
+      final String tableName;
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        final StreamId streamId = parsedCatalog.getStream(abStream.getNamespace(), streamName).id();
+        outputSchema = streamId.rawNamespace();
+        tableName = streamId.rawName();
+      } else {
+        outputSchema = getOutputSchema(abStream, config.get("schema").asText(), namingResolver);
+        tableName = namingResolver.getRawTableName(streamName);
+      }
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 

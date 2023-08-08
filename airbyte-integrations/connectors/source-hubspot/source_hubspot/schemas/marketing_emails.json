@@ -397,6 +397,312 @@
       "items": {
         "type": ["null", "integer"]
       }
+    },
+    "publishedByEmail": {
+      "type" : ["null", "string"]
+    },
+    "sections": {
+      "type": ["null", "object"]
+    },
+    "author": {
+      "type" : ["null", "string"]
+    },
+    "isCreatedFomSandboxSync": {
+      "type" : ["null", "boolean"]
+    },
+    "rssEmailUrl": {
+      "type" : ["null", "string"]
+    },
+    "teamPerms": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "securityState": {
+      "type" : ["null", "string"]
+    },
+    "isInstanceLayoutPage": {
+      "type" : ["null", "boolean"]
+    },
+    "audienceAccess": {
+      "type" : ["null", "string"]
+    },
+    "campaignUtm": {
+      "type" : ["null", "string"]
+    },
+    "contentAccessRuleTypes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "pastMabExperimentIds": {
+     "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "rssEmailClickThroughText": {
+      "type" : ["null", "string"]
+    },
+    "rssEmailImageMaxWidth": {
+      "type" : ["null", "integer"]
+    },
+    "flexAreas" : {
+      "type" : ["null", "object"],
+      "properties" : {
+        "properties" : {
+          "main" : {
+            "type" : ["null", "object"],
+            "properties" : {
+              "boxed" : {
+                "type" : ["null", "boolean"]
+              },
+              "isSingleColumnFullWidth" : {
+                "type" : ["null", "boolean"]
+              },
+              "sections" : {
+                "type" : ["null", "array"],
+                "items" : [
+                  {
+                    "type" : ["null", "object"],
+                    "properties" : {
+                      "columns" : {
+                        "type" : ["null", "array"],
+                        "items" : [
+                          {
+                            "type" : ["null", "object"],
+                            "properties" : {
+                              "id" : {
+                                "type" : ["null", "string"]
+                              },
+                              "widgets" : {
+                                "type" : ["null", "array"],
+                                "items" : [
+                                  {
+                                    "type" : ["null", "string"]
+                                  }
+                                ]
+                              },
+                              "width" : {
+                                "type" : ["null", "integer"]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "id" : {
+                        "type" : ["null", "string"]
+                      },
+                      "style" : {
+                        "type" : ["null", "object"],
+                        "properties" : {
+                          "backgroundColor" : {
+                            "type" : ["null", "string"]
+                          },
+                          "backgroundType" : {
+                            "type" : ["null", "string"]
+                          },
+                          "paddingBottom" : {
+                            "type" : ["null", "string"]
+                          },
+                          "paddingTop" : {
+                            "type" : ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type" : ["null", "object"],
+                    "properties" : {
+                      "columns" : {
+                        "type" : ["null", "array"],
+                        "items" : [
+                          {
+                            "type" : ["null", "object"],
+                            "properties" : {
+                              "id" : {
+                                "type" : ["null", "string"]
+                              },
+                              "widgets" : {
+                                "type" : ["null", "array"],
+                                "items" : [
+                                  {
+                                    "type" : ["null", "string"]
+                                  }
+                                ]
+                              },
+                              "width" : {
+                                "type" : ["null", "integer"]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "id" : {
+                        "type" : ["null", "string"]
+                      },
+                      "style" : {
+                        "type" : ["null", "object"],
+                        "properties" : {
+                          "backgroundType" : {
+                            "type" : ["null", "string"]
+                          },
+                          "paddingBottom" : {
+                            "type" : ["null", "string"]
+                          },
+                          "paddingTop" : {
+                            "type" : ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type" : ["null", "object"],
+                    "properties" : {
+                      "columns" : {
+                        "type" : ["null", "array"],
+                        "items" : [
+                          {
+                            "type" : ["null", "object"],
+                            "properties" : {
+                              "id" : {
+                                "type" : ["null", "string"]
+                              },
+                              "widgets" : {
+                                "type" : ["null", "array"],
+                                "items" : [
+                                  {
+                                    "type" : ["null", "string"]
+                                  }
+                                ]
+                              },
+                              "width" : {
+                                "type" : ["null", "integer"]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "id" : {
+                        "type" : ["null", "string"]
+                      },
+                      "style" : {
+                        "type" : ["null", "object"],
+                        "properties" : {
+                          "backgroundColor" : {
+                            "type" : ["null", "string"]
+                          },
+                          "backgroundType" : {
+                            "type" : ["null", "string"]
+                          },
+                          "paddingBottom" : {
+                            "type" : ["null", "string"]
+                          },
+                          "paddingTop" : {
+                            "type" : ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "emailCampaignGroupId" : {
+      "type" : ["null", "integer"]
+    },
+    "layoutSections": {
+      "type" : ["null", "object"]
+    },
+    "blogRssSettings": {
+      "type" : ["null", "string"]
+    },
+    "archivedInDashboard": {
+      "type" : ["null", "boolean"]
+    },
+    "publishedAt": {
+      "type" : ["null", "integer"]
+    },
+    "lastEditUpdateId": {
+      "type" : ["null", "integer"]
+    },
+    "lastEditSessionId": {
+      "type" : ["null", "integer"]
+    },
+    "styleSettings": {
+      "type": ["null", "object"],
+      "properties" : {
+        "background_color": {"type" : ["null", "string"]},
+        "background_image": {"type" : ["null", "string"]},
+        "background_image_type": {"type" : ["null", "string"]},
+        "body_border_color": {"type" : ["null", "string"]},
+        "body_border_color_choice": {"type" : ["null", "string"]},
+        "body_border_width": {"type" : ["null", "string"]},
+        "body_color": {"type" : ["null", "string"]},
+        "color_picker_favorite1": {"type" : ["null", "string"]},
+        "color_picker_favorite2": {"type" : ["null", "string"]},
+        "color_picker_favorite3": {"type" : ["null", "string"]},
+        "color_picker_favorite4": {"type" : ["null", "string"]},
+        "color_picker_favorite5": {"type" : ["null", "string"]},
+        "color_picker_favorite6": {"type" : ["null", "string"]},
+        "email_body_padding": {"type" : ["null", "string"]},
+        "email_body_width": {"type" : ["null", "string"]},
+        "heading_one_font": {
+          "properties" : {
+            "bold": {"type" : ["null", "string"]},
+            "color": {"type" : ["null", "string"]},
+            "font": {"type" : ["null", "string"]},
+            "font_style": {"type" : ["null", "object"]},
+            "italic": {"type" : ["null", "string"]},
+            "size": {"type" : ["null", "string"]},
+            "underline": {"type" : ["null", "string"]}
+          }
+        }
+      }
+    },
+    "visibleToAll": {
+      "type" : ["null", "boolean"]
+    },
+    "language": {
+      "type" : ["null", "string"]
+    },
+    "rssEmailByText": {
+      "type" : ["null", "string"]
+    },
+    "rssEmailCommentText": {
+      "type" : ["null", "string"]
+    },
+    "hasContentAccessRules": {
+      "type" : ["null", "boolean"]
+    },
+    "archivedAt": {
+      "type" : ["null", "integer"]
+    },
+    "translations": {
+      "type": ["null", "object"]
+    },
+    "userPerms": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "contentAccessRuleIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "rssEmailEntryTemplateEnabled": {
+      "type" : ["null", "boolean"]
     }
   }
 }

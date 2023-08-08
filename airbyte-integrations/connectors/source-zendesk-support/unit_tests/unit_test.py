@@ -23,7 +23,7 @@ from source_zendesk_support.streams import (
     AccountAttributes,
     AttributeDefinitions,
     AuditLogs,
-    BaseSourceZendeskSupportStream,
+    BaseZendeskSupportStream,
     Brands,
     CustomRoles,
     GroupMemberships,
@@ -37,7 +37,6 @@ from source_zendesk_support.streams import (
     Schedules,
     SlaPolicies,
     SourceZendeskIncrementalExportStream,
-    SourceZendeskSupportStream,
     Tags,
     TicketAudits,
     TicketComments,
@@ -141,20 +140,28 @@ def test_check(response, start_date, check_passed):
 
 
 @pytest.mark.parametrize(
-    "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 27, []),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 27, [], None),
         (
-                {"error": "Not sufficient permissions"},
+                '{"error": "Not sufficient permissions"}',
                 403,
                 24,
                 ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
+                None
+        ),
+        (
+                '',
+                404,
+                24,
+                ["Skipping stream ticket_forms: Check permissions, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}."],
+                'Not Found'
         ),
     ],
-    ids=["forms_accessible", "forms_inaccessible"],
+    ids=["forms_accessible", "forms_inaccessible", "forms_not_exists"],
 )
-def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings):
-    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, json=ticket_forms_response)
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason):
+    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
     result = SourceZendeskSupport().streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
     logged_warnings = iter([record for record in caplog.records if record.levelname == "ERROR"])
@@ -170,19 +177,19 @@ def time_sleep_mock(mocker):
 
 def test_str2datetime():
     expected = datetime.strptime(DATETIME_STR, DATETIME_FORMAT)
-    output = BaseSourceZendeskSupportStream.str2datetime(DATETIME_STR)
+    output = BaseZendeskSupportStream.str2datetime(DATETIME_STR)
     assert output == expected
 
 
 def test_datetime2str():
     expected = datetime.strftime(DATETIME_FROM_STR.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
-    output = BaseSourceZendeskSupportStream.datetime2str(DATETIME_FROM_STR)
+    output = BaseZendeskSupportStream.datetime2str(DATETIME_FROM_STR)
     assert output == expected
 
 
 def test_str2unixtime():
     expected = calendar.timegm(DATETIME_FROM_STR.utctimetuple())
-    output = BaseSourceZendeskSupportStream.str2unixtime(DATETIME_STR)
+    output = BaseZendeskSupportStream.str2unixtime(DATETIME_STR)
     assert output == expected
 
 
@@ -226,14 +233,6 @@ def test_parse_response(requests_mock):
     # check, if we have all transformations correctly
     for entity in TicketComments.list_entities_from_event:
         assert True if entity in parsed_output else False
-
-
-def test_retry(mocker):
-    backoff_time_mock = mocker.Mock()
-    with mocker.patch.object(SourceZendeskSupportStream, "backoff_time", return_value=backoff_time_mock):
-        stream = SourceZendeskSupportStream(**STREAM_ARGS)
-        stream._retry(request=mocker.Mock(), retries=0)
-        assert not backoff_time_mock.called, "backoff_time should not have been called"
 
 
 class TestAllStreams:
@@ -320,8 +319,8 @@ class TestAllStreams:
             (TicketMetrics, "ticket_metrics"),
             (TicketSkips, "skips.json"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
-            (Tickets, "incremental/tickets.json"),
-            (Users, "incremental/users.json"),
+            (Tickets, "incremental/tickets/cursor.json"),
+            (Users, "incremental/users/cursor.json"),
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
             (Schedules, "business_hours/schedules.json"),
@@ -424,10 +423,10 @@ class TestSourceZendeskSupportStream:
             (Macros, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (Posts, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (
-                Organizations,
-                {"updated_at": "2022-03-17T16:03:07Z"},
-                {"updated_at": "2023-03-17T16:03:07Z"},
-                {"updated_at": "2023-03-17T16:03:07Z"},
+                    Organizations,
+                    {"updated_at": "2022-03-17T16:03:07Z"},
+                    {"updated_at": "2023-03-17T16:03:07Z"},
+                    {"updated_at": "2023-03-17T16:03:07Z"},
             ),
             (Groups, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
@@ -477,14 +476,12 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, {"start_time": 1622505600}),
-            (Posts, {"start_time": 1622505600}),
             (Organizations, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
             (TicketFields, {"start_time": 1622505600}),
         ],
         ids=[
             "Macros",
-            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
@@ -615,30 +612,37 @@ class TestSourceZendeskSupportCursorPaginationStream:
         [
             (GroupMemberships, {}, None),
             (TicketForms, {}, None),
-            (TicketMetricEvents, {}, None),
+            (TicketMetricEvents, {
+                "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                "links": {
+                    "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                    "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                },
+            },
+             {"page[after]": "<after_cursor>"}),
             (TicketAudits, {}, None),
             (
-                TicketMetrics,
-                {
-                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
-                    "links": {
-                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
-                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                    TicketMetrics,
+                    {
+                        "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                        "links": {
+                            "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                            "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                        },
                     },
-                },
-                {"page[after]": "<after_cursor>"},
+                    {"page[after]": "<after_cursor>"},
             ),
             (SatisfactionRatings, {}, None),
             (
-                OrganizationMemberships,
-                {
-                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
-                    "links": {
-                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
-                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                    OrganizationMemberships,
+                    {
+                        "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                        "links": {
+                            "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                            "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                        },
                     },
-                },
-                {"page[after]": "<after_cursor>"},
+                    {"page[after]": "<after_cursor>"},
             ),
             (
                     TicketSkips,
@@ -666,7 +670,6 @@ class TestSourceZendeskSupportCursorPaginationStream:
     )
     def test_next_page_token(self, requests_mock, stream_cls, response, expected):
         stream = stream_cls(**STREAM_ARGS)
-        # stream_name = snake_case(stream.__class__.__name__)
         requests_mock.get(STREAM_URL, json=response)
         test_response = requests.get(STREAM_URL)
         output = stream.next_page_token(test_response)
@@ -699,11 +702,11 @@ class TestSourceZendeskSupportCursorPaginationStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (GroupMemberships, {"sort_by": "asc", "start_time": 1622505600}),
+            (GroupMemberships, {'page[size]': 100, 'sort_by': 'asc', 'start_time': 1622505600}),
             (TicketForms, {"start_time": 1622505600}),
-            (TicketMetricEvents, {"start_time": 1622505600}),
+            (TicketMetricEvents, {'page[size]': 100, 'start_time': 1622505600}),
             (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 1000}),
-            (SatisfactionRatings, {"sort_by": "asc", "start_time": 1622505600}),
+            (SatisfactionRatings, {'page[size]': 100, 'sort_by': 'asc', 'start_time': 1622505600}),
             (TicketMetrics, {"page[size]": 100, "start_time": 1622505600}),
             (OrganizationMemberships, {"page[size]": 100, "start_time": 1622505600}),
             (TicketSkips, {"page[size]": 100, "start_time": 1622505600}),
@@ -744,22 +747,6 @@ class TestSourceZendeskIncrementalExportStream:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Users, "incremental/users.json"),
-            (Tickets, "incremental/tickets.json"),
-        ],
-        ids=[
-            "Users",
-            "Tickets",
-        ],
-    )
-    def test_path(self, stream_cls, expected):
-        stream = stream_cls(**STREAM_ARGS)
-        result = stream.path()
-        assert result == expected
-
-    @pytest.mark.parametrize(
         "stream_cls",
         [
             (Users),
@@ -776,7 +763,7 @@ class TestSourceZendeskIncrementalExportStream:
         requests_mock.get(STREAM_URL, json={stream_name: {}})
         test_response = requests.get(STREAM_URL)
         output = stream.next_page_token(test_response)
-        assert output is None
+        assert output == {'cursor': None}
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -920,7 +907,7 @@ class TestSourceZendeskSupportTicketEventsExportStream:
 
 def test_read_tickets_stream(requests_mock):
     requests_mock.get(
-        "https://subdomain.zendesk.com/api/v2/incremental/tickets.json",
+        "https://subdomain.zendesk.com/api/v2/incremental/tickets/cursor.json",
         json={
             "tickets": [
                 {"custom_fields": []},
@@ -933,7 +920,8 @@ def test_read_tickets_stream(requests_mock):
                         {"id": 360023712840, "value": False},
                     ]
                 },
-            ]
+            ],
+            "end_of_stream": True
         },
     )
 
@@ -974,3 +962,47 @@ def test_read_post_comment_votes_stream(requests_mock):
     stream = PostCommentVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
     records = read_full_refresh(stream)
     assert records == votes
+
+
+def test_read_ticket_metric_events_request_params(requests_mock):
+    first_page_response = {
+        "ticket_metric_events": [
+            {"id": 1, "ticket_id": 123, "metric": "agent_work_time", "instance_id": 0, "type": "measure", "time": "2020-01-01T01:00:00Z"},
+            {"id": 2, "ticket_id": 123, "metric": "pausable_update_time", "instance_id": 0, "type": "measure", "time": "2020-01-01T01:00:00Z"},
+            {"id": 3, "ticket_id": 123, "metric": "reply_time", "instance_id": 0, "type": "measure", "time": "2020-01-01T01:00:00Z"},
+            {"id": 4, "ticket_id": 123, "metric": "requester_wait_time", "instance_id": 1, "type": "activate", "time": "2020-01-01T01:00:00Z"}
+        ],
+        "meta": {
+            "has_more": True,
+            "after_cursor": "<after_cursor>",
+            "before_cursor": "<before_cursor>"
+        },
+        "links": {
+            "prev": "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events.json?page%5Bbefore%5D=<before_cursor>&page%5Bsize%5D=100&start_time=1577836800",
+            "next": "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events.json?page%5Bafter%5D=<after_cursor>&page%5Bsize%5D=100&start_time=1577836800"
+        },
+        "end_of_stream": False
+    }
+
+    second_page_response = {
+        "ticket_metric_events": [
+                    {"id": 5163373143183, "ticket_id": 130, "metric": "reply_time", "instance_id": 1, "type": "fulfill", "time": "2022-07-18T16:39:48Z"},
+                    {"id": 5163373143311, "ticket_id": 130, "metric": "requester_wait_time", "instance_id": 0, "type": "measure", "time": "2022-07-18T16:39:48Z"}
+        ],
+        "meta": {
+            "has_more": False,
+            "after_cursor": "<before_cursor>",
+            "before_cursor": "<before_cursor>"
+        },
+        "links": {
+            "prev": "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events.json?page%5Bbefore%5D=<before_cursor>&page%5Bsize%5D=100&start_time=1577836800",
+            "next": "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events.json?page%5Bbefore%5D=<before_cursor>&page%5Bsize%5D=100&start_time=1577836800"
+        },
+        "end_of_stream": True
+    }
+    request_history = requests_mock.get("https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events", [
+        {"json": first_page_response}, {"json": second_page_response}])
+    stream = TicketMetricEvents(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    read_full_refresh(stream)
+    assert request_history.call_count == 2
+    assert request_history.last_request.qs == {"page[after]": ["<after_cursor>"], "page[size]": ["100"], "start_time": ["1577836800"]}

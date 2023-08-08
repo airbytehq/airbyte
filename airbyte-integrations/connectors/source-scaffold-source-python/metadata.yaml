@@ -5,6 +5,8 @@ data:
   registries:
     oss:
       enabled: false
+    cloud:
+      enabled: false
   connectorSubtype: api
   connectorType: source
   definitionId: FAKE-UUID-0000-0000-000000000000
@@ -15,6 +17,7 @@ data:
   license: MIT
   name: Scaffold Source Python
   releaseDate: TODO
+  supportLevel: community
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-python
   tags:
