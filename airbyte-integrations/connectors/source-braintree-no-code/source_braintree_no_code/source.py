@@ -46,11 +46,10 @@ class MerchantAccountExtractor(RecordExtractor):
 
     def extract_records(self, response: requests.Response,
                         ) -> List[Record]:
-        merchant_accounts = XmlUtil.dict_from_xml(response.text)['merchant_accounts']['merchant_account']
-        merchant_accounts = [MerchantAccount(None, merchant_account) for merchant_account in merchant_accounts]
-        merchant_accounts = [get_json_from_resource(merchant_account) for merchant_account in merchant_accounts]
-        print(merchant_accounts)
-        return []
+        data = XmlUtil.dict_from_xml(response.text)['merchant_accounts']
+        merchant_accounts = data.get('merchant_account')
+        return [] if not merchant_accounts else [get_json_from_resource(MerchantAccount(None, merchant_account)) \
+                                                 for merchant_account in merchant_accounts]
 
 
 # Declarative Source
