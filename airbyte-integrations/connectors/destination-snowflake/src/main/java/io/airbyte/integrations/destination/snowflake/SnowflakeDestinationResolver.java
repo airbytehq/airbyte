@@ -14,15 +14,7 @@ import java.util.Map;
 public class SnowflakeDestinationResolver {
 
   public static DestinationType getTypeFromConfig(final JsonNode config) {
-    if (isS3Copy(config)) {
-      return DestinationType.COPY_S3;
-    } else {
       return DestinationType.INTERNAL_STAGING;
-    }
-  }
-
-  public static boolean isS3Copy(final JsonNode config) {
-    return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
   }
 
   public static int getNumberOfFileBuffers(final JsonNode config) {
@@ -34,14 +26,10 @@ public class SnowflakeDestinationResolver {
     return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
-  public static Map<DestinationType, Destination> getTypeToDestination(
-                                                                       final String airbyteEnvironment) {
-    final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination(airbyteEnvironment);
+  public static Map<DestinationType, Destination> getTypeToDestination(final String airbyteEnvironment) {
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination(airbyteEnvironment);
 
-    return ImmutableMap.of(
-        DestinationType.COPY_S3, s3StagingDestination,
-        DestinationType.INTERNAL_STAGING, internalStagingDestination);
+    return ImmutableMap.of(DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
 
 }

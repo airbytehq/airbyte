@@ -90,26 +90,11 @@ public class SnowflakeDestinationTest {
   }
 
   @Test
-  @DisplayName("When given S3 credentials should use COPY")
-  public void useS3CopyStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("s3_bucket_name", "fake-bucket");
-    stubLoadingMethod.put("access_key_id", "test");
-    stubLoadingMethod.put("secret_access_key", "test key");
-
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
-
-    assertTrue(SnowflakeDestinationResolver.isS3Copy(stubConfig));
-  }
-
-  @Test
   @DisplayName("When not given S3 credentials should use INSERT")
   public void useInsertStrategyTest() {
     final var stubLoadingMethod = mapper.createObjectNode();
     final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
-    assertFalse(SnowflakeDestinationResolver.isS3Copy(stubConfig));
   }
 
   @ParameterizedTest
@@ -121,9 +106,7 @@ public class SnowflakeDestinationTest {
   }
 
   private static Stream<Arguments> destinationTypeToConfig() {
-    return Stream.of(
-        arguments("copy_s3_config.json", DestinationType.COPY_S3),
-        arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
+    return Stream.of(arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }
 
   @Test

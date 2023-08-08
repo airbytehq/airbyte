@@ -26,7 +26,6 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   private final String airbyteEnvironment;
 
   enum DestinationType {
-    COPY_S3,
     INTERNAL_STAGING
   }
 
