@@ -59,7 +59,7 @@ Add screenshots and additional details for IntelliJ IDEA and/or VS Code.
 
 ## Publish and release
 
-\_⚠️ These steps should only be performed after all testing and approvals are in place on the PR. ⚠️\_
+_⚠️ These steps should only be performed after all testing and approvals are in place on the PR. ⚠️_
 
 1. Remove `-SNAPSHOT` suffix from CDK version.
    - e.g. by running `nano airbyte-cdk/java/airbyte-cdk/src/main/resources/
