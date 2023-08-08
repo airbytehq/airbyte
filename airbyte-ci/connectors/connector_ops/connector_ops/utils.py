@@ -284,7 +284,7 @@ class Connector:
         sl_value = get(self.metadata, "ab_internal.sl")
 
         if sl_value is None:
-            logging.warning(f"Connector {self.technical_name} does not have a support level defined in metadata.yaml. Defaulting to {default_value}")
+            logging.warning(f"Connector {self.technical_name} does not have a `ab_internal.sl` defined in metadata.yaml. Defaulting to {default_value}")
             return default_value
 
         return sl_value
@@ -295,7 +295,7 @@ class Connector:
         ql_value = get(self.metadata, "ab_internal.ql")
 
         if ql_value is None:
-            logging.warning(f"Connector {self.technical_name} does not have a support level defined in metadata.yaml. Defaulting to {default_value}")
+            logging.warning(f"Connector {self.technical_name} does not have a `ab_internal.ql` defined in metadata.yaml. Defaulting to {default_value}")
             return default_value
 
         return ql_value
