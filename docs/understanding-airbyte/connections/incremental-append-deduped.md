@@ -1,21 +1,19 @@
-# Incremental Sync - Deduped History
+# Incremental Sync - Append + Deduped
 
 ## High-Level Context
 
 This connector syncs data **incrementally**, which means that only new or modified data will be synced. In contrast with the [Incremental Append mode](./incremental-append.md), this mode updates rows that have been modified instead of adding a new version of the row with the updated data. Simply put, if you've synced a row before and it has since been updated, this mode will combine the two rows
-in the destination and use the updated data. On the other hand, the [Incremental Append mode](./incremental-append.md) would just add a new row with the updated data.
+in the destination and use the most recent data. On the other hand, the [Incremental Append mode](./incremental-append.md) would just add a new row with the updated data.
 
 ## Overview
 
-Airbyte supports syncing data in **Incremental Deduped History** mode i.e:
+Airbyte supports syncing data in **Incremental Append Deduped** mode i.e:
 
 1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. If the sync is running for the first time, it is equivalent to a [Full Refresh](full-refresh-append.md) since all data will be considered as _new_.
-2. **Deduped** means that data in the final table will be unique per primary key \(unlike [Append modes](incremental-append.md)\). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row. In dimensional data warehouse jargon defined by Ralph Kimball, this is referred as a Slowly Changing Dimension \(SCD\) table of type 1.
-3. **History** means that an additional intermediate table is created in which data is being continuously appended to \(with duplicates exactly like [Append modes](incremental-append.md)\). With the use of primary key fields, it is identifying effective `start` and `end` dates of each row of a record. In dimensional data warehouse jargon, this is referred as a Slowly Changing Dimension \(SCD\) table of type 2.
+2. **Append** means taht this incremental data is added to existing tables in your data warehouse.
+3. **Deduped** means that data in the final table will be unique per primary key \(unlike [Append modes](incremental-append.md)\). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row.
 
-In this flavor of incremental, records in the warehouse destination will never be deleted in the history tables \(named with a `_scd` suffix\), but might not exist in the final table. A copy of each new or updated record is _appended_ to the history data in the warehouse. Only the `end` date column is mutated when a new version of the same record is inserted to denote effective date ranges of a row. This means you can find multiple copies of the same record in the destination warehouse. We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
-
-On the other hand, records in the final destination can potentially be deleted as they are de-duplicated. You should not find multiple copies of the same primary key as these should be unique in that table.
+Records in the final destination can potentially be deleted as they are de-duplicated, and if your source supports emitting deleting records (e.g. an CDC database source). You should not find multiple copies of the same primary key as these should be unique in that table.
 
 ## Definitions
 
@@ -42,17 +40,16 @@ Assume that `updated_at` is our `cursor_field` and `name` is the `primary_key`. 
 
 In the next sync, the delta contains the following record:
 
-| name       | deceased | updated_at |
-| :--------- | :------- | :--------- |
-| Louis XVII | false    | 1785       |
+| name      | deceased | updated_at |
+| :-------- | :------- | :--------- |
+| Louis XVI | false    | 1785       |
 
 At the end of this incremental sync, the data warehouse would now contain:
 
 | name             | deceased | updated_at |
 | :--------------- | :------- | :--------- |
-| Louis XVI        | false    | 1754       |
 | Marie Antoinette | false    | 1755       |
-| Louis XVII       | false    | 1785       |
+| Louis XVI        | false    | 1785       |
 
 ### Updating a Record
 
@@ -63,24 +60,11 @@ Let's assume that our warehouse contains all the data that it did at the end of 
 | Louis XVI        | true     | 1793       |
 | Marie Antoinette | true     | 1793       |
 
-The output we expect to see in the warehouse is as follows:
-
-In the history table:
-
-| name             | deceased | updated_at | start_at | end_at |
-| :--------------- | :------- | :--------- | :------- | :----- |
-| Louis XVI        | false    | 1754       | 1754     | 1793   |
-| Louis XVI        | true     | 1793       | 1793     | NULL   |
-| Louis XVII       | false    | 1785       | 1785     | NULL   |
-| Marie Antoinette | false    | 1755       | 1755     | 1793   |
-| Marie Antoinette | true     | 1793       | 1793     | NULL   |
-
 In the final de-duplicated table:
 
 | name             | deceased | updated_at |
 | :--------------- | :------- | :--------- |
 | Louis XVI        | true     | 1793       |
-| Louis XVII       | false    | 1785       |
 | Marie Antoinette | true     | 1793       |
 
 ## Source-Defined Cursor
@@ -125,37 +109,13 @@ Due to the use of a cursor column, if modifications to the underlying records ar
 select * from table where cursor_field > 'last_sync_max_cursor_field_value'
 ```
 
-Let's say the following data already exists into our data warehouse.
-
-| name             | deceased | updated_at |
-| :--------------- | :------- | :--------- |
-| Louis XVI        | false    | 1754       |
-| Marie Antoinette | false    | 1755       |
-
-At the start of the next sync, the source data contains the following new record:
-
-| name      | deceased | updated_at |
-| :-------- | :------- | :--------- |
-| Louis XVI | true     | 1754       |
-
-At the end of the second incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field \(the cursor field is not greater than last sync's max value, `1754 < 1755`\), so it is not emitted by the source as a new or modified record.
-
-| name             | deceased | updated_at |
-| :--------------- | :------- | :--------- |
-| Louis XVI        | false    | 1754       |
-| Marie Antoinette | false    | 1755       |
-
-Similarly, if multiple modifications are made during the same day to the same records. If the frequency of the sync is not granular enough \(for example, set for every 24h\), then intermediate modifications to the data are not going to be detected and emitted. Only the state of data at the time the sync runs will be reflected in the destination.
-
-Those concerns could be solved by using a different incremental approach based on binary logs, Write-Ahead-Logs \(WAL\), or also called [Change Data Capture \(CDC\)](../cdc.md).
-
-The current behavior of **Incremental** is not able to handle source schema changes yet, for example, when a column is added, renamed or deleted from an existing table etc. It is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to correctly replicate the data to the destination with the new schema changes.
-
-Additionally, this sync mode is only supported for destinations where dbt/normalization is possible for the moment. The de-duplicating logic is indeed implemented as dbt models as part of a sequence of transformations applied after the Extract and Load activities \(thus, an ELT approach\). Nevertheless, it is theoretically possible that destinations can handle directly this logic \(maybe in the future\) before actually writing records to the destination \(as in traditional ETL manner\), but that's not the way it is implemented at this time.
-
-If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../operator-guides/transformation-and-normalization/transformations-with-sql.md)
-
 ## Related information
 
 - [An overview of Airbyte’s replication modes](https://airbyte.com/blog/understanding-data-replication-modes).
 - [Explore Airbyte’s incremental data synchronization](https://airbyte.com/tutorials/incremental-data-synchronization).
+
+---
+
+**Note**:
+
+Previous versions of Airbyte destinations supported SCD tables, which would sore every entry seen for a record. This was removed with Destinations V2 and [Typing and Deduplication](/understanding-airbyte/typing-deduping.md).
