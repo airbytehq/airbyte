@@ -36,7 +36,7 @@ def test_get_selected_connectors_by_name_no_file_modification():
 def test_get_selected_connectors_by_support_level_no_file_modification():
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_support_levels=("certified"),
+        selected_support_levels=["certified"],
         selected_languages=(),
         modified=False,
         metadata_changes_only=False,
@@ -133,7 +133,7 @@ def test_get_selected_connectors_with_modified_and_support_level():
     modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_support_levels=("certified"),
+        selected_support_levels=["certified"],
         selected_languages=(),
         modified=True,
         metadata_changes_only=False,
