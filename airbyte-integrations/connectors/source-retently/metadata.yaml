@@ -10,19 +10,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: db04ecd1-42e7-4115-9cec-95812905c626
-  dockerImageTag: 1.0.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-retently
   githubIssueLabel: source-retently
   icon: retently.svg
   license: MIT
   name: Retently
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/retently
   tags:
     - language:low-code
-  releases:
-    breakingChanges:
-      1.0.0:
-        message: "Version 1.0.0 was released with the low code version"
-        upgradeDeadline: "2023-08-31"
+  ab_internal:
+  sl: 100
+  ql: 200
 metadataSpecVersion: "1.0"
