@@ -47,9 +47,24 @@ build.dependsOn(publishToMavenLocal)
 // Confirm local publish status by running:
 // $ ls -la ~/.m2/repository/io/airbyte/airbyte-cdk*
 // Confirm jar contents by running:
-// $ jar tf ~/.m2/repository/io/airbyte/airbyte-cdk/0.0.1-SNAPSHOT/airbyte-cdk-0.0.1-SNAPSHOT.jar
+// $ jar tf ~/.m2/repository/io/airbyte/airbyte-cdk/0.0.2-SNAPSHOT/airbyte-cdk-0.0.2-SNAPSHOT.jar
 // Remove CDK artifacts from MavenLocal by running:
 // $ rm -rf ~/.m2/repository/io/airbyte/airbyte-cdk*
+
+publishToMavenLocal {
+    // Get the path to the artifact in the local Maven repository
+    def artifactPath = "${System.getProperty('user.home')}/.m2/repository/io/airbyte/airbyte-cdk/${version}/airbyte-cdk-${version}.jar"
+
+    // Always re-publish the artifact to MavenLocal
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        println "Running CDK publishToMavenLocal..."
+    }
+    doLast {
+        println "Finished CDK publishToMavenLocal."
+    }
+}
 
 test {
     useJUnitPlatform()
