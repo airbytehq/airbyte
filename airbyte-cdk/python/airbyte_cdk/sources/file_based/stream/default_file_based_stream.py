@@ -168,6 +168,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         else:
             files = self.list_files()
             total_n_files = len(files)
+
+            if total_n_files == 0:
+                raise SchemaInferenceError(FileBasedSourceError.EMPTY_STREAM, stream=self.name)
+
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
             if total_n_files > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.

@@ -52,6 +52,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_string_can_be_null_with_input_schemas_scenario,
     csv_string_not_null_if_no_null_values_scenario,
     csv_strings_can_be_null_not_quoted_scenario,
+    earlier_csv_scenario,
     empty_schema_inference_scenario,
     invalid_csv_scenario,
     multi_csv_scenario,
@@ -142,6 +143,7 @@ discover_scenarios = [
     single_csv_file_is_skipped_if_same_modified_at_as_in_history,
     single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
     csv_custom_format_scenario,
+    earlier_csv_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
     single_parquet_scenario,
@@ -311,6 +313,7 @@ check_scenarios = [
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     valid_single_stream_user_input_schema_scenario,
     single_avro_scenario,
+    earlier_csv_scenario,
 ]
 
 
