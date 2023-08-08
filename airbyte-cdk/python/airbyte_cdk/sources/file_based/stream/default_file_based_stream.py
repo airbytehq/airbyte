@@ -101,7 +101,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(
                         level=Level.WARN,
-                        message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy} n_skipped={n_skipped}",
+                        message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy.value} n_skipped={n_skipped}",
                     ),
                 )
                 break
@@ -162,7 +162,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
-            return self.config.input_schema  # type: ignore
+            return self.config.get_input_schema()  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
         else:

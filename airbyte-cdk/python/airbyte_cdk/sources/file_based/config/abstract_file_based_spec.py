@@ -49,7 +49,6 @@ class AbstractFileBasedSpec(BaseModel):
         transformed_schema = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
         cls.replace_enum_allOf_and_anyOf(transformed_schema)
-        cls.add_legacy_format(transformed_schema)
 
         return transformed_schema
 
@@ -61,40 +60,23 @@ class AbstractFileBasedSpec(BaseModel):
         anyOfs are also not supported by the UI, so we replace them with the similar oneOf, with the
         additional validation that an incoming config only matches exactly one of a field's types.
         """
-        # this will need to add ["anyOf"] once we have more than one format type and loop over the list of elements
         objects_to_check = schema["properties"]["streams"]["items"]["properties"]["format"]
-        if "additionalProperties" in objects_to_check:
-            objects_to_check["additionalProperties"]["oneOf"] = objects_to_check["additionalProperties"].pop("anyOf", [])
-            for format in objects_to_check["additionalProperties"]["oneOf"]:
-                for key in format["properties"]:
-                    object_property = format["properties"][key]
-                    if "allOf" in object_property and "enum" in object_property["allOf"][0]:
-                        object_property["enum"] = object_property["allOf"][0]["enum"]
-                        object_property.pop("allOf")
+        objects_to_check["type"] = "object"
+        objects_to_check["oneOf"] = objects_to_check.pop("anyOf", [])
+        for format in objects_to_check["oneOf"]:
+            for key in format["properties"]:
+                object_property = format["properties"][key]
+                if "allOf" in object_property and "enum" in object_property["allOf"][0]:
+                    object_property["enum"] = object_property["allOf"][0]["enum"]
+                    object_property.pop("allOf")
 
-        properties_to_change = ["primary_key", "input_schema"]
+        properties_to_change = ["validation_policy"]
         for property_to_change in properties_to_change:
-            schema["properties"]["streams"]["items"]["properties"][property_to_change]["oneOf"] = schema["properties"]["streams"]["items"][
-                "properties"
-            ][property_to_change].pop("anyOf")
-        return schema
-
-    @staticmethod
-    def add_legacy_format(schema: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Because we still need to allow for configs using the legacy format (like source-s3) where file format options
-        are at the top level and not mapped from file_type -> format options, the json schema used to validate the
-        config must be adjusted to support the generic mapping object. Once configs no longer adhere to the old
-        format we can remove this change.
-        """
-        legacy_format_options = {
-            "title": "Legacy Format",
-            # Explicitly require this field to make it mutually exclusive (oneOf) with the new format mapping file_type -> format
-            "required": ["filetype"],
-            "type": "object",
-            "properties": {"filetype": {"title": "Filetype", "type": "string"}},
-        }
-        csv_format_options = schema["properties"]["streams"]["items"]["properties"]["format"]
-        union_format = {"oneOf": [csv_format_options, legacy_format_options]}
-        schema["properties"]["streams"]["items"]["properties"]["format"] = union_format
+            property_object = schema["properties"]["streams"]["items"]["properties"][property_to_change]
+            if "anyOf" in property_object:
+                schema["properties"]["streams"]["items"]["properties"][property_to_change]["type"] = "object"
+                schema["properties"]["streams"]["items"]["properties"][property_to_change]["oneOf"] = property_object.pop("anyOf")
+            if "allOf" in property_object and "enum" in property_object["allOf"][0]:
+                property_object["enum"] = property_object["allOf"][0]["enum"]
+                property_object.pop("allOf")
         return schema
