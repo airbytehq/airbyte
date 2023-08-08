@@ -11,6 +11,7 @@ from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition, LatestMetadataEntry
 from orchestrator.config import get_public_url_for_gcs_file
+from orchestrator.logging import sentry
 
 GROUP_NAME = "metadata"
 
@@ -176,6 +177,7 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntry]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 

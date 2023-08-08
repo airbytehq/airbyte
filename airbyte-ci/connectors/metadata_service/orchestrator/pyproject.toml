@@ -23,10 +23,13 @@ dpath = "^2.1.5"
 dagster-cloud = "^1.2.6"
 grpcio = "^1.47.0"
 poetry2setup = "^1.1.0"
-slack-sdk = "^3.21.3"
 poetry = "^1.5.1"
 pydantic = "^1.10.6"
+dagster-slack = "^0.20.2"
+sentry-sdk = "^1.28.1"
 semver = "^3.0.1"
+python-dateutil = "^2.8.2"
+humanize = "^4.7.0"
 
 
 [tool.poetry.group.dev.dependencies]

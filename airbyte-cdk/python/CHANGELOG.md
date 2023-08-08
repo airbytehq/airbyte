@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.50.2
+Fix title and description of datetime_format fields
+
+## 0.50.1
+File-based CDK cursor and entrypoint updates
+
+## 0.50.0
+Low code CDK: Decouple SimpleRetriever and HttpStream
+
 ## 0.49.0
 Add utils for embedding sources in other Python applications
 
