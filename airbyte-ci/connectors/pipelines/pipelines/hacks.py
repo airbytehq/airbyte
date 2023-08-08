@@ -57,7 +57,7 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
     for line in gradle_file_content.splitlines():
         if not any(line_to_remove in line for line_to_remove in LINES_TO_REMOVE_FROM_GRADLE_FILE):
             patched_gradle_file.append(line)
-    return connector_dir.with_new_file("build.gradle", "\n".join(patched_gradle_file))
+    return connector_dir.with_new_file("build.gradle", contents="\n".join(patched_gradle_file))
 
 
 def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Directory:
@@ -86,7 +86,7 @@ def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Di
     patched_cat_config["connector_image"] = context.connector.acceptance_test_config["connector_image"].replace(
         ":dev", f":{context.git_revision}"
     )
-    return connector_dir.with_new_file("acceptance-test-config.yml", yaml.safe_dump(patched_cat_config))
+    return connector_dir.with_new_file("acceptance-test-config.yml", contents=yaml.safe_dump(patched_cat_config))
 
 
 async def patch_connector_dir(context: ConnectorContext, connector_dir: Directory) -> Directory:
