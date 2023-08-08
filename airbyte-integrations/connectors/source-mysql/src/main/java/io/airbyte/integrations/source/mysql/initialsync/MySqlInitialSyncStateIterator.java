@@ -63,7 +63,8 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   @Override
   protected AirbyteMessage computeNext() {
     if (messageIterator.hasNext()) {
-      if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
+      if (((recordCount > 0 && recordCount % syncCheckpointRecords == 0)
+          || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
           && Objects.nonNull(lastPk)) {
         final PrimaryKeyLoadStatus pkStatus = new PrimaryKeyLoadStatus()
             .withVersion(MYSQL_STATUS_VERSION)
@@ -73,7 +74,6 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
             .withPkVal(lastPk)
             .withIncrementalState(streamStateForIncrementalRun);
         LOGGER.info("Emitting initial sync pk state for stream {}, state is {}", pair, pkStatus);
-        recordCount = 0L;
         lastCheckpoint = Instant.now();
         return new AirbyteMessage()
             .withType(Type.STATE)
