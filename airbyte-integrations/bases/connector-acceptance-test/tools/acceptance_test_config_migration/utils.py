@@ -59,10 +59,10 @@ def get_valid_definitions_from_args(args):
             logging.warning(f"Skipping {connector_technical_name} since it's not an airbyte connector.")
         elif not args.allow_community and definition in definitions.COMMUNITY_DEFINITIONS:
             logging.warning(
-                f"Skipping {connector_technical_name} since it's a beta connector. This is configurable via `--allow_community`"
+                f"Skipping {connector_technical_name} since it's a community connector. This is configurable via `--allow_community`"
             )
         elif definition in definitions.OTHER_DEFINITIONS:
-            logging.warning(f"Skipping {connector_technical_name} since it doesn't have a release stage.")
+            logging.warning(f"Skipping {connector_technical_name} since it doesn't have a support level.")
         else:
             valid_definitions.append(definition)
 
