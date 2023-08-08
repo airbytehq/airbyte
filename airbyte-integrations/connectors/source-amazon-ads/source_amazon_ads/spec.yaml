@@ -59,14 +59,14 @@ connectionSpecification:
     profiles:
       title: Profile IDs
       description:
-        'Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a> for more details. Note: If Profile IDs are also selected, profiles will be filtered if they meet either criteria.'
+        'Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a> for more details. Note: If Marketplace IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.'
       order: 6
       type: array
       items:
         type: integer
     marketplace_ids:
       title: Marketplace IDs
-      description: "Marketplace IDs you want to fetch data for. Note: If Profile IDs are also selected, profiles will be filtered if they meet either criteria."
+      description: "Marketplace IDs you want to fetch data for. Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID."
       order: 7
       type: array
       items:
