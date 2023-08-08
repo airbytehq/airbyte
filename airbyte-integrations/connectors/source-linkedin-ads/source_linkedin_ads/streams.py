@@ -47,7 +47,7 @@ class LinkedinAdsStream(HttpStream, ABC):
     @property
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""
-        return ",".join(map(str, self.config.get("account_ids")))
+        return ",".join(map(str, self.config.get("account_ids", [])))
 
     def path(
         self,
