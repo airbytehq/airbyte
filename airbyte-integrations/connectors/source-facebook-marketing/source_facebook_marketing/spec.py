@@ -108,10 +108,12 @@ class InsightConfig(BaseModel):
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Custom Insights Lookback Window",
-        description="The number of days to revisit data during syncing to capture updated conversion data from the API. "
-        "Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad."
-        "If you have set a custom attribution window in your Facebook account, please set the same value here. "
-        "Refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a> for more information on this value.",
+        description=(
+            "The number of days to revisit data during syncing to capture updated conversion data from the API. "
+            "Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad."
+            "If you have set a custom attribution window in your Facebook account, please set the same value here. "
+            "Refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a> for more information on this value."
+        ),
         maximum=28,
         mininum=1,
         default=28,
@@ -213,9 +215,9 @@ class ConnectorConfig(BaseConfig):
         order=8,
         description=(
             "The number of days to revisit data during syncing to capture updated conversion data from the API. "
-        "Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad."
-        "If you have set a custom attribution window in your Facebook account, please set the same value here. "
-        "Refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a> for more information on this value."
+            "Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad."
+            "If you have set a custom attribution window in your Facebook account, please set the same value here. "
+            "Refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a> for more information on this value."
         ),
         maximum=28,
         mininum=1,
