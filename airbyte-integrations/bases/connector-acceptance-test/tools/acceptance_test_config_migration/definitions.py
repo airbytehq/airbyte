@@ -24,11 +24,7 @@ def read_source_definitions():
 
 def find_by_support_level(source_definitions, support_level):
     if support_level == "other":
-        return [
-            definition
-            for definition in source_definitions
-            if definition.get("supportLevel", "") not in ["community", "certified"]
-        ]
+        return [definition for definition in source_definitions if definition.get("supportLevel", "") not in ["community", "certified"]]
     else:
         return [definition for definition in source_definitions if definition.get("supportLevel") == support_level]
 
