@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest as pytest
 from typing import Type
+
+import pytest as pytest
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 
 

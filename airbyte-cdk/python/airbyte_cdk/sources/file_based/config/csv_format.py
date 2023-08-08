@@ -86,7 +86,7 @@ class CsvFormat(BaseModel):
     infer_datatypes_legacy: bool = Field(
         title="Infer Datatypes (legacy)",
         default=False,
-        description="Whether to autogenerate the schema based the file content. This inferrence does not support list and objects",
+        description="Whether to autogenerate the schema based the file content. This inference does not support list and objects.",
     )
 
     @validator("delimiter")
@@ -130,5 +130,5 @@ class CsvFormat(BaseModel):
         infer_datatypes = values.get("infer_datatypes", False)
         infer_datatypes_legacy = values.get("infer_datatypes_legacy", False)
         if infer_datatypes and infer_datatypes_legacy:
-            raise ValueError("Only one way to inference can be configured at the same time")
+            raise ValueError("Only one way to infer can be configured but both infer_datatypes and infer_datatypes_legacy are enabled.")
         return values

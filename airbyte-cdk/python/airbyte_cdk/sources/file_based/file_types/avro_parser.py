@@ -10,8 +10,9 @@ import fastavro
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser, Schema
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 
 AVRO_TYPE_TO_JSON_TYPE = {
     "null": "null",
@@ -45,7 +46,7 @@ class AvroParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Schema:
+    ) -> SchemaType:
         avro_format = config.format[config.file_type] if config.format else AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
@@ -60,7 +61,7 @@ class AvroParser(FileTypeParser):
             field["name"]: AvroParser._convert_avro_type_to_json(avro_format, field["name"], field["type"])
             for field in avro_schema["fields"]
         }
-        return json_schema  # type: ignore
+        return json_schema
 
     @classmethod
     def _convert_avro_type_to_json(cls, avro_format: AvroFormat, field_name: str, avro_field: str) -> Mapping[str, Any]:
@@ -130,7 +131,7 @@ class AvroParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-        discovered_schema: Optional[Schema],
+        discovered_schema: Optional[SchemaType],
     ) -> Iterable[Dict[str, Any]]:
         avro_format = config.format[config.file_type] if config.format else AvroFormat()
         if not isinstance(avro_format, AvroFormat):

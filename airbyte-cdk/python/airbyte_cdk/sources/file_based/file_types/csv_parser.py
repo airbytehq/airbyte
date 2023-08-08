@@ -15,9 +15,9 @@ from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingB
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser, Schema
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING
+from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING, SchemaType
 
 DIALECT_NAME = "_config_dialect"
 
@@ -119,7 +119,7 @@ class CsvParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Schema:
+    ) -> SchemaType:
         if config.input_schema:
             # FIXME change type of method to Mapping
             return config.input_schema  # type: ignore # conversion to mapping is handled by pydantic and we shouldn't have a str here
@@ -132,8 +132,9 @@ class CsvParser(FileTypeParser):
                 config_format.true_values,
                 config_format.false_values,
                 config_format.null_values,
-                config_format.infer_datatypes and not config_format.infer_datatypes_legacy
-            ) if config_format.infer_datatypes or config_format.infer_datatypes_legacy
+                config_format.infer_datatypes and not config_format.infer_datatypes_legacy,
+            )
+            if config_format.infer_datatypes or config_format.infer_datatypes_legacy
             else _DisabledTypeInferrer()
         )
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
@@ -158,7 +159,7 @@ class CsvParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-        discovered_schema: Optional[Schema],
+        discovered_schema: Optional[SchemaType],
     ) -> Iterable[Dict[str, Any]]:
         config_format = _extract_config_format(config)
         cast_fn = CsvParser._get_cast_function(discovered_schema, config_format, logger)
@@ -286,7 +287,9 @@ class _JsonTypeInferrer(_TypeInferrer):
     _OBJECT_TYPE = "object"
     _STRING_TYPE = "string"
 
-    def __init__(self, boolean_trues: Set[str], boolean_falses: Set[str], null_values: Set[str], allow_for_objects_and_arrays: bool) -> None:
+    def __init__(
+        self, boolean_trues: Set[str], boolean_falses: Set[str], null_values: Set[str], allow_for_objects_and_arrays: bool
+    ) -> None:
         self._boolean_trues = boolean_trues
         self._boolean_falses = boolean_falses
         self._null_values = null_values

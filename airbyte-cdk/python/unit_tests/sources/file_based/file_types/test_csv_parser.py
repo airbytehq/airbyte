@@ -115,7 +115,6 @@ class SchemaInferenceTestCase(TestCase):
         self._config.input_schema = {self._HEADER_NAME: {"type": "potato"}}
         self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "potato")
 
-
     def test_given_booleans_only_when_infer_schema_then_type_is_boolean(self) -> None:
         self._config_format.infer_datatypes = True
         self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "boolean")
