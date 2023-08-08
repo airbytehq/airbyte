@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * An abstraction over SqlGenerator and DestinationHandler. Destinations will still need to call
- * {@code new CatalogParser(new FooSqlGenerator()).parseCatalog()}, but should otherwise avoid interacting directly with these classes.
+ * {@code new CatalogParser(new FooSqlGenerator()).parseCatalog()}, but should otherwise avoid
+ * interacting directly with these classes.
  * <p>
  * In a typical sync, destinations should call the methods:
  * <ol>
@@ -40,9 +41,9 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private Set<StreamId> overwriteStreamsWithTmpTable;
 
   public DefaultTyperDeduper(SqlGenerator<DialectTableDefinition> sqlGenerator,
-      DestinationHandler<DialectTableDefinition> destinationHandler,
-      ParsedCatalog parsedCatalog,
-      DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator) {
+                             DestinationHandler<DialectTableDefinition> destinationHandler,
+                             ParsedCatalog parsedCatalog,
+                             DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
@@ -50,8 +51,9 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   }
 
   /**
-   * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be the true final tables. Specifically, other than
-   * an initial sync (i.e. table does not exist, or is empty) we write to a temporary final table, and swap it into the true final table at the end of
+   * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be
+   * the true final tables. Specifically, other than an initial sync (i.e. table does not exist, or is
+   * empty) we write to a temporary final table, and swap it into the true final table at the end of
    * the sync. This is to prevent user downtime during a sync.
    */
   public void prepareTables() throws Exception {

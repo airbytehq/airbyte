@@ -48,4 +48,5 @@ class MockSqlGenerator implements SqlGenerator<String> {
   public String migrateFromV1toV2(final StreamId streamId, String namespace, String tableName) {
     return "MIGRATE TABLE " + String.join(".", namespace, tableName) + " TO " + streamId.rawTableId("");
   }
+
 }

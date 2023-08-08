@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
@@ -41,10 +45,8 @@ public class DestinationV1V2MigratorTest {
           Arguments.of(DestinationSyncMode.APPEND_DEDUP, makeMockMigrator(true, false, v2SchemaMatches, true, false), false),
           // Migrates
           Arguments.of(DestinationSyncMode.APPEND, noIssuesMigrator(), true),
-          Arguments.of(DestinationSyncMode.APPEND_DEDUP, noIssuesMigrator(), true)
-      );
+          Arguments.of(DestinationSyncMode.APPEND_DEDUP, noIssuesMigrator(), true));
     }
-
 
   }
 
@@ -55,8 +57,6 @@ public class DestinationV1V2MigratorTest {
     final var actual = migrator.shouldMigrate(config);
     Assertions.assertEquals(expected, actual);
   }
-
-
 
   @Test
   public void testMismatchedSchemaThrowsException() {
@@ -85,9 +85,11 @@ public class DestinationV1V2MigratorTest {
     Assertions.assertEquals("Attempted and failed to migrate stream final_table", exception.getMessage());
   }
 
-  public static BaseDestinationV1V2Migrator makeMockMigrator(final boolean v2NamespaceExists, final boolean v2TableExists,
-      final boolean v2RawSchemaMatches,
-      boolean v1RawTableExists, boolean v1RawTableSchemaMatches) {
+  public static BaseDestinationV1V2Migrator makeMockMigrator(final boolean v2NamespaceExists,
+                                                             final boolean v2TableExists,
+                                                             final boolean v2RawSchemaMatches,
+                                                             boolean v1RawTableExists,
+                                                             boolean v1RawTableSchemaMatches) {
     final BaseDestinationV1V2Migrator migrator = Mockito.spy(BaseDestinationV1V2Migrator.class);
     Mockito.when(migrator.doesAirbyteInternalNamespaceExist(Mockito.any())).thenReturn(v2NamespaceExists);
     final var existingTable = v2TableExists ? Optional.of("v2_raw") : Optional.empty();

@@ -71,15 +71,16 @@ public interface SqlGenerator<DialectTableDefinition> {
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
    * <p>
-   * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is non-empty. Callers are responsible for verifying
-   * those are true.
+   * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is
+   * non-empty. Callers are responsible for verifying those are true.
    */
   String overwriteFinalTable(StreamId stream, String finalSuffix);
 
   /**
-   * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a soft reset.
+   * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a soft
+   * reset.
    *
-   * @param streamId  the stream to migrate
+   * @param streamId the stream to migrate
    * @param namespace
    * @param tableName
    * @return a string containing the necessary sql to migrate

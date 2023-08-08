@@ -112,7 +112,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
 
   /**
-   * Do any setup work to create a namespace for this test run. For example, this might create a BigQuery dataset, or a Snowflake schema.
+   * Do any setup work to create a namespace for this test run. For example, this might create a
+   * BigQuery dataset, or a Snowflake schema.
    */
   protected abstract void createNamespace(String namespace) throws Exception;
 
@@ -127,13 +128,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract void createV1RawTable(StreamId v1RawTable) throws Exception;
 
   /**
-   * Create a final table usingi the StreamId's finalTableId. Subclasses are recommended to hardcode the columns from
-   * {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The only difference between those two column lists is the inclusion
-   * of the _ab_cdc_deleted_at column, which is controlled by the includeCdcDeletedAt parameter.
    * Create a final table usingi the StreamId's finalTableId. Subclasses are recommended to hardcode
    * the columns from {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The
    * only difference between those two column lists is the inclusion of the _ab_cdc_deleted_at column,
-   * which is controlled by the includeCdcDeletedAt parameter.
+   * which is controlled by the includeCdcDeletedAt parameter. Create a final table usingi the
+   * StreamId's finalTableId. Subclasses are recommended to hardcode the columns from
+   * {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The only difference
+   * between those two column lists is the inclusion of the _ab_cdc_deleted_at column, which is
+   * controlled by the includeCdcDeletedAt parameter.
    */
   protected abstract void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception;
 
@@ -462,8 +464,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         6,
         dumpRawTableRecords(streamId),
         4,
-        dumpFinalTableRecords(streamId, "")
-    );
+        dumpFinalTableRecords(streamId, ""));
   }
 
   /**
@@ -583,9 +584,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         () -> assertEquals(1, actualFinalRecords.size()),
         () -> assertTrue(
             actualFinalRecords.stream().noneMatch(record -> record.has("_ab_cdc_deleted_at")),
-            "_ab_cdc_deleted_at column was expected to be dropped. Actual final table had: " + actualFinalRecords
-        )
-    );
+            "_ab_cdc_deleted_at column was expected to be dropped. Actual final table had: " + actualFinalRecords));
   }
 
   @Test
@@ -593,8 +592,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     createRawTable(streamId);
     insertRawTableRecords(
         streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/weirdcolumnnames_inputrecords_raw.jsonl")
-    );
+        BaseTypingDedupingTest.readRecords("sqlgenerator/weirdcolumnnames_inputrecords_raw.jsonl"));
     StreamConfig stream = new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
@@ -610,8 +608,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             put(generator.buildColumnId("$starts_with_dollar_sign"), AirbyteProtocolType.STRING);
           }
 
-        }
-    );
+        });
 
     String createTable = generator.createTable(stream, "");
     destinationHandler.execute(createTable);
@@ -622,20 +619,19 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "sqlgenerator/weirdcolumnnames_expectedrecords_raw.jsonl",
         dumpRawTableRecords(streamId),
         "sqlgenerator/weirdcolumnnames_expectedrecords_final.jsonl",
-        dumpFinalTableRecords(streamId, "")
-    );
+        dumpFinalTableRecords(streamId, ""));
   }
 
   @Test
   public void testV1V2migration() throws Exception {
-    // This is maybe a little hacky, but it avoids having to refactor this entire class and subclasses for something that is going away
+    // This is maybe a little hacky, but it avoids having to refactor this entire class and subclasses
+    // for something that is going away
     StreamId v1RawTableStreamId = new StreamId(null, null, streamId.finalNamespace(), "v1_" + streamId.rawName(), null, null);
     createV1RawTable(v1RawTableStreamId);
     insertV1RawTableRecords(v1RawTableStreamId, singletonList(Jsons.jsonNode(Map.of(
         "_airbyte_ab_id", "v1v2",
         "_airbyte_emitted_at", "2023-01-01T00:00:00Z",
-        "_airbyte_data", "{\"hello\": \"world\"}"
-    ))));
+        "_airbyte_data", "{\"hello\": \"world\"}"))));
     final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
     List<JsonNode> v1RawRecords = dumpRawTableRecords(v1RawTableStreamId);
@@ -646,8 +642,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_ab_id").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
         () -> assertEquals(Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText()), v2RawRecords.get(0).get("_airbyte_data")),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_emitted_at").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
-        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at"))
-    );
+        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at")));
 
   }
 
@@ -658,19 +653,15 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertAll(
         () -> DIFFER.diffRawTableRecords(
             BaseTypingDedupingTest.readRecords(expectedRawRecordsFile),
-            actualRawRecords
-        ),
+            actualRawRecords),
         () -> assertEquals(
             0,
             actualRawRecords.stream()
-                            .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
-                            .count()
-        ),
+                .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
+                .count()),
         () -> DIFFER.diffFinalTableRecords(
             BaseTypingDedupingTest.readRecords(expectedFinalRecordsFile),
-            actualFinalRecords
-        )
-    );
+            actualFinalRecords));
   }
 
   private void verifyRecordCounts(int expectedRawRecords,
