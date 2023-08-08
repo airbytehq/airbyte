@@ -39,6 +39,7 @@ VALID_METADATA_DICT = {
         "githubIssueLabel": "test_label",
         "connectorSubtype": "api",
         "supportLevel": "community",
+        "releaseStage": "alpha",
         "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
     },
 }
@@ -122,6 +123,7 @@ def test_get_registry_status_lists(registries_data, expected_enabled, expected_d
             "documentationUrl": "https://test_documentation_url.com",
             "githubIssueLabel": "test_label",
             "connectorSubtype": "api",
+            "releaseStage": "alpha",
             "supportLevel": "community",
             "registries": registries_data,
         },
