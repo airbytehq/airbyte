@@ -10,6 +10,7 @@ on:
 
 jobs:
   markdown-link-check:
+    if: github.repository_owner == 'airbytehq'
     timeout-minutes: 50
     runs-on: ubuntu-latest
     steps:
