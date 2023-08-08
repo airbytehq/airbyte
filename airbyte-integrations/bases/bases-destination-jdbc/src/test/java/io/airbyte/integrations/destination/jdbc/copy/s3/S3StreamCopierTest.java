@@ -15,7 +15,9 @@ import static org.mockito.Mockito.verify;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -95,6 +97,8 @@ public class S3StreamCopierTest {
 
   @BeforeEach
   public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
+
     s3Client = mock(AmazonS3Client.class);
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);

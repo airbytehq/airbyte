@@ -14,10 +14,16 @@ data:
   license: ELv2
   name: Zendesk Support
   registries:
+    cloud:
+      enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   tags:
     - language:python
+  ab_internal:
+    sl: 300
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

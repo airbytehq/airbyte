@@ -2,59 +2,21 @@
 
 ## What is Destinations V2?
 
-At launch, Airbyte Destinations V2 provides:
-* One-to-one mapping: Data from one stream (endpoint or table) will now create one table in the destination, making it simpler and more efficient.
-* Improved error handling: Typing errors will no longer fail your sync, ensuring smoother data integration processes.
-* Auditable typing errors: Typing errors will now be easily visible in a new _airbyte_meta column, allowing for better tracking of inconsistencies and resolution of issues.
-* Incremental data loading: Data will become visible in the destination as it is loaded.
+Starting today, Airbyte Destinations V2 provides you with:
+* One-to-one table mapping: Data in one stream will always be mapped to one table in your data warehouse. No more sub-tables.
+* Improved error handling with `_airbyte_meta`: Airbyte will now populate typing errors in the `_airbyte_meta` column instead of failing your sync. You can query these results to audit misformatted or unexpected data.
+* Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your destination schema with raw data tables.
+* Incremental delivery for large syncs: Data will be incrementally delivered to your final tables. No more waiting hours to see the first rows in your destination table.
 
-## Destinations V2 Example
-
-Consider the following [source schema](https://docs.airbyte.com/integrations/sources/faker) for stream `users`:
-
-```json
-{
-  "id": "number",
-  "first_name": "string",
-  "age": "number",
-  "address": {
-    "city": "string",
-    "zip": "string"
-  }
-}
-```
-
-The data from one stream will now be mapped to one table in your schema as below. Highlights:
-* Improved error handling with `_airbyte_meta`: Airbyte will populate typing errors in the `_airbyte_meta` column instead of failing your sync. You can query these results to audit misformatted or unexpected data.
-* Internal Airbyte tables in the `airbyte` schema: Airbyte will now generate all raw tables in the `airbyte` schema. You can use these tables to investigate raw data, but please note the format of the tables in `airbyte` may change at any time.
-
-#### Destination Table Name: *public.users*
-
-| *(note, not in actual table)*                   	| _airbyte_raw_id 	| _airbyte_extracted_at    	| _airbyte_meta                                                            	| id 	| first_name 	| age  	| address                                     	|
-|-----------------------------------------------	|-----------------	|---------------------	|--------------------------------------------------------------------------	|----	|------------	|------	|---------------------------------------------	|
-| Successful typing and de-duping ⟶        	| xxx-xxx-xxx     	| 2022-01-01 12:00:00 	| {}                                                                       	| 1  	| sarah      	| 39   	| {   city: “San Francisco”,   zip: “94131” } 	|
-| Failed typing that didn’t break other rows ⟶  	| yyy-yyy-yyy     	| 2022-01-01 12:00:00 	| { errors: {   age:     “fish” is not a valid integer for column “age” }} 	| 2  	| evan       	| NULL 	| {   city: “Menlo Park”,   zip: “94002” }    	|
-| Not-yet-typed ⟶            	|                 	|                     	|                                                                          	|    	|            	|      	|                                             	|
-
-In legacy normalization, columns of [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested `public.users_address` table with columns `city` and `zip` will no longer be generated.
-
-#### Destination Table Name: *airbyte.raw_public_users* (`airbyte.{namespace}_{stream}`)
-
-| *(note, not in actual table)*                   	| _airbyte_raw_id 	| _airbyte_data﻿                                                                                               	| _airbyte_loaded_at    	| _airbyte_extracted_at    	|
-|-----------------------------------------------	|-----------------	|-------------------------------------------------------------------------------------------------------------	|----------------------	|---------------------	|
-| Successful typing and de-duping ⟶             	| xxx-xxx-xxx     	| {   id: 1,   first_name: “sarah”,   age: 39,   address: {     city: “San Francisco”,     zip: “94131”   } } 	| 2022-01-01 12:00:001 	| 2022-01-01 12:00:00﻿ 	|
-| Failed typing that didn’t break other rows ⟶  	| yyy-yyy-yyy     	| {   id: 2,   first_name: “evan”,   age: “fish”,   address: {     city: “Menlo Park”,     zip: “94002”   } } 	| 2022-01-01 12:00:001 	| 2022-01-01 12:00:00﻿ 	|
-| Not-yet-typed ⟶                               	| zzz-zzz-zzz     	| {   id: 3,   first_name: “edward”,   age: 35,   address: {     city: “Sunnyvale”,     zip: “94003”   } }    	| NULL                 	| 2022-01-01 13:00:00﻿ 	|
+To see more details and examples on the contents of the Destinations V2 release, see this [guide](../understanding-airbyte/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
 
 ## Deprecating Legacy Normalization
 
-The upgrade to Destinations V2 is handled by moving your connections to use [updated versions of Airbyte destinations](#destinations-v2-compatible-versions). Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data` will be unsupported starting **Oct 1, 2023**.
+The upgrade to Destinations V2 is handled by moving your connections to use [updated versions of Airbyte destinations](#destinations-v2-compatible-versions). Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data` will be unsupported starting **Nov 1, 2023**.
 
 ![Legacy Normalization](./assets/airbyte_legacy_normalization.png)
 
-As a Cloud user, existing connections using legacy normalization will be paused on **Oct 1, 2023**. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Oct 1, 2023**.
-
-<!--- See [here]() to learn more about Airbyte's breaking change rollout requirements. -->
+As a Cloud user, existing connections using legacy normalization will be paused on **Oct 1, 2023**. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Nov 1, 2023**.
 
 ### Breakdown of Breaking Changes
 
@@ -65,6 +27,8 @@ The following table details the delivered data modified by Destinations V2:
 | Raw JSON                	         | All                                   	| `_airbyte` metadata columns, raw table location                              	 |
 | Normalized tabular data 	         | API Source                            	| Unnested tables, `_airbyte` metadata columns, SCD tables 	                     |
 | Normalized tabular data 	         | Tabular Source (database, file, etc.) 	| `_airbyte` metadata columns, SCD tables                  	                     |
+
+![Airbyte Destinations V2 Column Changes](./assets/destinations-v2-column-changes.png)
 
 Whenever possible, we've taken this opportunity to use the best data type for storing JSON for your querying convenience.  For example, `destination-bigquery` now loads `JSON` blobs as type `JSON` in BigQuery (introduced last [year](https://cloud.google.com/blog/products/data-analytics/bigquery-now-natively-supports-semi-structured-data)), instead of type `string`.
 
@@ -117,9 +81,38 @@ These steps allow you to dual-write for connections incrementally syncing data w
 1. Copy the raw data you've already replicated to the new schema being used by your newly created connection. You need to do this for every stream in the connection with an incremental sync mode. Sample SQL you can run in your data warehouse:
 
 ```mysql
-CREATE TABLE {new_schema}.raw_{stream_name} AS 
-SELECT * 
-FROM {old_schema}.raw_{stream_name};
+BEGIN
+DECLARE gcp_project STRING;
+DECLARE target_dataset STRING;
+DECLARE target_table STRING;
+DECLARE source_dataset STRING;
+DECLARE source_table STRING;
+DECLARE old_table STRING;
+DECLARE new_table STRING;
+
+SET gcp_project = '';
+SET target_dataset = 'airbyte_internal';
+SET target_table = ''; 
+SET source_dataset = '';
+SET source_table = '';
+SET old_table = CONCAT(gcp_project, '.', source_dataset, '.', source_table);
+SET new_table = CONCAT(gcp_project, '.', target_dataset, '.', target_table);
+
+EXECUTE IMMEDIATE FORMAT('''
+CREATE OR REPLACE TABLE `%s` (_airbyte_raw_id STRING, _airbyte_data JSON, _airbyte_extracted_at TIMESTAMP, _airbyte_loaded_at TIMESTAMP)
+PARTITION BY DATE(_airbyte_extracted_at)
+CLUSTER BY _airbyte_extracted_at
+AS (
+    SELECT
+        _airbyte_ab_id AS _airbyte_raw_id,
+        PARSE_JSON(_airbyte_data) AS _airbyte_data,
+        _airbyte_emitted_at AS _airbyte_extracted_at,
+        CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
+    FROM `%s`
+) 
+''', new_table, old_table);
+
+END;
 ```
 
 2. Go to your newly created connection, and navigate to the `Settings` tab.
@@ -157,12 +150,6 @@ For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) sou
 | Postgres   	| [Upgrade connection in place](#quick-start-to-upgrading)	      | You can optionally dual write, but this requires resyncing historical data from the source. You must create a new Postgres source with a different replication slot than your existing source to preserve the integrity of your existing connection.             	 |
 | MySQL      	| [All above upgrade paths supported](#advanced-upgrade-paths) 	 | You can upgrade the connection in place, or dual write. When dual writing, Airbyte can leverage the state of an existing, active connection to ensure historical data is not re-replicated from MySQL. 	                                                           |
 | SQL Server 	| [Upgrade connection in place](#quick-start-to-upgrading)	 | You can optionally dual write, but this requires resyncing historical data from the SQL Server source.                                                                                                                                                             |
-
-### Rolling back to Legacy Normalization
-
-If you are an Airbyte Cloud customer, and have an urgent need to temporarily roll back to legacy normalization, you can reach out to in-app support (Support -> In-App Support, in Airbyte Cloud) for assistance.
-
-If you are an Airbyte Open Source user, we have published a [rollback version for each destination](#destinations-v2-compatible-versions) that will re-create the final tables with normalization using raw tables in the new format if they are available, and otherwise default to pre-existing raw tables used by legacy normalization.
 
 ## Destinations V2 Compatible Versions
 
