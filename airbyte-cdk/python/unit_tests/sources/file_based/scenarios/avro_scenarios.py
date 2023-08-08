@@ -398,15 +398,13 @@ avro_all_types_scenario = (
                         "drummer": "George Daniel",
                     },
                     "col_fixed": "\x12\x34\x56\x78",
-                    "col_decimal": 1234.56789,
+                    "col_decimal": "1234.56789",
                     "col_uuid": "123e4567-e89b-12d3-a456-426655440000",
                     "col_date": "2022-05-29",
                     "col_time_millis": "06:00:00.456000",
                     "col_time_micros": "12:00:00.456789",
                     "col_timestamp_millis": "2022-05-29T00:00:00.456000+00:00",
                     "col_timestamp_micros": "2022-05-30T00:00:00.456789+00:00",
-                    "col_local_timestamp_millis": "2022-05-29T00:00:00.456000",
-                    "col_local_timestamp_micros": "2022-05-30T00:00:00.456789",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.avro",
                 },
@@ -623,9 +621,9 @@ multiple_streams_avro_scenario = (
     )
 ).build()
 
-avro_file_with_decimal_as_float_scenario = (
+avro_file_with_double_as_number_scenario = (
     TestScenarioBuilder()
-    .set_name("avro_file_with_decimal_as_float_stream")
+    .set_name("avro_file_with_double_as_number_stream")
     .set_config(
         {
             "streams": [
@@ -636,7 +634,7 @@ avro_file_with_decimal_as_float_scenario = (
                     "validation_policy": "Emit Record",
                     "format": {
                         "filetype": "avro",
-                        "decimal_as_float": True
+                        "double_as_string": False
                     }
                 }
             ]
