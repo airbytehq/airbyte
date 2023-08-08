@@ -128,10 +128,10 @@ single_csv_scenario = (
                                                                 ],
                                                                 "type": "string"
                                                             },
-                                                            "decimal_as_float": {
-                                                                "title": "Convert Decimal Fields to Floats",
-                                                                "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
-                                                                "default": False,
+                                                            "double_as_string": {
+                                                                "title": "Convert Double Fields to Strings",
+                                                                "description": "Whether to convert double fields to strings. There is a loss of precision when converting decimals to floats, so this is recommended.",
+                                                                "default": True,
                                                                 "type": "boolean"
                                                             }
                                                         }
