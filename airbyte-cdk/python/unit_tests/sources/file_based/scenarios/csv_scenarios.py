@@ -73,11 +73,11 @@ single_csv_scenario = (
                                 "validation_policy": {
                                     "title": "Validation Policy",
                                     "description": "The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
+                                    "default": "Emit Record",
                                     "enum": [
                                         "Emit Record",
                                         "Skip Record",
                                         "Wait for Discover",
-
                                     ],
                                 },
                                 "input_schema": {
@@ -103,188 +103,6 @@ single_csv_scenario = (
                                     "oneOf": [
                                         {
                                             "title": "Avro Format",
-                                            "description": "The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "oneOf": [
-                                                    {
-                                                        "title": "AvroFormat",
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "filetype": {
-                                                                "title": "Filetype",
-                                                                "default": "avro",
-                                                                "enum": [
-                                                                    "avro"
-                                                                ],
-                                                                "type": "string"
-                                                            },
-                                                            "double_as_string": {
-                                                                "title": "Convert Double Fields to Strings",
-                                                                "description": "Whether to convert double fields to strings. There is a loss of precision when converting decimals to floats, so this is recommended.",
-                                                                "default": True,
-                                                                "type": "boolean"
-                                                            }
-                                                        }
-                                                    },
-                                                    {
-                                                        "title": "CsvFormat",
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "filetype": {
-                                                                "title": "Filetype",
-                                                                "default": "csv",
-                                                                "enum": [
-                                                                    "csv"
-                                                                ],
-                                                                "type": "string"
-                                                            },
-                                                            "delimiter": {
-                                                                "title": "Delimiter",
-                                                                "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
-                                                                "default": ",",
-                                                                "type": "string"
-                                                            },
-                                                            "quote_char": {
-                                                                "title": "Quote Character",
-                                                                "description": "The character used for quoting CSV values. To disallow quoting, make this field blank.",
-                                                                "default": "\"",
-                                                                "type": "string"
-                                                            },
-                                                            "escape_char": {
-                                                                "title": "Escape Character",
-                                                                "description": "The character used for escaping special characters. To disallow escaping, leave this field blank.",
-                                                                "type": "string"
-                                                            },
-                                                            "encoding": {
-                                                                "title": "Encoding",
-                                                                "description": "The character encoding of the CSV data. Leave blank to default to <strong>UTF8</strong>. See <a href=\"https://docs.python.org/3/library/codecs.html#standard-encodings\" target=\"_blank\">list of python encodings</a> for allowable options.",
-                                                                "default": "utf8",
-                                                                "type": "string"
-                                                            },
-                                                            "double_quote": {
-                                                                "title": "Double Quote",
-                                                                "description": "Whether two quotes in a quoted CSV value denote a single quote in the data.",
-                                                                "default": True,
-                                                                "type": "boolean"
-                                                            },
-                                                            "quoting_behavior": {
-                                                                "title": "Quoting Behavior",
-                                                                "description": "The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
-                                                                "default": "Quote Special Characters",
-                                                                "enum": [
-                                                                    "Quote All",
-                                                                    "Quote Special Characters",
-                                                                    "Quote Non-numeric",
-                                                                    "Quote None"
-                                                                ]
-                                                            },
-                                                            "null_values": {
-                                                                "title": "Null Values",
-                                                                "description": "A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
-                                                                "default": [],
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "type": "string"
-                                                                },
-                                                                "uniqueItems": True
-                                                            },
-                                                            "skip_rows_before_header": {
-                                                                "title": "Skip Rows Before Header",
-                                                                "description": "The number of rows to skip before the header row. For example, if the header row is on the 3rd row, enter 2 in this field.",
-                                                                "default": 0,
-                                                                "type": "integer"
-                                                            },
-                                                            "skip_rows_after_header": {
-                                                                "title": "Skip Rows After Header",
-                                                                "description": "The number of rows to skip after the header row.",
-                                                                "default": 0,
-                                                                "type": "integer"
-                                                            },
-                                                            "autogenerate_column_names": {
-                                                                "title": "Autogenerate Column Names",
-                                                                "description": "Whether to autogenerate column names if column_names is empty. If true, column names will be of the form \u201cf0\u201d, \u201cf1\u201d\u2026 If false, column names will be read from the first CSV row after skip_rows_before_header.",
-                                                                "default": False,
-                                                                "type": "boolean"
-                                                            },
-                                                            "true_values": {
-                                                                "title": "True Values",
-                                                                "description": "A set of case-sensitive strings that should be interpreted as true values.",
-                                                                "default": [
-                                                                    "y",
-                                                                    "yes",
-                                                                    "t",
-                                                                    "true",
-                                                                    "on",
-                                                                    "1"
-                                                                ],
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "type": "string"
-                                                                },
-                                                                "uniqueItems": True
-                                                            },
-                                                            "false_values": {
-                                                                "title": "False Values",
-                                                                "description": "A set of case-sensitive strings that should be interpreted as false values.",
-                                                                "default": [
-                                                                    "n",
-                                                                    "no",
-                                                                    "f",
-                                                                    "false",
-                                                                    "off",
-                                                                    "0"
-                                                                ],
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "type": "string"
-                                                                },
-                                                                "uniqueItems": True
-                                                            }
-                                                        }
-                                                    },
-                                                    {
-                                                        "title": "JsonlFormat",
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "filetype": {
-                                                                "title": "Filetype",
-                                                                "default": "jsonl",
-                                                                "enum": [
-                                                                    "jsonl"
-                                                                ],
-                                                                "type": "string"
-                                                            }
-                                                        }
-                                                    },
-                                                    {
-                                                        "title": "ParquetFormat",
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "filetype": {
-                                                                "title": "Filetype",
-                                                                "default": "parquet",
-                                                                "enum": [
-                                                                    "parquet"
-                                                                ],
-                                                                "type": "string"
-                                                            },
-                                                            "decimal_as_float": {
-                                                                "title": "Convert Decimal Fields to Floats",
-                                                                "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
-                                                                "default": False,
-                                                                "type": "boolean"
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        {
-                                            "title": "Legacy Format",
-                                            "required": [
-                                                "filetype"
-                                            ],
                                             "type": "object",
                                             "properties": {
                                                 "filetype": {
@@ -295,10 +113,10 @@ single_csv_scenario = (
                                                     ],
                                                     "type": "string"
                                                 },
-                                                "decimal_as_float": {
-                                                    "title": "Convert Decimal Fields to Floats",
-                                                    "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
-                                                    "default": False,
+                                                "double_as_string": {
+                                                    "title": "Convert Double Fields to Strings",
+                                                    "description": "Whether to convert double fields to strings. There is a loss of precision when converting decimals to floats, so this is recommended.",
+                                                    "default": True,
                                                     "type": "boolean"
                                                 }
                                             }
@@ -464,8 +282,7 @@ single_csv_scenario = (
                             },
                             "required": [
                                 "name",
-                                "file_type",
-                                "validation_policy"
+                                "file_type"
                             ]
                         }
                     },

@@ -35,6 +35,7 @@ class FileBasedStreamConfig(BaseModel):
     validation_policy: ValidationPolicy = Field(
         title="Validation Policy",
         description="The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
+        default=ValidationPolicy.emit_record,
     )
     input_schema: Optional[str] = Field(
         title="Input Schema",
