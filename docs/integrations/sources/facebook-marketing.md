@@ -95,7 +95,7 @@ The Facebook Marketing source connector supports the following sync modes:
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-apped-deduped) (except for the AdCreatives and AdAccount tables)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives and AdAccount tables)
 
 ## Supported Streams
 

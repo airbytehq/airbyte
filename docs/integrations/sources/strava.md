@@ -108,7 +108,7 @@ The Strava source connector supports the following [sync modes](https://docs.air
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-apped-deduped)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported streams
 

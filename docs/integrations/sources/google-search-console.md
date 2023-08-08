@@ -94,7 +94,7 @@ The Google Search Console Source connector supports the following [ sync modes](
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-apped-deduped)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 :::note
 The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.

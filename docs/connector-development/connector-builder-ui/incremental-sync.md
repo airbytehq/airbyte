@@ -13,7 +13,7 @@ To use incremental syncs, the API endpoint needs to fullfil the following requir
 - It's possible to filter/request records by the cursor field
 - The records are sorted in ascending order based on their cursor field
 
-The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append/) and [Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-apped-deduped) pages.
+The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append/) and [Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped) pages.
 
 ## Configuration
 
@@ -139,7 +139,7 @@ Some APIs update records over time but do not allow to filter or search by modif
 
 In these cases, there are two options:
 
-- **Do not use incremental sync** and always sync the full set of records to always have a consistent state, losing the advantages of reduced load and [automatic history keeping in the destination](/understanding-airbyte/connections/incremental-apped-deduped)
+- **Do not use incremental sync** and always sync the full set of records to always have a consistent state, losing the advantages of reduced load and [automatic history keeping in the destination](/understanding-airbyte/connections/incremental-append-deduped)
 - **Configure the "Lookback window"** to not only sync exclusively new records, but resync some portion of records before the cutoff date to catch changes that were made to existing records, trading off data consistency and the amount of synced records. In the case of the API of The Guardian, news articles tend to only be updated for a few days after the initial release date, so this strategy should be able to catch most updates without having to resync all articles.
 
 Reiterating the example from above with a "Lookback window" of 2 days configured, let's assume the last encountered article looked like this:

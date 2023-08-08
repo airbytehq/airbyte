@@ -25,12 +25,12 @@ _If you have any questions or want to get started with Cumul.io, don't hesitate 
 
 ### Sync modes support
 
-| [Sync modes](https://docs.airbyte.com/understanding-airbyte/connections/#sync-modes)                                    | Supported?\(Yes/No\) | Notes                                                 |
-| :---------------------------------------------------------------------------------------------------------------------- | :------------------- | :---------------------------------------------------- |
-| [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append/)                | Yes                  | /                                                     |
-| [Full Refresh - Replace](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)            | Yes                  | /                                                     |
-| [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)             | Yes                  | /                                                     |
-| [Incremental - Append + Deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-apped-deduped) | No                   | Cumul.io's data warehouse does not support dbt (yet). |
+| [Sync modes](https://docs.airbyte.com/understanding-airbyte/connections/#sync-modes)                                     | Supported?\(Yes/No\) | Notes                                                 |
+| :----------------------------------------------------------------------------------------------------------------------- | :------------------- | :---------------------------------------------------- |
+| [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append/)                 | Yes                  | /                                                     |
+| [Full Refresh - Replace](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)             | Yes                  | /                                                     |
+| [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)              | Yes                  | /                                                     |
+| [Incremental - Append + Deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) | No                   | Cumul.io's data warehouse does not support dbt (yet). |
 
 ### Airbyte Features support
 

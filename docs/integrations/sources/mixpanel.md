@@ -29,7 +29,7 @@ The Mixpanel source connector supports the following [sync modes](https://docs.a
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-apped-deduped)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 Note: Incremental sync returns duplicated \(old records\) for the state date due to API filter limitation, which is granular to the whole day only.
 
