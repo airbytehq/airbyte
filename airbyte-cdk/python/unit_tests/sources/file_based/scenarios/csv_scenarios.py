@@ -19,7 +19,7 @@ single_csv_scenario = (
                     "validation_policy": "emit_record",
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z",
+            "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
     .set_files(
@@ -320,12 +320,13 @@ single_csv_scenario = (
                     },
                     "start_date": {
                         "title": "Start Date",
-                        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+                        "description": "UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified before this date will not be replicated.",
                         "examples": [
-                            "2021-01-01T00:00:00Z"
+                            "2021-01-01T00:00:00.000000Z"
                         ],
                         "format": "date-time",
-                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$",
+                        "pattern_descriptor": "YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
                         "order": 1,
                         "type": "string"
                     }
@@ -1640,6 +1641,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
 
+
 csv_string_can_be_null_with_input_schemas_scenario = (
     TestScenarioBuilder()
     .set_name("csv_string_can_be_null_with_input_schema")
@@ -1660,7 +1662,7 @@ csv_string_can_be_null_with_input_schemas_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -1730,7 +1732,7 @@ csv_string_not_null_if_no_null_values_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -1801,7 +1803,7 @@ csv_strings_can_be_null_not_quoted_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -1872,7 +1874,7 @@ csv_newline_in_values_quoted_value_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -1942,7 +1944,7 @@ csv_newline_in_values_not_quoted_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2025,7 +2027,7 @@ csv_escape_char_is_set_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2101,7 +2103,7 @@ csv_double_quote_is_set_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2176,7 +2178,7 @@ csv_custom_delimiter_with_escape_char_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2250,7 +2252,7 @@ csv_custom_delimiter_in_double_quotes_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2322,7 +2324,7 @@ csv_skip_before_header_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2395,7 +2397,7 @@ csv_skip_after_header_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2470,7 +2472,7 @@ csv_skip_before_and_after_header_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2543,7 +2545,7 @@ csv_autogenerate_column_names_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2615,7 +2617,7 @@ csv_custom_bool_values_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2687,7 +2689,7 @@ csv_custom_null_values_scenario = (
                     }
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z"
         }
     )
     .set_files(
@@ -2737,4 +2739,60 @@ csv_custom_null_values_scenario = (
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
+).build()
+
+
+earlier_csv_scenario = (
+    TestScenarioBuilder()
+    .set_name("earlier_csv_stream")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                }
+            ],
+            "start_date": "2023-06-10T03:54:07.000000Z",
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11", "val12"),
+                    ("val21", "val22"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_check_status("FAILED")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {"type": "string"},
+                            "col2": {"type": "string"},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records([])
+    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
