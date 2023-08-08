@@ -13,6 +13,8 @@ import sys
 import anyio
 import click
 import dagger
+import git
+from pipelines.utils import AIRBYTE_REPO_URL
 
 
 @click.command()
@@ -41,6 +43,9 @@ async def run_test(airbyte_ci_package_path: str) -> bool:
     logger = logging.getLogger(f"{airbyte_ci_package_path}.tests")
     logger.info(f"Running tests for {airbyte_ci_package_path}")
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
+        current_branch = git.Repo(search_parent_directories=True).active_branch.name
+        airbyte_repo = dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
+        airbyte_dir = airbyte_repo.branch(current_branch).tree()
         try:
             docker_host_socket = dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
             pytest_container = await (
@@ -56,11 +61,7 @@ async def run_test(airbyte_ci_package_path: str) -> bool:
                 .with_exec(["pipx", "install", "poetry"])
                 .with_mounted_directory(
                     "/airbyte",
-                    dagger_client.host().directory(
-                        ".",
-                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**.log", "**/build", "**/.gradle"],
-                        # include=["airbyte-ci", ".git", "airbyte-integrations", "buildSrc"],
-                    ),
+                    airbyte_dir,
                 )
                 .with_workdir(f"/airbyte/airbyte-ci/{airbyte_ci_package_path}")
                 .with_exec(["poetry", "install"])
