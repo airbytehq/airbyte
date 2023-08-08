@@ -9,6 +9,7 @@ This page contains the setup guide and reference information for the Amazon Ads 
 * Region
 * Start Date (Optional)
 * Profile IDs (Optional)
+* Marketplace IDs (Optional)
 
 ## Setup guide
 ### Step 1: Set up Amazon Ads
@@ -103,6 +104,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 3.0.1   | 2023-08-08 | [29233](https://github.com/airbytehq/airbyte/pull/29233) | Add filter for Marketplace IDs |
 | 3.0.0   | 2023-07-24 | [27868](https://github.com/airbytehq/airbyte/pull/27868) | Fix attribution report stream schemas                                                                           |
 | 2.3.1   | 2023-07-11 | [28155](https://github.com/airbytehq/airbyte/pull/28155) | Bugfix: validation error when record values are missing                                                         |
 | 2.3.0   | 2023-07-06 | [28002](https://github.com/airbytehq/airbyte/pull/28002) | Add sponsored_product_ad_group_suggested_keywords, sponsored_product_ad_group_bid_recommendations streams       |
