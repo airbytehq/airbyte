@@ -2581,7 +2581,7 @@ earlier_csv_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ],
             "start_date": "2023-06-10T03:54:07.000000Z",
