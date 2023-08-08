@@ -151,6 +151,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 // connectors
+/*
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
     // include all connector projects
     def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
@@ -163,3 +164,5 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
         }
     }
 }
+*/
+// TODO: probably exclude this by setting an environment variable like CDK_BUILD

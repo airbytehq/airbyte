@@ -2,18 +2,54 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dagger import ExecError, File, QueryError
+
 from pipelines.actions import environments
 from pipelines.bases import StepResult, StepStatus
-from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
+from pipelines.builds.common import (
+    BuildConnectorImageBase,
+    BuildConnectorImageForAllPlatformsBase,
+)
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
-from dagger import ExecError, File, QueryError
+
+
+class BuildCDKArtifact(GradleTask):
+    title = "Build CDK artifact"
+    gradle_task_name = "assemble"
+
+    async def _run(self) -> StepResult:
+        with_built_tar = (
+            environments.with_gradle(
+                self.context,
+                self.build_include,
+            )
+            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
+            .with_exec(self._get_gradle_command())
+            .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
+        )
+        distributions = await with_built_tar.directory(".").entries()
+        tar_files = [f for f in distributions if f.endswith(".tar")]
+        await self._export_gradle_dependency_cache(with_built_tar)
+        if len(tar_files) == 1:
+            return StepResult(
+                self,
+                StepStatus.SUCCESS,
+                stdout="The tar file for the cdk was successfully built.",
+                output_artifact=with_built_tar.file(tar_files[0]),
+            )
+        else:
+            return StepResult(
+                self,
+                StepStatus.FAILURE,
+                stderr="The distributions directory contains multiple tar files. We can't infer which one should be used. Please review and delete any unnecessary tar files.",
+            )
+
 
 
 class BuildConnectorDistributionTar(GradleTask):
-
     title = "Build connector tar"
-    gradle_task_name = "publishMavenLocal"
+    gradle_task_name = "jar"
 
     async def _run(self) -> StepResult:
         with_built_tar = (
@@ -85,3 +121,5 @@ async def run_connector_build(context: ConnectorContext) -> StepResult:
         return build_connector_tar_result
 
     return await BuildConnectorImageForAllPlatforms(context).run(build_connector_tar_result.output_artifact)
+
+

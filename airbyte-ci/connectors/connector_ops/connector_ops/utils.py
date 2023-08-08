@@ -325,6 +325,35 @@ class Connector:
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
             )
         return sorted(list(set(dependencies_paths)))
+    
+
+@dataclass(frozen=True)
+class CDK:
+    """Utility class to gather metadata about a cdk."""
+
+    language: str
+
+    @property
+    def code_directory(self) -> Path:
+        return Path(f"./airbyte-cdk/{self.language}")
+
+
+    @property
+    def version(self) -> str:
+        if self.language == "java":
+            with open(self.code_directory / "resources/version.properties") as f:
+                for line in f:
+                    key, value = line.strip().split('=', 1)
+                    if key == 'version':
+                        return value
+            raise FileNotFoundError(
+                """
+                Could not find the cdk version
+                """
+            )
+        else:
+            raise NotImplementedError
+
 
 
 def get_changed_connectors(

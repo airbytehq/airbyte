@@ -18,19 +18,29 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Set
 import anyio
 import asyncer
 from anyio import Path
-from connector_ops.utils import Connector, console
+from connector_ops.utils import CDK, Connector, console
 from dagger import Container, DaggerError
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines import sentry_utils
-from pipelines.actions import remote_storage
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
-from pipelines.utils import METADATA_FILE_NAME, check_path_in_workdir, format_duration, get_exec_result
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
 from tabulate import tabulate
+
+from pipelines import sentry_utils
+from pipelines.actions import remote_storage
+from pipelines.consts import (
+    GCS_PUBLIC_DOMAIN,
+    LOCAL_REPORTS_PATH_ROOT,
+    PYPROJECT_TOML_FILE_PATH,
+)
+from pipelines.utils import (
+    METADATA_FILE_NAME,
+    check_path_in_workdir,
+    format_duration,
+    get_exec_result,
+)
 
 if TYPE_CHECKING:
     from pipelines.contexts import PipelineContext
@@ -43,6 +53,10 @@ class ConnectorWithModifiedFiles(Connector):
     @property
     def has_metadata_change(self) -> bool:
         return any(path.name == METADATA_FILE_NAME for path in self.modified_files)
+
+@dataclass(frozen=True)
+class CDKWithModifiedFiles(CDK):
+    modified_files: Set[Path] = field(default_factory=frozenset)
 
 
 class CIContext(str, Enum):

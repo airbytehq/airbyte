@@ -6,13 +6,15 @@
 from __future__ import annotations
 
 import platform
+from typing import Optional
 
 import anyio
-from pipelines.bases import ConnectorReport, StepResult
-from pipelines.builds import common, java_connectors, python_connectors
-from pipelines.contexts import ConnectorContext
 from connector_ops.utils import ConnectorLanguage
-from dagger import Platform
+from dagger import Config, Connection, Platform
+
+from pipelines.bases import ConnectorReport, StepResult
+from pipelines.builds import java_cdk, java_connectors, python_connectors
+from pipelines.contexts import CDKContext, ConnectorContext
 
 
 class NoBuildStepForLanguageError(Exception):
@@ -50,9 +52,26 @@ async def run_connector_build_pipeline(context: ConnectorContext, semaphore: any
         async with context:
             build_result = await run_connector_build(context)
             step_results.append(build_result)
-            if context.is_local and build_result.status is common.StepStatus.SUCCESS:
-                connector_to_load_to_local_docker_host = build_result.output_artifact[LOCAL_BUILD_PLATFORM]
-                load_image_result = await common.LoadContainerToLocalDockerHost(context, connector_to_load_to_local_docker_host).run()
-                step_results.append(load_image_result)
             context.report = ConnectorReport(context, step_results, name="BUILD RESULTS")
         return context.report
+    
+async def run_cdk_build(context: CDKContext) -> StepResult:
+    """Run a build pipeline for a single cdk."""
+    return await java_cdk.run_cdk_build(context)
+
+
+async def run_cdk_build_pipeline(context: CDKContext) ->  Optional[ConnectorReport]:
+    """Run a build pipeline for a single cdk.
+
+    Args:
+        context (CDKContext): The initialized connector context.
+
+    Returns:
+        None
+    """
+    step_results = []
+    async with Connection(Config(log_output=None, execute_timeout=None)) as dagger_client:
+        context.dagger_client = dagger_client.pipeline("Java CDK Build")
+        build_result = await run_cdk_build(context)
+        step_results.append(build_result)
+    return None

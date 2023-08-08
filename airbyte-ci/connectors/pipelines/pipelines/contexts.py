@@ -17,12 +17,24 @@ from anyio import Path
 from asyncer import asyncify
 from dagger import Client, Directory, Secret
 from github import PullRequest
+
 from pipelines import hacks
 from pipelines.actions import secrets
-from pipelines.bases import CIContext, ConnectorReport, ConnectorWithModifiedFiles, Report
+from pipelines.bases import (
+    CDKWithModifiedFiles,
+    CIContext,
+    ConnectorReport,
+    ConnectorWithModifiedFiles,
+    Report,
+)
 from pipelines.github import update_commit_status_check
 from pipelines.slack import send_message_to_webhook
-from pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
+from pipelines.utils import (
+    AIRBYTE_REPO_URL,
+    METADATA_FILE_NAME,
+    format_duration,
+    sanitize_gcs_credentials,
+)
 
 
 class ContextState(Enum):
@@ -472,6 +484,190 @@ class ConnectorContext(PipelineContext):
 
         # Supress the exception if any
         return True
+
+    def create_slack_message(self) -> str:
+        raise NotImplementedError
+
+class CDKContext(PipelineContext):
+    """The CDK context is used to store configuration for a specific CDK pipeline run."""
+
+    def __init__(
+        self,
+        pipeline_name: str,
+        cdk: CDKWithModifiedFiles,
+        is_local: bool,
+        git_branch: bool,
+        git_revision: bool,
+        report_output_prefix: str,
+        use_remote_secrets: bool = False,
+        ci_report_bucket: Optional[str] = None,
+        ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
+        gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
+        pipeline_start_timestamp: Optional[int] = None,
+        ci_context: Optional[str] = None,
+        slack_webhook: Optional[str] = None,
+        reporting_slack_channel: Optional[str] = None,
+        pull_request: PullRequest = None,
+        should_save_report: bool = True,
+    ):
+        """Initialize a connector context.
+
+        Args:
+            cdk (CDK): The cdk under test.
+            is_local (bool): Whether the context is for a local run or a CI run.
+            git_branch (str): The current git branch name.
+            git_revision (str): The current git revision, commit hash.
+            report_output_prefix (str): The S3 key to upload the test report to.
+            use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
+            gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            dagger_logs_url (Optional[str], optional): URL to the dagger logs. Only valid for CI run. Defaults to None.
+            pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
+            ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
+            slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
+            reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
+            pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
+        """
+
+        self.pipeline_name = pipeline_name
+        self.cdk = cdk
+        self.use_remote_secrets = use_remote_secrets
+        self.report_output_prefix = report_output_prefix
+        self._secrets_dir = None
+        self._updated_secrets_dir = None
+        self.cdk_version = None
+        self.should_save_report = should_save_report
+
+        super().__init__(
+            pipeline_name=pipeline_name,
+            is_local=is_local,
+            git_branch=git_branch,
+            git_revision=git_revision,
+            gha_workflow_run_url=gha_workflow_run_url,
+            dagger_logs_url=dagger_logs_url,
+            pipeline_start_timestamp=pipeline_start_timestamp,
+            ci_context=ci_context,
+            slack_webhook=slack_webhook,
+            reporting_slack_channel=reporting_slack_channel,
+            pull_request=pull_request,
+            ci_report_bucket=ci_report_bucket,
+            ci_gcs_credentials=ci_gcs_credentials,
+            ci_git_user=ci_git_user,
+            ci_github_access_token=ci_github_access_token,
+        )
+
+    @property
+    def modified_files(self):
+        return self.cdk.modified_files
+
+    @property
+    def secrets_dir(self) -> Directory:  # noqa D102
+        return self._secrets_dir
+
+    @secrets_dir.setter
+    def secrets_dir(self, secrets_dir: Directory):  # noqa D102
+        self._secrets_dir = secrets_dir
+
+    @property
+    def updated_secrets_dir(self) -> Directory:  # noqa D102
+        return self._updated_secrets_dir
+
+    @updated_secrets_dir.setter
+    def updated_secrets_dir(self, updated_secrets_dir: Directory):  # noqa D102
+        self._updated_secrets_dir = updated_secrets_dir
+
+    @property
+    def should_save_updated_secrets(self) -> bool:  # noqa D102
+        return self.use_remote_secrets and self.updated_secrets_dir is not None
+
+
+    async def __aexit__(
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+    ) -> bool:
+        """Perform teardown operation for the CDKContext.
+
+        On the context exit the following operations will happen:
+            - Write a test report in JSON format locally and to S3 if running in a CI environment
+            - Update the commit status check on GitHub if running in a CI environment.
+        It should gracefully handle the execution error that happens and always upload a test report and update commit status check.
+        Args:
+            exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
+            exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+            traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+        Returns:
+            bool: Whether the teardown operation ran successfully.
+        """
+        self.stopped_at = datetime.utcnow()
+        self.state = self.determine_final_state(self.report, exception_value)
+        if exception_value:
+            self.logger.error("An error got handled by the ConnectorContext", exc_info=True)
+        if self.report is None:
+            self.logger.error("No test report was provided. This is probably due to an upstream error")
+            self.report = ConnectorReport(self, [])
+
+        if self.should_save_updated_secrets:
+            await secrets.upload(self)
+
+        self.report.print()
+
+        if self.should_save_report:
+            await self.report.save()
+
+        if self.report.should_be_commented_on_pr:
+            self.report.post_comment_on_pr()
+
+        await asyncify(update_commit_status_check)(**self.github_commit_status)
+
+        if self.should_send_slack_message:
+            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
+
+        # Supress the exception if any
+        return True
+
+    def create_slack_message(self) -> str:
+        raise NotImplementedError
+    
+
+class PublishCDKContext(CDKContext):
+    def __init__(
+        self,
+        cdk: CDKWithModifiedFiles,
+        slack_webhook: str,
+        reporting_slack_channel: str,
+        ci_report_bucket: str,
+        report_output_prefix: str,
+        is_local: bool,
+        git_branch: bool,
+        git_revision: bool,
+        gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
+        pipeline_start_timestamp: Optional[int] = None,
+        ci_context: Optional[str] = None,
+        ci_gcs_credentials: str = None,
+        pull_request: PullRequest = None,
+    ):
+
+        pipeline_name = f"Publish {cdk.language}"
+
+        super().__init__(
+            pipeline_name=pipeline_name,
+            cdk=cdk,
+            report_output_prefix=report_output_prefix,
+            ci_report_bucket=ci_report_bucket,
+            is_local=is_local,
+            git_branch=git_branch,
+            git_revision=git_revision,
+            gha_workflow_run_url=gha_workflow_run_url,
+            dagger_logs_url=dagger_logs_url,
+            pipeline_start_timestamp=pipeline_start_timestamp,
+            ci_context=ci_context,
+            slack_webhook=slack_webhook,
+            reporting_slack_channel=reporting_slack_channel,
+            ci_gcs_credentials=ci_gcs_credentials,
+            should_save_report=True,
+        )
 
     def create_slack_message(self) -> str:
         raise NotImplementedError

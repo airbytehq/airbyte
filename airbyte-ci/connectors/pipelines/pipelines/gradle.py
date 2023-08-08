@@ -8,6 +8,7 @@ from abc import ABC
 from typing import ClassVar, List, Tuple
 
 from dagger import CacheVolume, Container, Directory, QueryError
+
 from pipelines import consts
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
@@ -41,8 +42,8 @@ class GradleTask(Step, ABC):
         """
         return [
             str(dependency_directory)
-            for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
-        ]
+            for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True) 
+        ] if hasattr(self.context, "connector") else []
 
     async def _get_patched_build_src_dir(self) -> Directory:
         """Patch some gradle plugins.
@@ -64,8 +65,8 @@ class GradleTask(Step, ABC):
         command = (
             ["./gradlew"]
             + list(extra_options)
-            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"]
-        )
+            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"] if hasattr(self.context, "connector") else ["./gradlew", ":airbyte-cdk:java:airbyte-cdk:build"]
+        ) # NOTE: obviously not the ideal way to do this, just wanted to get something that ran
         for task in self.DEFAULT_TASKS_TO_EXCLUDE:
             command += ["-x", task]
         return command
