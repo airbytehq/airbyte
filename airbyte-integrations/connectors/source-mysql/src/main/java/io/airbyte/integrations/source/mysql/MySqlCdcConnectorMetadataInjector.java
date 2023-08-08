@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MysqlDebeziumStateAttributes> {
 
   private final long emittedAtNano;
+  // This now makes this class stateful. Please make sure to use the same instance within a sync
   private final AtomicLong recordCounter = new AtomicLong(1);
   private static final long ONE_HUNDRED_MILLION = 100_000_000;
 
