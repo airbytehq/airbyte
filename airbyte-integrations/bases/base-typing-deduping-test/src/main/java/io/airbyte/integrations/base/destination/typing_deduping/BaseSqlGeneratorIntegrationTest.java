@@ -250,8 +250,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     assertTrue(
         generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
-        "Unchanged schema was incorrectly detected as a schema change."
-    );
+        "Unchanged schema was incorrectly detected as a schema change.");
   }
 
   /**
@@ -269,13 +268,11 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     incrementalDedupStream.columns().put(
         generator.buildColumnId("new_column"),
-        AirbyteProtocolType.STRING
-    );
+        AirbyteProtocolType.STRING);
 
     assertFalse(
         generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
-        "Adding a new column was not detected as a schema change."
-    );
+        "Adding a new column was not detected as a schema change.");
   }
 
   /**
@@ -295,8 +292,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     assertFalse(
         generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
-        "Removing a column was not detected as a schema change."
-    );
+        "Removing a column was not detected as a schema change.");
   }
 
   /**
@@ -318,8 +314,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     assertFalse(
         generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
-        "Altering a column was not detected as a schema change."
-    );
+        "Altering a column was not detected as a schema change.");
   }
 
   /**
@@ -389,6 +384,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "sqlgenerator/alltypes_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, "_foo"));
   }
+
   @Test
   public void timestampFormats() throws Exception {
     createRawTable(streamId);
@@ -402,8 +398,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     DIFFER.diffFinalTableRecords(
         BaseTypingDedupingTest.readRecords("sqlgenerator/timestampformats_expectedrecords_final.jsonl"),
-        dumpFinalTableRecords(streamId, "")
-    );
+        dumpFinalTableRecords(streamId, ""));
   }
 
   @Test
