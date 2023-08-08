@@ -9,6 +9,7 @@ from typing import List, Union
 from braintree.attribute_getter import AttributeGetter
 from braintree.customer import Customer
 from braintree.discount import Discount
+from braintree.dispute import Dispute
 from braintree.merchant_account.merchant_account import MerchantAccount
 from braintree.plan import Plan
 from braintree.subscription import Subscription
@@ -131,6 +132,7 @@ class SubscriptionExtractor(BraintreeExtractor):
         subscriptions = self._extract_as_array(data, 'subscription')
         return [self._get_json_from_resource(Subscription(None, subscription)) for subscription in subscriptions]
 
+
 @dataclass
 class PlanExtractor(BraintreeExtractor):
     """
@@ -143,6 +145,19 @@ class PlanExtractor(BraintreeExtractor):
         data = XmlUtil.dict_from_xml(response.text)
         plans = self._extract_as_array(data, 'plans')
         return [self._get_json_from_resource(Plan(None, plan)) for plan in plans]
+
+@dataclass
+class DisputeExtractor(BraintreeExtractor):
+    """
+    Extractor for Disputes stream.
+    It parses output XML and finds all `Dispute` occurrences in it.
+    """
+
+    def extract_records(self, response: requests.Response,
+                        ) -> List[Record]:
+        data = XmlUtil.dict_from_xml(response.text)['disputes']
+        disputes = self._extract_as_array(data, 'dispute')
+        return [self._get_json_from_resource(Dispute(None, dispute)) for dispute in disputes]
 
 
 # Declarative Source

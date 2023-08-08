@@ -276,8 +276,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path: []
+          class_name: "source_braintree_no_code.source.DisputeExtractor"
       paginator:
         type: DefaultPaginator
         page_token_option:
