@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Dict
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -171,10 +171,10 @@ class Issues(SentryIncremental):
         return f"projects/{self._organization}/{self._project}/issues/"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         filter_date = self._get_filter_date(stream_state)
