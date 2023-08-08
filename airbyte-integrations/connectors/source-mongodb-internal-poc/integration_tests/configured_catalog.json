@@ -269,7 +269,7 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["incremental"],
         "default_cursor_field": [],
         "source_defined_primary_key": [],
         "namespace": "sample_airbnb"
