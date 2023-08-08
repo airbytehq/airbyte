@@ -111,6 +111,7 @@ This connector outputs the following incremental streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------|
+| 1.1.3   | 2023-08-04 | [29103](https://github.com/airbytehq/airbyte/pull/29103) | Update input field descriptions                   |
 | 1.1.2   | 2023-07-03 | [27909](https://github.com/airbytehq/airbyte/pull/27909) | Limit the page size of custom report streams                                  |
 | 1.1.1   | 2023-06-26 | [27718](https://github.com/airbytehq/airbyte/pull/27718) | Limit the page size when calling `check()`                                    |
 | 1.1.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                          |
