@@ -830,6 +830,7 @@ class OrderItems(AmazonSPStream, ABC):
     cursor_field = "OrderItemId"
     parent_cursor_field = "LastUpdateDate"
     next_page_token_field = "NextToken"
+    stream_slice_cursor_field = "AmazonOrderId"
     page_size_field = None
     default_backoff_time = 10
     default_stream_slice_delay_time = 1
@@ -840,7 +841,7 @@ class OrderItems(AmazonSPStream, ABC):
         self.stream_kwargs = kwargs
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice['AmazonOrderId']}/orderItems"
+        return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice[self.stream_slice_cursor_field]}/orderItems"
     
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -852,10 +853,10 @@ class OrderItems(AmazonSPStream, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         orders = Orders(**self.stream_kwargs)
         for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
-            self.cached_state[self.parent_cursor_field] = order_record["LastUpdateDate"]
-            self.logger.info(f"OrderItems stream slice for order {order_record['AmazonOrderId']}")
+            self.cached_state[self.parent_cursor_field] = order_record[self.parent_cursor_field]
+            self.logger.info(f"OrderItems stream slice for order {order_record[self.stream_slice_cursor_field]}")
             time.sleep(self.default_stream_slice_delay_time)
-            yield {"AmazonOrderId": order_record["AmazonOrderId"], self.parent_cursor_field: order_record["LastUpdateDate"]}
+            yield {self.stream_slice_cursor_field: order_record[self.stream_slice_cursor_field], self.parent_cursor_field: order_record[self.parent_cursor_field]}
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = self.cached_state[self.parent_cursor_field]
@@ -880,10 +881,11 @@ class OrderItems(AmazonSPStream, ABC):
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         order_items_list = response.json().get(self.data_field, {})
+        self.logger.info(f"order_items_list efim {order_items_list}")
         if order_items_list.get(self.next_page_token_field) is None:
             self.cached_state[self.parent_cursor_field] = stream_slice[self.parent_cursor_field]
         for order_item in order_items_list.get(self.name, []):
-            order_item["AmazonOrderId"] = order_items_list.get('AmazonOrderId')
+            order_item[self.stream_slice_cursor_field] = order_items_list.get(self.stream_slice_cursor_field)
             yield order_item
 
 
