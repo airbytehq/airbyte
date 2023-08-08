@@ -23,7 +23,7 @@ class BuildConnectorDistributionTar(GradleTask):
             )
             # We exclude the Dockerfile to avoid running airbyteDocker task
             .with_mounted_directory(
-                str(self.context.connector.code_directory), await self.context.get_connector_dir(exclude=["Dockerfile", "build"])
+                str(self.context.connector.code_directory), await self.context.get_connector_dir(exclude=["Dockerfile"])
             )
         )
 

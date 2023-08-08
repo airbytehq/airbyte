@@ -8,6 +8,7 @@ import logging
 import os
 from datetime import datetime
 from enum import Enum
+from functools import cache
 from glob import glob
 from types import TracebackType
 from typing import List, Optional
@@ -39,21 +40,6 @@ class PipelineContext:
     """The pipeline context is used to store configuration for a specific pipeline run."""
 
     PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
-
-    DEFAULT_EXCLUDED_FILES = (
-        [".git", "airbyte-ci/connectors/pipelines/*"]
-        + glob("**/build", recursive=True)
-        + glob("**/.venv", recursive=True)
-        + glob("**/secrets", recursive=True)
-        + glob("**/__pycache__", recursive=True)
-        + glob("**/*.egg-info", recursive=True)
-        + glob("**/.vscode", recursive=True)
-        + glob("**/.pytest_cache", recursive=True)
-        + glob("**/.eggs", recursive=True)
-        + glob("**/.mypy_cache", recursive=True)
-        + glob("**/.DS_Store", recursive=True)
-        + glob("**/airbyte_ci_logs", recursive=True)
-    )
 
     def __init__(
         self,
@@ -183,6 +169,29 @@ class PipelineContext:
 
         return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
 
+    @staticmethod
+    @cache
+    def get_default_excluded_files(subdir: str = ".", relative_to_subdir: bool = True) -> List[str]:
+        repo_relative_exlusion_list = (
+            [".git", "airbyte-ci/connectors/pipelines/*"]
+            + glob(f"{subdir}/**/build", recursive=True)
+            + glob(f"{subdir}/**/.venv", recursive=True)
+            + glob(f"{subdir}/**/secrets", recursive=True)
+            + glob(f"{subdir}/**/__pycache__", recursive=True)
+            + glob(f"{subdir}/**/*.egg-info", recursive=True)
+            + glob(f"{subdir}/**/.vscode", recursive=True)
+            + glob(f"{subdir}/**/.pytest_cache", recursive=True)
+            + glob(f"{subdir}/**/.eggs", recursive=True)
+            + glob(f"{subdir}/**/.mypy_cache", recursive=True)
+            + glob(f"{subdir}/**/.DS_Store", recursive=True)
+            + glob(f"{subdir}/**/airbyte_ci_logs", recursive=True)
+            + glob(f"{subdir}/**/acceptance_tests_logs", recursive=True)
+        )
+        if relative_to_subdir:
+            return [str(Path(file).relative_to(Path(subdir))) for file in repo_relative_exlusion_list if Path(file).is_relative_to(subdir)]
+        else:
+            return repo_relative_exlusion_list
+
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
@@ -197,16 +206,21 @@ class PipelineContext:
         Returns:
             Directory: The selected repo directory.
         """
+        if exclude and include:
+            raise ValueError("exclude and include cannot be used together")
+        default_excluded_files = self.get_default_excluded_files(subdir)
         if exclude is None:
-            exclude = self.DEFAULT_EXCLUDED_FILES
+            exclude = default_excluded_files
         else:
-            exclude += self.DEFAULT_EXCLUDED_FILES
+            exclude += default_excluded_files
             exclude = list(set(exclude))
-        exclude.sort()  # sort to make sure the order is always the same to not burst the cache. Casting exclude to set can change the order
-        if subdir != ".":
-            subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
-            exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
-        return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
+
+        # sort to make sure the order is always the same to not burst the cache. Casting exclude to set can change the order
+        if exclude:
+            exclude.sort()
+        if include:
+            include.sort()
+        return self.dagger_client.host().directory(subdir, include=include, exclude=exclude)
 
     def create_slack_message(self) -> str:
         raise NotImplementedError()
@@ -426,14 +440,6 @@ class ConnectorContext(PipelineContext):
         Returns:
             Directory: The connector under test source code directory.
         """
-        if exclude:
-            exclude = [
-                str(self.connector.code_directory / path) for path in exclude if not path.startswith(str(self.connector.code_directory))
-            ]
-        if include:
-            include = [
-                str(self.connector.code_directory / path) for path in include if not path.startswith(str(self.connector.code_directory))
-            ]
         vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
         return await hacks.patch_connector_dir(self, vanilla_connector_dir)
 

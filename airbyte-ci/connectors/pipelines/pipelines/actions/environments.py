@@ -68,8 +68,8 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
         Container: The testing environment container.
     """
     python_environment: Container = with_python_base(context)
-    pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
-    license_short_file = context.get_repo_dir(".", include=[LICENSE_SHORT_FILE_PATH]).file(LICENSE_SHORT_FILE_PATH)
+    pyproject_toml_file = context.get_repo_dir(include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
+    license_short_file = context.get_repo_dir(include=[LICENSE_SHORT_FILE_PATH]).file(LICENSE_SHORT_FILE_PATH)
 
     return (
         python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS)
@@ -579,7 +579,7 @@ def with_gradle(
         .with_env_variable("GRADLE_HOME", "/root/.gradle")
         .with_exec(["mkdir", "/airbyte"])
         .with_workdir("/airbyte")
-        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
+        .with_mounted_directory("/airbyte", context.get_repo_dir(include=include))
         .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
         # TODO (ben) reenable once we have fixed the over caching issue
         # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)

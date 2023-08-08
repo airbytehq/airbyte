@@ -60,7 +60,7 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
     return connector_dir.with_new_file("build.gradle", contents="\n".join(patched_gradle_file))
 
 
-def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Directory:
+async def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Directory:
     """
     Patch the acceptance-test-config.yml file of the connector under test to use the connector image with git revision tag and not dev.
 
@@ -77,7 +77,7 @@ def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Di
         context (ConnectorContext): The initialized connector context.
         connector_dir (Directory): The directory containing the acceptance-test-config.yml file to patch.
     """
-    if not context.connector.acceptance_test_config:
+    if "acceptance-test-config.yml" not in await connector_dir.entries():
         return connector_dir
 
     context.logger.info("Patching acceptance-test-config.yml to use connector image with git revision tag and not dev.")
@@ -99,7 +99,7 @@ async def patch_connector_dir(context: ConnectorContext, connector_dir: Director
         Directory: The directory containing the patched connector.
     """
     patched_connector_dir = await _patch_gradle_file(context, connector_dir)
-    patched_connector_dir = _patch_cat_config(context, patched_connector_dir)
+    patched_connector_dir = await _patch_cat_config(context, patched_connector_dir)
     return patched_connector_dir.with_timestamps(1)
 
 
