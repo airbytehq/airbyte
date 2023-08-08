@@ -43,7 +43,7 @@ definitions:
     lookback_window: "P31D"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_datetime:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
