@@ -61,6 +61,13 @@ streams:
           type: CompositeErrorHandler
           error_handlers:
             - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  predicate: '{{response.error.code == 32000}}'
+                  error_message: >-
+                    You are sending more requests per second then available for
+                    your Serpstat plan
               backoff_strategies:
                 - type: ExponentialBackoffStrategy
                   factor: 2
@@ -153,6 +160,13 @@ streams:
           type: CompositeErrorHandler
           error_handlers:
             - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  predicate: '{{response.error.code == 32000}}'
+                  error_message: >-
+                    You are sending more requests per second then available for
+                    your Serpstat plan
               backoff_strategies:
                 - type: ExponentialBackoffStrategy
                   factor: 2
@@ -240,6 +254,13 @@ streams:
           type: CompositeErrorHandler
           error_handlers:
             - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  predicate: '{{response.error.code == 32000}}'
+                  error_message: >-
+                    You are sending more requests per second then available for
+                    your Serpstat plan
               backoff_strategies:
                 - type: ExponentialBackoffStrategy
                   factor: 2
@@ -311,6 +332,13 @@ streams:
           type: CompositeErrorHandler
           error_handlers:
             - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  predicate: '{{response.error.code == 32000}}'
+                  error_message: >-
+                    You are sending more requests per second then available for
+                    your Serpstat plan
               backoff_strategies:
                 - type: ExponentialBackoffStrategy
                   factor: 2
@@ -403,6 +431,13 @@ streams:
           type: CompositeErrorHandler
           error_handlers:
             - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  predicate: '{{response.error.code == 32000}}'
+                  error_message: >-
+                    You are sending more requests per second then available for
+                    your Serpstat plan
               backoff_strategies:
                 - type: ExponentialBackoffStrategy
                   factor: 2
@@ -462,6 +497,13 @@ streams:
           type: CompositeErrorHandler
           error_handlers:
             - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  predicate: '{{response.error.code == 32000}}'
+                  error_message: >-
+                    You are sending more requests per second then available for
+                    your Serpstat plan
               backoff_strategies:
                 - type: ExponentialBackoffStrategy
                   factor: 2
