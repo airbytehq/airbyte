@@ -2,18 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dagger import ExecError, File, QueryError
+
 from pipelines.actions import environments
 from pipelines.bases import StepResult, StepStatus
-from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
+from pipelines.builds.common import (
+    BuildConnectorImageBase,
+    BuildConnectorImageForAllPlatformsBase,
+)
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
-from dagger import ExecError, File, QueryError
 
 
 class BuildConnectorDistributionTar(GradleTask):
-
     title = "Build connector tar"
-    gradle_task_name = "publishMavenLocal"
+    gradle_task_name = "jar"
 
     async def _run(self) -> StepResult:
         with_built_tar = (
