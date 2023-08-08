@@ -46,8 +46,7 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.0.0  | 2023-08-0 3| [29040](https://github.com/airbytehq/airbyte/pull/29040) |  Migrate to Low-Code CDK   
-                       |
+| 1.0.0   | 2023-08-03 | [29040](https://github.com/airbytehq/airbyte/pull/29040) | Migrate to Low-Code CDK                              |
 | 0.1.6   | 2023-05-10 | [25714](https://github.com/airbytehq/airbyte/pull/25714) | Fix invalid json schema for nps stream               |
 | 0.1.5   | 2023-05-08 | [25900](https://github.com/airbytehq/airbyte/pull/25900) | Fix integration tests                                |
 | 0.1.4   | 2023-05-08 | [25900](https://github.com/airbytehq/airbyte/pull/25900) | Fix integration tests                                |
