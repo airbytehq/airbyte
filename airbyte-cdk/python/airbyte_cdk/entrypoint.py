@@ -181,6 +181,13 @@ class AirbyteEntrypoint(object):
             return parsed_args.catalog
         return None
 
+    @classmethod
+    def extract_config(cls, args: List[str]) -> Optional[Any]:
+        parsed_args = cls.parse_args(args)
+        if hasattr(parsed_args, "config"):
+            return parsed_args.config
+        return None
+
     def _emit_queued_messages(self, source: Source) -> Iterable[AirbyteMessage]:
         if hasattr(source, "message_repository") and source.message_repository:
             yield from source.message_repository.consume_queue()

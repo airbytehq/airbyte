@@ -240,7 +240,50 @@ def clients_instance():
         },
         "organization_usage": "deny",
         "organization_require_behavior": "no_prompt",
-        "client_authentication_methods": {"private_key_jwt": {"credentials": ["object"]}}
+        "client_authentication_methods": {"private_key_jwt": {"credentials": ["object"]}},
+    }
+
+
+@pytest.fixture()
+def organization_instance():
+    """
+    Clients instance object response
+    """
+    return {
+        "id": "my_org_id",
+        "name": "My application",
+        "display_name": "My display_name",
+        "branding": "brand",
+        "metadata": "metadata_example",
+    }
+
+
+@pytest.fixture()
+def organization_member_instance():
+    """
+    Clients instance object response
+    """
+    return {
+        "id": "my_org_id_my_user_id",
+        "org_id": "my_org_id",
+        "user_id": "my_user_id",
+        "name": "my_name",
+        "email": "my_email",
+        "picture": "my_picture",
+    }
+
+
+@pytest.fixture()
+def organization_member_roles_instance():
+    """
+    Clients instance object response
+    """
+    return {
+        "id": "something",
+        "org_id": "my_org_id",
+        "user_id": "my_user_id",
+        "name": "my_name",
+        "description": "desc",
     }
 
 

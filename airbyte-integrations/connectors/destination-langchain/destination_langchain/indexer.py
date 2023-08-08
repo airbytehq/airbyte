@@ -95,7 +95,10 @@ class PineconeIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         try:
-            pinecone.describe_index(self.config.index)
+            description = pinecone.describe_index(self.config.index)
+            actual_dimension = int(description.dimension)
+            if actual_dimension != self.embedder.embedding_dimensions:
+                return f"Your embedding configuration will produce vectors with dimension {self.embedder.embedding_dimensions:d}, but your index is configured with dimension {actual_dimension:d}. Make sure embedding and indexing configurations match."
         except Exception as e:
             return format_exception(e)
         return None

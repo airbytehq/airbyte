@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import java.util.Collection;
 
 /**
  * In some cases we want to prune or mutate the spec for an existing source. The common case is that
@@ -47,6 +48,12 @@ public abstract class SpecModifyingSource implements Source {
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     return source.read(config, catalog, state);
+  }
+
+  @Override
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+      throws Exception {
+    return source.readStreams(config, catalog, state);
   }
 
 }
