@@ -83,10 +83,10 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
-    - name: Install Python 3.10
+    - name: Install Python 3.11
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.11"
         token: ${{ inputs.github_token }}
     - name: Install ci-connector-ops package
       shell: bash

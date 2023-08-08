@@ -5,7 +5,7 @@ CLI tooling to read and manage GSM secrets:
 
 ## Requirements
 
-This project requires Python 3.10 and pipx.
+This project requires Python 3.11 and pipx.
 
 ## Installation
 
