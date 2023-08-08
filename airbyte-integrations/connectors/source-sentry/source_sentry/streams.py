@@ -195,13 +195,13 @@ class Issues(SentryIncremental):
 
         for record in json_response:
             cursor_value = self._get_cursor_value(record, stream_state)
-            self.state = {self.cursor_field: str(cursor_value)}
+            self.state = {self.cursor_field: cursor_value}
             yield record
 
     def _get_cursor_value(self, record: Dict[str, Any], stream_state: Mapping[str, Any]) -> pendulum.datetime:
         """Compute the maximum cursor value based on the record and stream state."""
-        record_time = pendulum.parse(record[self.cursor_field])
-        state_time = self.get_state_value(stream_state)
+        record_time = record[self.cursor_field]
+        state_time = str(self.get_state_value(stream_state))
         return max(record_time, state_time)
 
 
