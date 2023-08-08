@@ -29,13 +29,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
-    // TODO
+    // No escaping needed, as far as I can tell. We quote all our identifier names.
     return new StreamId(namespace, name, rawNamespaceOverride, StreamId.concatenateRawTableName(namespace, name), namespace, name);
   }
 
   @Override
   public ColumnId buildColumnId(final String name) {
-    // TODO
+    // No escaping needed, as far as I can tell. We quote all our identifier names.
     return new ColumnId(name, name, name);
   }
 
