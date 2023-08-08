@@ -10,13 +10,13 @@ from typing import List, Optional
 
 import anyio
 import dagger
+from connector_ops.utils import ConnectorLanguage
 from pipelines.actions import environments
 from pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext
 from pipelines.format import java_connectors, python_connectors
 from pipelines.git import GitPushChanges
 from pipelines.pipelines.connectors import run_report_complete_pipeline
-from connector_ops.utils import ConnectorLanguage
 
 
 class NoFormatStepForLanguageError(Exception):
@@ -84,7 +84,7 @@ async def run_connectors_format_pipelines(
 ) -> List[ConnectorContext]:
     async with dagger.Connection(dagger.Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
         requires_dind = any(context.connector.language == ConnectorLanguage.JAVA for context in contexts)
-        dockerd_service = environments.with_global_dockerd_service(dagger_client)
+        dockerd_service = environments.with_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg_main:
             if requires_dind:
                 tg_main.start_soon(dockerd_service.sync)

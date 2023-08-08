@@ -132,7 +132,7 @@ class TestAcceptanceTests:
         test_context.connector_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
 
         mocker.patch.object(common.environments, "load_image_to_docker_host", return_value="image_sha")
-        mocker.patch.object(common.environments, "with_bound_docker_host", lambda _, cat_container: cat_container)
+        mocker.patch.object(common.environments, "with_bound_global_docker_host", lambda _, cat_container: cat_container)
         mocker.patch.object(common.AcceptanceTests, "get_cache_buster", return_value="cache_buster")
         return common.AcceptanceTests(test_context)
 

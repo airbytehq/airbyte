@@ -443,11 +443,12 @@ async def with_connector_ops(context: PipelineContext) -> Container:
     return await with_installed_pipx_package(context, python_base_environment, CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH)
 
 
-def with_global_dockerd_service(dagger_client: Client) -> Container:
+def with_dockerd_service(dagger_client: Client) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     Args:
         dagger_client (Client): The dagger client used to create the container.
+        exposed_port (int): The port to expose the docker daemon on.
     Returns:
         Container: The container running dockerd as a service
     """
@@ -463,7 +464,7 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
     )
 
 
-def with_bound_docker_host(
+def with_bound_global_docker_host(
     context: ConnectorContext,
     container: Container,
 ) -> Container:
@@ -484,9 +485,30 @@ def with_bound_docker_host(
     )
 
 
+def with_bound_custom_docker_host(
+    context: ConnectorContext,
+    container: Container,
+    custom_docker_host_name: str,
+) -> Container:
+    """Bind a container to a docker host. It will use the dockerd service as a docker host.
+
+    Args:
+        context (ConnectorContext): The current connector context.
+        container (Container): The container to bind to the docker host.
+    Returns:
+        Container: The container bound to the docker host.
+    """
+    dockerd = with_dockerd_service(context.dagger_client)
+    return (
+        container.with_env_variable("DOCKER_HOST", f"tcp://{custom_docker_host_name}:2375")
+        .with_service_binding(custom_docker_host_name, dockerd)
+        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+    )
+
+
 def bound_docker_host(context: ConnectorContext) -> Container:
     def bound_docker_host_inner(container: Container) -> Container:
-        return with_bound_docker_host(context, container)
+        return with_bound_global_docker_host(context, container)
 
     return bound_docker_host_inner
 
@@ -501,7 +523,7 @@ def with_docker_cli(context: ConnectorContext) -> Container:
         Container: A docker cli container bound to a docker host.
     """
     docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
-    return with_bound_docker_host(context, docker_cli)
+    return with_bound_global_docker_host(context, docker_cli)
 
 
 def with_gradle(
@@ -566,7 +588,7 @@ def with_gradle(
     )
 
     if bind_to_docker_host:
-        return with_bound_docker_host(context, openjdk_with_docker)
+        return with_bound_custom_docker_host(context, openjdk_with_docker, "gradle-docker-host")
     else:
         return openjdk_with_docker
 

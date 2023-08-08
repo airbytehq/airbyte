@@ -416,7 +416,7 @@ class ConnectorContext(PipelineContext):
     def docker_image(self) -> str:
         return f"{self.docker_repository}:{self.docker_image_tag}"
 
-    async def get_connector_dir(self, exclude=None, include=None) -> Directory:
+    async def get_connector_dir(self, exclude: List[str] = None, include: List[str] = None) -> Directory:
         """Get the connector under test source code directory.
 
         Args:
@@ -426,6 +426,14 @@ class ConnectorContext(PipelineContext):
         Returns:
             Directory: The connector under test source code directory.
         """
+        if exclude:
+            exclude = [
+                str(self.connector.code_directory / path) for path in exclude if not path.startswith(str(self.connector.code_directory))
+            ]
+        if include:
+            include = [
+                str(self.connector.code_directory / path) for path in include if not path.startswith(str(self.connector.code_directory))
+            ]
         vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
         return await hacks.patch_connector_dir(self, vanilla_connector_dir)
 

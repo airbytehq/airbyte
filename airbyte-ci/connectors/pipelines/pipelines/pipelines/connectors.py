@@ -9,12 +9,12 @@ from typing import Callable, List, Optional
 
 import anyio
 import dagger
+from connector_ops.utils import ConnectorLanguage
+from dagger import Config
 from pipelines.actions import environments
 from pipelines.bases import NoOpStep, Report, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext, ContextState
 from pipelines.utils import create_and_open_file
-from connector_ops.utils import ConnectorLanguage
-from dagger import Config
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
@@ -86,7 +86,7 @@ async def run_connectors_pipelines(
         # HACK: This is to get a long running dockerd service to be shared across all the connectors pipelines
         # Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state
         # See https://github.com/airbytehq/airbyte/issues/27233
-        dockerd_service = environments.with_global_dockerd_service(dagger_client)
+        dockerd_service = environments.with_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg_main:
             tg_main.start_soon(dockerd_service.sync)
             await anyio.sleep(10)  # Wait for the docker service to be ready

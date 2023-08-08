@@ -249,7 +249,7 @@ class AcceptanceTests(PytestStep):
             cat_container = self.dagger_client.container().from_(self.context.connector_acceptance_test_image)
 
         return (
-            environments.with_bound_docker_host(self.context, cat_container)
+            environments.with_bound_global_docker_host(self.context, cat_container)
             .with_entrypoint([])
             .with_mounted_directory(self.CONTAINER_TEST_INPUT_DIRECTORY, test_input)
             .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
