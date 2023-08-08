@@ -152,8 +152,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path: []
+          class_name: "source_braintree_no_code.source.PlanExtractor"
       paginator:
         type: NoPagination
   - type: DeclarativeStream
@@ -189,8 +188,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path: []
+          class_name: "source_braintree_no_code.source.TransactionExtractor"
       paginator:
         type: NoPagination
     incremental_sync:
@@ -234,8 +232,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path: []
+          class_name: "source_braintree_no_code.source.SubscriptionExtractor"
       paginator:
         type: NoPagination
     incremental_sync:
