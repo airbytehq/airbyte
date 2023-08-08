@@ -145,8 +145,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   /*
-   * To prepare for Destination v2, cdc streams must have a default cursor field
-   * Cursor format: the airbyte [emittedAt(converted to nano seconds)] + [sync wide record counter]
+   * To prepare for Destination v2, cdc streams must have a default cursor field Cursor format: the
+   * airbyte [emittedAt(converted to nano seconds)] + [sync wide record counter]
    */
   private static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
     stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
@@ -159,12 +159,13 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
+    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
-    properties.set(CDC_DEFAULT_CURSOR, numberType);
+    properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
 
     return stream;
   }

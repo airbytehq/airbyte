@@ -15,24 +15,24 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import java.time.Instant;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MysqlDebeziumStateAttributes> {
 
   private final long emittedAtNano;
-  private long recordCounter = 1;
-  private static final long ONE_BILLION = 1_000_000_000;
+  private final AtomicLong recordCounter = new AtomicLong(1);
+  private static final long ONE_HUNDRED_MILLION = 100_000_000;
 
   public MySqlCdcConnectorMetadataInjector(final Instant emittedAt) {
-    this.emittedAtNano = emittedAt.getEpochSecond() * ONE_BILLION;
+    this.emittedAtNano = emittedAt.getEpochSecond() * ONE_HUNDRED_MILLION;
   }
 
   @Override
   public void addMetaData(final ObjectNode event, final JsonNode source) {
-    final Long cdcDefaultCursor = this.emittedAtNano + recordCounter;
+    final Long cdcDefaultCursor = this.emittedAtNano + recordCounter.getAndIncrement();
     event.put(CDC_LOG_FILE, source.get("file").asText());
     event.put(CDC_LOG_POS, source.get("pos").asLong());
     event.put(CDC_DEFAULT_CURSOR, cdcDefaultCursor);
-    recordCounter++;
   }
 
   @Override

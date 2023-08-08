@@ -188,14 +188,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
+    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
-    properties.set(CDC_DEFAULT_CURSOR, numberType);
+    properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
   }
 
   @Override
