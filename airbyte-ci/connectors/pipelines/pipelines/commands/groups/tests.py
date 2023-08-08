@@ -13,13 +13,14 @@ import sys
 import anyio
 import click
 import dagger
-import git
 from pipelines.utils import AIRBYTE_REPO_URL
 
 
 @click.command()
 @click.argument("airbyte_ci_package_path")
+@click.pass_context
 def tests(
+    ctx: click.Context,
     airbyte_ci_package_path: str,
 ):
     """Runs the tests for the given airbyte-ci package.
@@ -27,25 +28,30 @@ def tests(
     Args:
         airbyte_ci_package_path (str): Path to the airbyte-ci package to test, relative to airbyte-ci directory
     """
-    success = anyio.run(run_test, airbyte_ci_package_path)
+    success = anyio.run(run_test, airbyte_ci_package_path, ctx.obj["git_branch"], ctx.obj["is_local"])
     if not success:
         click.Abort()
 
 
-async def run_test(airbyte_ci_package_path: str) -> bool:
+async def run_test(airbyte_ci_package_path: str, git_branch: str, is_local: bool) -> bool:
     """Runs the tests for the given airbyte-ci package in a Dagger container.
 
     Args:
         airbyte_ci_package_path (str): Path to the airbyte-ci package to test, relative to airbyte-ci directory.
+        git_branch (str): Name of the git branch to test.
+        is_local (bool): Whether the command is run locally or in CI.
     Returns:
         bool: True if the tests passed, False otherwise.
     """
     logger = logging.getLogger(f"{airbyte_ci_package_path}.tests")
-    logger.info(f"Running tests for {airbyte_ci_package_path}")
+    logger.info(f"Running tests for {airbyte_ci_package_path} on branch {git_branch}")
+    if is_local:
+        logger.warn(
+            "For performance reason the code under test will be pulled from the remote repository, not from the local filesystem. Please push your changes to the remote repository before running this command."
+        )
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
-        current_branch = git.Repo(search_parent_directories=True).active_branch.name
         airbyte_repo = dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
-        airbyte_dir = airbyte_repo.branch(current_branch).tree()
+        airbyte_dir = airbyte_repo.branch(git_branch).tree()
         try:
             docker_host_socket = dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
             pytest_container = await (
