@@ -64,11 +64,9 @@ class SourceLinkedinAds(AbstractSource):
         stream = Accounts(config)
         # need to load the first item only
         stream.records_limit = 1
-        try:
-            next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
-            return True, None
-        except Exception as e:
-            return False, e
+
+        next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
