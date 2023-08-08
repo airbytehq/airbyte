@@ -96,7 +96,7 @@ public class MySqlInitialReadUtil {
         savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
 
     if (!savedOffsetStillPresentOnServer) {
-      LOGGER.info("Saved offset no longer present on the server, Airbtye is going to trigger a sync from scratch");
+      LOGGER.warn("Saved offset no longer present on the server, Airbtye is going to trigger a sync from scratch");
     }
 
     final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog,
@@ -162,7 +162,12 @@ public class MySqlInitialReadUtil {
    */
   public static InitialLoadStreams streamsForInitialPrimaryKeyLoad(final CdcStateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog, final boolean savedOffsetStillPresentOnServer) {
     if (!savedOffsetStillPresentOnServer) {
-      return new InitialLoadStreams(fullCatalog.getStreams(), new HashMap<>());
+      return new InitialLoadStreams(
+          fullCatalog.getStreams()
+              .stream()
+              .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
+              .collect(Collectors.toList()),
+          new HashMap<>());
     }
 
     final AirbyteStateMessage airbyteStateMessage = stateManager.getRawStateMessage();

@@ -65,6 +65,8 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
     if (syncNumber == 1) {
       assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(stateMessages);
     } else if (syncNumber == 2) {
+      // Sync number 2 uses the state from sync number 1 but before we trigger the sync 2 we purge the binary logs and as a result the validation of
+      // logs present on the server fails, and we trigger a sync from scratch
       assertEquals(47, stateMessages.size());
       assertStateTypes(stateMessages, 44);
     } else {
