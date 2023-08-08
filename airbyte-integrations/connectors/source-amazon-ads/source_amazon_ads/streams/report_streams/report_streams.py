@@ -109,6 +109,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Check if the connector received an error like: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
         # https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
         (400, re.compile(r"^Tactic T00020 is not supported for report API in marketplace [A-Z\d]+\.$")),
+        (400, re.compile(r"^Tactic T00030 is not supported for report API in marketplace [A-Z\d]+\.$")),
         # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
         # In theory, it does not have to get such an error because the connector correctly calculates the start date,
         # but from practice, we can still catch such errors from time to time.
@@ -385,39 +386,39 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             if len(self._report_record_types) > 0 and record_type not in self._report_record_types:
                 continue
 
-            report_init_body = self._get_init_report_body(report_date, record_type, profile)
-            if not report_init_body:
-                continue
-            # Some of the record types has subtypes. For example asins type
-            # for  product report have keyword and targets subtypes and it
-            # represented as asins_keywords and asins_targets types. Those
-            # subtypes have mutually excluded parameters so we requesting
-            # different metric list for each record.
-            request_record_type = record_type.split("_")[0]
-            self.logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
-            response = self._send_http_request(
-                urljoin(self._url, self.report_init_endpoint(request_record_type)),
-                profile.profileId,
-                report_init_body,
-            )
-            if response.status_code != self.report_is_created:
-                error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
-                if self._skip_known_errors(response):
-                    self.logger.warning(error_msg)
-                    break
-                raise ReportInitFailure(error_msg)
-
-            response = ReportInitResponse.parse_raw(response.text)
-            report_infos.append(
-                ReportInfo(
-                    report_id=response.reportId,
-                    record_type=record_type,
-                    profile_id=profile.profileId,
-                    status=Status.IN_PROGRESS,
-                    metric_objects=[],
+            for report_init_body in self._get_init_report_body(report_date, record_type, profile):
+                if not report_init_body:
+                    continue
+                # Some of the record types has subtypes. For example asins type
+                # for  product report have keyword and targets subtypes and it
+                # represented as asins_keywords and asins_targets types. Those
+                # subtypes have mutually excluded parameters so we requesting
+                # different metric list for each record.
+                request_record_type = record_type.split("_")[0]
+                self.logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
+                response = self._send_http_request(
+                    urljoin(self._url, self.report_init_endpoint(request_record_type)),
+                    profile.profileId,
+                    report_init_body,
                 )
-            )
-            self.logger.info("Initiated successfully")
+                if response.status_code != self.report_is_created:
+                    error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
+                    if self._skip_known_errors(response):
+                        self.logger.warning(error_msg)
+                        break
+                    raise ReportInitFailure(error_msg)
+
+                response = ReportInitResponse.parse_raw(response.text)
+                report_infos.append(
+                    ReportInfo(
+                        report_id=response.reportId,
+                        record_type=record_type,
+                        profile_id=profile.profileId,
+                        status=Status.IN_PROGRESS,
+                        metric_objects=[],
+                    )
+                )
+                self.logger.info("Initiated successfully")
 
         return report_infos
 
