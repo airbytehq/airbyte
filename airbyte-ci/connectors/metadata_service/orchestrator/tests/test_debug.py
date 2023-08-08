@@ -3,8 +3,9 @@ from dagster import build_op_context
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_file_manager
 from orchestrator.assets.connector_test_report import generate_nightly_report, persist_connectors_test_summary_files
 from orchestrator.assets.registry_entry import registry_entry, metadata_entry
+from orchestrator.assets.registry import persisted_oss_registry
 from orchestrator.config import NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME, NIGHTLY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME, REPORT_FOLDER
-
+from orchestrator import REGISTRY_ENTRY_RESOURCE_TREE
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
 
@@ -29,6 +30,11 @@ def debug_nightly_report():
 
     context = build_op_context(resources=resources)
     generate_nightly_report(context).value
+
+
+def debug_registry():
+    context = build_op_context(resources=REGISTRY_ENTRY_RESOURCE_TREE)
+    persisted_oss_registry(context).value
 
 
 def debug_badges():

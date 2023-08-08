@@ -153,6 +153,20 @@
     },
     "trial_end": {
       "type": ["null", "number"]
+    },
+    "billing_thresholds": {
+      "type": ["null", "object"],
+      "properties": {
+        "usage_gte": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "tax_rates": {
+      "$ref": "tax_rates.json"
+    },
+    "price": {
+      "$ref": "price.json"
     }
   }
 }
