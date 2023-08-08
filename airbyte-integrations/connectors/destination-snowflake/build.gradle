@@ -25,6 +25,8 @@ application {
 }
 
 dependencies {
+    implementation "io.airbyte:airbyte-cdk:0.0.1"
+
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
     // Updating to any newer version (e.g. 3.13.22) is causing a regression with normalization.

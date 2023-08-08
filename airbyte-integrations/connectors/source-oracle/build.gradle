@@ -11,6 +11,7 @@ application {
 }
 
 dependencies {
+    implementation "io.airbyte:airbyte-cdk:0.0.1"
 
     // required so that log4j uses a standard xml parser instead of an oracle one (that gets pulled in by the oracle driver)
     implementation group: 'xerces', name: 'xercesImpl', version: '2.12.1'

@@ -9,6 +9,8 @@ application {
 }
 
 dependencies {
+    implementation "io.airbyte:airbyte-cdk:0.0.1"
+
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
     implementation project(':airbyte-config-oss:config-models-oss')

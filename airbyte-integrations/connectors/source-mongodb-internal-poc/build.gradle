@@ -12,6 +12,8 @@ application {
 }
 
 dependencies {
+    implementation "io.airbyte:airbyte-cdk:0.0.1"
+
     implementation libs.slf4j.api
     implementation libs.jackson.databind
     implementation project(':airbyte-db:db-lib')

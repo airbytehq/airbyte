@@ -10,13 +10,15 @@ application {
 }
 
 dependencies {
+    // Strict encrypt connector derived from the base connector:
+    implementation project(':airbyte-integrations:connectors:source-mssql')
+
     implementation project(':airbyte-db:db-lib')
     implementation libs.airbyte.protocol
 
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
-    implementation project(':airbyte-integrations:connectors:source-mssql')
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 

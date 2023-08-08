@@ -10,10 +10,12 @@ application {
 }
 
 dependencies {
+    // Strict encrypt connector derived from the base connector:
+    implementation project(':airbyte-integrations:connectors:source-postgres')
+
     implementation project(':airbyte-db:db-lib')
 
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:connectors:source-postgres')
     implementation libs.airbyte.protocol
     // todo (cgardens): why are these needed?
     implementation project(':airbyte-integrations:connectors:source-jdbc')

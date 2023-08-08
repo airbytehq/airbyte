@@ -10,6 +10,9 @@ application {
 }
 
 dependencies {
+    // Strict encrypt connector derived from the base connector:
+    implementation project(':airbyte-integrations:connectors:destination-elasticsearch')
+
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
@@ -26,7 +29,6 @@ dependencies {
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
     // https://github.com/eclipse-ee4j/jsonp
     implementation 'org.glassfish:jakarta.json:2.0.1'
-    implementation project(':airbyte-integrations:connectors:destination-elasticsearch')
 
     // MIT
     // https://www.testcontainers.org/

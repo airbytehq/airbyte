@@ -10,6 +10,8 @@ application {
 }
 
 dependencies {
+    // Strict encrypt connector derived from the base connector:
+    implementation project(':airbyte-integrations:connectors:destination-oracle')
 
     // required so that log4j uses a standard xml parser instead of an oracle one (that gets pulled in by the oracle driver)
     implementation group: 'xerces', name: 'xercesImpl', version: '2.12.1'
@@ -18,7 +20,6 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
-    implementation project(':airbyte-integrations:connectors:destination-oracle')
 
     implementation "com.oracle.database.jdbc:ojdbc8-production:19.7.0.0"
 
