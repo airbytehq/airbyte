@@ -1,5 +1,6 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
+import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 
@@ -75,7 +76,6 @@ public class MySqlInitialReadUtil {
     final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
     // Determine the streams that need to be loaded via primary key sync.
-    final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog);
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
 
     // Construct the initial state for MySQL. If there is already existing state, we use that instead since that is associated with the debezium
@@ -84,8 +84,26 @@ public class MySqlInitialReadUtil {
     final JsonNode initialDebeziumState = mySqlDebeziumStateUtil.constructInitialDebeziumState(
         MySqlCdcProperties.getDebeziumProperties(database), catalog, database);
 
-    final CdcState stateToBeUsed = (stateManager.getCdcStateManager().getCdcState() == null
-        || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
+    final JsonNode state =
+        (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
+            ? initialDebeziumState
+            : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
+
+    final Optional<MysqlDebeziumStateAttributes> savedOffset = mySqlDebeziumStateUtil.savedOffset(
+        MySqlCdcProperties.getDebeziumProperties(database), catalog, state.get(MYSQL_CDC_OFFSET), sourceConfig);
+
+    final boolean savedOffsetStillPresentOnServer =
+        savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
+
+    if (!savedOffsetStillPresentOnServer) {
+      LOGGER.warn("Saved offset no longer present on the server, Airbtye is going to trigger a sync from scratch");
+    }
+
+    final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog,
+        savedOffsetStillPresentOnServer);
+
+    final CdcState stateToBeUsed = (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
+        || stateManager.getCdcStateManager().getCdcState().getState() == null)) ? new CdcState().withState(initialDebeziumState)
         : stateManager.getCdcStateManager().getCdcState();
 
     // If there are streams to sync via primary key load, build the relevant iterators.
@@ -142,7 +160,16 @@ public class MySqlInitialReadUtil {
    * Determines the streams to sync for initial primary key load. These include streams that are (i) currently in primary key load (ii) newly added
    * incremental streams.
    */
-  public static InitialLoadStreams streamsForInitialPrimaryKeyLoad(final CdcStateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog) {
+  public static InitialLoadStreams streamsForInitialPrimaryKeyLoad(final CdcStateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog, final boolean savedOffsetStillPresentOnServer) {
+    if (!savedOffsetStillPresentOnServer) {
+      return new InitialLoadStreams(
+          fullCatalog.getStreams()
+              .stream()
+              .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
+              .collect(Collectors.toList()),
+          new HashMap<>());
+    }
+
     final AirbyteStateMessage airbyteStateMessage = stateManager.getRawStateMessage();
     final Set<AirbyteStreamNameNamespacePair> streamsStillinPkSync = new HashSet<>();
 
