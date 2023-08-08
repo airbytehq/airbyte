@@ -1,0 +1,370 @@
+version: 0.50.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - merchant_account
+streams:
+  - type: DeclarativeStream
+    name: merchant_account
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+        path: /merchant_accounts
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          X-ApiVersion: '6'
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''private_key''] }}'
+          username: '{{ config[''public_key''] }}'
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+  - type: DeclarativeStream
+    name: customer_stream
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+        path: /customers/advanced_search
+        http_method: POST
+        request_parameters: {}
+        request_headers:
+          X-ApiVersion: '6'
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''private_key''] }}'
+          username: '{{ config[''public_key''] }}'
+        request_body_json:
+          search:
+            created_at:
+              min: '{{ config[''start_date''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+  - type: DeclarativeStream
+    name: discount
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+        path: /discounts/
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          X-ApiVersion: '6'
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''private_key''] }}'
+          username: '{{ config[''public_key''] }}'
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: plan
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+        path: /plans/
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          X-ApiVersion: '6'
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''private_key''] }}'
+          username: '{{ config[''public_key''] }}'
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: transaction
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+        path: /transactions/advanced_search
+        http_method: POST
+        request_parameters: {}
+        request_headers:
+          X-ApiVersion: '6'
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''private_key''] }}'
+          username: '{{ config[''public_key''] }}'
+        request_body_json:
+          search:
+            created_at:
+              min: '{{ config[''start_date''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+  - type: DeclarativeStream
+    name: subscription
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+        path: /subscriptions/advanced_search
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          X-ApiVersion: '6'
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''private_key''] }}'
+          username: '{{ config[''public_key''] }}'
+        request_body_json:
+          search:
+            created_at:
+              min: '{{ config[''start_date''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+  - type: DeclarativeStream
+    name: dispute
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+        path: /disputes/advanced_search
+        http_method: POST
+        request_parameters: {}
+        request_headers:
+          X-ApiVersion: '6'
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''private_key''] }}'
+          username: '{{ config[''public_key''] }}'
+        request_body_json:
+          search:
+            received_date:
+              min: '{{ config[''start_date''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: received_date
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - environment
+      - merchant_id
+      - private_key
+      - public_key
+      - start_date
+    properties:
+      environment:
+        enum:
+          - sandbox
+          - production
+          - qa
+          - development
+        type: string
+        order: 0
+        title: Environment
+        description: Environment specifies where the data will come from.
+      merchant_id:
+        type: string
+        order: 1
+        title: Merchant ID
+        description: >-
+          The unique identifier for your entire gateway account. See the <a
+          href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
+          for more information on how to obtain this ID.
+      private_key:
+        type: string
+        order: 2
+        title: Private Key
+        description: >-
+          Braintree Private Key. See the <a
+          href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
+          for more information on how to obtain this key.
+        airbyte_secret: true
+      public_key:
+        type: string
+        order: 3
+        title: Public Key
+        description: >-
+          Braintree Public Key. See the <a
+          href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
+          for more information on how to obtain this key.
+      start_date:
+        type: string
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 4
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated.
+    additionalProperties: true
+  documentation_url: https://example.org
+  type: Spec
+metadata:
+  autoImportSchema:
+    merchant_account: true
+    customer_stream: true
+    discount: true
+    plan: true
+    transaction: true
+    subscription: true
+    dispute: true

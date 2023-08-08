@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b6e1f393-1243-4cba-a0ae-1e9c2a01adec
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-braintree-no-code
+  githubIssueLabel: source-braintree-no-code
+  icon: braintree-no-code.svg
+  license: MIT
+  name: Braintree No Code
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/braintree-no-code
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"
