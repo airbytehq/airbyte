@@ -208,7 +208,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final JdbcSqlGenerator sqlGenerator = new JdbcSqlGenerator(getNamingResolver(), sqlOperations);
+    final JdbcSqlGenerator sqlGenerator = new JdbcSqlGenerator(getNamingResolver(), sqlOperations, );
     if (TypingAndDedupingFlag.isDestinationV2()) {
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride("raw_data_schema")
           .map(override -> new CatalogParser(sqlGenerator, override))

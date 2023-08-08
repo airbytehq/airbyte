@@ -15,6 +15,7 @@ dependencies {
     implementation libs.airbyte.protocol
 
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.apache.commons:commons-text:1.10.0'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
