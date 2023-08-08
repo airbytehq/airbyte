@@ -50,7 +50,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
         }
         schemaSet.add(schemaName);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -92,7 +92,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
       } else {
         return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -125,7 +125,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
       // Note that the column order is weird here - that's intentional, to avoid needing to change
       // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
       insertQuery = String.format(
-          "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+          "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
           schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     } else {
       insertQuery = String.format(
@@ -148,7 +148,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(Exception e) {
+  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(final Exception e) {
     if (e instanceof SnowflakeSQLException && e.getMessage().contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
       return Optional.of(new ConfigErrorException(
           "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",
