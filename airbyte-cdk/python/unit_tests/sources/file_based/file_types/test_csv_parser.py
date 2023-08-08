@@ -6,15 +6,14 @@ import asyncio
 import io
 import logging
 from datetime import datetime
-from typing import Iterable, List, Optional
+from unittest import mock
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser, _cast_types
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
@@ -106,30 +105,13 @@ def test_read_and_cast_types(reader_values, expected_rows):
         assert expected_rows == list(parser._read_and_cast_types(reader, schema, config_format, logger))
 
 
-class MockFileBasedStreamReader(AbstractFileBasedStreamReader):
-    def __init__(self, expected_encoding: Optional[str]):
-        self._expected_encoding = expected_encoding
-
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> io.IOBase:
-        assert encoding == self._expected_encoding
-        return io.StringIO("c1,c2\nv1,v2")
-
-    def get_matching_files(self, globs: List[str], logger: logging.Logger) -> Iterable[RemoteFile]:
-        pass
-
-    @property
-    def config(self) -> Optional[AbstractFileBasedSpec]:
-        return None
-
-    @config.setter
-    def config(self, value: AbstractFileBasedSpec) -> None:
-        pass
-
-
 def test_encoding_is_passed_to_stream_reader():
     parser = CsvParser()
     encoding = "ascii"
-    stream_reader = MockFileBasedStreamReader(encoding)
+    stream_reader = Mock()
+    mock_obj = stream_reader.open_file.return_value
+    mock_obj.__enter__ = Mock(return_value=io.StringIO("c1,c2\nv1,v2"))
+    mock_obj.__exit__ = Mock(return_value=None)
     file = RemoteFile(uri="s3://bucket/key.csv", last_modified=datetime.now())
     config = FileBasedStreamConfig(
         name="test",
@@ -138,6 +120,21 @@ def test_encoding_is_passed_to_stream_reader():
         format={"csv": CsvFormat(encoding=encoding)}
     )
     list(parser.parse_records(config, file, stream_reader, logger))
+    stream_reader.open_file.assert_has_calls([
+        mock.call(file, FileReadMode.READ, encoding, logger),
+        mock.call().__enter__(),
+        mock.call().__exit__(None, None, None),
+    ])
 
+    mock_obj.__enter__ = Mock(return_value=io.StringIO("c1,c2\nv1,v2"))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(parser.infer_schema(config, file, stream_reader, logger))
+    stream_reader.open_file.assert_called_with(file, FileReadMode.READ, encoding, logger)
+    stream_reader.open_file.assert_has_calls([
+        mock.call(file, FileReadMode.READ, encoding, logger),
+        mock.call().__enter__(),
+        mock.call().__exit__(None, None, None),
+        mock.call(file, FileReadMode.READ, encoding, logger),
+        mock.call().__enter__(),
+        mock.call().__exit__(None, None, None),
+    ])
