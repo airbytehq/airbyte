@@ -1,5 +1,6 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
+import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 
@@ -100,13 +101,12 @@ public class MySqlInitialReadUtil {
       final MySqlInitialLoadSourceOperations sourceOperations =
           new MySqlInitialLoadSourceOperations(
               Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, new MySqlCdcConnectorMetadataInjector())));
-      // TODO : Actually populate the table block size
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,
           quoteString,
           initialLoadStateManager,
           namespacePair -> Jsons.emptyObject(),
-          new HashMap<>());
+          getTableSizeInfoForStreams(database, catalog.getStreams(), quoteString));
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),

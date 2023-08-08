@@ -17,7 +17,7 @@ public interface MySqlInitialLoadStateManager {
   // Returns the final state message for the initial sync.
   AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun);
 
-  // Returns the previous state, represented as a {@link PrimaryKeyLoadStatus} associated with the stream.
+  // Returns the previous state emitted, represented as a {@link PrimaryKeyLoadStatus} associated with the stream.
   PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair);
 
   // Returns the current {@PrimaryKeyInfo}, associated with the stream. This includes the data type & the column name associated with the stream.

@@ -34,6 +34,9 @@ definitions:
       version:
         description: Version of state.
         type: integer
+      num_rows_synced:
+        description: Number of rows synced.
+        type: integer
       state_type:
         "$ref": "#/definitions/StateType"
       pk_name:

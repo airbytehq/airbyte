@@ -37,6 +37,10 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   private final Long syncCheckpointRecords;
   private final String pkFieldName;
 
+  // Number of records synced for this stream in the previous run. This is so we have an accurate count of the number of rows
+  // emitted.
+  private final Long prevRunRecordsSynced;
+
   public MySqlInitialSyncStateIterator(final Iterator<AirbyteMessage> messageIterator,
       final AirbyteStreamNameNamespacePair pair,
       final MySqlInitialLoadStateManager stateManager,
@@ -50,6 +54,9 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
     this.syncCheckpointDuration = checkpointDuration;
     this.syncCheckpointRecords = checkpointRecords;
     this.pkFieldName = stateManager.getPrimaryKeyInfo(pair).pkFieldName();
+    this.prevRunRecordsSynced =
+        stateManager.getPrimaryKeyLoadStatus(pair) == null? 0 : stateManager.getPrimaryKeyLoadStatus(pair).getNumRowsSynced();
+    LOGGER.info("Previous run number of records synced for stream {} is {}", pair, prevRunRecordsSynced);
   }
 
   @CheckForNull
@@ -61,6 +68,7 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
         final PrimaryKeyLoadStatus pkStatus = new PrimaryKeyLoadStatus()
             .withVersion(MYSQL_STATUS_VERSION)
             .withStateType(StateType.PRIMARY_KEY)
+            .withNumRowsSynced(recordCount + prevRunRecordsSynced)
             .withPkName(pkFieldName)
             .withPkVal(lastPk)
             .withIncrementalState(streamStateForIncrementalRun);
