@@ -154,7 +154,7 @@ def test_check(response, start_date, check_passed):
         (
                 '',
                 404,
-                24,
+                25,
                 ["Skipping stream ticket_forms: Check permissions, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}."],
                 'Not Found'
         ),

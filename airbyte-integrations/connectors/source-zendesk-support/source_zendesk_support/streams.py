@@ -489,7 +489,7 @@ class Organizations(SourceZendeskSupportStream):
 class OrganizationFields(SourceZendeskSupportStream):
     """Organization Fields stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields"""
 
-    
+
 class Posts(CursorPaginationZendeskSupportStream):
     """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
 
