@@ -9,12 +9,32 @@ import yaml
 
 from connector_ops import utils
 
-RELEASE_STAGE_TO_STRICTNESS_LEVEL_MAPPING = {"generally_available": "high"}
+HIGH_TEST_STRICTNESS_LEVEL_THRESHOLD = {
+    "sl": 300,
+    "ql": 400,
+}
 BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibility"}
 TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-operations"}
 GA_BYPASS_REASON_REVIEWERS = {"connector-operations"}
 GA_CONNECTOR_REVIEWERS = {"gl-python"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
+
+def is_important_connector(connector: utils.Connector) -> bool:
+    """Check if a connector requires higher scrutiny.
+
+    Args:
+        connector (utils.Connector): The connector to check.
+
+    Returns:
+        bool: True if the connector requires high test strictness level, False otherwise.
+    """
+    if connector.ab_internal_sl >= HIGH_TEST_STRICTNESS_LEVEL_THRESHOLD["sl"]:
+        return True
+
+    if connector.ab_internal_ql >= HIGH_TEST_STRICTNESS_LEVEL_THRESHOLD["ql"]:
+        return True
+
+    return False
 
 
 def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
@@ -30,43 +50,41 @@ def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
     connectors_with_bad_strictness_level = []
     changed_connector = utils.get_changed_connectors(destination=False, third_party=False)
     for connector in changed_connector:
-        expected_test_strictness_level = RELEASE_STAGE_TO_STRICTNESS_LEVEL_MAPPING.get(connector.release_stage)
-        can_check_strictness_level = all(
-            [item is not None for item in [connector.release_stage, expected_test_strictness_level, connector.acceptance_test_config]]
-        )
-        if can_check_strictness_level:
+        requires_high_test_strictness_level = is_important_connector(connector)
+        check_for_high_strictness = connector.acceptance_test_config is not None and requires_high_test_strictness_level
+        if check_for_high_strictness:
             try:
-                assert connector.acceptance_test_config.get("test_strictness_level") == expected_test_strictness_level
+                assert connector.acceptance_test_config.get("test_strictness_level") == "high"
             except AssertionError:
                 connectors_with_bad_strictness_level.append(connector)
     return connectors_with_bad_strictness_level
 
 
-def find_changed_ga_connectors() -> Set[utils.Connector]:
-    """Find GA connectors modified on the current branch.
+def find_changed_important_connectors() -> Set[utils.Connector]:
+    """Find important connectors modified on the current branch.
 
     Returns:
         Set[utils.Connector]: The set of GA connectors that were modified on the current branch.
     """
     changed_connectors = utils.get_changed_connectors(destination=False, third_party=False)
-    return {connector for connector in changed_connectors if connector.release_stage == "generally_available"}
+    return {connector for connector in changed_connectors if is_important_connector(connector)}
 
 
-def get_ga_bypass_reason_changes() -> Set[utils.Connector]:
-    """Find GA connectors that have modified bypass_reasons.
+def get_bypass_reason_changes() -> Set[utils.Connector]:
+    """Find connectors that have modified bypass_reasons.
 
     Returns:
         Set[str]: Set of connector names e.g {"source-github"}: The set of GA connectors that have changed bypass_reasons.
     """
     bypass_reason_changes = utils.get_changed_acceptance_test_config(diff_regex="bypass_reason")
-    return bypass_reason_changes.intersection(find_changed_ga_connectors())
+    return bypass_reason_changes.intersection(find_changed_important_connectors())
 
 
 def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
-    ga_connector_changes = find_changed_ga_connectors()
+    important_connector_changes = find_changed_important_connectors()
     backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
     test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
-    ga_bypass_reason_changes = get_ga_bypass_reason_changes()
+    ga_bypass_reason_changes = get_bypass_reason_changes()
 
     if backward_compatibility_changes:
         return [{"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)}]
@@ -74,7 +92,7 @@ def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
         return [{"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)}]
     if ga_bypass_reason_changes:
         return [{"any-of": list(GA_BYPASS_REASON_REVIEWERS)}]
-    if ga_connector_changes:
+    if important_connector_changes:
         return list(GA_CONNECTOR_REVIEWERS)
     return []
 
@@ -83,7 +101,7 @@ def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
     if connectors_with_bad_strictness_level:
         logging.error(
-            f"The following GA connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/#strictness-level"
+            f"The following connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/#strictness-level"
         )
         sys.exit(1)
     else:

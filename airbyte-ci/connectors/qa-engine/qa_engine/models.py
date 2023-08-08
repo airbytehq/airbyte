@@ -14,12 +14,10 @@ class ConnectorTypeEnum(str, Enum):
     source = "source"
     destination = "destination"
 
-
-class ReleaseStageEnum(str, Enum):
+class SupportLevelEnum(str, Enum):
+    certified = "certified"
+    community = "community"
     unknown = "unknown"
-    alpha = "alpha"
-    beta = "beta"
-    generally_available = "generally_available"
 
 
 PUBLIC_FIELD = Field(..., is_public=True)
@@ -32,7 +30,7 @@ class ConnectorQAReport(BaseModel):
     connector_technical_name: str = PUBLIC_FIELD
     connector_definition_id: str = PUBLIC_FIELD
     connector_version: str = PUBLIC_FIELD
-    release_stage: ReleaseStageEnum = PUBLIC_FIELD
+    support_level: SupportLevelEnum = PUBLIC_FIELD
     is_on_cloud: bool = PUBLIC_FIELD
     is_appropriate_for_cloud_use: bool = PUBLIC_FIELD
     latest_build_is_successful: bool = PUBLIC_FIELD

@@ -11,6 +11,7 @@ from enum import Enum
 from glob import glob
 from pathlib import Path
 from typing import List, Optional, Set, Tuple, Union
+from pydash.objects import get
 
 import git
 import requests
@@ -272,9 +273,32 @@ class Connector:
     def name_from_metadata(self) -> Optional[str]:
         return self.metadata.get("name") if self.metadata else None
 
+
     @property
-    def release_stage(self) -> Optional[str]:
-        return self.metadata.get("releaseStage") if self.metadata else None
+    def support_level(self) -> Optional[str]:
+        return self.metadata.get("supportLevel") if self.metadata else None
+
+    @property
+    def ab_internal_sl(self) -> int:
+        default_value = 100
+        sl_value = get(self.metadata, "ab_internal.sl")
+
+        if sl_value is None:
+            logging.warning(f"Connector {self.technical_name} does not have a support level defined in metadata.yaml. Defaulting to {default_value}")
+            return default_value
+
+        return sl_value
+
+    @property
+    def ab_internal_ql(self) -> int:
+        default_value = 100
+        ql_value = get(self.metadata, "ab_internal.ql")
+
+        if ql_value is None:
+            logging.warning(f"Connector {self.technical_name} does not have a support level defined in metadata.yaml. Defaulting to {default_value}")
+            return default_value
+
+        return ql_value
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:

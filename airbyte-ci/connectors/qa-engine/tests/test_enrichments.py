@@ -46,5 +46,5 @@ def test_no_column_are_removed_and_lowercased(enriched_catalog_columns, oss_cata
         assert re.sub(r"(?<!^)(?=[A-Z])", "_", column).lower() in enriched_catalog_columns
 
 
-def test_release_stage_not_null(enriched_catalog):
-    assert len(enriched_catalog["release_stage"].dropna()) == len(enriched_catalog["release_stage"])
+def test_support_level_not_null(enriched_catalog):
+    assert len(enriched_catalog["support_level"].dropna()) == len(enriched_catalog["support_level"])
