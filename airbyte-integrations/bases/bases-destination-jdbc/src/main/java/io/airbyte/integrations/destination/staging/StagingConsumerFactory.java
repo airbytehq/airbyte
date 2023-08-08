@@ -107,7 +107,8 @@ public class StagingConsumerFactory {
         () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
         flusher,
         catalog,
-        new BufferManager());
+        new BufferManager(),
+        null);
   }
 
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
