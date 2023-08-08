@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
@@ -37,6 +38,17 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
     super(bufferStorage, codecFactory, schema);
     this.recordFormatter = recordFormatter;
   }
+
+  /*
+   * @param recordString serialized record
+   * @param emittedAt timestamp of the record in milliseconds
+   * @throws IOException
+   */
+  @Override
+  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
+    writeRecord(new AirbyteRecordMessage().withData(Jsons.deserialize(recordString)).withEmittedAt(emittedAt));
+  }
+
 
   @Override
   protected void writeRecord(final AirbyteRecordMessage record) throws IOException {

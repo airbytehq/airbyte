@@ -49,7 +49,6 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
 
   @Override
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
-    // TODO: this should be an avro writer I think
     final SerializableBuffer writer;
     try {
       writer = createBuffer.apply(new AirbyteStreamNameNamespacePair(decs.getName(), decs.getNamespace()), catalog);
@@ -66,7 +65,7 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
     }
 
     writer.flush();
-    log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+    log.info("Flushing Avro buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
     if (!streamDescToWriteConfig.containsKey(decs)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));

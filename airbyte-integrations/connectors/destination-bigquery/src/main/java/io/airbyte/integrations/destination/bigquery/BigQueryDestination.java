@@ -279,7 +279,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     // Set the default namespace on streams with null namespace. This means we don't need to repeat this
     // logic in the rest of the connector.
     // (record messages still need to handle null namespaces though, which currently happens in e.g.
-    // BigQueryRecordConsumer#acceptTracked)
+    // AsyncStreamConsumer#accept)
     // This probably should be shared logic amongst destinations eventually.
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
