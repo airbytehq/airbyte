@@ -820,11 +820,13 @@ class Orders(IncrementalAmazonSPStream):
         else:
             return self.default_backoff_time
 
+
 class OrderItems(AmazonSPStream, ABC):
     """
     API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
     API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
     """
+
     name = "OrderItems"
     primary_key = "OrderItemId"
     cursor_field = "OrderItemId"
@@ -842,41 +844,44 @@ class OrderItems(AmazonSPStream, ABC):
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice[self.stream_slice_cursor_field]}/orderItems"
-    
+
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             return dict(next_page_token)
         return {}
-    
+
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         orders = Orders(**self.stream_kwargs)
         for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
             self.cached_state[self.parent_cursor_field] = order_record[self.parent_cursor_field]
             self.logger.info(f"OrderItems stream slice for order {order_record[self.stream_slice_cursor_field]}")
             time.sleep(self.default_stream_slice_delay_time)
-            yield {self.stream_slice_cursor_field: order_record[self.stream_slice_cursor_field], self.parent_cursor_field: order_record[self.parent_cursor_field]}
+            yield {
+                self.stream_slice_cursor_field: order_record[self.stream_slice_cursor_field],
+                self.parent_cursor_field: order_record[self.parent_cursor_field],
+            }
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = self.cached_state[self.parent_cursor_field]
         if current_stream_state.get(self.parent_cursor_field):
             return {self.parent_cursor_field: max(latest_benchmark, current_stream_state[self.parent_cursor_field])}
         return {self.parent_cursor_field: latest_benchmark}
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
         next_page_token = stream_data.get("payload").get(self.next_page_token_field)
         if next_page_token:
             return {self.next_page_token_field: next_page_token}
-    
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
         if rate_limit:
             return 1 / float(rate_limit)
         else:
             return self.default_backoff_time
-    
+
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
