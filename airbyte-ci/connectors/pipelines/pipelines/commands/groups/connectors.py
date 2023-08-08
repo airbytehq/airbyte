@@ -127,7 +127,7 @@ def get_selected_connectors_with_modified_files(
     "support_levels",
     multiple=True,
     help="Filter connectors to test by support_level.",
-    type=click.Choice(["alpha", "beta", "generally_available"]),
+    type=click.Choice(["community", "certified"]),
 )
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
 @click.option(
