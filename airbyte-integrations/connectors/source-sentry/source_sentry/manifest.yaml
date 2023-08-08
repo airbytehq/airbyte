@@ -32,6 +32,7 @@ definitions:
       stop_condition: "{{ headers.link.next.results != 'true' }}"
   retriever:
     type: SimpleRetriever
+
 streams:
   - type: DeclarativeStream
     $parameters:
@@ -66,17 +67,9 @@ streams:
         path: "projects/{{config.organization}}/{{config.project}}/issues/"
         request_parameters:
           statsPeriod: ""
-          query: "lastSeen:>{{stream_interval.start_time}}"
+          query: ""
       paginator:
         $ref: "#/definitions/paginator"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: lastseen
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
   - type: DeclarativeStream
     $parameters:
       name: "projects"
