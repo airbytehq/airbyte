@@ -2,6 +2,6 @@
   "merchant_id": "xcv6yxwmjfrcffff",
   "public_key": "x8z5kh7z2y6q23zf",
   "private_key": "aef9596be052804b13a7cb0c49df8165",
-  "environment": "Sandbox",
+  "environment": "sandbox",
   "start_date": "2021-01-01T00:00:00Z"
 }

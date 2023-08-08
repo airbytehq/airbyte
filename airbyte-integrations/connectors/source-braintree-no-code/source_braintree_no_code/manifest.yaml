@@ -3,10 +3,10 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - merchant_account
+    - merchant_account_stream
 streams:
   - type: DeclarativeStream
-    name: merchant_account
+    name: merchant_account_stream
     primary_key:
       - id
     schema_loader:
@@ -92,7 +92,7 @@ streams:
         datetime: '{{ config[''start_date''] }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
   - type: DeclarativeStream
-    name: discount
+    name: discount_stream
     primary_key:
       - id
     schema_loader:
@@ -126,7 +126,7 @@ streams:
       paginator:
         type: NoPagination
   - type: DeclarativeStream
-    name: plan
+    name: plan_stream
     primary_key:
       - id
     schema_loader:
@@ -160,7 +160,7 @@ streams:
       paginator:
         type: NoPagination
   - type: DeclarativeStream
-    name: transaction
+    name: transaction_stream
     primary_key:
       - id
     schema_loader:
@@ -205,7 +205,7 @@ streams:
         datetime: '{{ config[''start_date''] }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
   - type: DeclarativeStream
-    name: subscription
+    name: subscription_stream
     primary_key:
       - id
     schema_loader:
@@ -250,7 +250,7 @@ streams:
         datetime: '{{ config[''start_date''] }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
   - type: DeclarativeStream
-    name: dispute
+    name: dispute_stream
     primary_key:
       - id
     schema_loader:
@@ -361,10 +361,10 @@ spec:
   type: Spec
 metadata:
   autoImportSchema:
-    merchant_account: true
+    merchant_account_stream: true
     customer_stream: true
-    discount: true
-    plan: true
-    transaction: true
-    subscription: true
-    dispute: true
+    discount_stream: true
+    plan_stream: true
+    transaction_stream: true
+    subscription_stream: true
+    dispute_stream: true
