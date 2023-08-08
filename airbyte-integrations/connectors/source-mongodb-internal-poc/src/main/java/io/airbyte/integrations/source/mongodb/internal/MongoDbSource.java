@@ -167,7 +167,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         .peek(airbyteStream -> {
           if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
         })
-          .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var collection = database.getCollection(collectionName);
