@@ -4,6 +4,7 @@
 
 import logging
 from abc import ABC, abstractmethod
+from datetime import datetime
 from enum import Enum
 from io import IOBase
 from typing import Iterable, List, Optional, Set
@@ -19,6 +20,8 @@ class FileReadMode(Enum):
 
 
 class AbstractFileBasedStreamReader(ABC):
+    DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+
     def __init__(self) -> None:
         self._config = None
 
@@ -75,16 +78,16 @@ class AbstractFileBasedStreamReader(ABC):
         """
         ...
 
-    @classmethod
-    def filter_files_by_globs(cls, files: List[RemoteFile], globs: List[str]) -> Iterable[RemoteFile]:
+    def filter_files_by_globs_and_start_date(self, files: List[RemoteFile], globs: List[str]) -> Iterable[RemoteFile]:
         """
         Utility method for filtering files based on globs.
         """
+        start_date = datetime.strptime(self.config.start_date, self.DATE_TIME_FORMAT) if self.config and self.config.start_date else None
         seen = set()
 
         for file in files:
-            if cls.file_matches_globs(file, globs):
-                if file.uri not in seen:
+            if self.file_matches_globs(file, globs):
+                if file.uri not in seen and (not start_date or file.last_modified >= start_date):
                     seen.add(file.uri)
                     yield file
 
