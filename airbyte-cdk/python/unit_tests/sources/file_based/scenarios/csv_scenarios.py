@@ -258,7 +258,7 @@ single_csv_scenario = (
                                                             },
                                                             "infer_datatypes_legacy": {
                                                                 "default": False,
-                                                                "description": "Whether to autogenerate the schema based the file content. This inferrence does not support list and objects",
+                                                                "description": "Whether to autogenerate the schema based the file content. This inference does not support list and objects.",
                                                                 "title": "Infer Datatypes (legacy)",
                                                                 "type": "boolean"
                                                             },
