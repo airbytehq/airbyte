@@ -59,7 +59,7 @@ async def run_test(airbyte_ci_package_path: str) -> bool:
                     dagger_client.host().directory(
                         ".",
                         exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**.log", "**/build", "**/.gradle"],
-                        include=["airbyte-ci", ".git", "airbyte-integrations"],
+                        # include=["airbyte-ci", ".git", "airbyte-integrations", "buildSrc"],
                     ),
                 )
                 .with_workdir(f"/airbyte/airbyte-ci/{airbyte_ci_package_path}")
