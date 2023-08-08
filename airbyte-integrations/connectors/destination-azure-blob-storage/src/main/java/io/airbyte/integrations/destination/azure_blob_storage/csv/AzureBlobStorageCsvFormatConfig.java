@@ -40,9 +40,15 @@ public class AzureBlobStorageCsvFormatConfig implements AzureBlobStorageFormatCo
   }
 
   private final Flattening flattening;
+  private final boolean fileExtensionRequired;
 
   public AzureBlobStorageCsvFormatConfig(final JsonNode formatConfig) {
     this.flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
+    this.fileExtensionRequired = formatConfig.get("file_extension").asBoolean();
+  }
+
+  public boolean isFileExtensionRequired() {
+    return fileExtensionRequired;
   }
 
   @Override
@@ -57,8 +63,8 @@ public class AzureBlobStorageCsvFormatConfig implements AzureBlobStorageFormatCo
   @Override
   public String toString() {
     return "AzureBlobStorageCsvFormatConfig{" +
-        "flattening=" + flattening +
-        '}';
+            "flattening=" + flattening +
+            ", fileExtensionRequired=" + fileExtensionRequired +
+            '}';
   }
-
 }

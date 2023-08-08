@@ -26,6 +26,7 @@ public class AzureBlobStorageFormatConfigsTest {
     final ObjectNode stubFormatConfig = mapper.createObjectNode();
     stubFormatConfig.put("format_type", AzureBlobStorageFormat.CSV.toString());
     stubFormatConfig.put("flattening", Flattening.ROOT_LEVEL.getValue());
+    stubFormatConfig.put("file_extension", Boolean.TRUE);
 
     final ObjectNode stubConfig = mapper.createObjectNode();
     stubConfig.set("format", stubFormatConfig);
