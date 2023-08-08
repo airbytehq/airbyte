@@ -14,8 +14,6 @@ description = "Airbyte Connector Development Kit (CDK) for Java."
 repositories {
     mavenLocal()
     mavenCentral()
-    // Should not be needed:
-    // maven { url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars' }
 }
 
 dependencies {
@@ -42,19 +40,10 @@ publishing {
     }
 }
 
-// Ensures that connectors can use snapshot versions of the CDK in MavenLocal.
+// Adds publishToMavenLocal as final command in the list of 'build' tasks.
 build.dependsOn(publishToMavenLocal)
-// Confirm local publish status by running:
-// $ ls -la ~/.m2/repository/io/airbyte/airbyte-cdk*
-// Confirm jar contents by running:
-// $ jar tf ~/.m2/repository/io/airbyte/airbyte-cdk/0.0.2-SNAPSHOT/airbyte-cdk-0.0.2-SNAPSHOT.jar
-// Remove CDK artifacts from MavenLocal by running:
-// $ rm -rf ~/.m2/repository/io/airbyte/airbyte-cdk*
 
 publishToMavenLocal {
-    // Get the path to the artifact in the local Maven repository
-    def artifactPath = "${System.getProperty('user.home')}/.m2/repository/io/airbyte/airbyte-cdk/${version}/airbyte-cdk-${version}.jar"
-
     // Always re-publish the artifact to MavenLocal
     outputs.upToDateWhen { false }
 
@@ -65,6 +54,17 @@ publishToMavenLocal {
         println "Finished CDK publishToMavenLocal."
     }
 }
+// MavenLocal debugging steps:
+// 1. Confirm local publish status by running:
+//    ls -la ~/.m2/repository/io/airbyte/airbyte-cdk*
+// 2. Confirm jar contents by running:
+//    jar tf ~/.m2/repository/io/airbyte/airbyte-cdk/0.0.2-SNAPSHOT/airbyte-cdk-0.0.2-SNAPSHOT.jar
+// 3. Remove CDK artifacts from MavenLocal by running:
+//    rm -rf ~/.m2/repository/io/airbyte/airbyte-cdk*
+// 4. Rebuid CDK artifacts by running:
+//    ./gradlew :airbyte-cdk:java:airbyte-cdk:build
+//    or
+//    ./gradlew :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal
 
 test {
     useJUnitPlatform()
