@@ -80,6 +80,7 @@ class SourceAmazonAds(AbstractSource):
         # It doesnt support pagination so there is no sense of reading single
         # record, it would fetch all the data anyway.
         Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
+
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -140,6 +141,16 @@ class SourceAmazonAds(AbstractSource):
 
     @staticmethod
     def _choose_profiles(config: Mapping[str, Any], profiles: List[Profile]):
-        if not config.get("profiles"):
+        filtered_profiles = []
+        if config.get("profiles"):
+            for profile in list(filter(lambda profile: profile.profileId in config["profiles"], profiles)):
+                filtered_profiles.append(profile)
+        if config.get("marketplace_ids"):
+            for profile in list(filter(lambda profile: profile.profileId in config["marketplace_ids"], profiles)):
+                if profile not in filtered_profiles:
+                    filtered_profiles.append(profile)
+
+        if config.get("profiles") or config.get("marketplace_ids"):
+            return filtered_profiles
+        else:
             return profiles
-        return list(filter(lambda profile: profile.profileId in config["profiles"], profiles))
