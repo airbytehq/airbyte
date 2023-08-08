@@ -16,7 +16,7 @@ from freezegun import freeze_time
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.avro_scenarios import (
     avro_all_types_scenario,
-    avro_file_with_decimal_as_float_scenario,
+    avro_file_with_double_as_number_scenario,
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
     single_avro_scenario,
@@ -196,7 +196,7 @@ discover_scenarios = [
     avro_all_types_scenario,
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
-    avro_file_with_decimal_as_float_scenario,
+    avro_file_with_double_as_number_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_autogenerate_column_names_scenario,
 ]
