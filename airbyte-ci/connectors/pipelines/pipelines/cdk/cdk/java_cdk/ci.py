@@ -5,7 +5,7 @@ from typing import Awaitable, List, Optional
 from aircmd.models.base import PipelineContext
 from aircmd.models.click_commands import ClickCommandMetadata, ClickFlag, ClickGroup
 from aircmd.models.click_params import ParameterType
-from aircmd.models.utils import make_pass_decorator
+from aircmd.models.click_utils import LazyPassDecorator
 from dagger import Client, Container
 from prefect import flow
 from prefect.utilities.annotations import quote
@@ -13,8 +13,9 @@ from prefect.utilities.annotations import quote
 from .settings import JavaCDKSettings
 from .tasks import build_java_cdk_task, test_java_cdk_task
 
-pass_pipeline_context = make_pass_decorator(PipelineContext, ensure=True)
-pass_global_settings = make_pass_decorator(JavaCDKSettings, ensure=True)
+settings = JavaCDKSettings()
+pass_pipeline_context = LazyPassDecorator(PipelineContext, ensure=True)
+pass_global_settings = LazyPassDecorator(settings, ensure=True)
 
 java_group = ClickGroup(group_name="java", group_help="Commands for developing Airbyte Java CDK")
 

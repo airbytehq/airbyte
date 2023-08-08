@@ -12,7 +12,7 @@ python = "^3.11"
 # comment the following line and uncomment out the 
 # path to local ../aircmd folder
 # you'll need to rerun poetry install to update the dependency
-aircmd = {git = "https://github.com/airbytehq/aircmd.git", branch = "main", rev="1b804386a51a9c5c20dc7c866708a5a7a28c35aa"} 
+aircmd = {git = "https://github.com/airbytehq/aircmd.git", branch = "main", rev="d5310dc3963afbd690cecec0a93dc6101f2fc33c"} 
 #aircmd = {path = "../../../../aircmd", develop = true}
 
 [tool.mypy]

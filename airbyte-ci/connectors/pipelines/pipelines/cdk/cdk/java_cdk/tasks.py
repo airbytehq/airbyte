@@ -5,15 +5,12 @@ import os
 import pygit2
 from aircmd.actions.environments import with_gradle
 from aircmd.models.base import PipelineContext
-from aircmd.models.utils import load_settings, make_pass_decorator
+from aircmd.models.settings import load_settings
 from dagger import Client, Container
 from prefect import task
 from prefect.artifacts import create_link_artifact
 
 from .settings import JavaCDKSettings
-
-pass_pipeline_context = make_pass_decorator(PipelineContext, ensure=True)
-pass_global_settings = make_pass_decorator(JavaCDKSettings, ensure=True)
 
 
 @task

@@ -7,7 +7,10 @@
 from typing import List
 
 import click
+from aircmd.models.base import GlobalContext
+from aircmd.models.click_utils import LazyPassDecorator
 from github import PullRequest
+
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.utils import (
@@ -141,6 +144,24 @@ def airbyte_ci(
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
 airbyte_ci.add_command(tests)
+
+## AIRCMD ENTRYPOINT 
+
+# Create a global context
+gctx = GlobalContext()
+
+# Create a Click context
+global_context = LazyPassDecorator(GlobalContext, ensure=True)
+
+gctx.click_context = click.Context(airbyte_ci)
+
+# Load plugin manager from the global context
+plugin_manager = gctx.plugin_manager
+
+# Get the command groups from the plugins
+plugin_command_groups = plugin_manager.get_command_groups()
+for command_group in plugin_command_groups:
+    airbyte_ci.add_command(command_group.click_group)
 
 if __name__ == "__main__":
     airbyte_ci()
