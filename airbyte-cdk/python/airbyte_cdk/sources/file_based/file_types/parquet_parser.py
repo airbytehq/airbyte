@@ -25,7 +25,7 @@ class ParquetParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Dict[str, Any]:
-        parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
+        parquet_format = config.format or ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
 
@@ -48,7 +48,7 @@ class ParquetParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
+        parquet_format = config.format or ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")  # FIXME test this branch!
         with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
