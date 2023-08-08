@@ -331,48 +331,6 @@
                 "order": 7
               }
             }
-          },
-          {
-            "title": "Google Cloud Storage Staging",
-            "description": "Recommended for large production workloads for better speed and scalability.",
-            "required": [
-              "method",
-              "project_id",
-              "bucket_name",
-              "credentials_json"
-            ],
-            "properties": {
-              "method": {
-                "title": "",
-                "description": "",
-                "type": "string",
-                "enum": ["GCS Staging"],
-                "default": "GCS Staging",
-                "order": 0
-              },
-              "project_id": {
-                "title": "Google Cloud project ID",
-                "type": "string",
-                "description": "Enter the <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">Google Cloud project ID</a>",
-                "examples": ["my-project"],
-                "order": 1
-              },
-              "bucket_name": {
-                "title": "Cloud Storage bucket name",
-                "type": "string",
-                "description": "Enter the <a href=\"https://cloud.google.com/storage/docs/creating-buckets\">Cloud Storage bucket name</a>",
-                "examples": ["airbyte-staging"],
-                "order": 2
-              },
-              "credentials_json": {
-                "title": "Google Application Credentials",
-                "type": "string",
-                "description": "Enter your <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\">Google Cloud service account key</a> in the JSON format with read/write access to your Cloud Storage staging bucket",
-                "airbyte_secret": true,
-                "multiline": true,
-                "order": 3
-              }
-            }
           }
         ]
       },

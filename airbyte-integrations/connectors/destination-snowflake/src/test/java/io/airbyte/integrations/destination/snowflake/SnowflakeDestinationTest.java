@@ -104,20 +104,6 @@ public class SnowflakeDestinationTest {
   }
 
   @Test
-  @DisplayName("When given GCS credentials should use COPY")
-  public void useGcsCopyStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("project_id", "my-project");
-    stubLoadingMethod.put("bucket_name", "my-bucket");
-    stubLoadingMethod.put("credentials_json", "hunter2");
-
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
-
-    assertTrue(SnowflakeDestinationResolver.isGcsCopy(stubConfig));
-  }
-
-  @Test
   @DisplayName("When not given S3 credentials should use INSERT")
   public void useInsertStrategyTest() {
     final var stubLoadingMethod = mapper.createObjectNode();
@@ -136,7 +122,6 @@ public class SnowflakeDestinationTest {
 
   private static Stream<Arguments> destinationTypeToConfig() {
     return Stream.of(
-        arguments("copy_gcs_config.json", DestinationType.COPY_GCS),
         arguments("copy_s3_config.json", DestinationType.COPY_S3),
         arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }

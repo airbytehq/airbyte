@@ -16,8 +16,6 @@ public class SnowflakeDestinationResolver {
   public static DestinationType getTypeFromConfig(final JsonNode config) {
     if (isS3Copy(config)) {
       return DestinationType.COPY_S3;
-    } else if (isGcsCopy(config)) {
-      return DestinationType.COPY_GCS;
     } else {
       return DestinationType.INTERNAL_STAGING;
     }
@@ -25,10 +23,6 @@ public class SnowflakeDestinationResolver {
 
   public static boolean isS3Copy(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
-  }
-
-  public static boolean isGcsCopy(final JsonNode config) {
-    return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
 
   public static int getNumberOfFileBuffers(final JsonNode config) {
@@ -43,12 +37,10 @@ public class SnowflakeDestinationResolver {
   public static Map<DestinationType, Destination> getTypeToDestination(
                                                                        final String airbyteEnvironment) {
     final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination(airbyteEnvironment);
-    final SnowflakeGcsStagingDestination gcsStagingDestination = new SnowflakeGcsStagingDestination(airbyteEnvironment);
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination(airbyteEnvironment);
 
     return ImmutableMap.of(
         DestinationType.COPY_S3, s3StagingDestination,
-        DestinationType.COPY_GCS, gcsStagingDestination,
         DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
 

@@ -27,7 +27,6 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
 
   enum DestinationType {
     COPY_S3,
-    COPY_GCS,
     INTERNAL_STAGING
   }
 
