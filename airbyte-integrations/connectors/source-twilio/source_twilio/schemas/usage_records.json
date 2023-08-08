@@ -4,7 +4,7 @@
       "type": ["null", "string"]
     },
     "count": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "price_unit": {
       "type": ["null", "string"]
@@ -49,7 +49,7 @@
       "type": ["null", "string"]
     },
     "price": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "uri": {
       "type": ["null", "string"]
@@ -58,7 +58,7 @@
       "type": ["null", "string"]
     },
     "usage": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "start_date": {
       "type": ["null", "string"]

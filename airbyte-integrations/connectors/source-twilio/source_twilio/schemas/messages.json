@@ -37,13 +37,13 @@
       "type": ["null", "string"]
     },
     "num_media": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "num_segments": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "price": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "sid": {
       "type": ["null", "string"]
