@@ -797,6 +797,7 @@ class Orders(IncrementalAmazonSPStream):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
     default_backoff_time = 60
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return f"orders/{ORDERS_API_VERSION}/orders"
@@ -829,7 +830,7 @@ class OrderItems(AmazonSPStream, ABC):
 
     name = "OrderItems"
     primary_key = "OrderItemId"
-    cursor_field = "OrderItemId"
+    cursor_field = "LastUpdateDate"
     parent_cursor_field = "LastUpdateDate"
     next_page_token_field = "NextToken"
     stream_slice_cursor_field = "AmazonOrderId"
@@ -890,6 +891,7 @@ class OrderItems(AmazonSPStream, ABC):
         if order_items_list.get(self.next_page_token_field) is None:
             self.cached_state[self.parent_cursor_field] = stream_slice[self.parent_cursor_field]
         for order_item in order_items_list.get(self.name, []):
+            order_item[self.cursor_field] = stream_slice.get(self.parent_cursor_field)
             order_item[self.stream_slice_cursor_field] = order_items_list.get(self.stream_slice_cursor_field)
             yield order_item
 

@@ -282,6 +282,9 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "LastUpdateDate": {
+      "type": ["null", "string"]
     }
   }
 }
