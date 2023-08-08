@@ -10,7 +10,6 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
-
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
