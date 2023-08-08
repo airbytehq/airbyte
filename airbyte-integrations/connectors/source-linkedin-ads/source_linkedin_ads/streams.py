@@ -470,11 +470,11 @@ class AdMemberJobFunctionAnalytics(AdCampaignAnalytics):
 
 
 class AdMemberCountryAnalytics(AdCampaignAnalytics):
-    pivot_by = "(value:MEMBER_COUNTRY)"
+    pivot_by = "(value:MEMBER_COUNTRY_V2)"
 
 
 class AdMemberRegionAnalytics(AdCampaignAnalytics):
-    pivot_by = "(value:MEMBER_REGION)"
+    pivot_by = "(value:MEMBER_REGION_V2)"
 
 
 class AdMemberCompanyAnalytics(AdCampaignAnalytics):
