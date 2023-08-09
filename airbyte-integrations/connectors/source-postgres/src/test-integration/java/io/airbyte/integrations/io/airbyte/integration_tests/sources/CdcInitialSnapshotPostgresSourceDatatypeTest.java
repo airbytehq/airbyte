@@ -6,28 +6,39 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.List;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
 
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 5;
+  private static final int INITIAL_WAITING_SECONDS = 30;
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   @Override
   protected Database setupDatabase() throws Exception {
-
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>("postgres:14-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
@@ -55,7 +66,6 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
         .put("replication_method", replicationMethod)
         .put("is_test", true)
         .put(JdbcUtils.SSL_KEY, false)
-        .put("snapshot_mode", "initial_only")
         .build());
 
     dslContext = DSLContextFactory.create(
@@ -99,4 +109,21 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
     return true;
   }
 
+  @Override
+  protected void addHstoreTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("hstore")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("""
+                '"paperback" => "243","publisher" => "postgresqltutorial.com",
+                "language"  => "English","ISBN-13" => "978-1449370000",
+                "weight"    => "11.2 ounces"'
+                """, null)
+            .addExpectedValues(
+                //
+                "\"weight\"=>\"11.2 ounces\", \"ISBN-13\"=>\"978-1449370000\", \"language\"=>\"English\", \"paperback\"=>\"243\", \"publisher\"=>\"postgresqltutorial.com\"",
+                null)
+            .build());
+  }
 }

@@ -27,9 +27,12 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlStagingOperatio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private static final Encoder BASE64_ENCODER = Base64.getEncoder();
-  private static final String COPY_QUERY = "COPY INTO %s.%s FROM '%s' "
-      + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
-      + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
+  private static final String COPY_QUERY =
+      """
+          COPY INTO %s.%s FROM '%s'
+          CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s')
+          file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '"' NULL_IF=('') )
+          """;
 
   private final NamingConventionTransformer nameTransformer;
   private final S3StorageOperations s3StorageOperations;
@@ -53,7 +56,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlStagingOperatio
 
   @Override
   public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
+    return nameTransformer.applyDefaultCase(String.join(".",
         nameTransformer.convertStreamName(namespace),
         nameTransformer.convertStreamName(streamName)));
   }

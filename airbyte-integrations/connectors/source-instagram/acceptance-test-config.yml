@@ -43,7 +43,7 @@ acceptance_tests:
           - name: value
             bypass_reason: Contains PII data
           - name: date
-            bypass_reason: Depend on curent date
+            bypass_reason: Depend on current date
           user_insights:
           - name: date
             bypass_reason: Anonymization for exactly for which date statistics anonymization
@@ -59,6 +59,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          user_lifetime_insights:
+            - name: value
+              bypass_reason: Floating values from sync-to-sync, due to live updating info.
+          user_insights:
+            - name: profile_views
+              bypass_reason: Floating values from sync-to-sync, due to live updating info.
   incremental:
     tests:
       - config_path: "secrets/config.json"

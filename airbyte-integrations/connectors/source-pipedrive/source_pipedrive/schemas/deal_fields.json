@@ -74,6 +74,9 @@
     },
     "mandatory_flag": {
       "type": ["null", "string", "boolean", "object"]
+    },
+    "pipeline_ids": {
+      "type": ["null", "array"]
     }
   }
 }

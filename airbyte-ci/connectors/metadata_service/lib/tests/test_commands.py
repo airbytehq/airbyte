@@ -2,8 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import pytest
+import pathlib
+
 from click.testing import CliRunner
 from metadata_service import commands
+from metadata_service.gcs_upload import MetadataUploadInfo
+from metadata_service.validators.metadata_validator import ValidatorOptions
 from pydantic import BaseModel, ValidationError, error_wrappers
 
 
@@ -34,24 +38,87 @@ def test_file_not_found_fails():
     assert result.exit_code != 0, "Validation succeeded (when it shouldve failed) for non_existent_file.yaml"
 
 
+def mock_metadata_upload_info(
+    latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, metadata_file_path: str
+) -> MetadataUploadInfo:
+    return MetadataUploadInfo(
+        uploaded=(latest_uploaded or version_uploaded),
+        latest_uploaded=latest_uploaded,
+        latest_blob_id="latest_blob_id" if latest_uploaded else None,
+        version_uploaded=version_uploaded,
+        version_blob_id="version_blob_id" if version_uploaded else None,
+        icon_uploaded=icon_uploaded,
+        icon_blob_id="icon_blob_id" if icon_uploaded else None,
+        metadata_file_path=metadata_file_path,
+    )
+
+
 # TEST UPLOAD COMMAND
-@pytest.mark.parametrize("uploaded", [True, False])
-def test_upload(mocker, valid_metadata_yaml_files, uploaded):
+@pytest.mark.parametrize(
+    "latest_uploaded, version_uploaded, icon_uploaded",
+    [
+        (False, False, False),
+        (True, False, False),
+        (False, True, False),
+        (False, False, True),
+        (True, True, False),
+        (True, False, True),
+        (False, True, True),
+        (True, True, True),
+    ],
+)
+def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uploaded, icon_uploaded):
     runner = CliRunner()
     mocker.patch.object(commands.click, "secho")
     mocker.patch.object(commands, "upload_metadata_to_gcs")
-    commands.upload_metadata_to_gcs.return_value = uploaded, "blob_id"
     metadata_file_path = valid_metadata_yaml_files[0]
+    upload_info = mock_metadata_upload_info(latest_uploaded, version_uploaded, icon_uploaded, metadata_file_path)
+    commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, "my-bucket", "-sa", metadata_file_path]
+        commands.upload, [metadata_file_path, "my-bucket"]
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
-    if uploaded:
-        commands.click.secho.assert_called_with(f"The metadata file {metadata_file_path} was uploaded to blob_id.", color="green")
+
+    if latest_uploaded:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to latest_blob_id.", color="green")]
+        )
         assert result.exit_code == 0
-    else:
-        commands.click.secho.assert_called_with(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")
+
+    if version_uploaded:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to version_blob_id.", color="green")]
+        )
+        assert result.exit_code == 0
+
+    if icon_uploaded:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The icon file {metadata_file_path} was uploaded to icon_blob_id.", color="green")]
+        )
+
+    if not (latest_uploaded or version_uploaded):
+        commands.click.secho.assert_has_calls([mocker.call(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")])
         # We exit with 5 status code to share with the CI pipeline that the upload was skipped.
         assert result.exit_code == 5
+
+
+def test_upload_prerelease(mocker, valid_metadata_yaml_files):
+    runner = CliRunner()
+    mocker.patch.object(commands.click, "secho")
+    mocker.patch.object(commands, "upload_metadata_to_gcs")
+
+    prerelease_tag = "0.3.0-dev.6d33165120"
+    bucket = "my-bucket"
+    metadata_file_path = valid_metadata_yaml_files[0]
+    validator_opts = ValidatorOptions(prerelease_tag=prerelease_tag)
+
+    upload_info = mock_metadata_upload_info(False, True, False, metadata_file_path)
+    commands.upload_metadata_to_gcs.return_value = upload_info
+    result = runner.invoke(
+        commands.upload, [metadata_file_path, bucket, "--prerelease", prerelease_tag]
+    )  # Using valid_metadata_yaml_files[0] as SA because it exists...
+
+    commands.upload_metadata_to_gcs.assert_has_calls([mocker.call(bucket, pathlib.Path(metadata_file_path), validator_opts)])
+    assert result.exit_code == 0
 
 
 @pytest.mark.parametrize(
@@ -68,7 +135,7 @@ def test_upload_with_errors(mocker, valid_metadata_yaml_files, error, handled):
     mocker.patch.object(commands, "upload_metadata_to_gcs")
     commands.upload_metadata_to_gcs.side_effect = error
     result = runner.invoke(
-        commands.upload, [valid_metadata_yaml_files[0], "my-bucket", "-sa", valid_metadata_yaml_files[0]]
+        commands.upload, [valid_metadata_yaml_files[0], "my-bucket"]
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
     assert result.exit_code == 1
     if handled:

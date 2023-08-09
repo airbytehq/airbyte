@@ -34,7 +34,6 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
-import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -182,7 +181,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   // TODO : Delete this Override when MSSQL supports individual table snapshot
   @Override
-  public void newTableSnapshotTest() throws Exception {
+  public void newTableSnapshotTest() {
     // Do nothing
   }
 
@@ -315,7 +314,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         // set snapshot_isolation level to "Read Committed" to disable snapshot
         .put("snapshot_isolation", "Read Committed")
         .build());
-    Jsons.replaceNestedValue(config, List.of("replication"), replicationConfig);
+    Jsons.replaceNestedValue(config, List.of("replication_method"), replicationConfig);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
     switchSnapshotIsolation(false, dbName);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
@@ -351,7 +350,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   void testCdcCheckOperationsWithDot() throws Exception {
     // assertCdcEnabledInDb and validate escape with special character
     switchCdcOnDatabase(true, dbNamewithDot);
-    AirbyteConnectionStatus status = getSource().check(getConfig());
+    final AirbyteConnectionStatus status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
@@ -435,6 +434,11 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_EVENT_SERIAL_NO, stringType);
 
+  }
+
+  @Override
+  protected void addCdcDefaultCursorField(final AirbyteStream stream) {
+    // Leaving empty until cdc default cursor is implemented for MSSQL
   }
 
   @Override

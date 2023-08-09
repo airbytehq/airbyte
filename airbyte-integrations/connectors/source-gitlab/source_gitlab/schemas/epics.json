@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -34,6 +34,10 @@
     },
     "references": {
       "type": ["null", "object"]
+    },
+    "author": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "author_id": {
       "type": ["null", "integer"]
@@ -85,6 +89,43 @@
     },
     "downvotes": {
       "type": ["null", "integer"]
+    },
+    "parent_iid": {
+      "type": ["null", "integer"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "text_color": {
+      "type": ["null", "string"]
+    },
+    "web_edit_url": {
+      "type": ["null", "string"]
+    },
+    "due_date_from_milestones": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "_links": {
+      "type": ["null", "object"],
+      "properties": {
+        "self": {
+          "type": ["null", "string"]
+        },
+        "epic_issues": {
+          "type": ["null", "string"]
+        },
+        "group": {
+          "type": ["null", "string"]
+        },
+        "parent": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "start_date_from_milestones": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

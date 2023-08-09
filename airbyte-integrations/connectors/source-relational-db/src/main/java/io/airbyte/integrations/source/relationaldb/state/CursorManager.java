@@ -9,6 +9,7 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -59,9 +61,10 @@ public class CursorManager<S> {
                        final Function<S, String> cursorFunction,
                        final Function<S, List<String>> cursorFieldFunction,
                        final Function<S, Long> cursorRecordCountFunction,
-                       final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
+                       final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
+                       final boolean onlyIncludeIncrementalStreams) {
     pairToCursorInfo = createCursorInfoMap(
-        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction);
+        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, onlyIncludeIncrementalStreams);
   }
 
   /**
@@ -89,15 +92,22 @@ public class CursorManager<S> {
                                                                                 final Function<S, String> cursorFunction,
                                                                                 final Function<S, List<String>> cursorFieldFunction,
                                                                                 final Function<S, Long> cursorRecordCountFunction,
-                                                                                final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
+                                                                                final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
+                                                                                final boolean onlyIncludeIncrementalStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
+        .filter(c -> {
+          if (onlyIncludeIncrementalStreams) {
+            return c.getSyncMode() == SyncMode.INCREMENTAL;
+          }
+          return true;
+        })
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStreamNameNamespacePair::fromAirbyteStream)
         .collect(Collectors.toSet());
     allStreamNames.addAll(streamSupplier.get().stream().map(namespacePairFunction).filter(Objects::nonNull).collect(Collectors.toSet()));
 
-    final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new ConcurrentHashMap<>();
     final Map<AirbyteStreamNameNamespacePair, S> pairToState = streamSupplier.get()
         .stream()
         .collect(Collectors.toMap(namespacePairFunction, Function.identity()));
@@ -163,7 +173,8 @@ public class CursorManager<S> {
         if (stateOptional.map(cursorFieldFunction).equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
           cursor = stateOptional.map(cursorFunction).orElse(null);
           cursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L);
-          // If a matching cursor is found in the state, and it's value is null - this indicates a CDC stream and we shouldn't log anything.
+          // If a matching cursor is found in the state, and it's value is null - this indicates a CDC stream
+          // and we shouldn't log anything.
           if (cursor != null) {
             LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
                 pair, cursorField, cursor, cursorRecordCount);

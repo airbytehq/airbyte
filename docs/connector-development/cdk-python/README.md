@@ -1,24 +1,24 @@
 # Connector Development Kit
 
 :::info
-Developer updates will be announced via our #using-the-cdk Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
+Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
 :::
 
 :::info
-This section is for the Python CDK. See our [community-maintained CDKs section](../README.md#community-maintained-cdks) 
-if you want to write connectors in other languages. 
+This section is for the Python CDK. See our [community-maintained CDKs section](../README.md#community-maintained-cdks)
+if you want to write connectors in other languages.
 :::
 The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
-* HTTP APIs \(REST APIs, GraphQL, etc..\)
-* Generic Python sources \(anything not covered by the above\)
-* Singer Taps (Note: The CDK supports building Singer taps but Airbyte no longer access contributions of this type)
+- HTTP APIs \(REST APIs, GraphQL, etc..\)
+- Generic Python sources \(anything not covered by the above\)
+- Singer Taps (Note: The CDK supports building Singer taps but Airbyte no longer access contributions of this type)
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/) before proceeding.
 
-If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to [the Connector Development section of our Discourse forum](https://discuss.airbyte.io/c/connector-development/16) to inquire further!
+If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to [the Connector Development section of our Airbyte Forum](https://github.com/airbytehq/airbyte/discussions) to inquire further!
 
 ## Getting Started
 
@@ -59,14 +59,14 @@ You can find a complete tutorial for implementing an HTTP source connector in [t
 
 **HTTP Connectors**:
 
-* [Exchangerates API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py)
-* [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
-* [Slack](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py)
+- [Exchangerates API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py)
+- [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
+- [Slack](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py)
 
 **Simple Python connectors using the barebones `Source` abstraction**:
 
-* [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
-* [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
+- [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
+- [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
 
 ## Contributing
 
@@ -84,19 +84,21 @@ pip install -e ".[tests]" # [tests] installs test-only dependencies
 
 #### Iteration
 
-* Iterate on the code locally
-* Run tests via `pytest -s unit_tests`
-* Perform static type checks using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
-* The `type_check_and_test.sh` script bundles both type checking and testing in one convenient command. Feel free to use it!
+- Iterate on the code locally
+- Run tests via `pytest -s unit_tests`
+- Perform static type checks using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
+- The `type_check_and_test.sh` script bundles both type checking and testing in one convenient command. Feel free to use it!
 
 #### Debugging
 
 While developing your connector, you can print detailed debug information during a sync by specifying the `--debug` flag. This allows you to get a better picture of what is happening during each step of your sync.
+
 ```text
 python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
 ```
 
 In addition to preset CDK debug statements, you can also add your own statements to emit debug information specific to your connector:
+
 ```python
 self.logger.debug("your debug message here", extra={"debug_field": self.value})
 ```
@@ -112,9 +114,8 @@ All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_c
 
 ## Coming Soon
 
-* Full OAuth 2.0 support \(including refresh token issuing flow via UI or CLI\) 
-* Airbyte Java HTTP CDK
-* CDK for Async HTTP endpoints \(request-poll-wait style endpoints\)
-* CDK for other protocols
-* Don't see a feature you need? [Create an issue and let us know how we can help!](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement&template=feature-request.md&title=)
-
+- Full OAuth 2.0 support \(including refresh token issuing flow via UI or CLI\)
+- Airbyte Java HTTP CDK
+- CDK for Async HTTP endpoints \(request-poll-wait style endpoints\)
+- CDK for other protocols
+- Don't see a feature you need? [Create an issue and let us know how we can help!](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement&template=feature-request.md&title=)

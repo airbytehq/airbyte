@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.11.5
+Changing test output and adding diff to test_read
+
+## 0.11.4
+Relax checking of `oneOf` common property and allow optional `default` keyword additional to `const` keyword.
+
+## 0.11.3
+Refactor test_oauth_flow_parameters to validate advanced_auth instead of the deprecated authSpecification
+
+## 0.11.2
+Do not enforce spec.json/spec.yaml
+
+## 0.11.1
+Test connector image labels and make sure they are set correctly and match metadata.yaml.
+
+## 0.11.0
+Add backward_compatibility.check_if_field_removed test to check if a field has been removed from the catalog.
+
+## 0.10.8
+Increase the connection timeout to Docker client to 2 minutes ([context](https://github.com/airbytehq/airbyte/issues/27401))
+
+## 0.10.7
+Fix on supporting arrays in the state (ensure string are parsed as string and not int)
+
+## 0.10.6
+Supporting arrays in the state by allowing ints in cursor_paths
+
+## 0.10.5
+Skipping test_catalog_has_supported_data_types as it is failing on too many connectors. Will first address globally the type/format problems at scale and then re-enable it.
+
+## 0.10.4
+Fixing bug: test_catalog_has_supported_data_types should support stream properties having `/` in it.
+
+## 0.10.3
+Fixing bug: test_catalog_has_supported_data_types , integer is a supported airbyte type.
+
+## 0.10.2
+Fixing bug: test_catalog_has_supported_data_types was failing when a connector stream property is named 'type'.
+
+## 0.10.1
+Reverting to 0.9.0 as the latest version. 0.10.0 was released with a bug failing CAT on a couple of connectors.
+
+## 0.10.0
+Discovery test: add validation that fails if the declared types/format/airbyte_types in the connector's streams properties are not [supported data types](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) or if their combination is invalid.
+
 ## 0.9.0
 Basic read test: add validation that fails if undeclared columns are present in records. Add `fail_on_extra_fields` input parameter to ignore this failure if desired.
 

@@ -230,13 +230,13 @@
         "group": "advanced",
         "oneOf": [
           {
-            "title": "Standard",
-            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "title": "Standard (Xmin)",
+            "description": "Xmin replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
             "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
-                "const": "Standard",
+                "const": "Xmin",
                 "order": 0
               }
             }
@@ -281,6 +281,15 @@
                 "min": 120,
                 "max": 1200
               },
+              "queue_size": {
+                "type": "integer",
+                "title": "Size of the queue (Advanced)",
+                "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
+                "default": 10000,
+                "order": 6,
+                "min": 1000,
+                "max": 10000
+              },
               "lsn_commit_behaviour": {
                 "type": "string",
                 "title": "LSN commit behaviour",
@@ -290,7 +299,19 @@
                   "After loading Data in the destination"
                 ],
                 "default": "After loading Data in the destination",
-                "order": 6
+                "order": 7
+              }
+            }
+          },
+          {
+            "title": "Standard",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard",
+                "order": 8
               }
             }
           }

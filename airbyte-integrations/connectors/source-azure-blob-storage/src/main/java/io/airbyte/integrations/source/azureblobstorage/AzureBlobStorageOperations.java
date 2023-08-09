@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.azureblobstorage;
 
 import com.azure.storage.blob.BlobContainerClient;
@@ -14,48 +18,47 @@ import org.apache.commons.lang3.StringUtils;
 
 public abstract class AzureBlobStorageOperations {
 
-    protected final BlobContainerClient blobContainerClient;
+  protected final BlobContainerClient blobContainerClient;
 
-    protected final AzureBlobStorageConfig azureBlobStorageConfig;
+  protected final AzureBlobStorageConfig azureBlobStorageConfig;
 
-    protected AzureBlobStorageOperations(AzureBlobStorageConfig azureBlobStorageConfig) {
-        this.azureBlobStorageConfig = azureBlobStorageConfig;
-        this.blobContainerClient = azureBlobStorageConfig.createBlobContainerClient();
+  protected AzureBlobStorageOperations(AzureBlobStorageConfig azureBlobStorageConfig) {
+    this.azureBlobStorageConfig = azureBlobStorageConfig;
+    this.blobContainerClient = azureBlobStorageConfig.createBlobContainerClient();
+  }
+
+  public abstract JsonNode inferSchema();
+
+  public abstract List<JsonNode> readBlobs(OffsetDateTime offsetDateTime);
+
+  public List<AzureBlob> listBlobs() {
+
+    var listBlobsOptions = new ListBlobsOptions();
+    listBlobsOptions.setDetails(new BlobListDetails()
+        .setRetrieveMetadata(true)
+        .setRetrieveDeletedBlobs(false));
+
+    if (!StringUtils.isBlank(azureBlobStorageConfig.prefix())) {
+      listBlobsOptions.setPrefix(azureBlobStorageConfig.prefix());
     }
 
-    public abstract JsonNode inferSchema();
+    var pagedIterable = blobContainerClient.listBlobs(listBlobsOptions, null);
 
-    public abstract List<JsonNode> readBlobs(OffsetDateTime offsetDateTime);
+    List<AzureBlob> azureBlobs = new ArrayList<>();
+    pagedIterable.forEach(blobItem -> azureBlobs.add(new AzureBlob.Builder()
+        .withName(blobItem.getName())
+        .withLastModified(blobItem.getProperties().getLastModified())
+        .build()));
+    return azureBlobs;
 
-    public List<AzureBlob> listBlobs() {
+  }
 
-        var listBlobsOptions = new ListBlobsOptions();
-        listBlobsOptions.setDetails(new BlobListDetails()
-            .setRetrieveMetadata(true)
-            .setRetrieveDeletedBlobs(false));
-
-        if (!StringUtils.isBlank(azureBlobStorageConfig.prefix())) {
-            listBlobsOptions.setPrefix(azureBlobStorageConfig.prefix());
-        }
-
-        var pagedIterable = blobContainerClient.listBlobs(listBlobsOptions, null);
-
-        List<AzureBlob> azureBlobs = new ArrayList<>();
-        pagedIterable.forEach(blobItem -> azureBlobs.add(new AzureBlob.Builder()
-            .withName(blobItem.getName())
-            .withLastModified(blobItem.getProperties().getLastModified())
-            .build()));
-        return azureBlobs;
-
+  protected <T, R> R handleCheckedIOException(CheckedFunction<T, R, IOException> checkedFunction, T parameter) {
+    try {
+      return checkedFunction.apply(parameter);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
-
-    protected <T, R> R handleCheckedIOException(CheckedFunction<T, R, IOException> checkedFunction, T parameter) {
-        try {
-            return checkedFunction.apply(parameter);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
+  }
 
 }

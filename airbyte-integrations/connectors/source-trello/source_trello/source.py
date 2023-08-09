@@ -11,6 +11,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .auth import TrelloAuthenticator
 from .utils import TrelloRequestRateLimits as balancer
@@ -27,6 +28,8 @@ class TrelloStream(HttpStream, ABC):
     limit = None
 
     extra_params = None
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])

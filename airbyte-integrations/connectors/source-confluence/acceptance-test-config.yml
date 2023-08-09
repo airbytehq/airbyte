@@ -21,6 +21,10 @@ acceptance_tests:
       expect_records:
         path: "integration_tests/expected_records.jsonl"
       fail_on_extra_columns: false
+      ignored_fields:
+        pages:
+          - name: body/view/value
+            bypass_reason: "Different class order"
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

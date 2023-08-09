@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base;
 
+import static io.airbyte.integrations.base.IntegrationRunner.ORPHANED_THREAD_FILTER;
 import static io.airbyte.integrations.util.ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
@@ -27,6 +28,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.base.Destination.ShimToSerializedAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -90,6 +92,7 @@ class IntegrationRunnerTest {
   private Path configPath;
   private Path configuredCatalogPath;
   private Path statePath;
+  private Path configDir;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -98,7 +101,7 @@ class IntegrationRunnerTest {
     stdoutConsumer = Mockito.mock(Consumer.class);
     destination = mock(Destination.class);
     source = mock(Source.class);
-    final Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
+    configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
@@ -220,6 +223,7 @@ class IntegrationRunnerTest {
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
+    // noinspection resource
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
     verify(stdoutConsumer).accept(message1);
     verify(stdoutConsumer).accept(message2);
@@ -243,6 +247,7 @@ class IntegrationRunnerTest {
     final Throwable throwable = catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS));
 
     assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    // noinspection resource
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
   }
 
@@ -291,9 +296,9 @@ class IntegrationRunnerTest {
   @Test
   void testWrite() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
+    final SerializedAirbyteMessageConsumer consumerMock = mock(SerializedAirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(consumerMock);
 
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
@@ -304,7 +309,7 @@ class IntegrationRunnerTest {
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
     runner.run(ARGS);
 
-    verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
+    verify(destination).getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
@@ -330,12 +335,13 @@ class IntegrationRunnerTest {
         + Jsons.serialize(message2) + "\n"
         + Jsons.serialize(stateMessage)).getBytes(StandardCharsets.UTF_8)));
 
-    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
+    try (final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock = mock(SerializedAirbyteMessageConsumer.class)) {
       IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
       final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
-      inOrder.verify(airbyteMessageConsumerMock).accept(message2);
-      inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
+      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message1), Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
+      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message2), Jsons.serialize(message2).getBytes(StandardCharsets.UTF_8).length);
+      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(stateMessage),
+          Jsons.serialize(stateMessage).getBytes(StandardCharsets.UTF_8).length);
     }
   }
 
@@ -355,34 +361,31 @@ class IntegrationRunnerTest {
             .withEmittedAt(EMITTED_AT));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes(StandardCharsets.UTF_8)));
 
-    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
-      doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
+    try (final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock = mock(SerializedAirbyteMessageConsumer.class)) {
+      doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(Jsons.serialize(message1),
+          Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
       assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
       final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message1), Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
       inOrder.verifyNoMoreInteractions();
     }
   }
 
   @Test
-  void testInterruptOrphanThreadFailure() {
-    final String testName = Thread.currentThread().getName();
+  void testInterruptOrphanThread() {
     final List<Exception> caughtExceptions = new ArrayList<>();
     startSleepingThread(caughtExceptions, false);
-    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
-        () -> {
-          throw new IOException("random error");
-        },
+    IntegrationRunner.stopOrphanedThreads(
         Assertions::fail,
         3, TimeUnit.SECONDS,
-        10, TimeUnit.SECONDS));
+        10, TimeUnit.SECONDS);
     try {
       TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
-        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .filter(ORPHANED_THREAD_FILTER)
         .collect(Collectors.toList());
     // all threads should be interrupted
     assertEquals(List.of(), runningThreads);
@@ -390,25 +393,22 @@ class IntegrationRunnerTest {
   }
 
   @Test
-  void testNoInterruptOrphanThreadFailure() {
-    final String testName = Thread.currentThread().getName();
+  void testNoInterruptOrphanThread() {
     final List<Exception> caughtExceptions = new ArrayList<>();
     final AtomicBoolean exitCalled = new AtomicBoolean(false);
     startSleepingThread(caughtExceptions, true);
-    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
-        () -> {
-          throw new IOException("random error");
-        },
+    IntegrationRunner.stopOrphanedThreads(
         () -> exitCalled.set(true),
         3, TimeUnit.SECONDS,
-        10, TimeUnit.SECONDS));
+        10, TimeUnit.SECONDS);
     try {
       TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
+
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
-        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .filter(ORPHANED_THREAD_FILTER)
         .collect(Collectors.toList());
     // a thread that refuses to be interrupted should remain
     assertEquals(1, runningThreads.size());
@@ -417,7 +417,13 @@ class IntegrationRunnerTest {
   }
 
   private void startSleepingThread(final List<Exception> caughtExceptions, final boolean ignoreInterrupt) {
-    final ExecutorService executorService = Executors.newFixedThreadPool(1);
+    final ExecutorService executorService = Executors.newFixedThreadPool(1, r -> {
+      // Create a thread that should be identified as orphaned if still running during shutdown
+      final Thread thread = new Thread(r);
+      thread.setName("sleeping-thread");
+      thread.setDaemon(false);
+      return thread;
+    });
     executorService.submit(() -> {
       for (int tries = 0; tries < 3; tries++) {
         try {
@@ -462,7 +468,7 @@ class IntegrationRunnerTest {
 
     Assertions.assertThrows(IllegalStateException.class, () -> {
       try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
-        IntegrationRunner.consumeMessage(consumer, invalidStateMessage);
+        ShimToSerializedAirbyteMessageConsumer.consumeMessage(consumer, invalidStateMessage);
       }
     });
   }
@@ -482,7 +488,7 @@ class IntegrationRunnerTest {
 
     Assertions.assertDoesNotThrow(() -> {
       try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
-        IntegrationRunner.consumeMessage(consumer, invalidNonStateMessage);
+        ShimToSerializedAirbyteMessageConsumer.consumeMessage(consumer, invalidNonStateMessage);
         verify(consumer, times(0)).accept(any(AirbyteMessage.class));
       }
     });

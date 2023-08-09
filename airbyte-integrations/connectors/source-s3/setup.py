@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "pyarrow==9.0.0",
     "smart-open[s3]==5.1.0",
-    "wcmatch==8.2",
+    "wcmatch==8.4",
     "dill==0.3.4",
     "pytz",
     "fastavro==1.4.11",
@@ -19,7 +19,7 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "connector-acceptance-test",
-    "pandas==1.3.1",
+    "pandas==2.0.3",
     "psutil",
     "pytest-order",
     "netifaces~=0.11.0",

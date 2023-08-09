@@ -95,7 +95,14 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected boolean supportIncrementalSchemaChanges() { return true; }
+  protected boolean supportIncrementalSchemaChanges() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
 
   @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {
@@ -166,7 +173,8 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
     // secrets file should be set by the inhereting class
     Assertions.assertNotNull(secretsFile);
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
-    config = BigQueryDestinationTestUtils.createConfig(secretsFile, datasetId);
+    final String stagingPathSuffix = Strings.addRandomSuffix("test_path", "_", 8);
+    config = BigQueryDestinationTestUtils.createConfig(secretsFile, datasetId, stagingPathSuffix);
 
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);

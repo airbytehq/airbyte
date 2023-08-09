@@ -6,7 +6,15 @@ from unittest.mock import MagicMock
 
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 from source_auth0.authenticator import Auth0Oauth2Authenticator
-from source_auth0.source import SourceAuth0, Users, initialize_authenticator
+from source_auth0.source import (
+    Clients,
+    OrganizationMemberRoles,
+    OrganizationMembers,
+    Organizations,
+    SourceAuth0,
+    Users,
+    initialize_authenticator,
+)
 
 
 class TestAuthentication:
@@ -70,7 +78,24 @@ class TestAuthentication:
 
         source_auth0 = SourceAuth0()
         requests_mock.get(f"{api_url}/api/v2/users?per_page=1", json={"connect": "ok"})
+        requests_mock.get(f"{api_url}/api/v2/clients?per_page=1", json={"connect": "ok"})
+        requests_mock.get(f"{api_url}/api/v2/organizations?per_page=1", json={"connect": "ok"})
+        requests_mock.get(f"{api_url}/api/v2/organizations/test_org_id/members?per_page=1", json={"connect": "ok"})
+        requests_mock.get(f"{api_url}/api/v2/organizations/test_org_id/members/test_user_id/roles?per_page=1", json={"connect": "ok"})
         requests_mock.post(f"{api_url}/oauth/token", json={"access_token": "test_token", "expires_in": 948})
         streams = source_auth0.streams(config=oauth_config)
-        for i, _ in enumerate([Users]):
-            assert isinstance(streams[i], _)
+
+        streams_supported = [
+            Clients,
+            Organizations,
+            OrganizationMembers,
+            OrganizationMemberRoles,
+            Users,
+        ]
+
+        # check the number of streams supported
+        assert len(streams) == len(streams_supported)
+
+        # and each stream to be specific stream
+        for s in range(len(streams)):
+            assert isinstance(streams[s], streams_supported[s])

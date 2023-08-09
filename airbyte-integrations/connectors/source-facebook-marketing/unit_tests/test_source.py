@@ -55,7 +55,7 @@ class TestSourceFacebookMarketing:
 
         assert ok
         assert not error_msg
-        api.assert_called_once_with(account_id="123", access_token="TOKEN")
+        api.assert_called_once_with(account_id="123", access_token="TOKEN", page_size=100)
         logger_mock.info.assert_called_once_with(f"Select account {api.return_value.account}")
 
     def test_check_connection_future_date_range(self, api, config, logger_mock):
@@ -97,7 +97,7 @@ class TestSourceFacebookMarketing:
     def test_streams(self, config, api):
         streams = SourceFacebookMarketing().streams(config)
 
-        assert len(streams) == 16
+        assert len(streams) == 29
 
     def test_spec(self):
         spec = SourceFacebookMarketing().spec()

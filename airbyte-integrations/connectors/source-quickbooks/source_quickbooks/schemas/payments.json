@@ -242,7 +242,7 @@
     "UnappliedAmt": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "domain": {

@@ -82,6 +82,33 @@
         "default": "2020-01-01T00:00:00+00:00",
         "order": 2,
         "airbyte_hidden": true
+      },
+      "metadata_fields": {
+        "title": "Metadata Fields",
+        "type": "array",
+        "items":{ 
+          "title": "Validenums",
+          "enum":[
+          "sheetcreatedAt",
+          "sheetid",
+          "sheetmodifiedAt",
+          "sheetname",
+          "sheetpermalink",
+          "sheetversion",
+          "sheetaccess_level",
+          "row_id",
+          "row_access_level",
+          "row_created_at",
+          "row_created_by",
+          "row_expanded",
+          "row_modified_by",
+          "row_parent_id",
+          "row_permalink",
+          "row_number",
+          "row_version"
+          ]},
+        "description": "A List of available columns which metadata can be pulled from.",
+        "order": 3
       }
     }
   },

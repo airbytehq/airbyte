@@ -155,6 +155,35 @@
     "client_event_time": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "$insert_key": {
+      "type": ["null", "string"]
+    },
+    "data_type": {
+      "type": ["null", "string"]
+    },
+    "plan": {
+      "type": ["null", "object"],
+      "properties": {
+        "branch": {
+          "type": ["null", "string"]
+        },
+        "source": {
+          "type": ["null", "string"]
+        },
+        "version": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "source_id": {
+      "type": ["null", "string"]
+    },
+    "partner_id": {
+      "type": ["null", "string"]
+    },
+    "global_user_properties": {
+      "type": ["null", "object"]
     }
   }
 }

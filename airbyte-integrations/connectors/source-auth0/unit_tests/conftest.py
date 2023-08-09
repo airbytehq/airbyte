@@ -118,6 +118,176 @@ def users_instance():
 
 
 @pytest.fixture()
+def clients_instance():
+    """
+    Clients instance object response
+    """
+    return {
+        "client_id": "AaiyAPdpYdesoKnqjj8HJqRn4T5titww",
+        "tenant": "",
+        "name": "My application",
+        "description": "",
+        "global": False,
+        "client_secret": "MG_TNT2ver-SylNat-_VeMmd-4m0Waba0jr1troztBniSChEw0glxEmgEi2Kw40H",
+        "app_type": "",
+        "logo_uri": "",
+        "is_first_party": False,
+        "oidc_conformant": False,
+        "callbacks": ["http://localhost/callback"],
+        "allowed_origins": [""],
+        "web_origins": [""],
+        "client_aliases": [""],
+        "allowed_clients": [""],
+        "allowed_logout_urls": ["http://localhost/logoutCallback"],
+        "oidc_backchannel_logout": {"backchannel_logout_urls": [""]},
+        "grant_types": [""],
+        "jwt_configuration": {"lifetime_in_seconds": 36000, "secret_encoded": True, "scopes": {}, "alg": "HS256"},
+        "signing_keys": ["object"],
+        "encryption_key": {"pub": "", "cert": "", "subject": ""},
+        "sso": False,
+        "sso_disabled": False,
+        "cross_origin_authentication": False,
+        "cross_origin_loc": "",
+        "custom_login_page_on": True,
+        "custom_login_page": "",
+        "custom_login_page_preview": "",
+        "form_template": "",
+        "addons": {
+            "aws": {"principal": "", "role": "", "lifetime_in_seconds": 0},
+            "azure_blob": {
+                "accountName": "",
+                "storageAccessKey": "",
+                "containerName": "",
+                "blobName": "",
+                "expiration": 0,
+                "signedIdentifier": "",
+                "blob_read": False,
+                "blob_write": False,
+                "blob_delete": False,
+                "container_read": False,
+                "container_write": False,
+                "container_delete": False,
+                "container_list": False,
+            },
+            "azure_sb": {"namespace": "", "sasKeyName": "", "sasKey": "", "entityPath": "", "expiration": 0},
+            "rms": {"url": ""},
+            "mscrm": {"url": ""},
+            "slack": {"team": ""},
+            "sentry": {"org_slug": "", "base_url": ""},
+            "box": {},
+            "cloudbees": {},
+            "concur": {},
+            "dropbox": {},
+            "echosign": {"domain": ""},
+            "egnyte": {"domain": ""},
+            "firebase": {"secret": "", "private_key_id": "", "private_key": "", "client_email": "", "lifetime_in_seconds": 0},
+            "newrelic": {"account": ""},
+            "office365": {"domain": "", "connection": ""},
+            "salesforce": {"entity_id": ""},
+            "salesforce_api": {"clientid": "", "principal": "", "communityName": "", "community_url_section": ""},
+            "salesforce_sandbox_api": {"clientid": "", "principal": "", "communityName": "", "community_url_section": ""},
+            "samlp": {
+                "mappings": {},
+                "audience": "",
+                "recipient": "",
+                "createUpnClaim": False,
+                "mapUnknownClaimsAsIs": False,
+                "passthroughClaimsWithNoMapping": False,
+                "mapIdentities": False,
+                "signatureAlgorithm": "",
+                "digestAlgorithm": "",
+                "issuer": "",
+                "destination": "",
+                "lifetimeInSeconds": 0,
+                "signResponse": False,
+                "nameIdentifierFormat": "",
+                "nameIdentifierProbes": [""],
+                "authnContextClassRef": "",
+            },
+            "layer": {"providerId": "", "keyId": "", "privateKey": "", "principal": "", "expiration": 0},
+            "sap_api": {
+                "clientid": "",
+                "usernameAttribute": "",
+                "tokenEndpointUrl": "",
+                "scope": "",
+                "servicePassword": "",
+                "nameIdentifierFormat": "",
+            },
+            "sharepoint": {"url": "", "external_url": [""]},
+            "springcm": {"acsurl": ""},
+            "wams": {"masterkey": ""},
+            "wsfed": {},
+            "zendesk": {"accountName": ""},
+            "zoom": {"account": ""},
+            "sso_integration": {"name": "", "version": ""},
+        },
+        "token_endpoint_auth_method": "none",
+        "client_metadata": {},
+        "mobile": {
+            "android": {"app_package_name": "", "sha256_cert_fingerprints": []},
+            "ios": {"team_id": "", "app_bundle_identifier": ""},
+        },
+        "initiate_login_uri": "",
+        "native_social_login": {"apple": {"enabled": False}, "facebook": {"enabled": False}},
+        "refresh_token": {
+            "rotation_type": "non-rotating",
+            "expiration_type": "non-expiring",
+            "leeway": 0,
+            "token_lifetime": 0,
+            "infinite_token_lifetime": False,
+            "idle_token_lifetime": 0,
+            "infinite_idle_token_lifetime": False,
+        },
+        "organization_usage": "deny",
+        "organization_require_behavior": "no_prompt",
+        "client_authentication_methods": {"private_key_jwt": {"credentials": ["object"]}},
+    }
+
+
+@pytest.fixture()
+def organization_instance():
+    """
+    Clients instance object response
+    """
+    return {
+        "id": "my_org_id",
+        "name": "My application",
+        "display_name": "My display_name",
+        "branding": "brand",
+        "metadata": "metadata_example",
+    }
+
+
+@pytest.fixture()
+def organization_member_instance():
+    """
+    Clients instance object response
+    """
+    return {
+        "id": "my_org_id_my_user_id",
+        "org_id": "my_org_id",
+        "user_id": "my_user_id",
+        "name": "my_name",
+        "email": "my_email",
+        "picture": "my_picture",
+    }
+
+
+@pytest.fixture()
+def organization_member_roles_instance():
+    """
+    Clients instance object response
+    """
+    return {
+        "id": "something",
+        "org_id": "my_org_id",
+        "user_id": "my_user_id",
+        "name": "my_name",
+        "description": "desc",
+    }
+
+
+@pytest.fixture()
 def latest_record_instance():
     """
     Last Record instance object response

@@ -126,7 +126,7 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
             ...]
         """
         start_date = pendulum.parse(self.start_date).in_timezone("UTC")
-        end_date = pendulum.utcnow().subtract(minutes=self.sync_lag_minutes)  # have a safe lag
+        end_date = pendulum.now("UTC").subtract(minutes=self.sync_lag_minutes)  # have a safe lag
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
@@ -134,7 +134,7 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
             start_date = pendulum.parse(start_date) if isinstance(start_date, str) else start_date
             start_date = start_date.in_tz("UTC")
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
-        start_date: pendulum.Pendulum = min(start_date, end_date)
+        start_date: pendulum.DateTime = min(start_date, end_date)
         date_slices = []
 
         while start_date <= end_date:

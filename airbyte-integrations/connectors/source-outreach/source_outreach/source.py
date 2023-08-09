@@ -20,7 +20,6 @@ _URL_BASE = "https://api.outreach.io/api/v2/"
 
 # Basic full refresh stream
 class OutreachStream(HttpStream, ABC):
-
     url_base = _URL_BASE
     primary_key = "id"
     page_size = 1000
@@ -121,8 +120,18 @@ class Sequences(IncrementalOutreachStream):
 
 class SequenceStates(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /sequenceStates endpoint.
     See https://api.outreach.io/api/v2/docs#sequenceState
+    """
+
+    def path(self, **kwargs) -> str:
+        return "sequenceStates"
+
+
+class SequenceSteps(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequenceSteps endpoint.
+    See https://api.outreach.io/api/v2/docs#sequenceStep
     """
 
     def path(self, **kwargs) -> str:
@@ -131,7 +140,7 @@ class SequenceStates(IncrementalOutreachStream):
 
 class Accounts(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /accounts endpoint.
     See https://api.outreach.io/api/v2/docs#account
     """
 
@@ -141,7 +150,7 @@ class Accounts(IncrementalOutreachStream):
 
 class Opportunities(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /opportunities endpoint.
     See https://api.outreach.io/api/v2/docs#opportunity
     """
 
@@ -151,7 +160,7 @@ class Opportunities(IncrementalOutreachStream):
 
 class Personas(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /personas endpoint.
     See https://api.outreach.io/api/v2/docs#persona
     """
 
@@ -161,7 +170,7 @@ class Personas(IncrementalOutreachStream):
 
 class Mailings(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /mailings endpoint.
     See https://api.outreach.io/api/v2/docs#mailing
     """
 
@@ -171,7 +180,7 @@ class Mailings(IncrementalOutreachStream):
 
 class Mailboxes(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /mailboxes endpoint.
     See https://api.outreach.io/api/v2/docs#mailbox
     """
 
@@ -181,7 +190,7 @@ class Mailboxes(IncrementalOutreachStream):
 
 class Stages(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /stages endpoint.
     See https://api.outreach.io/api/v2/docs#stage
     """
 
@@ -191,12 +200,52 @@ class Stages(IncrementalOutreachStream):
 
 class Calls(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /calls endpoint.
     See https://api.outreach.io/api/v2/docs#call
     """
 
     def path(self, **kwargs) -> str:
         return "calls"
+
+
+class Users(IncrementalOutreachStream):
+    """
+    Users stream. Yields data from the GET /users endpoint.
+    See https://api.outreach.io/api/v2/docs#user
+    """
+
+    def path(self, **kwargs) -> str:
+        return "users"
+
+
+class Tasks(IncrementalOutreachStream):
+    """
+    Tasks stream. Yields data from the GET /tasts endpoint.
+    See https://api.outreach.io/api/v2/docs#task
+    """
+
+    def path(self, **kwargs) -> str:
+        return "tasks"
+
+
+class Templates(IncrementalOutreachStream):
+    """
+    Templates stream. Yields data from the GET /templates endpoint.
+    See https://api.outreach.io/api/v2/docs#template
+    """
+
+    def path(self, **kwargs) -> str:
+        return "templates"
+
+
+class Snippets(IncrementalOutreachStream):
+    """
+    Snippets stream. Yields data from the GET /snippets endpoint.
+    See https://api.outreach.io/api/v2/docs#snippet
+    """
+
+    def path(self, **kwargs) -> str:
+        return "snippets"
 
 
 class OutreachAuthenticator(Oauth2Authenticator):
@@ -239,6 +288,7 @@ class SourceOutreach(AbstractSource):
             Prospects(authenticator=auth, **config),
             Sequences(authenticator=auth, **config),
             SequenceStates(authenticator=auth, **config),
+            SequenceSteps(authenticator=auth, **config),
             Accounts(authenticator=auth, **config),
             Opportunities(authenticator=auth, **config),
             Personas(authenticator=auth, **config),
@@ -246,4 +296,8 @@ class SourceOutreach(AbstractSource):
             Mailboxes(authenticator=auth, **config),
             Stages(authenticator=auth, **config),
             Calls(authenticator=auth, **config),
+            Users(authenticator=auth, **config),
+            Tasks(authenticator=auth, **config),
+            Templates(authenticator=auth, **config),
+            Snippets(authenticator=auth, **config),
         ]

@@ -8,30 +8,43 @@ from enum import Enum
 from typing import Any, Iterator, List, Mapping, MutableMapping
 
 import backoff
-import pendulum
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import ServerError, TooManyRequests
+from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
 REPORT_MAPPING = {
     "accounts": "customer",
-    "service_accounts": "customer",
+    "account_labels": "customer_label",
+    "account_performance_report": "customer",
     "ad_group_ads": "ad_group_ad",
     "ad_group_ad_labels": "ad_group_ad_label",
-    "ad_groups": "ad_group",
-    "ad_group_labels": "ad_group_label",
-    "campaigns": "campaign",
-    "campaign_labels": "campaign_label",
-    "account_performance_report": "customer",
     "ad_group_ad_report": "ad_group_ad",
+    "ad_groups": "ad_group",
+    "ad_group_bidding_strategies": "ad_group",
+    "ad_group_criterions": "ad_group_criterion",
+    "ad_group_criterion_labels": "ad_group_criterion_label",
+    "ad_group_labels": "ad_group_label",
+    "ad_listing_group_criterions": "ad_group_criterion",
+    "audience": "audience",
+    "campaigns": "campaign",
+    "campaign_real_time_bidding_settings": "campaign",
+    "campaign_bidding_strategies": "campaign",
+    "campaign_budget": "campaign_budget",
+    "campaign_labels": "campaign_label",
+    "click_view": "click_view",
     "display_keyword_performance_report": "display_keyword_view",
     "display_topics_performance_report": "topic_view",
-    "shopping_performance_report": "shopping_performance_view",
-    "user_location_report": "user_location_view",
-    "click_view": "click_view",
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
+    "labels": "label",
+    "service_accounts": "customer",
+    "shopping_performance_report": "shopping_performance_view",
+    "user_interest": "user_interest",
+    "user_location_report": "user_location_view",
 }
 API_VERSION = "v13"
 logger = logging.getLogger("airbyte")
@@ -44,8 +57,16 @@ class GoogleAds:
         # `google-ads` library version `14.0.0` and higher requires an additional required parameter `use_proto_plus`.
         # More details can be found here: https://developers.google.com/google-ads/api/docs/client-libs/python/protobuf-messages
         credentials["use_proto_plus"] = True
-        self.client = GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
+        self.client = self.get_google_ads_client(credentials)
         self.ga_service = self.client.get_service("GoogleAdsService")
+
+    @staticmethod
+    def get_google_ads_client(credentials) -> GoogleAdsClient:
+        try:
+            return GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
+        except exceptions.RefreshError as e:
+            message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e
 
     @backoff.on_exception(
         backoff.expo,
@@ -96,15 +117,12 @@ class GoogleAds:
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
-        fields = ",\n".join(fields)
+        fields = ", ".join(fields)
 
-        query_template = f"SELECT {fields} FROM {from_category} "
+        query_template = f"SELECT {fields} FROM {from_category}"
 
         if cursor_field:
-            end_date_inclusive = "<=" if (pendulum.parse(to_date) - pendulum.parse(from_date)).days > 1 else "<"
-            query_template += (
-                f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
-            )
+            query_template += f" WHERE {cursor_field} >= '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
 
         return query_template
 

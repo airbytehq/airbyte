@@ -23,6 +23,19 @@ def setup_responses():
     )
 
 
+def ensure_additional_property_is_boolean(root):
+    for name, prop in root.get("properties", {}).items():
+        if prop["type"] == "array" and "items" in prop:
+            ensure_additional_property_is_boolean(prop["items"])
+        if prop["type"] == "object" and "properties" in prop:
+            ensure_additional_property_is_boolean(prop)
+    if "additionalProperties" in root:
+        assert type(root["additionalProperties"]) == bool, (
+            f"`additionalProperties` expected to be of 'bool' type. "
+            f"Got: {type(root['additionalProperties']).__name__}"
+        )
+
+
 @responses.activate
 def test_discover(config):
     setup_responses()
@@ -32,6 +45,7 @@ def test_discover(config):
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
     for schema in schemas:
         Draft4Validator.check_schema(schema)
+        ensure_additional_property_is_boolean(schema)
 
 
 def test_spec():
@@ -76,16 +90,20 @@ def test_source_streams(config):
     setup_responses()
     source = SourceAmazonAds()
     streams = source.streams(config)
-    assert len(streams) == 22
+    assert len(streams) == 28
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = set(
         [
             "profiles",
+            "portfolios",
             "sponsored_display_campaigns",
             "sponsored_product_campaigns",
             "sponsored_product_ad_groups",
+            "sponsored_product_ad_group_suggested_keywords",
+            "sponsored_product_ad_group_bid_recommendations",
             "sponsored_product_keywords",
             "sponsored_product_negative_keywords",
+            "sponsored_product_campaign_negative_keywords",
             "sponsored_product_ads",
             "sponsored_product_targetings",
             "sponsored_products_report_stream",
@@ -97,6 +115,7 @@ def test_source_streams(config):
             "attribution_report_performance_campaign",
             "attribution_report_performance_creative",
             "attribution_report_products",
+            "sponsored_display_budget_rules"
         ]
     )
     assert not expected_stream_names - actual_stream_names

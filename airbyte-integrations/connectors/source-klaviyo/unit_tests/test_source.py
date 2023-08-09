@@ -14,13 +14,13 @@ from source_klaviyo.source import SourceKlaviyo
             400,
             "Bad request",
             False,
-            "HTTPError('400 Client Error: None for url: https://a.klaviyo.com/api/v1/metrics?api_key=api_key&count=100')",
+            "HTTPError('400 Client Error: None for url: https://a.klaviyo.com/api/v1/metrics?api_key=***&count=100')",
         ),
         (
             403,
             "Forbidden",
             False,
-            "HTTPError('403 Client Error: None for url: https://a.klaviyo.com/api/v1/metrics?api_key=api_key&count=100')",
+            "HTTPError('403 Client Error: None for url: https://a.klaviyo.com/api/v1/metrics?api_key=***&count=100')",
         ),
     ),
 )

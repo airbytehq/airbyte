@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.azureblobstorage.format;
 
 import com.azure.storage.blob.BlobClient;
@@ -22,71 +26,76 @@ import java.util.Map;
 
 public class JsonlAzureBlobStorageOperations extends AzureBlobStorageOperations {
 
-    private final ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-    private final JsonSchemaInferrer jsonSchemaInferrer;
+  private final JsonSchemaInferrer jsonSchemaInferrer;
 
-    public JsonlAzureBlobStorageOperations(AzureBlobStorageConfig azureBlobStorageConfig) {
-        super(azureBlobStorageConfig);
-        this.objectMapper = new ObjectMapper();
-        this.jsonSchemaInferrer = JsonSchemaInferrer.newBuilder()
-            .setSpecVersion(SpecVersion.DRAFT_07)
-            .setAdditionalPropertiesPolicy(AdditionalPropertiesPolicies.allowed())
-            .build();
+  public JsonlAzureBlobStorageOperations(AzureBlobStorageConfig azureBlobStorageConfig) {
+    super(azureBlobStorageConfig);
+    this.objectMapper = new ObjectMapper();
+    this.jsonSchemaInferrer = JsonSchemaInferrer.newBuilder()
+        .setSpecVersion(SpecVersion.DRAFT_07)
+        .setAdditionalPropertiesPolicy(AdditionalPropertiesPolicies.allowed())
+        .build();
+  }
+
+  @Override
+  public JsonNode inferSchema() {
+    var blobs = readBlobs(null, azureBlobStorageConfig.schemaInferenceLimit());
+
+    // create super schema inferred from all blobs in the container
+    var jsonSchema = jsonSchemaInferrer.inferForSamples(blobs);
+
+    if (!jsonSchema.has("properties")) {
+      jsonSchema.putObject("properties");
     }
 
-    @Override
-    public JsonNode inferSchema() {
-        var blobs = readBlobs(null, azureBlobStorageConfig.schemaInferenceLimit());
+    ((ObjectNode) jsonSchema.get("properties")).putPOJO(AzureBlobAdditionalProperties.BLOB_NAME,
+        Map.of("type", "string"));
+    ((ObjectNode) jsonSchema.get("properties")).putPOJO(AzureBlobAdditionalProperties.LAST_MODIFIED,
+        Map.of("type", "string"));
+    return jsonSchema;
+  }
 
-        // create super schema inferred from all blobs in the container
-        var jsonSchema = jsonSchemaInferrer.inferForSamples(blobs);
+  @Override
+  public List<JsonNode> readBlobs(OffsetDateTime offsetDateTime) {
+    return readBlobs(offsetDateTime, null);
+  }
 
-        if (!jsonSchema.has("properties")) {
-            jsonSchema.putObject("properties");
-        }
+  private List<JsonNode> readBlobs(OffsetDateTime offsetDateTime, Long limit) {
+    record DecoratedAzureBlob(AzureBlob azureBlob, BlobClient blobClient) {}
 
-        ((ObjectNode) jsonSchema.get("properties")).putPOJO(AzureBlobAdditionalProperties.BLOB_NAME,
-            Map.of("type", "string"));
-        ((ObjectNode) jsonSchema.get("properties")).putPOJO(AzureBlobAdditionalProperties.LAST_MODIFIED,
-            Map.of("type", "string"));
-        return jsonSchema;
-    }
+    var blobsStream = limit == null ? listBlobs().stream() : listBlobs().stream().limit(limit);
 
-    @Override
-    public List<JsonNode> readBlobs(OffsetDateTime offsetDateTime) {
-       return readBlobs(offsetDateTime, null);
-    }
-
-    private List<JsonNode> readBlobs(OffsetDateTime offsetDateTime, Long limit) {
-        record DecoratedAzureBlob(AzureBlob azureBlob, BlobClient blobClient) {}
-
-        var blobsStream = limit == null ? listBlobs().stream() : listBlobs().stream().limit(limit);
-
-        return blobsStream
-            .filter(ab -> {if (offsetDateTime != null) {return ab.lastModified().isAfter(offsetDateTime);} else {return true;}})
-            .map(ab -> new DecoratedAzureBlob(ab, blobContainerClient.getBlobClient(ab.name())))
-            .map(dab -> {
-                try (
-                    var br = new BufferedReader(
-                        new InputStreamReader(dab.blobClient().downloadContent().toStream(), Charset.defaultCharset()))
-                ) {
-                    return br.lines().map(line -> {
-                            var jsonNode =
-                                handleCheckedIOException(objectMapper::readTree, line);
-                            ((ObjectNode) jsonNode).put(AzureBlobAdditionalProperties.BLOB_NAME, dab.azureBlob().name());
-                            ((ObjectNode) jsonNode).put(AzureBlobAdditionalProperties.LAST_MODIFIED,
-                                dab.azureBlob().lastModified().toString());
-                            return jsonNode;
-                        })
-                        // need to materialize stream otherwise reader gets closed on return
-                        .toList();
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
+    return blobsStream
+        .filter(ab -> {
+          if (offsetDateTime != null) {
+            return ab.lastModified().isAfter(offsetDateTime);
+          } else {
+            return true;
+          }
+        })
+        .map(ab -> new DecoratedAzureBlob(ab, blobContainerClient.getBlobClient(ab.name())))
+        .map(dab -> {
+          try (
+              var br = new BufferedReader(
+                  new InputStreamReader(dab.blobClient().downloadContent().toStream(), Charset.defaultCharset()))) {
+            return br.lines().map(line -> {
+              var jsonNode =
+                  handleCheckedIOException(objectMapper::readTree, line);
+              ((ObjectNode) jsonNode).put(AzureBlobAdditionalProperties.BLOB_NAME, dab.azureBlob().name());
+              ((ObjectNode) jsonNode).put(AzureBlobAdditionalProperties.LAST_MODIFIED,
+                  dab.azureBlob().lastModified().toString());
+              return jsonNode;
             })
-            .flatMap(List::stream)
-            .toList();
-    }
+                // need to materialize stream otherwise reader gets closed on return
+                .toList();
+          } catch (IOException e) {
+            throw new UncheckedIOException(e);
+          }
+        })
+        .flatMap(List::stream)
+        .toList();
+  }
 
 }

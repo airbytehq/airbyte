@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy==4.1.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy==4.1.1", "urllib3<2.0"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "requests_mock"]
 

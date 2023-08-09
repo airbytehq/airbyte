@@ -6,6 +6,7 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -19,19 +20,28 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
 
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 15;
+  private static final int INITIAL_WAITING_SECONDS = 30;
   private JsonNode stateAfterFirstSync;
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   @Override
   protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
@@ -57,14 +67,11 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
     catalog.getStreams().add(dummyTableWithData);
 
     final List<AirbyteMessage> allMessages = super.runRead(catalog);
-    if (allMessages.size() != 2) {
-      throw new RuntimeException("First sync should only generate 2 records");
-    }
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(allMessages);
     if (stateAfterFirstBatch == null || stateAfterFirstBatch.isEmpty()) {
       throw new RuntimeException("stateAfterFirstBatch should not be null or empty");
     }
-    stateAfterFirstSync = Jsons.jsonNode(stateAfterFirstBatch);
+    stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync should not be null");
     }
@@ -78,7 +85,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
 
   @Override
   protected Database setupDatabase() throws Exception {
-
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>("postgres:14-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")

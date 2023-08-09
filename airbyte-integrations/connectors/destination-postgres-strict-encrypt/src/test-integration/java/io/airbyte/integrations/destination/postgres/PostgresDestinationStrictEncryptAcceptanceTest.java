@@ -38,7 +38,9 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
 
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
-  private static final String NORMALIZATION_VERSION = "dev"; //this is hacky. This test should extend or encapsulate PostgresDestinationAcceptanceTest
+  private static final String NORMALIZATION_VERSION = "dev"; // this is hacky. This test should extend or encapsulate
+                                                             // PostgresDestinationAcceptanceTest
+
   @Override
   protected String getImageName() {
     return "airbyte/destination-postgres-strict-encrypt:dev";
@@ -208,4 +210,5 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   protected String getDestinationDefinitionKey() {
     return "airbyte/destination-postgres";
   }
+
 }

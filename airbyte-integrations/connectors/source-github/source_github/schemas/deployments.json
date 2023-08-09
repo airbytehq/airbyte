@@ -24,11 +24,11 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "statuses_url": {
@@ -38,63 +38,7 @@
       "type": ["null", "string"]
     },
     "creator": {
-      "type": "object",
-      "properties": {
-        "login": {
-          "type": ["null", "string"]
-        },
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "node_id": {
-          "type": ["null", "string"]
-        },
-        "avatar_url": {
-          "type": ["null", "string"]
-        },
-        "gravatar_id": {
-          "type": ["null", "string"]
-        },
-        "url": {
-          "type": ["null", "string"]
-        },
-        "html_url": {
-          "type": ["null", "string"]
-        },
-        "followers_url": {
-          "type": ["null", "string"]
-        },
-        "following_url": {
-          "type": ["null", "string"]
-        },
-        "gists_url": {
-          "type": ["null", "string"]
-        },
-        "starred_url": {
-          "type": ["null", "string"]
-        },
-        "subscriptions_url": {
-          "type": ["null", "string"]
-        },
-        "organizations_url": {
-          "type": ["null", "string"]
-        },
-        "repos_url": {
-          "type": ["null", "string"]
-        },
-        "events_url": {
-          "type": ["null", "string"]
-        },
-        "received_events_url": {
-          "type": ["null", "string"]
-        },
-        "type": {
-          "type": ["null", "string"]
-        },
-        "site_admin": {
-          "type": ["null", "boolean"]
-        }
-      }
+      "$ref": "user.json"
     },
     "sha": {
       "type": ["null", "string"]
@@ -127,7 +71,7 @@
       "type": ["null", "string"]
     },
     "repository": {
-      "type": ["null", "string"]
+      "type": "string"
     }
   }
 }

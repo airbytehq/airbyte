@@ -4,10 +4,13 @@
     "stream": {
       "stream_state": {
         "https://airbyte.io/": {
-          "web": { "date": "2023-08-28" },
-          "news": { "date": "2023-08-28" },
-          "image": { "date": "2023-08-28" },
-          "video": { "date": "2023-08-28" }
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" },
+          "discover": { "date": "2050-08-28" },
+          "googleNews": { "date": "2050-08-28" }
+
         }
       },
       "stream_descriptor": { "name": "search_analytics_by_date" }
@@ -18,10 +21,12 @@
     "stream": {
       "stream_state": {
         "https://airbyte.io/": {
-          "web": { "date": "2023-08-28" },
-          "news": { "date": "2023-08-28" },
-          "image": { "date": "2023-08-28" },
-          "video": { "date": "2023-08-28" }
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" },
+          "discover": { "date": "2050-08-28" },
+          "googleNews": { "date": "2050-08-28" }
         }
       },
       "stream_descriptor": { "name": "search_analytics_by_country" }
@@ -32,10 +37,11 @@
     "stream": {
       "stream_state": {
         "https://airbyte.io/": {
-          "web": { "date": "2023-08-28" },
-          "news": { "date": "2023-08-28" },
-          "image": { "date": "2023-08-28" },
-          "video": { "date": "2023-08-28" }
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" },
+          "googleNews": { "date": "2050-08-28" }
         }
       },
       "stream_descriptor": { "name": "search_analytics_by_device" }
@@ -46,10 +52,12 @@
     "stream": {
       "stream_state": {
         "https://airbyte.io/": {
-          "web": { "date": "2023-08-28" },
-          "news": { "date": "2023-08-28" },
-          "image": { "date": "2023-08-28" },
-          "video": { "date": "2023-08-28" }
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" },
+          "discover": { "date": "2050-08-28" },
+          "googleNews": { "date": "2050-08-28" }
         }
       },
       "stream_descriptor": { "name": "search_analytics_by_page" }
@@ -60,10 +68,10 @@
     "stream": {
       "stream_state": {
         "https://airbyte.io/": {
-          "web": { "date": "2023-08-28" },
-          "news": { "date": "2023-08-28" },
-          "image": { "date": "2023-08-28" },
-          "video": { "date": "2023-08-28" }
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" }
         }
       },
       "stream_descriptor": { "name": "search_analytics_by_query" }
@@ -74,10 +82,10 @@
     "stream": {
       "stream_state": {
         "https://airbyte.io/": {
-          "web": { "date": "2023-08-28" },
-          "news": { "date": "2023-08-28" },
-          "image": { "date": "2023-08-28" },
-          "video": { "date": "2023-08-28" }
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" }
         }
       },
       "stream_descriptor": { "name": "search_analytics_all_fields" }
@@ -88,13 +96,85 @@
     "stream": {
       "stream_state": {
         "https://airbyte.io/": {
-          "web": { "date": "2023-08-28" },
-          "news": { "date": "2023-08-28" },
-          "image": { "date": "2023-08-28" },
-          "video": { "date": "2023-08-28" }
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" }
         }
       },
       "stream_descriptor": { "name": "custom_dimensions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "https://airbyte.io/": {
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" },
+          "googleNews": { "date": "2050-08-28" }
+        }
+      },
+      "stream_descriptor": { "name": "search_analytics_site_report_by_page" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "https://airbyte.io/": {
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" }
+        }
+      },
+      "stream_descriptor": { "name": "search_analytics_keyword_site_report_by_page" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "https://airbyte.io/": {
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" }
+        }
+      },
+      "stream_descriptor": { "name": "search_analytics_keyword_page_report" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "https://airbyte.io/": {
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" },
+          "googleNews": { "date": "2050-08-28" }
+        }
+      },
+      "stream_descriptor": { "name": "search_analytics_page_report" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "https://airbyte.io/": {
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" }
+        }
+      },
+      "stream_descriptor": { "name": "search_analytics_site_report_by_site" }
     }
   }
 ]

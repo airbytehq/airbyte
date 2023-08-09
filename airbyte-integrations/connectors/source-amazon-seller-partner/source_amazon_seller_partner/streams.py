@@ -44,6 +44,7 @@ class AmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
+        advanced_stream_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
@@ -173,6 +174,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
+        advanced_stream_options: Optional[str],
         authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
@@ -185,6 +187,9 @@ class ReportsAmazonSPStream(Stream, ABC):
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
         self.max_wait_seconds = max_wait_seconds
+        self._advanced_stream_options = dict()
+        if advanced_stream_options is not None:
+            self._advanced_stream_options = json_lib.loads(advanced_stream_options)
 
     @property
     def url_base(self) -> str:
@@ -434,6 +439,31 @@ class FbaOrdersReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
+
+
+class FlatFileActionableOrderDataShipping(ReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping
+    """
+
+    name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
+
+
+class OrderReportDataShipping(ReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping
+    """
+
+    name = "GET_ORDER_REPORT_DATA_SHIPPING"
+
+    def parse_document(self, document):
+        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
+        reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
+        result = []
+        for report in reports:
+            result.append(report.get("OrderReport", {}))
+
+        return result
 
 
 class FbaShipmentsReports(ReportsAmazonSPStream):
@@ -767,6 +797,7 @@ class Orders(IncrementalAmazonSPStream):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
     default_backoff_time = 60
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return f"orders/{ORDERS_API_VERSION}/orders"
@@ -789,6 +820,80 @@ class Orders(IncrementalAmazonSPStream):
             return 1 / float(rate_limit)
         else:
             return self.default_backoff_time
+
+
+class OrderItems(AmazonSPStream, ABC):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
+    API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
+    """
+
+    name = "OrderItems"
+    primary_key = "OrderItemId"
+    cursor_field = "LastUpdateDate"
+    parent_cursor_field = "LastUpdateDate"
+    next_page_token_field = "NextToken"
+    stream_slice_cursor_field = "AmazonOrderId"
+    page_size_field = None
+    default_backoff_time = 10
+    default_stream_slice_delay_time = 1
+    cached_state: Dict = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stream_kwargs = kwargs
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice[self.stream_slice_cursor_field]}/orderItems"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            return dict(next_page_token)
+        return {}
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        orders = Orders(**self.stream_kwargs)
+        for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
+            self.cached_state[self.parent_cursor_field] = order_record[self.parent_cursor_field]
+            self.logger.info(f"OrderItems stream slice for order {order_record[self.stream_slice_cursor_field]}")
+            time.sleep(self.default_stream_slice_delay_time)
+            yield {
+                self.stream_slice_cursor_field: order_record[self.stream_slice_cursor_field],
+                self.parent_cursor_field: order_record[self.parent_cursor_field],
+            }
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_benchmark = self.cached_state[self.parent_cursor_field]
+        if current_stream_state.get(self.parent_cursor_field):
+            return {self.parent_cursor_field: max(latest_benchmark, current_stream_state[self.parent_cursor_field])}
+        return {self.parent_cursor_field: latest_benchmark}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = response.json()
+        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
+        if next_page_token:
+            return {self.next_page_token_field: next_page_token}
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        order_items_list = response.json().get(self.data_field, {})
+        self.logger.info(f"order_items_list efim {order_items_list}")
+        if order_items_list.get(self.next_page_token_field) is None:
+            self.cached_state[self.parent_cursor_field] = stream_slice[self.parent_cursor_field]
+        for order_item in order_items_list.get(self.name, []):
+            order_item[self.cursor_field] = stream_slice.get(self.parent_cursor_field)
+            order_item[self.stream_slice_cursor_field] = order_items_list.get(self.stream_slice_cursor_field)
+            yield order_item
 
 
 class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
@@ -914,6 +1019,15 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
     result_key = "salesAndTrafficByAsin"
     cursor_field = "queryEndDate"
     fixed_period_in_days = 1
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.name in self._advanced_stream_options.keys():
+            _options: dict = self._advanced_stream_options[self.name]
+            if isinstance(_options, dict):
+                for _option_attr, _option_val in _options.items():
+                    setattr(self, _option_attr, _option_val)
 
 
 class VendorSalesReports(IncrementalAnalyticsStream):

@@ -1,0 +1,67 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+title: Postgres Models
+type: object
+description: Postgres Models
+properties:
+  state_type:
+    "$ref": "#/definitions/StateType"
+  xmin_state:
+    "$ref": "#/definitions/XminStatus"
+  ctid_state:
+    "$ref": "#/definitions/CtidStatus"
+  cursor_based_state:
+    "$ref": "#/definitions/CursorBasedStatus"
+definitions:
+  StateType:
+    description: Enum to define the sync mode of state.
+    type: string
+    enum:
+      - cursor_based
+      - xmin
+      - ctid
+  CursorBasedStatus:
+    type: object
+    extends:
+      type: object
+      existingJavaType: "io.airbyte.integrations.source.relationaldb.models.DbStreamState"
+    properties:
+      state_type:
+        "$ref": "#/definitions/StateType"
+      version:
+        description: Version of state.
+        type: integer
+  XminStatus:
+    type: object
+    properties:
+      version:
+        description: Version of state.
+        type: integer
+      state_type:
+        "$ref": "#/definitions/StateType"
+      num_wraparound:
+        description: Number of times the Xmin value has wrapped around.
+        type: integer
+      xmin_xid_value:
+        description: The 32-bit xmin value associated with the xmin snapshot. This is the value that is ultimately written and recorded on every row.
+        type: integer
+      xmin_raw_value:
+        description: The raw value of the xmin snapshot. If no wraparound has occurred, this should be the same as 2.
+        type: integer
+  CtidStatus:
+    type: object
+    properties:
+      version:
+        description: Version of state.
+        type: integer
+      state_type:
+        "$ref": "#/definitions/StateType"
+      ctid:
+        description: ctid bookmark
+        type: string
+      incremental_state:
+        description: State to switch to after completion of ctid initial sync
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      relation_filenode:
+        type: integer

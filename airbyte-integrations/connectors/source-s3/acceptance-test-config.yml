@@ -5,9 +5,37 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/csv.jsonl
       timeout_seconds: 1800
+    - config_path: secrets/legacy_csv_custom_encoding_config.json
+      expect_records:
+        path: integration_tests/expected_records/legacy_csv_custom_encoding.jsonl
+      timeout_seconds: 1800
+    - config_path: secrets/legacy_csv_custom_format_config.json
+      expect_records:
+        path: integration_tests/expected_records/legacy_csv_custom_format.jsonl
+      timeout_seconds: 1800
+    - config_path: secrets/legacy_csv_user_schema_config.json
+      expect_records:
+        path: integration_tests/expected_records/legacy_csv_user_schema.jsonl
+      timeout_seconds: 1800
+    - config_path: secrets/legacy_csv_no_header_config.json
+      expect_records:
+        path: integration_tests/expected_records/legacy_csv_no_header.jsonl
+      timeout_seconds: 1800
+    - config_path: secrets/legacy_csv_skip_rows_config.json
+      expect_records:
+        path: integration_tests/expected_records/legacy_csv_skip_rows.jsonl
+      timeout_seconds: 1800
+    - config_path: secrets/legacy_csv_with_nulls_config.json
+      expect_records:
+        path: integration_tests/expected_records/legacy_csv_with_nulls.jsonl
+      timeout_seconds: 1800
     - config_path: secrets/parquet_config.json
       expect_records:
         path: integration_tests/expected_records/parquet.jsonl
+      timeout_seconds: 1800
+    - config_path: secrets/parquet_dataset_config.json
+      expect_records:
+        path: integration_tests/expected_records/parquet_dataset.jsonl
       timeout_seconds: 1800
     - config_path: secrets/avro_config.json
       expect_records:
@@ -26,6 +54,18 @@ acceptance_tests:
     tests:
     - config_path: secrets/config.json
       status: succeed
+    - config_path: secrets/legacy_csv_custom_encoding_config.json
+      status: succeed
+    - config_path: secrets/legacy_csv_custom_format_config.json
+      status: succeed
+    - config_path: secrets/legacy_csv_user_schema_config.json
+      status: succeed
+    - config_path: secrets/legacy_csv_no_header_config.json
+      status: succeed
+    - config_path: secrets/legacy_csv_skip_rows_config.json
+      status: succeed
+    - config_path: secrets/legacy_csv_with_nulls_config.json
+      status: succeed
     - config_path: secrets/parquet_config.json
       status: succeed
     - config_path: secrets/avro_config.json
@@ -39,6 +79,12 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: secrets/config.json
+    - config_path: secrets/legacy_csv_custom_encoding_config.json
+    - config_path: secrets/legacy_csv_custom_format_config.json
+    - config_path: secrets/legacy_csv_user_schema_config.json
+    - config_path: secrets/legacy_csv_no_header_config.json
+    - config_path: secrets/legacy_csv_skip_rows_config.json
+    - config_path: secrets/legacy_csv_with_nulls_config.json
     - config_path: secrets/parquet_config.json
     - config_path: secrets/avro_config.json
     - config_path: secrets/jsonl_config.json

@@ -14,5 +14,12 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/sftp
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
+  tags:
+    - language:java
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

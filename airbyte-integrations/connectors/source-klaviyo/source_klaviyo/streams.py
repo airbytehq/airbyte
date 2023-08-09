@@ -198,6 +198,7 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
         self._start_ts = int(pendulum.parse(start_date).timestamp())
+        self._start_sync = int(pendulum.now().timestamp())
 
     @property
     @abstractmethod
@@ -232,7 +233,9 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
             latest_record = datetime.datetime.strptime(latest_record, "%Y-%m-%d %H:%M:%S")
             latest_record = datetime.datetime.timestamp(latest_record)
 
-        return {self.cursor_field: max(latest_record, state_ts)}
+        new_value = max(latest_record, state_ts)
+        new_value = min(new_value, self._start_sync)
+        return {self.cursor_field: new_value}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """

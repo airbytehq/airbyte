@@ -8,6 +8,7 @@ import socket
 from typing import Any, Generator, List, MutableMapping, Union
 
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -18,6 +19,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     Type,
 )
 from airbyte_cdk.sources.source import Source
+from airbyte_cdk.utils import AirbyteTracedException
 from apiclient import errors
 from google.auth import exceptions as google_exceptions
 from requests.status_codes import codes as status_codes
@@ -41,9 +43,6 @@ class SourceGoogleSheets(Source):
     Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
     """
 
-    def __init__(self):
-        super().__init__()
-
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
         try:
@@ -56,18 +55,22 @@ class SourceGoogleSheets(Source):
         try:
             spreadsheet = client.get(spreadsheetId=spreadsheet_id, includeGridData=False)
         except errors.HttpError as err:
-            reason = str(err)
+            message = "Config error: "
             # Give a clearer message if it's a common error like 404.
             if err.resp.status == status_codes.NOT_FOUND:
-                reason = "Requested spreadsheet was not found."
-            logger.error(f"Formatted error: {reason}")
-            return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Unable to connect with the provided credentials to spreadsheet. Error: {reason}"
-            )
+                message += "The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            ) from err
         except google_exceptions.GoogleAuthError as err:
-            return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Unable to connect with the provided credentials to spreadsheet. Authentication Error: {err}"
-            )
+            message = "Access to the spreadsheet expired or was revoked. Re-authenticate to restore access."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            ) from err
 
         # Check for duplicate headers
         spreadsheet_metadata = Spreadsheet.parse_obj(spreadsheet)

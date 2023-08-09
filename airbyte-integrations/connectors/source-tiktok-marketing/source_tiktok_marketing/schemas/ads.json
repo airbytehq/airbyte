@@ -194,6 +194,9 @@
     },
     "viewability_vast_url": {
       "type": ["null", "string"]
+    },
+    "music_id": {
+      "type": ["null", "string"]
     }
   }
 }

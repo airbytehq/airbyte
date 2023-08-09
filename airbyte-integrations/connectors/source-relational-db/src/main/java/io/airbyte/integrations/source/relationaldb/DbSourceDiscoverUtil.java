@@ -36,13 +36,13 @@ public class DbSourceDiscoverUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbSourceDiscoverUtil.class);
   private static final List<String> AIRBYTE_METADATA = Arrays.asList("_ab_cdc_lsn",
-                                                                     "_ab_cdc_updated_at",
-                                                                     "_ab_cdc_deleted_at");
+      "_ab_cdc_updated_at",
+      "_ab_cdc_deleted_at");
 
   /*
-   * This method logs schema drift between source table and the catalog. This can happen if
-   * (i) underlying table schema changed between syncs
-   * (ii) The source connector's mapping of datatypes to Airbyte types changed between runs
+   * This method logs schema drift between source table and the catalog. This can happen if (i)
+   * underlying table schema changed between syncs (ii) The source connector's mapping of datatypes to
+   * Airbyte types changed between runs
    */
   public static <DataType> void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
                                                       final ConfiguredAirbyteCatalog catalog,
@@ -50,7 +50,7 @@ public class DbSourceDiscoverUtil {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getNamespace(),
-                                                                                             stream.getName());
+          stream.getName());
       if (!fullyQualifiedTableNameToInfo.containsKey(fullyQualifiedTableName)) {
         continue;
       }
@@ -104,7 +104,7 @@ public class DbSourceDiscoverUtil {
               .distinct()
               .collect(toList());
           final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(),
-                                                                            t.getName());
+              t.getName());
           final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
               fullyQualifiedTableName, Collections
                   .emptyList());
@@ -124,11 +124,11 @@ public class DbSourceDiscoverUtil {
 
           return CatalogHelpers
               .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
-                                   tableInfo.getFields())
+                  tableInfo.getFields())
               .withSupportedSyncModes(
                   tableInfo.getCursorFields() != null && tableInfo.getCursorFields().isEmpty()
-                  ? Lists.newArrayList(SyncMode.FULL_REFRESH)
-                  : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                      ? Lists.newArrayList(SyncMode.FULL_REFRESH)
+                      : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
               .withSourceDefinedPrimaryKey(primaryKeys);
         })
         .collect(toList());
@@ -167,4 +167,5 @@ public class DbSourceDiscoverUtil {
           });
         });
   }
+
 }

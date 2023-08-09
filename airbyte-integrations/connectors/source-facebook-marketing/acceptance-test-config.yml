@@ -6,15 +6,19 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "integration_tests/spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.5.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
-        status: "exception"
+        status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.5.0"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -25,13 +29,43 @@ acceptance_tests:
             bypass_reason: "Thumbnail urls changes permanently"
           - name: "ad_creatives"
             bypass_reason: "Thumbnail urls changes permanently"
+          - name: "ads_insights_action_carousel_card"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_action_conversion_device"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_action_product_id"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_action_reaction"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_action_video_sound"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_action_video_type"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_action_type"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_delivery_device"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_delivery_platform"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_delivery_platform_and_device_platform"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_demographics_age"
+            bypass_reason: "Data not permanent"
           - name: "ads_insights_age_and_gender"
             bypass_reason: "Data not permanent"
-          - name: "ads_insights_region"
+          - name: "ads_insights_demographics_country"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_demographics_dma_region"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_demographics_gender"
             bypass_reason: "Data not permanent"
           - name: "ads_insights_dma"
             bypass_reason: "Data not permanent"
+          - name: "ads_insights_country"
+            bypass_reason: "Data not permanent"
           - name: "ads_insights_platform_and_device"
+            bypass_reason: "Data not permanent"
+          - name: "ads_insights_region"
             bypass_reason: "Data not permanent"
           - name: "activities"
             bypass_reason: "age field autoupdated"
@@ -54,3 +88,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 4800
+        ignored_fields:
+          activities:
+            - name: extra_data
+              bypass_reason: "image_url in extra_data is changing frequently"

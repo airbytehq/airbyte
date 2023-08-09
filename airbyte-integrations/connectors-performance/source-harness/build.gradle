@@ -10,7 +10,7 @@ repositories {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.performance.Main'
+    mainClass = 'io.airbyte.integrations.source_performance.Main'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 dependencies {

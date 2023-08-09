@@ -3,11 +3,12 @@
 #
 
 from abc import ABC
+from http import HTTPStatus
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -42,6 +43,8 @@ class FreshserviceStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == HTTPStatus.NO_CONTENT:
+            return
         json_response = response.json()
         records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
         yield from records
@@ -77,6 +80,33 @@ class Tickets(IncrementalFreshserviceStream):
     """
 
     object_name = "tickets"
+
+
+class SatisfactionSurveyResponses(IncrementalFreshserviceStream, HttpSubStream):
+    object_name = "csat_response"
+    """
+    API docs: https://api.freshservice.com/#ticket_csat_attributes
+
+    self.authenticator (which should be used as the
+    authenticator for Users) is object of NoAuth()
+    so self._session.auth is used instead
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(parent=Tickets(**kwargs), **kwargs)
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        ticket_id = stream_slice["parent"]["id"]
+        return f"tickets/{ticket_id}/csat_response"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == HTTPStatus.NO_CONTENT:
+            return
+        json_response = response.json()
+        record = json_response.get(self.object_name, {}) if self.object_name is not None else json_response
+        yield record
 
 
 class Problems(IncrementalFreshserviceStream):
