@@ -9,8 +9,6 @@ from pydantic import AnyUrl, Field, ValidationError, root_validator
 
 
 class Config(AbstractFileBasedSpec):
-    config_version: str = "0.1"
-
     @classmethod
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
