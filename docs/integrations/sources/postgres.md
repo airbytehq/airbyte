@@ -4,7 +4,7 @@ import TabItem from '@theme/TabItem';
 # Postgres
 
 Airbyte's certified Postgres connector offers the following features:
-* Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](./../../understanding-airbyte/cdc.md) and replication using the [xmin system column](#xmin-replication-mode). 
+* Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](./../../understanding-airbyte/cdc.md) and replication using the [xmin system column](#xmin). 
 * All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 * Reliable replication at any table size with [checkpointing](./../../understanding-airbyte/airbyte-protocol.md#state--checkpointing) and chunking of database reads.
 
