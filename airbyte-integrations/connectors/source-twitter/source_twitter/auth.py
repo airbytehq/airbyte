@@ -13,25 +13,20 @@ class CredentialsCraftAuthenticator:
 
     @property
     def url(self) -> str:
-        return f"{self._host}/api/v1/token/twitter/{self._twitter_token_id}/"
+        return f"{self._host}/api/v1/token/twitter/{self._twitter_token_id}/json/"
 
     @property
     def headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._bearer_token}"}
 
-    def _get_app_secret_url(self, app_secret_id: int) -> str:
-        return f"{self._host}/api/v1/oauth_app/twitter/{app_secret_id}/"
-
     def __call__(self) -> TwitterCredentials:
         token_resp = requests.get(self.url, headers=self.headers).json()
-        app_secret_id = token_resp["app_secret"]
-        app_secret_url = self._get_app_secret_url(app_secret_id)
-        app_secret_resp = requests.get(app_secret_url, headers=self.headers).json()
+        token_data = token_resp["token"]
         return {
-            "consumer_key": app_secret_resp["client_id"],
-            "consumer_secret": app_secret_resp["client_secret"],
-            "access_token": token_resp["access_token"],
-            "access_token_secret": token_resp["oauth_token_secret"],
+            "consumer_key": token_data["consumer_key"],
+            "consumer_secret": token_data["consumer_secret"],
+            "access_token": token_data["access_token"],
+            "access_token_secret": token_data["access_token_secret"],
         }
 
     def check_connection(self) -> tuple[IsSuccess, Optional[Message]]:

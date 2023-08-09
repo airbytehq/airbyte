@@ -1,0 +1,1341 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "promoted_tweets_stream",
+        "json_schema": {
+          "title": "PromotedTweets",
+          "type": "object",
+          "properties": {
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "line_item_id": {
+              "title": "Line Item Id",
+              "type": "string"
+            },
+            "tweet_id": {
+              "title": "Tweet Id",
+              "type": "string"
+            },
+            "entity_status": {
+              "title": "Entity Status",
+              "type": "string"
+            },
+            "created_at": {
+              "title": "Created At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "title": "Updated At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "approval_status": {
+              "title": "Approval Status",
+              "type": "string"
+            },
+            "deleted": {
+              "title": "Deleted",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "line_item_id",
+            "tweet_id",
+            "entity_status",
+            "created_at",
+            "updated_at",
+            "approval_status",
+            "deleted"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_engagement_metrics_stream",
+        "json_schema": {
+          "title": "PromotedTweetEngagementMetrics",
+          "type": "object",
+          "properties": {
+            "promoted_tweet_id": {
+              "title": "Promoted Tweet Id",
+              "type": "string"
+            },
+            "date": {
+              "title": "Date",
+              "type": "string",
+              "format": "date"
+            },
+            "app_clicks": {
+              "title": "App Clicks",
+              "description": "Number of app install or app open attempts",
+              "type": "integer"
+            },
+            "card_engagements": {
+              "title": "Card Engagements",
+              "description": "Total number of card engagements",
+              "type": "integer"
+            },
+            "carousel_swipes": {
+              "title": "Carousel Swipes",
+              "description": "Total swipes on Carousel images or videos",
+              "type": "integer"
+            },
+            "clicks": {
+              "title": "Clicks",
+              "description": "Total number of clicks, including favorites and other engagements",
+              "type": "integer"
+            },
+            "engagements": {
+              "title": "Engagements",
+              "description": "Total number of engagements",
+              "type": "integer"
+            },
+            "follows": {
+              "title": "Follows",
+              "description": "Total number of follows",
+              "type": "integer"
+            },
+            "impressions": {
+              "title": "Impressions",
+              "description": "Total number of impressions",
+              "type": "integer"
+            },
+            "likes": {
+              "title": "Likes",
+              "description": "Total number of likes",
+              "type": "integer"
+            },
+            "poll_card_vote": {
+              "title": "Poll Card Vote",
+              "description": "Total number of poll card votes",
+              "type": "integer"
+            },
+            "qualified_impressions": {
+              "title": "Qualified Impressions",
+              "description": "Total number of qualified impressions",
+              "type": "integer"
+            },
+            "replies": {
+              "title": "Replies",
+              "description": "Total number of replies",
+              "type": "integer"
+            },
+            "retweets": {
+              "title": "Retweets",
+              "description": "Total number of retweets",
+              "type": "integer"
+            },
+            "tweets_send": {
+              "title": "Tweets Send",
+              "description": "Total number of tweets sends",
+              "type": "integer"
+            },
+            "unfollows": {
+              "title": "Unfollows",
+              "description": "Total number of unfollows",
+              "type": "integer"
+            },
+            "url_clicks": {
+              "title": "Url Clicks",
+              "description": "Total clicks on the link or Website Card in an ad, including earned.",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "promoted_tweet_id",
+            "date"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_billing_metrics_stream",
+        "json_schema": {
+          "title": "PromotedTweetBillingMetrics",
+          "type": "object",
+          "properties": {
+            "promoted_tweet_id": {
+              "title": "Promoted Tweet Id",
+              "type": "string"
+            },
+            "date": {
+              "title": "Date",
+              "type": "string",
+              "format": "date"
+            },
+            "billed_charge_local_micro": {
+              "title": "Billed Charge Local Micro",
+              "description": "Total spend in micros",
+              "type": "integer"
+            },
+            "billed_engagements": {
+              "title": "Billed Engagements",
+              "description": "Total number of billed engagements",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "promoted_tweet_id",
+            "date"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_video_metrics_stream",
+        "json_schema": {
+          "title": "PromotedTweetVideoMetrics",
+          "type": "object",
+          "properties": {
+            "promoted_tweet_id": {
+              "title": "Promoted Tweet Id",
+              "type": "string"
+            },
+            "date": {
+              "title": "Date",
+              "type": "string",
+              "format": "date"
+            },
+            "video_total_views": {
+              "title": "Video Total Views",
+              "description": "Total number of video views",
+              "type": "integer"
+            },
+            "video_views_25": {
+              "title": "Video Views 25",
+              "description": "Total number of views where at least 25% of the video was viewed.",
+              "type": "integer"
+            },
+            "video_views_50": {
+              "title": "Video Views 50",
+              "description": "Total number of views where at least 50% of the video was viewed.",
+              "type": "integer"
+            },
+            "video_views_75": {
+              "title": "Video Views 75",
+              "description": "Total number of views where at least 75% of the video was viewed.",
+              "type": "integer"
+            },
+            "video_views_100": {
+              "title": "Video Views 100",
+              "description": "Total number of views where at least 100% of the video was viewed.",
+              "type": "integer"
+            },
+            "video_cta_clicks": {
+              "title": "Video Cta Clicks",
+              "description": "Total clicks on the call to action",
+              "type": "integer"
+            },
+            "video_content_starts": {
+              "title": "Video Content Starts",
+              "description": "Total number of video playback starts",
+              "type": "integer"
+            },
+            "video_3s100pct_views": {
+              "title": "Video 3S100Pct Views",
+              "description": "Total number of views where at least 3 seconds were played while 100% in view (legacy video_total_views)",
+              "type": "integer"
+            },
+            "video_6s_views": {
+              "title": "Video 6S Views",
+              "description": "Total number of views where at least 6 seconds of the video was viewed",
+              "type": "integer"
+            },
+            "video_15s_views": {
+              "title": "Video 15S Views",
+              "description": "Total number of views where at least 15 seconds of the video or for 95% of the total duration was viewed",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "promoted_tweet_id",
+            "date"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_media_metrics_stream",
+        "json_schema": {
+          "title": "PromotedTweetMediaMetrics",
+          "type": "object",
+          "properties": {
+            "promoted_tweet_id": {
+              "title": "Promoted Tweet Id",
+              "type": "string"
+            },
+            "date": {
+              "title": "Date",
+              "type": "string",
+              "format": "date"
+            },
+            "media_views": {
+              "title": "Media Views",
+              "description": "Total number of views (autoplay and click) of media across Videos, Vines, GIFs, and Images.",
+              "type": "integer"
+            },
+            "media_engagements": {
+              "title": "Media Engagements",
+              "description": "Total number of clicks of media across Videos, Vines, GIFs, and Images.",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "promoted_tweet_id",
+            "date"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_web_conversion_metrics_stream",
+        "json_schema": {
+          "title": "PromotedTweetWebConversionMetrics",
+          "type": "object",
+          "properties": {
+            "promoted_tweet_id": {
+              "title": "Promoted Tweet Id",
+              "type": "string"
+            },
+            "date": {
+              "title": "Date",
+              "type": "string",
+              "format": "date"
+            },
+            "auto_created_conversion_landing_page_view": {
+              "title": "Auto Created Conversion Landing Page View",
+              "type": "integer"
+            },
+            "auto_created_conversion_session": {
+              "title": "Auto Created Conversion Session",
+              "type": "integer"
+            },
+            "conversion_purchases": {
+              "title": "Conversion Purchases",
+              "description": "Number of conversions of type PURCHASE and the corresponding sale amount and order quantity",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/WebConversionMetrics"
+                }
+              ]
+            },
+            "conversion_sign_ups": {
+              "title": "Conversion Sign Ups",
+              "description": "Number of conversions of type SIGN_UP and the corresponding sale amount and order quantity",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/WebConversionMetrics"
+                }
+              ]
+            },
+            "conversion_site_visits": {
+              "title": "Conversion Site Visits",
+              "description": "Number of conversions of type SITE_VISIT and the corresponding sale amount and order quantity",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/WebConversionMetrics"
+                }
+              ]
+            },
+            "conversion_downloads": {
+              "title": "Conversion Downloads",
+              "description": "Number of conversions of type DOWNLOAD and the corresponding sale amount and order quantity",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/WebConversionMetrics"
+                }
+              ]
+            },
+            "conversion_custom": {
+              "title": "Conversion Custom",
+              "description": "Number of conversions of type CUSTOM and the corresponding sale amount and order quantity",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/WebConversionMetrics"
+                }
+              ]
+            }
+          },
+          "required": [
+            "promoted_tweet_id",
+            "date",
+            "conversion_purchases",
+            "conversion_sign_ups",
+            "conversion_site_visits",
+            "conversion_downloads",
+            "conversion_custom"
+          ],
+          "definitions": {
+            "WebConversionMetrics": {
+              "title": "WebConversionMetrics",
+              "type": "object",
+              "properties": {
+                "assisted": {
+                  "title": "Assisted",
+                  "type": "integer"
+                },
+                "metric": {
+                  "title": "Metric",
+                  "type": "integer"
+                },
+                "order_quantity": {
+                  "title": "Order Quantity",
+                  "type": "integer"
+                },
+                "order_quantity_engagement": {
+                  "title": "Order Quantity Engagement",
+                  "type": "integer"
+                },
+                "order_quantity_view": {
+                  "title": "Order Quantity View",
+                  "type": "integer"
+                },
+                "post_engagement": {
+                  "title": "Post Engagement",
+                  "type": "integer"
+                },
+                "post_view": {
+                  "title": "Post View",
+                  "type": "integer"
+                },
+                "sale_amount": {
+                  "title": "Sale Amount",
+                  "type": "integer"
+                },
+                "sale_amount_engagement": {
+                  "title": "Sale Amount Engagement",
+                  "type": "integer"
+                },
+                "sale_amount_view": {
+                  "title": "Sale Amount View",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_mobile_conversion_metrics_stream",
+        "json_schema": {
+          "title": "PromotedTweetMobileConversionMetrics",
+          "type": "object",
+          "properties": {
+            "promoted_tweet_id": {
+              "title": "Promoted Tweet Id",
+              "type": "string"
+            },
+            "date": {
+              "title": "Date",
+              "type": "string",
+              "format": "date"
+            },
+            "mobile_conversion_spent_credits": {
+              "title": "Mobile Conversion Spent Credits",
+              "description": "Breakdown of mobile conversions of type SPENT_CREDIT by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_installs": {
+              "title": "Mobile Conversion Installs",
+              "description": "Breakdown of mobile conversions of type INSTALL by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_content_views": {
+              "title": "Mobile Conversion Content Views",
+              "description": "Breakdown of mobile conversions of type CONTENT_VIEW by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_add_to_wishlists": {
+              "title": "Mobile Conversion Add To Wishlists",
+              "description": "Breakdown of mobile conversions of type ADD_TO_WISHLIST by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_checkouts_initiated": {
+              "title": "Mobile Conversion Checkouts Initiated",
+              "description": "Breakdown of mobile conversions of type CHECKOUT_INITIATED by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_reservations": {
+              "title": "Mobile Conversion Reservations",
+              "description": "Breakdown of mobile conversions of type RESERVATION by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_tutorials_completed": {
+              "title": "Mobile Conversion Tutorials Completed",
+              "description": "Breakdown of mobile conversions of type TUTORIAL_COMPLETED by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_achievements_unlocked": {
+              "title": "Mobile Conversion Achievements Unlocked",
+              "description": "Breakdown of mobile conversions of type ACHIEVEMENT_UNLOCKED by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_searches": {
+              "title": "Mobile Conversion Searches",
+              "description": "Breakdown of mobile conversions of type SEARCH by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_add_to_carts": {
+              "title": "Mobile Conversion Add To Carts",
+              "description": "Breakdown of mobile conversions of type ADD_TO_CART by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_payment_info_additions": {
+              "title": "Mobile Conversion Payment Info Additions",
+              "description": "Breakdown of mobile conversions of type PAYMENT_INFO_ADDITION by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_re_engages": {
+              "title": "Mobile Conversion Re Engages",
+              "description": "Breakdown of mobile conversions of type RE_ENGAGE by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_shares": {
+              "title": "Mobile Conversion Shares",
+              "description": "Breakdown of mobile conversions of type SHARE by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_rates": {
+              "title": "Mobile Conversion Rates",
+              "description": "Breakdown of mobile conversions of type RATE by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_logins": {
+              "title": "Mobile Conversion Logins",
+              "description": "Breakdown of mobile conversions of type LOGIN by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_updates": {
+              "title": "Mobile Conversion Updates",
+              "description": "Breakdown of mobile conversions of type UPDATE by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_levels_achieved": {
+              "title": "Mobile Conversion Levels Achieved",
+              "description": "Breakdown of mobile conversions of type LEVEL_ACHIEVED by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_invites": {
+              "title": "Mobile Conversion Invites",
+              "description": "Breakdown of mobile conversions of type INVITE by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_key_page_views": {
+              "title": "Mobile Conversion Key Page Views",
+              "description": "Breakdown of mobile conversions of type KEY_PAGE_VIEW by post_view and post_engagement",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsPostMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_downloads": {
+              "title": "Mobile Conversion Downloads",
+              "description": "Breakdown of mobile conversions of type DOWNLOAD by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_purchases": {
+              "title": "Mobile Conversion Purchases",
+              "description": "Breakdown of mobile conversions of type PURCHASE by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_sign_ups": {
+              "title": "Mobile Conversion Sign Ups",
+              "description": "Breakdown of mobile conversions of type SIGN_UP by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_site_visits": {
+              "title": "Mobile Conversion Site Visits",
+              "description": "Breakdown of mobile conversions of type SITE_VISIT by post_view, post_engagement, assisted, order_quantity, and sale_amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MobileConversionsMetrics"
+                }
+              ]
+            }
+          },
+          "required": [
+            "promoted_tweet_id",
+            "date",
+            "mobile_conversion_spent_credits",
+            "mobile_conversion_installs",
+            "mobile_conversion_content_views",
+            "mobile_conversion_add_to_wishlists",
+            "mobile_conversion_checkouts_initiated",
+            "mobile_conversion_reservations",
+            "mobile_conversion_tutorials_completed",
+            "mobile_conversion_achievements_unlocked",
+            "mobile_conversion_searches",
+            "mobile_conversion_add_to_carts",
+            "mobile_conversion_payment_info_additions",
+            "mobile_conversion_re_engages",
+            "mobile_conversion_shares",
+            "mobile_conversion_rates",
+            "mobile_conversion_logins",
+            "mobile_conversion_updates",
+            "mobile_conversion_levels_achieved",
+            "mobile_conversion_invites",
+            "mobile_conversion_key_page_views",
+            "mobile_conversion_downloads",
+            "mobile_conversion_purchases",
+            "mobile_conversion_sign_ups",
+            "mobile_conversion_site_visits"
+          ],
+          "definitions": {
+            "MobileConversionsMetrics": {
+              "title": "MobileConversionsMetrics",
+              "type": "object",
+              "properties": {
+                "post_engagement": {
+                  "title": "Post Engagement",
+                  "type": "integer"
+                },
+                "post_view": {
+                  "title": "Post View",
+                  "type": "integer"
+                },
+                "assisted": {
+                  "title": "Assisted",
+                  "type": "integer"
+                },
+                "order_quantity": {
+                  "title": "Order Quantity",
+                  "type": "integer"
+                },
+                "sale_amount": {
+                  "title": "Sale Amount",
+                  "type": "integer"
+                }
+              }
+            },
+            "MobileConversionsPostMetrics": {
+              "title": "MobileConversionsPostMetrics",
+              "type": "object",
+              "properties": {
+                "post_engagement": {
+                  "title": "Post Engagement",
+                  "type": "integer"
+                },
+                "post_view": {
+                  "title": "Post View",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_life_time_value_mobile_conversion_metrics_stream",
+        "json_schema": {
+          "title": "PromotedTweetLifeTimeValueMobileConversion",
+          "type": "object",
+          "properties": {
+            "promoted_tweet_id": {
+              "title": "Promoted Tweet Id",
+              "type": "string"
+            },
+            "date": {
+              "title": "Date",
+              "type": "string",
+              "format": "date"
+            },
+            "mobile_conversion_lifetime_value_purchases": {
+              "title": "Mobile Conversion Lifetime Value Purchases",
+              "description": "Breakdown of mobile conversions of type PURCHASE",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_sign_ups": {
+              "title": "Mobile Conversion Lifetime Value Sign Ups",
+              "description": "Breakdown of mobile conversions of type SIGN_UP",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_updates": {
+              "title": "Mobile Conversion Lifetime Value Updates",
+              "description": "Breakdown of mobile conversions of type UPDATE",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_tutorials_completed": {
+              "title": "Mobile Conversion Lifetime Value Tutorials Completed",
+              "description": "Breakdown of mobile conversions of type TUTORIAL_COMPLETED",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_reservations": {
+              "title": "Mobile Conversion Lifetime Value Reservations",
+              "description": "Breakdown of mobile conversions of type RESERVATION",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_add_to_carts": {
+              "title": "Mobile Conversion Lifetime Value Add To Carts",
+              "description": "Breakdown of mobile conversions of type ADD_TO_CART",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_add_to_wishlists": {
+              "title": "Mobile Conversion Lifetime Value Add To Wishlists",
+              "description": "Breakdown of mobile conversions of type ADD_TO_WISHLIST",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_checkouts_initiated": {
+              "title": "Mobile Conversion Lifetime Value Checkouts Initiated",
+              "description": "Breakdown of mobile conversions of type CHECKOUT_INITIATED",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_levels_achieved": {
+              "title": "Mobile Conversion Lifetime Value Levels Achieved",
+              "description": "Breakdown of mobile conversions of type LEVEL_ACHIEVED",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_achievements_unlocked": {
+              "title": "Mobile Conversion Lifetime Value Achievements Unlocked",
+              "description": "Breakdown of mobile conversions of type ACHIEVEMENT_UNLOCKED",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_shares": {
+              "title": "Mobile Conversion Lifetime Value Shares",
+              "description": "Breakdown of mobile conversions of type SHARE",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_invites": {
+              "title": "Mobile Conversion Lifetime Value Invites",
+              "description": "Breakdown of mobile conversions of type INVITE",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_payment_info_additions": {
+              "title": "Mobile Conversion Lifetime Value Payment Info Additions",
+              "description": "Breakdown of mobile conversions of type PAYMENT_INFO_ADDITION",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_spent_credits": {
+              "title": "Mobile Conversion Lifetime Value Spent Credits",
+              "description": "Breakdown of mobile conversions of type SPENT_CREDIT",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            },
+            "mobile_conversion_lifetime_value_rates": {
+              "title": "Mobile Conversion Lifetime Value Rates",
+              "description": "Breakdown of mobile conversions of type RATE",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/LifeTimeValueMobileConversionMetrics"
+                }
+              ]
+            }
+          },
+          "required": [
+            "promoted_tweet_id",
+            "date",
+            "mobile_conversion_lifetime_value_purchases",
+            "mobile_conversion_lifetime_value_sign_ups",
+            "mobile_conversion_lifetime_value_updates",
+            "mobile_conversion_lifetime_value_tutorials_completed",
+            "mobile_conversion_lifetime_value_reservations",
+            "mobile_conversion_lifetime_value_add_to_carts",
+            "mobile_conversion_lifetime_value_add_to_wishlists",
+            "mobile_conversion_lifetime_value_checkouts_initiated",
+            "mobile_conversion_lifetime_value_levels_achieved",
+            "mobile_conversion_lifetime_value_achievements_unlocked",
+            "mobile_conversion_lifetime_value_shares",
+            "mobile_conversion_lifetime_value_invites",
+            "mobile_conversion_lifetime_value_payment_info_additions",
+            "mobile_conversion_lifetime_value_spent_credits",
+            "mobile_conversion_lifetime_value_rates"
+          ],
+          "definitions": {
+            "LifeTimeValueMobileConversionMetrics": {
+              "title": "LifeTimeValueMobileConversionMetrics",
+              "type": "object",
+              "properties": {
+                "metric": {
+                  "title": "Metric",
+                  "type": "integer"
+                },
+                "order_quantity": {
+                  "title": "Order Quantity",
+                  "type": "integer"
+                },
+                "sale_amount": {
+                  "title": "Sale Amount",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "lime_items_stream",
+        "json_schema": {
+          "title": "LineItems",
+          "type": "object",
+          "properties": {
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "created_at": {
+              "title": "Created At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "title": "Updated At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "campaign_id": {
+              "title": "Campaign Id",
+              "type": "string"
+            },
+            "entity_status": {
+              "title": "Entity Status",
+              "type": "string"
+            },
+            "deleted": {
+              "title": "Deleted",
+              "type": "boolean"
+            },
+            "advertiser_user_id": {
+              "title": "Advertiser User Id",
+              "type": "string"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "placements": {
+              "title": "Placements",
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "start_time": {
+              "title": "Start Time",
+              "type": "string",
+              "format": "date-time"
+            },
+            "bid_amount_local_micro": {
+              "title": "Bid Amount Local Micro",
+              "type": "integer"
+            },
+            "advertiser_domain": {
+              "title": "Advertiser Domain",
+              "type": "string"
+            },
+            "target_cpa_local_micro": {
+              "title": "Target Cpa Local Micro",
+              "type": "string"
+            },
+            "primary_web_event_tag": {
+              "title": "Primary Web Event Tag",
+              "type": "string"
+            },
+            "goal": {
+              "title": "Goal",
+              "type": "string"
+            },
+            "daily_budget_amount_local_micro": {
+              "title": "Daily Budget Amount Local Micro",
+              "type": "integer"
+            },
+            "product_type": {
+              "title": "Product Type",
+              "type": "string"
+            },
+            "end_time": {
+              "title": "End Time",
+              "type": "string",
+              "format": "date-time"
+            },
+            "funding_instrument_id": {
+              "title": "Funding Instrument Id",
+              "type": "string"
+            },
+            "bid_strategy": {
+              "title": "Bid Strategy",
+              "type": "string"
+            },
+            "duration_in_days": {
+              "title": "Duration In Days",
+              "type": "integer"
+            },
+            "standard_delivery": {
+              "title": "Standard Delivery",
+              "type": "boolean"
+            },
+            "total_budget_amount_local_micro": {
+              "title": "Total Budget Amount Local Micro",
+              "type": "integer"
+            },
+            "objective": {
+              "title": "Objective",
+              "type": "string"
+            },
+            "automatic_tweet_promotion": {
+              "title": "Automatic Tweet Promotion",
+              "type": "boolean"
+            },
+            "frequency_cap": {
+              "title": "Frequency Cap",
+              "type": "integer"
+            },
+            "android_app_store_identifier": {
+              "title": "Android App Store Identifier",
+              "type": "string"
+            },
+            "categories": {
+              "title": "Categories",
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "currency": {
+              "title": "Currency",
+              "type": "string"
+            },
+            "pay_by": {
+              "title": "Pay By",
+              "type": "string"
+            },
+            "ios_app_store_identifier": {
+              "title": "Ios App Store Identifier",
+              "type": "string"
+            },
+            "creative_source": {
+              "title": "Creative Source",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "created_at",
+            "updated_at",
+            "campaign_id",
+            "entity_status",
+            "deleted",
+            "standard_delivery",
+            "automatic_tweet_promotion"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "campaigns_stream",
+        "json_schema": {
+          "title": "Campaigns",
+          "type": "object",
+          "properties": {
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "created_at": {
+              "title": "Created At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "title": "Updated At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "entity_status": {
+              "title": "Entity Status",
+              "type": "string"
+            },
+            "deleted": {
+              "title": "Deleted",
+              "type": "boolean"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "budget_optimization": {
+              "title": "Budget Optimization",
+              "type": "string"
+            },
+            "reasons_not_servable": {
+              "title": "Reasons Not Servable",
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "servable": {
+              "title": "Servable",
+              "type": "boolean"
+            },
+            "purchase_order_number": {
+              "title": "Purchase Order Number",
+              "type": "string"
+            },
+            "effective_status": {
+              "title": "Effective Status",
+              "type": "string"
+            },
+            "daily_budget_amount_local_micro": {
+              "title": "Daily Budget Amount Local Micro",
+              "type": "integer"
+            },
+            "funding_instrument_id": {
+              "title": "Funding Instrument Id",
+              "type": "string"
+            },
+            "duration_in_days": {
+              "title": "Duration In Days",
+              "type": "integer"
+            },
+            "standard_delivery": {
+              "title": "Standard Delivery",
+              "type": "boolean"
+            },
+            "total_budget_amount_local_micro": {
+              "title": "Total Budget Amount Local Micro",
+              "type": "integer"
+            },
+            "frequency_cap": {
+              "title": "Frequency Cap",
+              "type": "integer"
+            },
+            "currency": {
+              "title": "Currency",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "created_at",
+            "updated_at",
+            "entity_status",
+            "deleted",
+            "servable",
+            "standard_delivery"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_tweets_stream",
+        "json_schema": {
+          "title": "PromotedTweetTweets",
+          "type": "object",
+          "properties": {
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "tweet_id": {
+              "title": "Tweet Id",
+              "type": "string"
+            },
+            "created_at": {
+              "title": "Created At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "full_text": {
+              "title": "Full Text",
+              "type": "string"
+            },
+            "lang": {
+              "title": "Lang",
+              "type": "string"
+            },
+            "user_id": {
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "tweet_id",
+            "created_at"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promoted_tweet_cards_stream",
+        "json_schema": {
+          "title": "PromotedTweetCards",
+          "type": "object",
+          "properties": {
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "card_uri": {
+              "title": "Card Uri",
+              "type": "string"
+            },
+            "card_type": {
+              "title": "Card Type",
+              "type": "string"
+            },
+            "created_at": {
+              "title": "Created At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "title": "Updated At",
+              "type": "string",
+              "format": "date-time"
+            },
+            "deleted": {
+              "title": "Deleted",
+              "type": "boolean"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "components": {
+              "title": "Components",
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "id",
+            "card_uri",
+            "card_type",
+            "created_at",
+            "updated_at",
+            "deleted"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
