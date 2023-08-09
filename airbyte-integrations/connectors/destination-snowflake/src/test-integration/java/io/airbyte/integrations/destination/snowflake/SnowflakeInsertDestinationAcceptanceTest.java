@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -181,9 +182,15 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
-    database.execute(createSchemaQuery);
+  protected void tearDown(final TestDestinationEnv testEnv, final ArrayList<String> test_schemas) throws Exception {
+    String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
+    database.execute(dropSchemaQuery);
+
+    for (String schema : test_schemas) {
+      dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", schema);
+      database.execute(dropSchemaQuery);
+    }
+
     DataSourceFactory.close(dataSource);
   }
 
