@@ -1,0 +1,519 @@
+version: 0.50.2
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - limits
+
+streams:
+  - type: DeclarativeStream
+    name: limits
+    primary_key:
+      - key
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/sunshine/
+        path: limits
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+  - type: DeclarativeStream
+    name: object_records
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/sunshine/
+        path: objects/query
+        http_method: POST
+        request_parameters:
+          query: '{"_type": {"$eq": {{ stream_partition.type }} }'
+          sort_by: _updated_at asc
+          _updated_at: '{ "start": {{ stream_interval.start_time }} }'
+        request_headers:
+          Content-Type: application/json
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: type
+              stream:
+                type: DeclarativeStream
+                name: object_types
+                primary_key:
+                  - key
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties: {}
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: >-
+                      https://{{ config['subdomain']
+                      }}.zendesk.com/api/sunshine/
+                    path: objects/types
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Content-Type: application/json
+                    authenticator:
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''password''] }}'
+                      username: '{{ config[''username''] }}'
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    page_size_option:
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 100
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+  - type: DeclarativeStream
+    name: object_type_policies
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/sunshine/
+        path: objects/types/{{ stream_partition.type }}/permissions
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: type
+              stream:
+                type: DeclarativeStream
+                name: object_types
+                primary_key:
+                  - key
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties: {}
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: >-
+                      https://{{ config['subdomain']
+                      }}.zendesk.com/api/sunshine/
+                    path: objects/types
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Content-Type: application/json
+                    authenticator:
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''password''] }}'
+                      username: '{{ config[''username''] }}'
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    page_size_option:
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 100
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - object_type
+            value: '{{ stream_partition.type }}'
+  - type: DeclarativeStream
+    name: object_types
+    primary_key:
+      - key
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/sunshine/
+        path: objects/types
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+  - type: DeclarativeStream
+    name: relationship_records
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/sunshine/
+        path: relationships/records
+        http_method: GET
+        request_parameters:
+          type: '{{ stream_partition.type }}'
+        request_headers:
+          Content-Type: application/json
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: type
+              stream:
+                type: DeclarativeStream
+                name: relationship_types
+                primary_key:
+                  - key
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties: {}
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: >-
+                      https://{{ config['subdomain']
+                      }}.zendesk.com/api/sunshine/
+                    path: relationships/types
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Content-Type: application/json
+                    authenticator:
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''password''] }}'
+                      username: '{{ config[''username''] }}'
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    page_size_option:
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 100
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+  - type: DeclarativeStream
+    name: relationship_types
+    primary_key:
+      - key
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/sunshine/
+        path: relationships/types
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+
+spec:
+  documentation_url: https://example.org
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - start_date
+      - subdomain
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 0
+      username:
+        type: string
+        title: Username
+        order: 1
+      password:
+        type: string
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        order: 2
+      subdomain:
+        type: string
+        order: 3
+        title: Subdomain
+        description: The subdomain for your Zendesk Account.
+  
