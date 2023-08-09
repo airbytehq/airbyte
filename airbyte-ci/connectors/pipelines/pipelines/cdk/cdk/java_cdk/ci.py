@@ -21,7 +21,7 @@ pass_global_settings = LazyPassDecorator(JavaCDKSettings)
 java_group = ClickGroup(group_name="java", group_help="Commands for developing Airbyte Java CDK")
 
 
-class CICommand(ClickCommandMetadata):
+class CICommandMetadata(ClickCommandMetadata):
     command_name: str = "ci"
     command_help: str = "Runs CI for Airbyte Java CDK"
     flags: List[ClickFlag] = [ClickFlag(name="--scan", type=ParameterType.BOOL, help="Enables gradle scanning", default=False)]
