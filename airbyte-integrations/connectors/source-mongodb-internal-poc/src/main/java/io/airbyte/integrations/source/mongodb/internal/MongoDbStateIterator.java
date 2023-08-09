@@ -56,7 +56,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
         return true;
       }
     } catch (MongoException e) {
-      // If hasNext throws an exception, log it and move on. Treat it the same as if hasNext returned false.
+      // If hasNext throws an exception, log it and then treat it as if hasNext returned false.
       LOGGER.info("hasNext threw an exception: {}", e.getMessage(), e);
     }
 
