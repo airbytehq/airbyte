@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 2.1.2
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mysql
   githubIssueLabel: source-mysql
   icon: mysql.svg
@@ -15,8 +15,10 @@ data:
   registries:
     cloud:
       dockerRepository: airbyte/source-mysql-strict-encrypt
+      dockerImageTag: 2.1.2
       enabled: true
     oss:
+      dockerImageTag: 2.1.2
       enabled: true
   releaseStage: beta
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
