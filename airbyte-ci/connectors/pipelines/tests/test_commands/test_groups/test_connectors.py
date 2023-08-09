@@ -8,6 +8,7 @@ from click.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.commands.groups import connectors
+
 from tests.utils import pick_a_random_connector
 
 
@@ -242,7 +243,7 @@ def click_context_obj():
         (connectors.build, []),
     ],
 )
-def test_commands_do_not_override_connector_selection(
+async def test_commands_do_not_override_connector_selection(
     mocker, runner: CliRunner, click_context_obj: dict, command: Callable, command_args: list
 ):
     """
@@ -257,7 +258,7 @@ def test_commands_do_not_override_connector_selection(
     mock_connector_context = mocker.MagicMock()
     mocker.patch.object(connectors, "ConnectorContext", mock_connector_context)
     mocker.patch.object(connectors, "PublishConnectorContext", mock_connector_context)
-    runner.invoke(command, command_args, catch_exceptions=False, obj=click_context_obj)
+    await runner.invoke(command, command_args, catch_exceptions=False, obj=click_context_obj)
     assert mock_connector_context.call_count == 1
     # If the connector selection is overriden the context won't be instantiated with the selected connector mock instance
     assert mock_connector_context.call_args_list[0].kwargs["connector"] == selected_connector

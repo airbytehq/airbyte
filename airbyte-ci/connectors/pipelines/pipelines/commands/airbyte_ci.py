@@ -6,6 +6,7 @@
 
 from typing import List
 
+import anyio
 import asyncclick as click
 from aircmd.models.base import GlobalContext
 from aircmd.models.click_utils import LazyPassDecorator
@@ -84,7 +85,7 @@ def get_modified_files(
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click.pass_context
-def airbyte_ci(
+async def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
     git_branch: str,
@@ -163,7 +164,8 @@ plugin_command_groups = plugin_manager.get_command_groups()
 for command_group in plugin_command_groups:
     airbyte_ci.add_command(command_group.click_group)
 
-
+def main() -> None:
+    anyio.run(airbyte_ci)
 
 if __name__ == "__main__":
-    airbyte_ci()
+    main()

@@ -169,7 +169,6 @@ def connectors(
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
-    print("ABC123")
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
     ctx.obj["concurrency"] = concurrency
@@ -182,7 +181,7 @@ def connectors(
 
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
 @click.pass_context
-def test(
+async def test(
     ctx: click.Context,
 ) -> bool:
     """Runs a test pipeline for the selected connectors.
@@ -221,8 +220,7 @@ def test(
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
     try:
-        anyio.run(
-            run_connectors_pipelines,
+        await run_connectors_pipelines(
             [connector_context for connector_context in connectors_tests_contexts],
             run_connector_test_pipeline,
             "Test Pipeline",

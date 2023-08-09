@@ -474,7 +474,7 @@ def create_and_open_file(file_path: Path) -> TextIOWrapper:
 
 class DaggerPipelineCommand(click.Command):
     @sentry_utils.with_command_context
-    def invoke(self, ctx: click.Context) -> Any:
+    async def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
         Args:
             ctx (click.Context): The invocation context.
@@ -502,7 +502,7 @@ class DaggerPipelineCommand(click.Command):
                     ctx.obj["dagger_logs_url"] = None
             else:
                 ctx.obj["dagger_logs_path"] = None
-            pipeline_success = super().invoke(ctx)
+            pipeline_success = await super().invoke(ctx)
             if not pipeline_success:
                 raise DaggerError(f"Dagger Command {command_name} failed.")
         except DaggerError as e:

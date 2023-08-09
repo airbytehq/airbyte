@@ -61,7 +61,7 @@ def with_step_context(func):
 
 
 def with_command_context(func):
-    def wrapper(self, ctx, *args, **kwargs):
+    async def wrapper(self, ctx, *args, **kwargs):
         with sentry_sdk.configure_scope() as scope:
             scope.set_tag("pipeline_command", self.name)
             scope.set_context(
@@ -76,6 +76,6 @@ def with_command_context(func):
             scope.set_tag("git_branch", ctx.obj.get("git_branch", "unknown"))
             scope.set_tag("git_revision", ctx.obj.get("git_revision", "unknown"))
 
-            return func(self, ctx, *args, **kwargs)
+            return await func(self, ctx, *args, **kwargs)
 
     return wrapper
