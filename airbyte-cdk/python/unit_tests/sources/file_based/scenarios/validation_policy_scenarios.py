@@ -234,8 +234,7 @@ skip_record_scenario_single_stream = (
                 "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=c.csv line_no=2 n_skipped=0",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
         ]
@@ -298,13 +297,11 @@ skip_record_scenario_multi_stream = (
                 "message": "Records in file did not pass validation policy. stream=stream2 file=b/b2.csv n_skipped=1 validation_policy=skip_record",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
         ]
@@ -346,8 +343,7 @@ emit_record_scenario_single_stream = (
                 "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=c.csv line_no=2 n_skipped=0",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
         ]
@@ -402,13 +398,11 @@ emit_record_scenario_multi_stream = (
                 "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a/a3.csv line_no=2 n_skipped=0",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
         ]
@@ -443,8 +437,7 @@ wait_for_rediscovery_scenario_single_stream = (
                 "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=b.csv validation_policy=Wait for Discover n_skipped=0",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
         ]
@@ -503,13 +496,11 @@ wait_for_rediscovery_scenario_multi_stream = (
                 "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=Wait for Discover n_skipped=0",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
             {
-                # FIXME using logging.logger return level WARNING and not WARN which does not align with the airbyte protocol
-                "level": "WARNING",
+                "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
         ]
