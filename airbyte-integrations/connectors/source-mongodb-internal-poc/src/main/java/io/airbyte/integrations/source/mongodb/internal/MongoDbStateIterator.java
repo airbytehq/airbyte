@@ -79,6 +79,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
               .withNamespace(stream.getStream().getNamespace())
           );
       if (last != null) {
+        // TODO add type support in here once more than ObjectId fields are supported
         streamState.withStreamState(Jsons.jsonNode(
             new MongodbStreamState(last.getObjectId("_id").toString())
         ));
