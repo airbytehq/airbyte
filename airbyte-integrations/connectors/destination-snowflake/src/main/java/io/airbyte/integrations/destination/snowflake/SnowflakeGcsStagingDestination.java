@@ -174,7 +174,8 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
         isPurgeStagingData(config),
         new TypeAndDedupeOperationValve(),
         typerDeduper,
-        parsedCatalog);
+        parsedCatalog,
+        null);
 
   }
 
