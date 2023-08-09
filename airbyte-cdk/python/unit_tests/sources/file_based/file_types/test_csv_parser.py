@@ -2,13 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import asyncio
+import io
 import logging
+from datetime import datetime
+from unittest import mock
 from unittest.mock import MagicMock, Mock
 
 import pytest
 from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser, _cast_types
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 PROPERTY_TYPES = {
     "col1": "null",
@@ -96,3 +103,38 @@ def test_read_and_cast_types(reader_values, expected_rows):
             list(parser._read_and_cast_types(reader, schema, config_format, logger))
     else:
         assert expected_rows == list(parser._read_and_cast_types(reader, schema, config_format, logger))
+
+
+def test_encoding_is_passed_to_stream_reader():
+    parser = CsvParser()
+    encoding = "ascii"
+    stream_reader = Mock()
+    mock_obj = stream_reader.open_file.return_value
+    mock_obj.__enter__ = Mock(return_value=io.StringIO("c1,c2\nv1,v2"))
+    mock_obj.__exit__ = Mock(return_value=None)
+    file = RemoteFile(uri="s3://bucket/key.csv", last_modified=datetime.now())
+    config = FileBasedStreamConfig(
+        name="test",
+        validation_policy="Emit Record",
+        file_type="csv",
+        format=CsvFormat(encoding=encoding)
+    )
+    list(parser.parse_records(config, file, stream_reader, logger))
+    stream_reader.open_file.assert_has_calls([
+        mock.call(file, FileReadMode.READ, encoding, logger),
+        mock.call().__enter__(),
+        mock.call().__exit__(None, None, None),
+    ])
+
+    mock_obj.__enter__ = Mock(return_value=io.StringIO("c1,c2\nv1,v2"))
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(parser.infer_schema(config, file, stream_reader, logger))
+    stream_reader.open_file.assert_called_with(file, FileReadMode.READ, encoding, logger)
+    stream_reader.open_file.assert_has_calls([
+        mock.call(file, FileReadMode.READ, encoding, logger),
+        mock.call().__enter__(),
+        mock.call().__exit__(None, None, None),
+        mock.call(file, FileReadMode.READ, encoding, logger),
+        mock.call().__enter__(),
+        mock.call().__exit__(None, None, None),
+    ])

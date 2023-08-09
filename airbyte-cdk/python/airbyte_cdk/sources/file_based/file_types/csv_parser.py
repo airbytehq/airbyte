@@ -47,7 +47,7 @@ class CsvParser(FileTypeParser):
             doublequote=config_format.double_quote,
             quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
         )
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, config_format.encoding, logger) as fp:
             # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
             #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
             headers = self._get_headers(fp, config_format, dialect_name)
@@ -78,7 +78,7 @@ class CsvParser(FileTypeParser):
             doublequote=config_format.double_quote,
             quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
         )
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, config_format.encoding, logger) as fp:
             # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
             #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
             self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
