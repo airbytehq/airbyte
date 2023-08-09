@@ -1559,7 +1559,6 @@ class Engagements(EngagementsABC, IncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-
         self.latest_cursor = None
 
         # The date we need records since
@@ -1700,6 +1699,27 @@ class Owners(ClientSideIncrementalStream):
     scopes = {"crm.objects.owners.read"}
 
 
+class OwnersArchived(ClientSideIncrementalStream):
+    """Archived Owners, API v3"""
+
+    url = "/crm/v3/owners"
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.owners.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true"})
+        return params
+
+
 class PropertyHistory(Stream):
     """Contacts Endpoint, API v1
     Is used to get all Contacts and the history of their respective
@@ -1796,7 +1816,6 @@ class Contacts(CRMSearchStream):
 
 
 class ContactsMergedAudit(Stream):
-
     url = "/contacts/v1/contact/vids/batch/"
     updated_at_field = "timestamp"
     scopes = {"crm.objects.contacts.read"}
@@ -1816,7 +1835,6 @@ class ContactsMergedAudit(Stream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-
         slices = []
 
         # we can query a max of 100 contacts at a time
