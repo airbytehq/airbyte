@@ -58,7 +58,7 @@ public class GeneralStagingFunctions {
       log.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
 
-      typerDeduper.prepareFinalTables();
+      typerDeduper.prepareTables();
     };
   }
 
