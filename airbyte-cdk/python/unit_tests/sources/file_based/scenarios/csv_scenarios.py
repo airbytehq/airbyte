@@ -19,7 +19,7 @@ single_csv_scenario = (
                     "validation_policy": "emit_record",
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z"
+            "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
     .set_files(
@@ -117,6 +117,26 @@ single_csv_scenario = (
                                             "additionalProperties": {
                                                 "oneOf": [
                                                     {
+                                                        "title": "AvroFormat",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "filetype": {
+                                                                "title": "Filetype",
+                                                                "default": "avro",
+                                                                "enum": [
+                                                                    "avro"
+                                                                ],
+                                                                "type": "string"
+                                                            },
+                                                            "decimal_as_float": {
+                                                                "title": "Convert Decimal Fields to Floats",
+                                                                "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
+                                                                "default": False,
+                                                                "type": "boolean"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
                                                         "title": "CsvFormat",
                                                         "type": "object",
                                                         "properties": {
@@ -167,6 +187,82 @@ single_csv_scenario = (
                                                                     "Quote Non-numeric",
                                                                     "Quote None"
                                                                 ]
+                                                            },
+                                                            "null_values": {
+                                                                "title": "Null Values",
+                                                                "description": "A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
+                                                                "default": [],
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                },
+                                                                "uniqueItems": True
+                                                            },
+                                                            "skip_rows_before_header": {
+                                                                "title": "Skip Rows Before Header",
+                                                                "description": "The number of rows to skip before the header row. For example, if the header row is on the 3rd row, enter 2 in this field.",
+                                                                "default": 0,
+                                                                "type": "integer"
+                                                            },
+                                                            "skip_rows_after_header": {
+                                                                "title": "Skip Rows After Header",
+                                                                "description": "The number of rows to skip after the header row.",
+                                                                "default": 0,
+                                                                "type": "integer"
+                                                            },
+                                                            "autogenerate_column_names": {
+                                                                "title": "Autogenerate Column Names",
+                                                                "description": "Whether to autogenerate column names if column_names is empty. If true, column names will be of the form \u201cf0\u201d, \u201cf1\u201d\u2026 If false, column names will be read from the first CSV row after skip_rows_before_header.",
+                                                                "default": False,
+                                                                "type": "boolean"
+                                                            },
+                                                            "true_values": {
+                                                                "title": "True Values",
+                                                                "description": "A set of case-sensitive strings that should be interpreted as true values.",
+                                                                "default": [
+                                                                    "y",
+                                                                    "yes",
+                                                                    "t",
+                                                                    "true",
+                                                                    "on",
+                                                                    "1"
+                                                                ],
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                },
+                                                                "uniqueItems": True
+                                                            },
+                                                            "false_values": {
+                                                                "title": "False Values",
+                                                                "description": "A set of case-sensitive strings that should be interpreted as false values.",
+                                                                "default": [
+                                                                    "n",
+                                                                    "no",
+                                                                    "f",
+                                                                    "false",
+                                                                    "off",
+                                                                    "0"
+                                                                ],
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                },
+                                                                "uniqueItems": True
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "title": "JsonlFormat",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "filetype": {
+                                                                "title": "Filetype",
+                                                                "default": "jsonl",
+                                                                "enum": [
+                                                                    "jsonl"
+                                                                ],
+                                                                "type": "string"
                                                             }
                                                         }
                                                     },
@@ -187,20 +283,6 @@ single_csv_scenario = (
                                                                 "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
                                                                 "default": False,
                                                                 "type": "boolean"
-                                                            }
-                                                        }
-                                                    },
-                                                    {
-                                                        "title": "JsonlFormat",
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "filetype": {
-                                                                "title": "Filetype",
-                                                                "default": "jsonl",
-                                                                "enum": [
-                                                                    "jsonl"
-                                                                ],
-                                                                "type": "string"
                                                             }
                                                         }
                                                     }
@@ -238,12 +320,13 @@ single_csv_scenario = (
                     },
                     "start_date": {
                         "title": "Start Date",
-                        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+                        "description": "UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified before this date will not be replicated.",
                         "examples": [
-                            "2021-01-01T00:00:00Z"
+                            "2021-01-01T00:00:00.000000Z"
                         ],
                         "format": "date-time",
-                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$",
+                        "pattern_descriptor": "YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
                         "order": 1,
                         "type": "string"
                     }
@@ -262,18 +345,10 @@ single_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": "string"
-                            },
-                            "col2": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -285,10 +360,24 @@ single_csv_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11",
+                    "col2": "val12",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21",
+                    "col2": "val22",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
         ]
     )
 ).build()
@@ -337,22 +426,12 @@ multi_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": "string"
-                            },
-                            "col2": {
-                                "type": "string"
-                            },
-                            "col3": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -363,14 +442,44 @@ multi_csv_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val11b",
+                    "col2": "val12b",
+                    "col3": "val13b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21b",
+                    "col2": "val22b",
+                    "col3": "val23b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
         ]
     )
 ).build()
@@ -419,18 +528,11 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": "string"
-                            }, "col2": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -441,18 +543,47 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val11b",
+                    "col2": "val12b",
+                    "col3": "val13b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21b",
+                    "col2": "val22b",
+                    "col3": "val23b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
         ]
     )
-    .set_expected_logs({
-        "discover": [{"level": "WARN", "message": "Refusing to infer schema for all 2 files; using 1 files."}]})
+    .set_expected_logs({"discover": [{"level": "WARN", "message": "Refusing to infer schema for all 2 files; using 1 files."}]})
     .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
 ).build()
 
@@ -492,18 +623,11 @@ invalid_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": "string"
-                            }, "col2": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -514,14 +638,16 @@ invalid_csv_scenario = (
     )
     .set_expected_records([])
     .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
-    .set_expected_logs({
-        "read": [
-            {
-                "level": "ERROR",
-                "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
-            },
-        ]
-    })
+    .set_expected_logs(
+        {
+            "read": [
+                {
+                    "level": "ERROR",
+                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
+                },
+            ]
+        }
+    )
 ).build()
 
 csv_single_stream_scenario = (
@@ -566,18 +692,10 @@ csv_single_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": "string"
-                            },
-                            "col2": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -590,10 +708,24 @@ csv_single_stream_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
         ]
     )
 ).build()
@@ -615,7 +747,7 @@ csv_multi_stream_scenario = (
                     "file_type": "csv",
                     "globs": ["b.csv"],
                     "validation_policy": "emit_record",
-                }
+                },
             ]
         }
     )
@@ -647,21 +779,11 @@ csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": "string"
-                            },
-                            "col2": {
-                                "type": "string"
-                            },
-                            "col3": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -673,15 +795,9 @@ csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "col3": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream2",
@@ -694,18 +810,40 @@ csv_multi_stream_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream1"},
-            {"data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream1"},
-            {"data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream2"},
-            {"data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream2"},
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream1",
+            },
+            {
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream1",
+            },
+            {
+                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream2",
+            },
+            {
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream2",
+            },
         ]
     )
 ).build()
@@ -729,9 +867,9 @@ csv_custom_format_scenario = (
                             "quote_char": "|",
                             "escape_char": "!",
                             "double_quote": True,
-                            "quoting_behavior": "Quote Special Characters"
+                            "quoting_behavior": "Quote Special Characters",
                         }
-                    }
+                    },
                 }
             ]
         }
@@ -758,20 +896,16 @@ csv_custom_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -784,12 +918,36 @@ csv_custom_format_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "col3": "val |13|", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21", "col2": "val22", "col3": "val23", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val,31", "col2": "val |,32|", "col3": "val, !! 33", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11",
+                    "col2": "val12",
+                    "col3": "val |13|",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21",
+                    "col2": "val22",
+                    "col3": "val23",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val,31",
+                    "col2": "val |,32|",
+                    "col3": "val, !! 33",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
         ]
     )
     .set_file_write_options(
@@ -818,8 +976,8 @@ csv_legacy_format_scenario = (
                         "quote_char": "|",
                         "escape_char": "!",
                         "double_quote": True,
-                        "quoting_behavior": "Quote All"
-                    }
+                        "quoting_behavior": "Quote All",
+                    },
                 }
             ]
         }
@@ -846,20 +1004,16 @@ csv_legacy_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -872,12 +1026,36 @@ csv_legacy_format_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "col3": "val |13|", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21", "col2": "val22", "col3": "val23", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val,31", "col2": "val |,32|", "col3": "val, !! 33", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11",
+                    "col2": "val12",
+                    "col3": "val |13|",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21",
+                    "col2": "val22",
+                    "col3": "val23",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val,31",
+                    "col2": "val |,32|",
+                    "col3": "val, !! 33",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
         ]
     )
     .set_file_write_options(
@@ -901,14 +1079,8 @@ multi_stream_custom_format = (
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record",
                     "format": {
-                        "csv": {
-                            "filetype": "csv",
-                            "delimiter": "#",
-                            "escape_char": "!",
-                            "double_quote": True,
-                            "newlines_in_values": False
-                        }
-                    }
+                        "csv": {"filetype": "csv", "delimiter": "#", "escape_char": "!", "double_quote": True, "newlines_in_values": False}
+                    },
                 },
                 {
                     "name": "stream2",
@@ -922,10 +1094,10 @@ multi_stream_custom_format = (
                             "escape_char": "@",
                             "double_quote": True,
                             "newlines_in_values": False,
-                            "quoting_behavior": "Quote All"
+                            "quoting_behavior": "Quote All",
                         }
-                    }
-                }
+                    },
+                },
             ]
         }
     )
@@ -958,20 +1130,16 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -984,14 +1152,10 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream2",
@@ -1004,18 +1168,40 @@ multi_stream_custom_format = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": "val ! 12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val ! 21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col3": "val @@@@ 13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream1"},
-            {"data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream1"},
-            {"data": {"col3": "val @@ 13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream2"},
-            {"data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream2"},
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val ! 12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val ! 21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {"col3": "val @@@@ 13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream1",
+            },
+            {
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream1",
+            },
+            {
+                "data": {"col3": "val @@ 13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream2",
+            },
+            {
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream2",
+            },
         ]
     )
     .set_file_write_options(
@@ -1062,18 +1248,10 @@ empty_schema_inference_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": "string"
-                            },
-                            "col2": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -1083,14 +1261,28 @@ empty_schema_inference_scenario = (
             ]
         }
     )
-    .set_parsers({'csv': EmptySchemaParser()})
+    .set_parsers({"csv": EmptySchemaParser()})
     .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11",
+                    "col2": "val12",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21",
+                    "col2": "val22",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
         ]
     )
 ).build()
@@ -1141,16 +1333,10 @@ schemaless_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "data": {
-                                "type": "object"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "data": {"type": "object"},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -1161,14 +1347,38 @@ schemaless_csv_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"data": {"col1": "val11a", "col2": "val12a"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"data": {"col1": "val21a", "col2": "val22a"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
-            {"data": {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+            {
+                "data": {
+                    "data": {"col1": "val11a", "col2": "val12a"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "data": {"col1": "val21a", "col2": "val22a"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "data": {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "data": {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
         ]
     )
 ).build()
@@ -1192,7 +1402,7 @@ schemaless_csv_multi_stream_scenario = (
                     "file_type": "csv",
                     "globs": ["b.csv"],
                     "validation_policy": "skip_record",
-                }
+                },
             ]
         }
     )
@@ -1224,15 +1434,9 @@ schemaless_csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "data": {
-                                "type": "object"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "data": {"type": "object"},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -1244,15 +1448,9 @@ schemaless_csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "col3": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream2",
@@ -1265,14 +1463,30 @@ schemaless_csv_multi_stream_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"data": {"col1": "val11a", "col2": "val12a"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"data": {"col1": "val21a", "col2": "val22a"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream2"},
-            {"data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
-             "stream": "stream2"},
+            {
+                "data": {
+                    "data": {"col1": "val11a", "col2": "val12a"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "data": {"col1": "val21a", "col2": "val22a"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream2",
+            },
+            {
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
+                "stream": "stream2",
+            },
         ]
     )
 ).build()
@@ -1324,16 +1538,10 @@ schemaless_with_user_input_schema_fails_connection_check_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "data": {
-                                "type": "object"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "data": {"type": "object"},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -1368,7 +1576,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
                     "file_type": "csv",
                     "globs": ["b.csv"],
                     "validation_policy": "skip_record",
-                }
+                },
             ]
         }
     )
@@ -1400,15 +1608,9 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "data": {
-                                "type": "object"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "data": {"type": "object"},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream1",
@@ -1420,15 +1622,9 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
+                            "col3": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
                         },
                     },
                     "name": "stream2",
@@ -1443,4 +1639,1160 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
     .set_expected_check_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+).build()
+
+
+csv_string_can_be_null_with_input_schemas_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_string_can_be_null_with_input_schema")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "input_schema": {"col1": "string", "col2": "string"},
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "null_values": ["null"],
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("2", "null"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "string"
+                            },
+                            "col2": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "2", "col2": None, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_string_not_null_if_no_null_values_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_string_not_null_if_no_null_values")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("2", "null"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "2", "col2": "null", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_strings_can_be_null_not_quoted_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_strings_can_be_null_no_input_schema")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "null_values": ["null"]
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("2", "null"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "2", "col2": None, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_newline_in_values_quoted_value_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_newline_in_values_quoted_value")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "quoting_behavior": "Quote All"
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    '''"col1","col2"''',
+                    '''"2","val\n2"''',
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "2", "col2": 'val\n2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_newline_in_values_not_quoted_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_newline_in_values_not_quoted")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    '''col1,col2''',
+                    '''2,val\n2''',
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            # Note that the value for col2 is truncated to "val" because the newline is not escaped
+            {"data": {"col1": "2", "col2": 'val', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+    .set_expected_logs({"read": [
+        {
+            "level": "ERROR",
+            "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a.csv line_no=2 n_skipped=0",
+        }
+    ]})
+).build()
+
+csv_escape_char_is_set_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_escape_char_is_set")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "double_quotes": False,
+                            "quote_char": '"',
+                            "delimiter": ",",
+                            "escape_char": "\\",
+                            "quoting_behavior": "Quote All",
+
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    '''col1,col2''',
+                    '''val11,"val\\"2"''',
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": 'val11', "col2": 'val"2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_double_quote_is_set_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_doublequote_is_set")
+    # This scenario tests that quotes are properly escaped when double_quotes is True
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "double_quotes": True,
+                            "quote_char": '"',
+                            "delimiter": ",",
+                            "quoting_behavior": "Quote All",
+
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    '''col1,col2''',
+                    '''val11,"val""2"''',
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": 'val11', "col2": 'val"2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_custom_delimiter_with_escape_char_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_custom_delimiter_with_escape_char")
+    # This scenario tests that a value can contain the delimiter if it is wrapped in the quote_char
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "double_quotes": True,
+                            "quote_char": '@',
+                            "delimiter": "|",
+                            "escape_char": "+"
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    '''col1|col2''',
+                    '''val"1,1|val+|2''',
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": 'val"1,1', "col2": 'val|2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_custom_delimiter_in_double_quotes_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_custom_delimiter_in_double_quotes")
+    # This scenario tests that a value can contain the delimiter if it is wrapped in the quote_char
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "double_quotes": True,
+                            "quote_char": '@',
+                            "delimiter": "|",
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    '''col1|col2''',
+                    '''val"1,1|@val|2@''',
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": 'val"1,1', "col2": 'val|2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+
+csv_skip_before_header_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_skip_before_header")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "skip_rows_before_header": 2
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("skip_this", "skip_this"),
+                    ("skip_this_too", "skip_this_too"),
+                    ("col1", "col2"),
+                    ("val11", "val12"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_skip_after_header_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_skip_after_header")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "skip_rows_after_header": 2
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("skip_this", "skip_this"),
+                    ("skip_this_too", "skip_this_too"),
+                    ("val11", "val12"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+
+csv_skip_before_and_after_header_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_skip_before_after_header")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "skip_rows_before_header": 1,
+                            "skip_rows_after_header": 1,
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("skip_this", "skip_this"),
+                    ("col1", "col2"),
+                    ("skip_this_too", "skip_this_too"),
+                    ("val11", "val12"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_autogenerate_column_names_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_autogenerate_column_names")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "autogenerate_column_names": True,
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("val11", "val12"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "f0": {
+                                "type": ["null", "string"]
+                            },
+                            "f1": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"f0": "val11", "f1": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_custom_bool_values_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_custom_bool_values")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "input_schema": {"col1": "boolean", "col2": "boolean"},
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "true_values": ["this_is_true"],
+                            "false_values": ["this_is_false"],
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("this_is_true", "this_is_false"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "boolean"
+                            },
+                            "col2": {
+                                "type": "boolean"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": True, "col2": False, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_custom_null_values_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_custom_null_values")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "input_schema": {"col1": "boolean", "col2": "string"},
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "null_values": ["null"],
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("null", "na"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "boolean"
+                            },
+                            "col2": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": None, "col2": "na", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+
+earlier_csv_scenario = (
+    TestScenarioBuilder()
+    .set_name("earlier_csv_stream")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                }
+            ],
+            "start_date": "2023-06-10T03:54:07.000000Z",
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11", "val12"),
+                    ("val21", "val22"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_check_status("FAILED")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {"type": "string"},
+                            "col2": {"type": "string"},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records([])
+    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()

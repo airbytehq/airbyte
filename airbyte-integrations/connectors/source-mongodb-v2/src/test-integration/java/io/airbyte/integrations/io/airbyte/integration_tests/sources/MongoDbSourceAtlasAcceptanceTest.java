@@ -4,7 +4,13 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -17,17 +23,13 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAcceptanceTest {
 
@@ -61,7 +63,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
     }
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
-    ((ObjectNode)config).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
 
     final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
         config.get("user").asText(),
