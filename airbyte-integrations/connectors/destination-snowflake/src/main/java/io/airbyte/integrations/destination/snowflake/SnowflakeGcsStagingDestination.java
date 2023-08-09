@@ -67,6 +67,11 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("GCS staging is slated for deprecation and will not be upgraded to Destinations v2. Please use the Snowflake internal staging destination instead.");
+    }
     final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeGcsStagingSqlOperations snowflakeGcsStagingSqlOperations =
@@ -103,7 +108,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
 
     storageClient.create(blobInfo);
 
-    try (WriteChannel writer = storageClient.writer(blobInfo)) {
+    try (final WriteChannel writer = storageClient.writer(blobInfo)) {
       // Try to write a dummy message to make sure user has all required permissions
       final byte[] content = "Hello, World!".getBytes(UTF_8);
       writer.write(ByteBuffer.wrap(content, 0, content.length));
@@ -149,23 +154,9 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
 
-    SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
-    final ParsedCatalog parsedCatalog;
-    TyperDeduper typerDeduper;
-    JdbcDatabase database = getDatabase(getDataSource(config));
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-      SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
-      parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
-    } else {
-      parsedCatalog = null;
-      typerDeduper = new NoopTyperDeduper();
-    }
-
     return new StagingConsumerFactory().create(
         outputRecordCollector,
-        database,
+        getDatabase(getDataSource(config)),
         new SnowflakeGcsStagingSqlOperations(getNamingResolver(), gcsConfig),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
@@ -173,8 +164,8 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
         catalog,
         isPurgeStagingData(config),
         new TypeAndDedupeOperationValve(),
-        typerDeduper,
-        parsedCatalog,
+        new NoopTyperDeduper(),
+        null,
         null);
 
   }

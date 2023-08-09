@@ -3,9 +3,7 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 import static java.util.stream.Collectors.*;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,15 +17,12 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
-import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperations;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import java.nio.file.Path;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
@@ -122,7 +117,6 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
     return SnowflakeTestUtils.dumpFinalTable(
         database,
-        streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
         databaseName,
         namespace,
         streamId.finalName() + suffix);
