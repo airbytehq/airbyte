@@ -271,6 +271,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.10          | 2023-08-07 | [\#29188](https://github.com/airbytehq/airbyte/pull/29188) | Internal code refactoring                                                                                                                           |
 | 1.2.9           | 2023-08-04 | [\#28677](https://github.com/airbytehq/airbyte/pull/28677) | Destinations v2: internal code changes to prepare for early access release                                                                          |
 | 1.2.8           | 2023-08-03 | [\#29047](https://github.com/airbytehq/airbyte/pull/29047) | Avoid logging record if the format is invalid                                                                                                       |
 | 1.2.7           | 2023-08-02 | [\#28976](https://github.com/airbytehq/airbyte/pull/28976) | Fix composite PK handling in v1 mode                                                                                                                |
