@@ -395,7 +395,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 # subtypes have mutually excluded parameters so we requesting
                 # different metric list for each record.
                 request_record_type = record_type.split("_")[0]
-                self.logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
+                self.logger.info(
+                    f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date"
+                )
                 response = self._send_http_request(
                     urljoin(self._url, self.report_init_endpoint(request_record_type)),
                     profile.profileId,

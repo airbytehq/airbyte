@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from enum import Enum
 
 from .report_streams import RecordType, ReportStream
 
