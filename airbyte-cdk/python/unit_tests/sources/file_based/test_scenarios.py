@@ -218,7 +218,7 @@ def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Te
             _verify_expected_logs(logs, discover_logs)
 
 
-read_scenarios = [
+read_scenarios = discover_scenarios + [
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
     skip_record_scenario_multi_stream,
