@@ -182,7 +182,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        deduped_property_types: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger
+        deduped_property_types: Mapping[str, Any], config_format: CsvFormat, logger: logging.Logger
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if deduped_property_types:
