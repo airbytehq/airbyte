@@ -35,11 +35,19 @@ class LinkedinAdsStream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
         self.config = config
+        self.date_time_fields = self._get_date_time_items_from_schema()
+
+    def _get_date_time_items_from_schema(self):
+        """
+        Get all properties from schema with format: 'date-time'
+        """
+        schema = self.get_json_schema()
+        return [k for k, v in schema["properties"].items() if v.get("format") == "date-time"]
 
     @property
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""
-        return ",".join(map(str, self.config.get("account_ids")))
+        return ",".join(map(str, self.config.get("account_ids", [])))
 
     def path(
         self,
@@ -83,7 +91,17 @@ class LinkedinAdsStream(HttpStream, ABC):
         """
         We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
         """
-        yield from transform_data(response.json().get("elements"))
+        for record in transform_data(response.json().get("elements")):
+            yield self._date_time_to_rfc3339(record)
+
+    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """
+        Transform 'date-time' items to RFC3339 format
+        """
+        for item in record:
+            if item in self.date_time_fields and record[item]:
+                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+        return record
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 429:

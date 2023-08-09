@@ -1,5 +1,8 @@
-from dagster import op
+import os
+
+from dagster import op, OpExecutionContext
 from slack_sdk import WebhookClient
+from dagster_slack import SlackResource
 
 
 def chunk_messages(report):
@@ -13,9 +16,22 @@ def chunk_messages(report):
     yield msg
 
 
-@op
-def send_slack_webhook(webhook_url, report):
-    webhook = WebhookClient(webhook_url)
-    for msg in chunk_messages(report):
-        # Wrap in code block as slack does not support markdown in webhooks
-        webhook.send(text=f"```{msg}```")
+def send_slack_message(context: OpExecutionContext, channel: str, message: str, enable_code_block_wrapping: bool = False):
+    """
+    Send a slack message to the given channel.
+
+    Args:
+        context (OpExecutionContext): The execution context.
+        channel (str): The channel to send the message to.
+        message (str): The message to send.
+    """
+    if os.getenv("SLACK_TOKEN"):
+        # Ensure that a failure to send a slack message does not cause the pipeline to fail
+        try:
+            for message_chunk in chunk_messages(message):
+                if enable_code_block_wrapping:
+                    message_chunk = f"```{message_chunk}```"
+
+                context.resources.slack.get_client().chat_postMessage(channel=channel, text=message_chunk)
+        except Exception as e:
+            context.log.info(f"Failed to send slack message: {e}")

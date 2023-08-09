@@ -15,12 +15,11 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from connector_ops.utils import Connector
 from dagger import Client, Directory, Secret
 from github import PullRequest
 from pipelines import hacks
 from pipelines.actions import secrets
-from pipelines.bases import CIContext, ConnectorReport, Report
+from pipelines.bases import CIContext, ConnectorReport, ConnectorWithModifiedFiles, Report
 from pipelines.github import update_commit_status_check
 from pipelines.slack import send_message_to_webhook
 from pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
@@ -298,11 +297,10 @@ class ConnectorContext(PipelineContext):
     def __init__(
         self,
         pipeline_name: str,
-        connector: Connector,
+        connector: ConnectorWithModifiedFiles,
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
-        modified_files: List[str],
         report_output_prefix: str,
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
@@ -326,7 +324,6 @@ class ConnectorContext(PipelineContext):
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
-            modified_files (List[str]): The list of modified files in the current git branch.
             report_output_prefix (str): The S3 key to upload the test report to.
             use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
@@ -343,7 +340,6 @@ class ConnectorContext(PipelineContext):
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
-        self.modified_files = modified_files
         self.report_output_prefix = report_output_prefix
         self._secrets_dir = None
         self._updated_secrets_dir = None
@@ -367,6 +363,10 @@ class ConnectorContext(PipelineContext):
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
         )
+
+    @property
+    def modified_files(self):
+        return self.connector.modified_files
 
     @property
     def secrets_dir(self) -> Directory:  # noqa D102
@@ -480,9 +480,8 @@ class ConnectorContext(PipelineContext):
 class PublishConnectorContext(ConnectorContext):
     def __init__(
         self,
-        connector: Connector,
+        connector: ConnectorWithModifiedFiles,
         pre_release: bool,
-        modified_files: List[str],
         spec_cache_gcs_credentials: str,
         spec_cache_bucket_name: str,
         metadata_service_gcs_credentials: str,
@@ -517,7 +516,6 @@ class PublishConnectorContext(ConnectorContext):
         super().__init__(
             pipeline_name=pipeline_name,
             connector=connector,
-            modified_files=modified_files,
             report_output_prefix=report_output_prefix,
             ci_report_bucket=ci_report_bucket,
             is_local=is_local,
