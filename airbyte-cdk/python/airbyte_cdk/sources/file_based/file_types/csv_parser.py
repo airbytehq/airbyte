@@ -208,6 +208,22 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _pre_propcess_property_types(property_types: Dict[str, Any]) -> None:
+        """
+        Transform the property types to be non-nullable and remove duplicate types if any.
+        Sample input:
+        {
+        "col1": ["string", "null"],
+        "col2": ["string", "string", "null"],
+        "col3": "integer"
+        }
+
+        Sample output:
+        {
+        "col1": "string",
+        "col2": "string",
+        "col3": "integer",
+        }
+        """
         for prop, prop_type in property_types.items():
             if isinstance(prop_type, list):
                 prop_type_distinct = set(prop_type)
