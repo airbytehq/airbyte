@@ -63,6 +63,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
+    csv_string_are_not_null_if_strings_can_be_null_is_false_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
@@ -175,6 +176,7 @@ discover_scenarios = [
     schemaless_jsonl_scenario,
     schemaless_jsonl_multi_stream_scenario,
     csv_string_can_be_null_with_input_schemas_scenario,
+    csv_string_are_not_null_if_strings_can_be_null_is_false_scenario,
     csv_string_not_null_if_no_null_values_scenario,
     csv_strings_can_be_null_not_quoted_scenario,
     csv_newline_in_values_quoted_value_scenario,

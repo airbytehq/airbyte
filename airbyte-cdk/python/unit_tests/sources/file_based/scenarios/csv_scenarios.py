@@ -1587,6 +1587,77 @@ csv_string_can_be_null_with_input_schemas_scenario = (
     )
 ).build()
 
+csv_string_are_not_null_if_strings_can_be_null_is_false_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_string_are_not_null_if_strings_can_be_null_is_false")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                    "input_schema": '{"col1": "string", "col2": "string"}',
+                    "format": {
+                        "filetype": "csv",
+                        "null_values": ["null"],
+                        "strings_can_be_null": False,
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07.000000Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("2", "null"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "string"
+                            },
+                            "col2": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "2", "col2": "null", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
 csv_string_not_null_if_no_null_values_scenario = (
     TestScenarioBuilder()
     .set_name("csv_string_not_null_if_no_null_values")
