@@ -1,0 +1,231 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{parameters.extractor_path}}"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://api.rechargeapps.com/"
+    http_method: "GET"
+    authenticator:
+      type: "ApiKeyAuthenticator"
+      header: "X-Recharge-Access-Token"
+      api_token: "{{ config['access_token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 50
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  old_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: "NoPagination"
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          X-Recharge-Version: 2021-11
+
+  old_stream_without_extractor:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: "NoPagination"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          X-Recharge-Version: 2021-11
+
+  metafields_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          owner_resource: "{{ config['owner_resource'] }}"
+
+  incremental_sync_base:
+    type: DatetimeBasedCursor
+    cursor_field: "{{ parameters.incremental_cursor }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: "PT0.000001S"
+    lookback_window: "P31D"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P1M"
+
+  addresses_stream:
+    $ref: "#/definitions/base_stream"
+    name: "addresses"
+    primary_key: "id"
+    $parameters:
+      path: "addresses"
+      extractor_path: "addresses"
+      incremental_cursor: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
+
+  charges_stream:
+    $ref: "#/definitions/base_stream"
+    name: "charges"
+    primary_key: "id"
+    $parameters:
+      path: "charges"
+      extractor_path: "charges"
+      incremental_cursor: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
+
+  collections_stream:
+    $ref: "#/definitions/old_stream"
+    name: "collections"
+    primary_key: "id"
+    $parameters:
+      path: "collections"
+      extractor_path: "collections"
+
+  customers_stream:
+    $ref: "#/definitions/base_stream"
+    name: "customers"
+    primary_key: "id"
+    $parameters:
+      path: "customers"
+      extractor_path: "customers"
+      incremental_cursor: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
+
+  discounts_stream:
+    $ref: "#/definitions/base_stream"
+    name: "discounts"
+    primary_key: "id"
+    $parameters:
+      path: "discounts"
+      extractor_path: "discounts"
+      incremental_cursor: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
+
+  metafields_stream:
+    $ref: "#/definitions/metafields_base_stream"
+    name: "metafields"
+    primary_key: "id"
+    $parameters:
+      path: "metafields"
+      extractor_path: "metafields"
+      incremental_cursor: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
+
+  onetimes_stream:
+    $ref: "#/definitions/base_stream"
+    name: "onetimes"
+    primary_key: "id"
+    $parameters:
+      path: "onetimes"
+      extractor_path: "onetimes"
+      incremental_cursor: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
+
+  orders_stream:
+    $ref: "#/definitions/base_stream"
+    name: "orders"
+    primary_key: "id"
+    $parameters:
+      path: "orders"
+      extractor_path: "orders"
+      incremental_cursor: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
+
+  products_stream:
+    $ref: "#/definitions/old_stream"    #Products endpoint has 422 error with 2021-11 API version
+    name: "products"
+    primary_key: "id"
+    $parameters:
+      path: "products"
+      extractor_path: "products"
+
+  shop_stream:
+    $ref: "#/definitions/old_stream_without_extractor"    #Products endpoint has 422 error with 2021-11 API version
+    name: "shop"
+    primary_key: "id"
+    $parameters:
+      path: "shop"
+
+  subscriptions_stream:
+    $ref: "#/definitions/base_stream"
+    name: "subscriptions"
+    primary_key: "id"
+    $parameters:
+      path: "subscriptions"
+      extractor_path: "subscriptions"
+      incremental_cursor: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
+
+streams:
+  - "#/definitions/addresses_stream"
+  - "#/definitions/charges_stream"
+  - "#/definitions/collections_stream"
+  - "#/definitions/customers_stream"
+  - "#/definitions/discounts_stream"
+  - "#/definitions/metafields_stream"
+  - "#/definitions/onetimes_stream"
+  - "#/definitions/orders_stream"
+  - "#/definitions/products_stream"
+  - "#/definitions/shop_stream"
+  - "#/definitions/subscriptions_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "addresses"
+    - "charges"
+    - "collections"
+    - "customers"
+    - "discounts"
+    - "metafields"
+    - "onetimes"
+    - "orders"
+    - "products"
+    - "shop"
+    - "subscriptions"
