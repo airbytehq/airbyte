@@ -9,16 +9,6 @@ streams:
     name: merchant_account_stream
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - string
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -52,19 +42,6 @@ streams:
     name: customer_stream
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - string
-          created_at:
-            type:
-              - datetime
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -93,7 +70,7 @@ streams:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%d %H:%M:%S'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -102,16 +79,6 @@ streams:
     name: discount_stream
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - string
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -138,16 +105,6 @@ streams:
     name: plan_stream
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - string
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -174,19 +131,6 @@ streams:
     name: transaction_stream
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - string
-          created_at:
-            type:
-              - datetime
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -215,7 +159,7 @@ streams:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%d %H:%M:%S'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -224,19 +168,6 @@ streams:
     name: subscription_stream
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - string
-          created_at:
-            type:
-              - datetime
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -264,8 +195,8 @@ streams:
         type: NoPagination
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: '{{ config[''start_date''] }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      cursor_field: created_at
+      datetime_format: '%Y-%m-%d %H:%M:%S'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -274,19 +205,6 @@ streams:
     name: dispute_stream
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - string
-          received_date:
-            type:
-              - datetime
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
