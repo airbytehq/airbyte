@@ -271,6 +271,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.0           | 2023-08-09 | [\#28894](https://github.com/airbytehq/airbyte/pull/29236) | Remove support for Snowflake GCS/S3 loading method in favor of Snowflake Internal staging                                                           |
 | 1.3.1           | 2023-08-04 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Update SqlGenerator                                                                                                                |
 | 1.3.0           | 2023-08-07 | [\#29174](https://github.com/airbytehq/airbyte/pull/29174) | Destinations v2: early access release                                                                                                               |
 | 1.2.10          | 2023-08-07 | [\#29188](https://github.com/airbytehq/airbyte/pull/29188) | Internal code refactoring                                                                                                                           |
