@@ -43,6 +43,18 @@ single_csv_scenario = (
                 "description": "Used during spec; allows the developer to configure the cloud provider specific options\nthat are needed when users configure a file-based source.",
                 "type": "object",
                 "properties": {
+                    "start_date": {
+                        "title": "Start Date",
+                        "description": "UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified before this date will not be replicated.",
+                        "examples": [
+                            "2021-01-01T00:00:00.000000Z"
+                        ],
+                        "format": "date-time",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$",
+                        "pattern_descriptor": "YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
+                        "order": 1,
+                        "type": "string"
+                    },
                     "streams": {
                         "title": "The list of streams to sync",
                         "description": "Each instance of this configuration defines a <a href=\"https://docs.airbyte.com/cloud/core-concepts#stream\">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.",
@@ -77,8 +89,8 @@ single_csv_scenario = (
                                     "enum": [
                                         "Emit Record",
                                         "Skip Record",
-                                        "Wait for Discover",
-                                    ],
+                                        "Wait for Discover"
+                                    ]
                                 },
                                 "input_schema": {
                                     "title": "Input Schema",
@@ -133,16 +145,6 @@ single_csv_scenario = (
                                                     ],
                                                     "type": "string"
                                                 },
-                                                "inference_type": {
-                                                    "default": "None",
-                                                    "description": "How to infer the types of the columns.",
-                                                    "title": "Inference Type",
-                                                    "enum": [
-                                                        "None",
-                                                        "Primitive Types Only",
-                                                        "Primitive and Complex Types",
-                                                    ]
-                                                },
                                                 "delimiter": {
                                                     "title": "Delimiter",
                                                     "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
@@ -192,6 +194,12 @@ single_csv_scenario = (
                                                         "type": "string"
                                                     },
                                                     "uniqueItems": True
+                                                },
+                                                "strings_can_be_null": {
+                                                    "title": "Strings Can Be Null",
+                                                    "description": "Whether strings can be interpreted as null values. If true, strings that match the null_values set will be interpreted as null. If false, strings that match the null_values set will be interpreted as the string itself.",
+                                                    "default": True,
+                                                    "type": "boolean"
                                                 },
                                                 "skip_rows_before_header": {
                                                     "title": "Skip Rows Before Header",
@@ -245,6 +253,16 @@ single_csv_scenario = (
                                                     },
                                                     "uniqueItems": True
                                                 },
+                                                "inference_type": {
+                                                    "title": "Inference Type",
+                                                    "description": "How to infer the types of the columns.",
+                                                    "default": "None",
+                                                    "enum": [
+                                                        "None",
+                                                        "Primitive Types Only",
+                                                        "Primitive and Complex Types"
+                                                    ]
+                                                }
                                             }
                                         },
                                         {
@@ -295,18 +313,6 @@ single_csv_scenario = (
                                 "file_type"
                             ]
                         }
-                    },
-                    "start_date": {
-                        "title": "Start Date",
-                        "description": "UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified before this date will not be replicated.",
-                        "examples": [
-                            "2021-01-01T00:00:00.000000Z"
-                        ],
-                        "format": "date-time",
-                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$",
-                        "pattern_descriptor": "YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
-                        "order": 1,
-                        "type": "string"
                     }
                 },
                 "required": [

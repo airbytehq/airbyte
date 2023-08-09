@@ -28,7 +28,7 @@ PROPERTY_TYPES = {
     "col7": "array",
     "col8": "array",
     "col9": "array",
-    "col10": ["null", "string"],
+    "col10": "string",
 }
 
 logger = logging.getLogger()
@@ -84,6 +84,24 @@ logger = logging.getLogger()
 def test_cast_to_python_type(row: Dict[str, str], true_values: Set[str], false_values: Set[str], expected_output: Dict[str, Any]) -> None:
     csv_format = CsvFormat(true_values=true_values, false_values=false_values)
     assert CsvParser._cast_types(row, PROPERTY_TYPES, csv_format, logger) == expected_output
+
+
+@pytest.mark.parametrize(
+    "row, strings_can_be_null, expected_output", [
+        pytest.param({"id": "1", "name": "bob", "age": 10, "is_cool": False}, False, {"id": "1", "name": "bob", "age": 10, "is_cool": False}, id="test-no-values-are-null"),
+        pytest.param({"id": "1", "name": "bob", "age": "null", "is_cool": "null"}, False, {"id": "1", "name": "bob", "age": None, "is_cool": None}, id="test-non-string-values-are-none-if-in-null-values"),
+        pytest.param({"id": "1", "name": "null", "age": 10, "is_cool": False}, False, {"id": "1", "name": "null", "age": 10, "is_cool": False}, id="test-string-values-are-not-none-if-strings-cannot-be-null"),
+        pytest.param({"id": "1", "name": "null", "age": 10, "is_cool": False}, True, {"id": "1", "name": None, "age": 10, "is_cool": False}, id="test-string-values-none-if-strings-can-be-null"),
+    ]
+)
+def test_to_nullable(row, strings_can_be_null, expected_output):
+    property_types = {"id": "string",
+                      "name": "string",
+                      "age": "integer",
+                      "is_cool": "boolean"}
+    null_values = {"null"}
+    nulled_row = CsvParser._to_nullable(row, property_types, null_values, strings_can_be_null)
+    assert nulled_row == expected_output
 
 
 _DEFAULT_TRUE_VALUES = {"yes", "yeah", "right"}
