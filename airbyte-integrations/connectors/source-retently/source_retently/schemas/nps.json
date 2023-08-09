@@ -1,35 +1,37 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "score": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "scoreSum": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "metricsType": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "promoters": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "passives": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "detractors": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "promotersCount": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "passivesCount": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "detractorsCount": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "totalResponses": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     }
   }
 }

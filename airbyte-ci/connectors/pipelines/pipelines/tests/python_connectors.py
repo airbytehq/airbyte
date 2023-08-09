@@ -59,7 +59,7 @@ class ConnectorPackageInstall(Step):
     """A step to install the Python connector package in a container."""
 
     title = "Connector package install"
-    max_duration = timedelta(minutes=10)
+    max_duration = timedelta(minutes=20)
     max_retries = 3
 
     async def _run(self) -> StepResult:

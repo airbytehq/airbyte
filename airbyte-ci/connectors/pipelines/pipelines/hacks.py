@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, List
 
 import requests
 import yaml
@@ -15,8 +15,8 @@ from connector_ops.utils import ConnectorLanguage
 from dagger import DaggerError
 
 if TYPE_CHECKING:
+    from dagger import Client, Container, Directory
     from pipelines.contexts import ConnectorContext
-    from dagger import Client, Directory
 
 
 LINES_TO_REMOVE_FROM_GRADLE_FILE = [
@@ -57,7 +57,7 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
     for line in gradle_file_content.splitlines():
         if not any(line_to_remove in line for line_to_remove in LINES_TO_REMOVE_FROM_GRADLE_FILE):
             patched_gradle_file.append(line)
-    return connector_dir.with_new_file("build.gradle", "\n".join(patched_gradle_file))
+    return connector_dir.with_new_file("build.gradle", contents="\n".join(patched_gradle_file))
 
 
 def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Directory:
@@ -86,7 +86,7 @@ def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Di
     patched_cat_config["connector_image"] = context.connector.acceptance_test_config["connector_image"].replace(
         ":dev", f":{context.git_revision}"
     )
-    return connector_dir.with_new_file("acceptance-test-config.yml", yaml.safe_dump(patched_cat_config))
+    return connector_dir.with_new_file("acceptance-test-config.yml", contents=yaml.safe_dump(patched_cat_config))
 
 
 async def patch_connector_dir(context: ConnectorContext, connector_dir: Directory) -> Directory:
@@ -140,3 +140,28 @@ async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "
         .with_exec(["pip", "install", "--force-reinstall", f"airbyte-cdk=={cdk_latest_version}"])
         .sync()
     )
+
+
+def never_fail_exec(command: List[str]) -> Callable:
+    """
+    Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
+
+    Underlying issue:
+        When a classic dagger with_exec is returning a >0 exit code an ExecError is raised.
+        It's OK for the majority of our container interaction.
+        But some execution, like running CAT, are expected to often fail.
+        In CAT we don't want ExecError to be raised on container interaction because CAT might write updated secrets that we need to pull from the container after the test run.
+        The bash trick below is a hack to always return a 0 exit code but write the actual exit code to a file.
+        The file is then read by the pipeline to determine the exit code of the container.
+
+    Args:
+        command (List[str]): The command to run in the container.
+
+    Returns:
+        Callable: _description_
+    """
+
+    def never_fail_exec_inner(container: Container):
+        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"])
+
+    return never_fail_exec_inner
