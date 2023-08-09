@@ -1,97 +1,8 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import {concatenateRawTableName, setSql, defaultMessage} from './destinations_v2.js'
+import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator} from './destinations_v2.js'
 
 # Upgrading to Destinations V2
-
-export const SqlOutput = ({ destination }) => {
-  return (
-    <code>
-      <div id={ "sql_output_block_" + destination }>
-        { defaultMessage }
-      </div>
-    </code>
-  );
-};
-
-export const BigQueryMigrationGenerator = () => {
-  function updateSql(event) {
-    let namespace = document.getElementById("stream_namespace_bigquery").value;
-    let name = document.getElementById("stream_name_bigquery").value;
-    let v2RawTableName = '`' + concatenateRawTableName(namespace, name) + '`';
-    let v1RawTableName = '`' + namespace + '`.`_airbyte_raw_' + name + '`';
-    let sql =
-`CREATE OR REPLACE TABLE \`airbyte_internal\`.${v2RawTableName} (
-  _airbyte_raw_id STRING NOT NULL,
-  _airbyte_data JSON NOT NULL,
-  _airbyte_extracted_at TIMESTAMP NOT NULL,
-  _airbyte_loaded_at TIMESTAMP)
-PARTITION BY DATE(_airbyte_extracted_at)
-CLUSTER BY _airbyte_extracted_at
-AS (
-    SELECT
-        _airbyte_ab_id AS _airbyte_raw_id,
-        PARSE_JSON(_airbyte_data) AS _airbyte_data,
-        _airbyte_emitted_at AS _airbyte_extracted_at,
-        CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
-    FROM ${v1RawTableName}
-)`
-    setSql(namespace, name, "bigquery", sql)
-  }
-  return (
-    <div>
-      <label>Stream namespace </label>
-      <input type="text" id="stream_namespace_bigquery" name="stream_namespace" onChange={ updateSql }/><br/>
-      <label>Stream name </label>
-      <input type="text" id="stream_name_bigquery" name="stream_name" onChange={ updateSql }/><br/>
-      <SqlOutput destination="bigquery"/>
-    </div>
-  )
-}
-
-export const SnowflakeMigrationGenerator = () => {
-  function updateSql(event) {
-    let namespace = document.getElementById("stream_namespace_snowflake").value;
-    let name = document.getElementById("stream_name_snowflake").value;
-    let v2RawTableName = '"' + concatenateRawTableName(namespace, name) + '"';
-    let v1RawTableName = namespace + '._airbyte_raw_' + name;
-    let sql =
-`CREATE OR REPLACE TABLE "airbyte_internal".${v2RawTableName} (
-  "_airbyte_raw_id" STRING NOT NULL,
-  "_airbyte_data" JSON NOT NULL,
-  "_airbyte_extracted_at" TIMESTAMP NOT NULL,
-  "_airbyte_loaded_at" TIMESTAMP)
-PARTITION BY DATE("_airbyte_extracted_at")
-CLUSTER BY "_airbyte_extracted_at"
-AS (
-    SELECT
-        _airbyte_ab_id AS "_airbyte_raw_id",
-        PARSE_JSON(_airbyte_data) AS "_airbyte_data",
-        _airbyte_emitted_at AS "_airbyte_extracted_at",
-        CAST(NULL AS TIMESTAMP) AS "_airbyte_loaded_at"
-    FROM ${v1RawTableName}
-)`
-    setSql(namespace, name, "snowflake", sql)
-  }
-  return (
-    <div>
-      <label>Stream namespace </label>
-      <input type="text" id="stream_namespace_snowflake" name="stream_namespace" onChange={ updateSql }/><br/>
-      <label>Stream name </label>
-      <input type="text" id="stream_name_snowflake" name="stream_name" onChange={ updateSql }/><br/>
-      <SqlOutput destination="snowflake"/>
-    </div>
-  )
-}
-
-<Tabs>
-  <TabItem value="bigquery" label="BigQuery" default>
-    <BigQueryMigrationGenerator />
-  </TabItem>
-  <TabItem value="snowflake" label="Snowflake">
-    <SnowflakeMigrationGenerator />
-  </TabItem>
-</Tabs>
 
 ## What is Destinations V2?
 
@@ -142,12 +53,20 @@ Pre-existing raw tables, SCD tables and "unnested" tables will always be left un
 Each destination version is managed separately, so if you have multiple destinations, they all need to be upgraded one by one.
 
 Versions are tied to the destination. When you update the destination, **all connections tied to that destination will be sending data in the Destinations V2 format**. For upgrade paths that will minimize disruption to existing dashboards, see:
-* [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing)
-* [Testing Destinations V2 on a Single Connection](#testing-destinations-v2-for-a-single-connection)
-* [Upgrading Connections One by One Using CDC](#upgrade-paths-for-connections-using-cdc)
-* [Upgrading as a User of Raw Tables](#upgrading-as-a-user-of-raw-tables)
-* [Rolling back to Legacy Normalization](#oss-only-rolling-back-to-legacy-normalization)
- 
+* [Upgrading to Destinations V2](#upgrading-to-destinations-v2)
+  * [What is Destinations V2?](#what-is-destinations-v2)
+  * [Deprecating Legacy Normalization](#deprecating-legacy-normalization)
+    * [Breakdown of Breaking Changes](#breakdown-of-breaking-changes)
+  * [Quick Start to Upgrading](#quick-start-to-upgrading)
+  * [Advanced Upgrade Paths](#advanced-upgrade-paths)
+    * [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing)
+      * [Steps to Follow for All Sync Modes](#steps-to-follow-for-all-sync-modes)
+      * [Additional Steps for Incremental Sync Modes](#additional-steps-for-incremental-sync-modes)
+    * [Testing Destinations V2 for a Single Connection](#testing-destinations-v2-for-a-single-connection)
+    * [Upgrading as a User of Raw Tables](#upgrading-as-a-user-of-raw-tables)
+    * [Upgrade Paths for Connections using CDC](#upgrade-paths-for-connections-using-cdc)
+  * [Destinations V2 Compatible Versions](#destinations-v2-compatible-versions)
+
 ## Advanced Upgrade Paths
 
 ### Upgrading Connections One by One with Dual-Writing
@@ -173,40 +92,14 @@ These steps allow you to dual-write for connections incrementally syncing data w
 
 1. Copy the raw data you've already replicated to the new schema being used by your newly created connection. You need to do this for every stream in the connection with an incremental sync mode. Sample SQL you can run in your data warehouse:
 
-```mysql
-BEGIN
-DECLARE gcp_project STRING;
-DECLARE target_dataset STRING;
-DECLARE target_table STRING;
-DECLARE source_dataset STRING;
-DECLARE source_table STRING;
-DECLARE old_table STRING;
-DECLARE new_table STRING;
-
-SET gcp_project = '';
-SET target_dataset = 'airbyte_internal';
-SET target_table = '';
-SET source_dataset = '';
-SET source_table = '';
-SET old_table = CONCAT(gcp_project, '.', source_dataset, '.', source_table);
-SET new_table = CONCAT(gcp_project, '.', target_dataset, '.', target_table);
-
-EXECUTE IMMEDIATE FORMAT('''
-CREATE OR REPLACE TABLE `%s` (_airbyte_raw_id STRING, _airbyte_data JSON, _airbyte_extracted_at TIMESTAMP, _airbyte_loaded_at TIMESTAMP)
-PARTITION BY DATE(_airbyte_extracted_at)
-CLUSTER BY _airbyte_extracted_at
-AS (
-    SELECT
-        _airbyte_ab_id AS _airbyte_raw_id,
-        PARSE_JSON(_airbyte_data) AS _airbyte_data,
-        _airbyte_emitted_at AS _airbyte_extracted_at,
-        CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
-    FROM `%s`
-)
-''', new_table, old_table);
-
-END;
-```
+<Tabs>
+  <TabItem value="bigquery" label="BigQuery" default>
+    <BigQueryMigrationGenerator />
+  </TabItem>
+  <TabItem value="snowflake" label="Snowflake">
+    <SnowflakeMigrationGenerator />
+  </TabItem>
+</Tabs>
 
 2. Navigate to the existing connection you are duplicating, and navigate to the `Settings` tab. Open the `Advanced` settings to see the connection state (which manages incremental syncs). Copy the state to your clipboard.
 
