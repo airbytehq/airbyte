@@ -165,7 +165,8 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         isPurgeStagingData(config),
         new TypeAndDedupeOperationValve(),
         typerDeduper,
-        parsedCatalog);
+        parsedCatalog,
+        null);
   }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
