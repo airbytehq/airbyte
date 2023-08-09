@@ -111,7 +111,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
-|:------- |:---------- |:-------------------------------------------------------- |:------------------------------------------------------------------------------------------ |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
 | 1.7.0   | 2023-08-08 | [27869](https://github.com/airbytehq/airbyte/pull/29203) | Add Deployments stream                                                                     |
 | 1.6.0   | 2023-06-30 | [27869](https://github.com/airbytehq/airbyte/pull/27869) | Add `shared_runners_setting` field to groups                                               |
 | 1.5.1   | 2023-06-24 | [27679](https://github.com/airbytehq/airbyte/pull/27679) | Fix formatting                                                                             |
