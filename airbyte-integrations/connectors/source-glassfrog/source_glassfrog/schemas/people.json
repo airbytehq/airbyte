@@ -27,6 +27,9 @@
       "type": ["null", "integer"],
       "default": null
     },
+    "settings": {
+      "type": ["null", "object"]
+    },
     "links": {
       "type": "object",
       "default": {},
