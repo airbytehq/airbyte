@@ -133,17 +133,15 @@ single_csv_scenario = (
                                                     ],
                                                     "type": "string"
                                                 },
-                                                "infer_datatypes": {
-                                                    "default": False,
-                                                    "description": "Whether to autogenerate the schema based the file content.",
-                                                    "title": "Infer Datatypes",
-                                                    "type": "boolean"
-                                                },
-                                                "infer_datatypes_legacy": {
-                                                    "default": False,
-                                                    "description": "Whether to autogenerate the schema based the file content. This inference does not support list and objects.",
-                                                    "title": "Infer Datatypes (legacy)",
-                                                    "type": "boolean"
+                                                "inference_type": {
+                                                    "default": "None",
+                                                    "description": "How to infer the types of the columns.",
+                                                    "title": "Inference Type",
+                                                    "enum": [
+                                                        "None",
+                                                        "Primitive Types Only",
+                                                        "Primitive and Complex Types",
+                                                    ]
                                                 },
                                                 "delimiter": {
                                                     "title": "Delimiter",

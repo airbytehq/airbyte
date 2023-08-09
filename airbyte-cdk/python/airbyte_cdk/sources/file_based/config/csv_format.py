@@ -88,9 +88,9 @@ class CsvFormat(BaseModel):
         description="A set of case-sensitive strings that should be interpreted as false values.",
     )
     inference_type: InferenceType = Field(
-        title="Infer Datatypes",
+        title="Inference Type",
         default=InferenceType.NONE,
-        description="Whether to autogenerate the schema based the file content.",
+        description="How to infer the types of the columns.",
     )
 
     @validator("delimiter")
