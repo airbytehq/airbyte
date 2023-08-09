@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from pipelines.contexts import ConnectorContext, PipelineContext
 
 
-def with_python_base(context: PipelineContext, python_version: str = "3.10") -> Container:
+def with_python_base(context: PipelineContext, python_version: str = "3.11") -> Container:
     """Build a Python container with a cache volume for pip cache.
 
     Args:
