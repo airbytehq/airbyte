@@ -1,68 +1,35 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "deals"
-      }
-    }
+{
+  "deals": {
+    "update_time": "2017-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "activities"
-      }
-    }
+  "files": {
+    "update_time": "2017-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "persons"
-      }
-    }
+  "filters": {
+    "update_time": "2017-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "pipelines"
-      }
-    }
+  "notes": {
+    "update_time": "2017-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "stages"
-      }
-    }
+  "activites": {
+    "update_time": "2017-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "modified": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "users"
-      }
-    }
+  "oragnizations": {
+    "update_time": "2017-06-01 10:10:10"
+  },
+  "persons": {
+    "update_time": "2017-06-01 10:10:10"
+  },
+  "pipelines": {
+    "update_time": "2017-06-01 10:10:10"
+  },
+  "products": {
+    "update_time": "2017-06-01 10:10:10"
+  },
+  "stages": {
+    "update_time": "2017-06-01 10:10:10"
+  },
+  "users": {
+    "update_time": "2017-06-01 10:10:10"
   }
-]
+}

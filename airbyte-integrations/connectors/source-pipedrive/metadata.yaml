@@ -1,27 +1,25 @@
 data:
   allowedHosts:
     hosts:
-      - api.pipedrive.com
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 1.0.0
+  definitionId: 85a52442-90ac-45ec-978d-cd41f96b7b19
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-pipedrive
   githubIssueLabel: source-pipedrive
   icon: pipedrive.svg
   license: MIT
   name: Pipedrive
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
-  releaseStage: beta
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   tags:
-    - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
+    - language:lowcode
 metadataSpecVersion: "1.0"

@@ -1,134 +1,32 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "deals"
-      }
-    }
+{
+  "deals": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "files"
-      }
-    }
+  "files": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "filters"
-      }
-    }
+  "filters": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "notes"
-      }
-    }
+  "notes": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "activities"
-      }
-    }
+  "activites": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "activity_types"
-      }
-    }
+  "persons": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "persons"
-      }
-    }
+  "pipelines": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "pipelines"
-      }
-    }
+  "products": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "products"
-      }
-    }
+  "stages": {
+    "update_time": "2200-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "stages"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "modified": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "users"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
-      },
-      "stream_descriptor": {
-        "name": "organizations"
-      }
-    }
+  "users": {
+    "modified": "2200-06-01 10:10:10"
   }
-]
+}
