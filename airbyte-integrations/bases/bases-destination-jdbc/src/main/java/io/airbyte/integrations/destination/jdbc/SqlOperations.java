@@ -12,9 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * todo (cgardens) - is it necessary to expose so much configurability in this interface. review if
- * we can narrow the surface area.
- *
  * SQL queries required for successfully syncing to a destination connector. These operations
  * include the ability to:
  * <ul>
