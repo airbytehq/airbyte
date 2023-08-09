@@ -48,5 +48,6 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-06-16 | [13868g](https://github.com/airbytehq/airbyte/pull/13868) | Add Native Glassfrog Source Connector |
+| 1.0.0 | 2023-08-10 | [29306](https://github.com/airbytehq/airbyte/pull/29306) | Migrated to LowCode CDK |
+| 0.1.0 | 2022-06-16 | [13868](https://github.com/airbytehq/airbyte/pull/13868) | Add Native Glassfrog Source Connector |
 
