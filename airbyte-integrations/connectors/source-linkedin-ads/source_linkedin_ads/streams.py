@@ -172,7 +172,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """Define the checkpoint from the records output size."""
-        return super().records_limit
+        return 100
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
