@@ -14,10 +14,10 @@ For **Airbyte Open Source** users, we recommend using an API token to authentica
 2. You can use OAuth or an API token to authenticate your Zendesk account. We recommend using OAuth for Airbyte Cloud and an API token for Airbyte Open Source.
 
    <!-- env:cloud -->
-   - To authenticate using OAuth for Airbyte Cloud, select **OAuth2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk and authorize your account.
+   - **For Airbyte Cloud:** To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk and authorize your account.
    <!-- /env:cloud -->
    <!-- env:oss -->
-   - To authenticate using an API key for Airbyte Open Source, select **API Token** from the Authentication dropdown and enter the [API token you generated](https://docs.airbyte.com/integrations/sources/zendesk-support#enable-api-token-access-and-generate-a-token), as well as the email address associated with your Zendesk account.
+   - **For Airbyte Open Source**: To authenticate using an API token, select **API Token** from the Authentication dropdown and enter the [token you generated](https://docs.airbyte.com/integrations/sources/zendesk-support#enable-api-token-access-and-generate-a-token), as well as the email address associated with your Zendesk account.
    <!-- /env:oss -->
 
 3. For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
