@@ -5,7 +5,7 @@
 
 import pytest
 import requests
-from source_shopify.source import BalanceTransactions, DiscountCodes, PriceRules, FulfillmentOrders, ShopifyStream, SourceShopify
+from source_shopify.source import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules, ShopifyStream, SourceShopify
 
 
 def test_get_next_page_token(requests_mock):
