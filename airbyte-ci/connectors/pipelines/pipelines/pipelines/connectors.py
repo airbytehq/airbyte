@@ -11,7 +11,7 @@ import anyio
 import dagger
 from connector_ops.utils import ConnectorLanguage
 from dagger import Config
-from pipelines.actions import environments
+from pipelines import hacks
 from pipelines.bases import NoOpStep, Report, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext, ContextState
 from pipelines.utils import create_and_open_file
@@ -83,25 +83,19 @@ async def run_connectors_pipelines(
     default_connectors_semaphore = anyio.Semaphore(concurrency)
     dagger_logs_output = sys.stderr if not dagger_logs_path else create_and_open_file(dagger_logs_path)
     async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:
-        # HACK: This is to get a long running dockerd service to be shared across all the connectors pipelines
-        # Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state
-        # See https://github.com/airbytehq/airbyte/issues/27233
-        dockerd_service = environments.with_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg_main:
-            tg_main.start_soon(dockerd_service.sync)
-            await anyio.sleep(10)  # Wait for the docker service to be ready
+            global_dockerd_service = await hacks.start_global_dockerd_service(dagger_client, tg_main)
             async with anyio.create_task_group() as tg_connectors:
                 for context in contexts:
                     context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")
-                    context.dockerd_service = dockerd_service
+                    context.dockerd_service = global_dockerd_service
                     tg_connectors.start_soon(
                         connector_pipeline,
                         context,
                         CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING.get(context.connector.language, default_connectors_semaphore),
                         *args,
                     )
-            # When the connectors pipelines are done, we can stop the dockerd service
-            tg_main.cancel_scope.cancel()
+            hacks.stop_global_dockerd_service(tg_main)
         await run_report_complete_pipeline(dagger_client, contexts)
 
     return contexts

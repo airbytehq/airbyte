@@ -9,10 +9,13 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Callable, List
 
+import anyio
 import requests
 import yaml
 from connector_ops.utils import ConnectorLanguage
 from dagger import DaggerError
+from pipelines import main_logger
+from pipelines.actions import environments
 
 if TYPE_CHECKING:
     from dagger import Client, Container, Directory
@@ -165,3 +168,26 @@ def never_fail_exec(command: List[str]) -> Callable:
         return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"])
 
     return never_fail_exec_inner
+
+
+async def start_global_dockerd_service(dagger_client: Client, task_group: anyio.TaskGroup) -> Container:
+    """
+    This is to get a long running dockerd service to be shared across all the connectors pipelines.
+    Underlying issue:
+        Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state
+    GitHub Issue:
+        https://github.com/airbytehq/airbyte/issues/27233
+    """
+    dockerd_service = environments.with_dockerd_service(dagger_client)
+    main_logger.warn("Hack: starting the global dockerd service")
+    task_group.start_soon(dockerd_service.sync)
+    # Wait for the docker service to be ready
+    await anyio.sleep(10)
+    return dockerd_service
+
+
+def stop_global_dockerd_service(task_group: anyio) -> None:
+    """
+    When the connectors pipelines are done, we can stop the dockerd service by cancelling the task group in which its running.
+    """
+    task_group.cancel_scope.cancel()
