@@ -73,7 +73,7 @@ The BigQuery destination connector supports the following [sync modes](https://d
 
 - Full Refresh Sync
 - Incremental - Append Sync
-- Incremental - Deduped History
+- Incremental - Append + Deduped
 
 ## Output schema
 

@@ -120,7 +120,6 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
     return SnowflakeTestUtils.dumpFinalTable(
         database,
-        streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
         databaseName,
         namespace,
         streamId.finalName() + suffix);

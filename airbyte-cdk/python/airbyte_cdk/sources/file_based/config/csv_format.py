@@ -22,6 +22,9 @@ DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
 
 class CsvFormat(BaseModel):
+    class Config:
+        title = "CSV Format"
+
     filetype: Literal["csv"] = "csv"
     delimiter: str = Field(
         title="Delimiter",
@@ -95,7 +98,7 @@ class CsvFormat(BaseModel):
 
     @validator("escape_char")
     def validate_escape_char(cls, v: str) -> str:
-        if len(v) != 1:
+        if v is not None and len(v) != 1:
             raise ValueError("escape_char should only be one character")
         return v
 
