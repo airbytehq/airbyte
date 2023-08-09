@@ -11,6 +11,7 @@ from urllib.parse import unquote
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -18,6 +19,9 @@ from pyarrow import Scalar
 
 
 class ParquetParser(FileTypeParser):
+
+    ENCODING = None
+
     async def infer_schema(
         self,
         config: FileBasedStreamConfig,
@@ -29,7 +33,7 @@ class ParquetParser(FileTypeParser):
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
 
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             parquet_file = pq.ParquetFile(fp)
             parquet_schema = parquet_file.schema_arrow
 
@@ -50,8 +54,9 @@ class ParquetParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
         parquet_format = config.format or ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
-            raise ValueError(f"Expected ParquetFormat, got {parquet_format}")  # FIXME test this branch!
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+            logger.info(f"Expected ParquetFormat, got {parquet_format}")
+            raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR)
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             reader = pq.ParquetFile(fp)
             partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
             for row_group in range(reader.num_row_groups):

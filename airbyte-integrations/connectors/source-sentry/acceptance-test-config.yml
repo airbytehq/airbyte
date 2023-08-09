@@ -5,14 +5,6 @@ acceptance_tests:
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
-        empty_streams:
-          - name: "events"
-            bypass_reason: "Data reset after some time"
-          - name: "issues"
-            bypass_reason: "Data reset after some time"
         ignored_fields:
           project_detail:
             - name: access
