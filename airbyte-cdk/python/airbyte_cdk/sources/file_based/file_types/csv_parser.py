@@ -55,7 +55,6 @@ class _CsvReader:
         with stream_reader.open_file(file, file_read_mode, logger) as fp:
             headers = self._get_headers(fp, config_format, dialect_name)
 
-            fp.seek(0)
             # we assume that if we autogenerate columns, it is because we don't have headers
             # if a user wants to autogenerate_column_names with a CSV having headers, he can skip rows
             rows_to_skip = (
@@ -78,24 +77,28 @@ class _CsvReader:
                 csv.unregister_dialect(dialect_name)
 
     def _get_headers(self, fp: IOBase, config_format: CsvFormat, dialect_name: str) -> List[str]:
+        """
+        Assumes the fp is pointing to the beginning of the files and will reset it as such
+        """
         # Note that this method assumes the dialect has already been registered if we're parsing the headers
         self._skip_rows(fp, config_format.skip_rows_before_header)
         if config_format.autogenerate_column_names:
-            return self._auto_generate_headers(fp, config_format, dialect_name)
+            headers = self._auto_generate_headers(fp, dialect_name)
         else:
             # Then read the header
             reader = csv.reader(fp, dialect=dialect_name)  # type: ignore
-            return list(next(reader))
+            headers = list(next(reader))
 
-    def _auto_generate_headers(self, fp: IOBase, config_format: CsvFormat, dialect_name: str) -> List[str]:
+        fp.seek(0)
+        return headers
+
+    def _auto_generate_headers(self, fp: IOBase, dialect_name: str) -> List[str]:
         """
         Generates field names as [f0, f1, ...] in the same way as pyarrow's csv reader with autogenerate_column_names=True.
         See https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
         """
         reader = csv.reader(fp, dialect=dialect_name)  # type: ignore
         number_of_columns = len(next(reader))  # type: ignore
-        # Reset the file pointer to the beginning of the file so that the first row is not skipped
-        fp.seek(0)
         return [f"f{i}" for i in range(number_of_columns)]
 
     @staticmethod
@@ -198,7 +201,7 @@ class CsvParser(FileTypeParser):
 
         Array and object types are only handled if they can be deserialized as JSON.
 
-        If any errors are encountered, the value will be emitted as a string._to_nullable
+        If any errors are encountered, the value will be emitted as a string.
         """
         warnings = []
         result = {}
