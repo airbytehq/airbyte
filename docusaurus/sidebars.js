@@ -29,6 +29,22 @@ function getDestinationConnectors() {
   ]);
 }
 
+const sourcePostgres = {
+   type: 'category',
+   label: 'Postgres',
+   link: {
+       type: 'doc',
+       id: 'integrations/sources/postgres',
+   },
+   items: [
+      {
+        type: "doc",
+        label: "Troubleshooting",
+        id: "integrations/sources/postgres/postgres-troubleshooting",
+      }
+   ],
+};
+
 const sectionHeader = (title) => ({
   type: "html",
   value: title,
@@ -196,7 +212,7 @@ const connectorCatalog = {
       link: {
         type: "generated-index",
       },
-      items: getSourceConnectors(),
+      items: [sourcePostgres, getSourceConnectors()],
     },
     {
       type: "category",
