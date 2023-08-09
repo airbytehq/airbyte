@@ -182,11 +182,11 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, final ArrayList<String> test_schemas) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
     String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     database.execute(dropSchemaQuery);
 
-    for (String schema : test_schemas) {
+    for (String schema : TEST_SCHEMAS) {
       dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", schema);
       database.execute(dropSchemaQuery);
     }
