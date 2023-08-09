@@ -149,7 +149,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
    * airbyte [emittedAt(converted to nano seconds)] + [sync wide record counter]
    */
   private static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
-    stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    }
     return stream;
   }
 
@@ -350,7 +352,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
           new MySqlCdcStateHandler(stateManager),
-          new MySqlCdcConnectorMetadataInjector(emittedAt),
+          mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getDebeziumProperties(database),
           emittedAt,
           false);
