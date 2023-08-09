@@ -443,12 +443,12 @@ async def with_connector_ops(context: PipelineContext) -> Container:
     return await with_installed_pipx_package(context, python_base_environment, CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH)
 
 
-def with_dockerd_service(dagger_client: Client) -> Container:
+def with_dockerd_service(dagger_client: Client, name: str) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     Args:
         dagger_client (Client): The dagger client used to create the container.
-        exposed_port (int): The port to expose the docker daemon on.
+        name (str): The name of the dockerd service.
     Returns:
         Container: The container running dockerd as a service
     """
@@ -459,6 +459,7 @@ def with_dockerd_service(dagger_client: Client) -> Container:
             "/tmp",
             dagger_client.cache_volume("shared-tmp"),
         )
+        .with_env_variable("DOCKERD_SERVICE_NAME", name)
         .with_exposed_port(2375)
         .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
@@ -498,7 +499,7 @@ def with_bound_custom_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = with_dockerd_service(context.dagger_client)
+    dockerd = with_dockerd_service(context.dagger_client, custom_docker_host_name)
     return (
         container.with_env_variable("DOCKER_HOST", f"tcp://{custom_docker_host_name}:2375")
         .with_service_binding(custom_docker_host_name, dockerd)
@@ -506,14 +507,27 @@ def with_bound_custom_docker_host(
     )
 
 
-def bound_docker_host(context: ConnectorContext) -> Container:
+def bound_docker_host(context: ConnectorContext, custom_docker_host_name: Optional[str] = None) -> Callable:
+    """Bind a container to a docker host. It will use the dockerd service as a docker host.
+    If a custom docker host name is provided, a a custom docker host will be used, not the global one.
+
+    Args:
+        context (ConnectorContext): The current connector context.
+        custom_docker_host_name (Optional[str], optional): A custom host name that will lead to creation of a new dockerd service. Defaults to None.
+
+    Returns:
+        Container: _description_
+    """
+
     def bound_docker_host_inner(container: Container) -> Container:
+        if custom_docker_host_name:
+            return with_bound_custom_docker_host(context, container, custom_docker_host_name)
         return with_bound_global_docker_host(context, container)
 
     return bound_docker_host_inner
 
 
-def with_docker_cli(context: ConnectorContext) -> Container:
+def with_docker_cli(context: PipelineContext, custom_bound_to_docker_host: Callable) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
@@ -522,78 +536,10 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     Returns:
         Container: A docker cli container bound to a docker host.
     """
-    docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
-    return with_bound_global_docker_host(context, docker_cli)
+    return context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE).with_(custom_bound_to_docker_host)
 
 
-def with_gradle(
-    context: ConnectorContext,
-    sources_to_include: List[str] = None,
-    bind_to_docker_host: bool = True,
-) -> Container:
-    """Create a container with Gradle installed and bound to a persistent docker host.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-        sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
-        bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
-
-    Returns:
-        Container: A container with Gradle installed and Java sources from the repository.
-    """
-
-    include = [
-        ".root",
-        ".env",
-        "build.gradle",
-        "deps.toml",
-        "gradle.properties",
-        "gradle",
-        "gradlew",
-        "LICENSE_SHORT",
-        "publish-repositories.gradle",
-        "settings.gradle",
-        "build.gradle",
-        "tools/gradle",
-        "spotbugs-exclude-filter-file.xml",
-        "buildSrc",
-        "tools/bin/build_image.sh",
-        "tools/lib/lib.sh",
-        "tools/gradle/codestyle",
-        "pyproject.toml",
-    ]
-
-    if sources_to_include:
-        include += sources_to_include
-    # TODO re-enable once we have fixed the over caching issue
-    # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
-    # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
-
-    openjdk_with_docker = (
-        context.dagger_client.container()
-        .from_("openjdk:17.0.1-jdk-slim")
-        .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
-        .with_env_variable("VERSION", consts.DOCKER_VERSION)
-        .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-        .with_env_variable("GRADLE_HOME", "/root/.gradle")
-        .with_exec(["mkdir", "/airbyte"])
-        .with_workdir("/airbyte")
-        .with_mounted_directory("/airbyte", context.get_repo_dir(include=include))
-        .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
-        # TODO (ben) reenable once we have fixed the over caching issue
-        # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
-        # .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
-        .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
-    )
-
-    if bind_to_docker_host:
-        return with_bound_custom_docker_host(context, openjdk_with_docker, "gradle-docker-host")
-    else:
-        return openjdk_with_docker
-
-
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
+async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str, custom_bound_to_docker_host: Callable):
     """Load a docker image tar archive to the docker host.
 
     Args:
@@ -603,7 +549,7 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
+    docker_cli = with_docker_cli(context, custom_bound_to_docker_host).with_mounted_file(tar_name, tar_file)
 
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
     # Not tagged images only have a sha256 id the load output shares.

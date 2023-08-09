@@ -240,7 +240,7 @@ class AcceptanceTests(PytestStep):
         cat_config = yaml.safe_load(await test_input.file("acceptance-test-config.yml").contents())
 
         image_sha = await environments.load_image_to_docker_host(
-            self.context, connector_under_test_image_tar, cat_config["connector_image"]
+            self.context, connector_under_test_image_tar, cat_config["connector_image"], environments.bound_docker_host(self.context)
         )
 
         if self.context.connector_acceptance_test_image.endswith(":dev"):
@@ -249,7 +249,7 @@ class AcceptanceTests(PytestStep):
             cat_container = self.dagger_client.container().from_(self.context.connector_acceptance_test_image)
 
         return (
-            environments.with_bound_global_docker_host(self.context, cat_container)
+            cat_container.with_(environments.bound_docker_host(self.context))
             .with_entrypoint([])
             .with_mounted_directory(self.CONTAINER_TEST_INPUT_DIRECTORY, test_input)
             .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)

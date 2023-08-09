@@ -5,12 +5,13 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import ClassVar, List, Tuple
+from typing import Callable, ClassVar, List, Optional, Tuple
 
 from dagger import CacheVolume, Container, Directory, QueryError
 from pipelines import consts
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
+from pipelines.utils import slugify
 
 
 class GradleTask(Step, ABC):
@@ -25,6 +26,27 @@ class GradleTask(Step, ABC):
     DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
+
+    DEFAULT_SOURCES_TO_INCLUDE = [
+        ".root",
+        ".env",
+        "build.gradle",
+        "deps.toml",
+        "gradle.properties",
+        "gradle",
+        "gradlew",
+        "LICENSE_SHORT",
+        "publish-repositories.gradle",
+        "settings.gradle",
+        "build.gradle",
+        "tools/gradle",
+        "spotbugs-exclude-filter-file.xml",
+        "buildSrc",
+        "tools/bin/build_image.sh",
+        "tools/lib/lib.sh",
+        "tools/gradle/codestyle",
+        "pyproject.toml",
+    ]
 
     @property
     def connector_java_build_cache(self) -> CacheVolume:
@@ -72,11 +94,8 @@ class GradleTask(Step, ABC):
 
     async def _run(self) -> StepResult:
         connector_under_test = (
-            environments.with_gradle(self.context, self.build_include, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
-            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
+            self.gradle_container.with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_mounted_directory("buildSrc", await self._get_patched_build_src_dir())
-            # Disable the Ryuk container because it needs privileged docker access that does not work:
-            .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             .with_(environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets"))
             .with_exec(self._get_gradle_command())
         )
@@ -117,3 +136,50 @@ class GradleTask(Step, ABC):
             )
             return await with_cache
         return gradle_container
+
+    @property
+    def custom_bound_docker_host(self) -> Optional[Callable]:
+        if self.BIND_TO_DOCKER_HOST:
+            docker_host_name = slugify(f"{self.context.connector.name}-gradle-docker-host")
+            return environments.bound_docker_host(self.context, docker_host_name)
+
+    @property
+    def gradle_container(
+        self,
+    ) -> Container:
+        """Create a container with Gradle installed and optionally bound to a docker host.
+
+        Returns:
+            Container: A container with Gradle installed and Java sources from the repository.
+        """
+
+        include = self.DEFAULT_SOURCES_TO_INCLUDE + self.build_include
+
+        # TODO re-enable once we have fixed the over caching issue
+        # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
+        # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
+
+        openjdk_with_docker = (
+            self.context.dagger_client.container()
+            .from_("openjdk:17.0.1-jdk-slim")
+            .with_exec(["apt-get", "update"])
+            .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
+            .with_env_variable("VERSION", consts.DOCKER_VERSION)
+            .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
+            .with_env_variable("GRADLE_HOME", "/root/.gradle")
+            .with_exec(["mkdir", "/airbyte"])
+            .with_workdir("/airbyte")
+            .with_mounted_directory("/airbyte", self.context.get_repo_dir(include=include))
+            .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
+            # TODO (ben) reenable once we have fixed the over caching issue
+            # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
+            # .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
+            .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
+            # Disable the Ryuk container because it needs privileged docker access that does not work:
+            .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
+        )
+
+        if self.custom_bound_docker_host:
+            return openjdk_with_docker.with_(self.custom_bound_docker_host)
+        else:
+            return openjdk_with_docker

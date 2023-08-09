@@ -178,7 +178,7 @@ async def start_global_dockerd_service(dagger_client: Client, task_group: anyio.
     GitHub Issue:
         https://github.com/airbytehq/airbyte/issues/27233
     """
-    dockerd_service = environments.with_dockerd_service(dagger_client)
+    dockerd_service = environments.with_dockerd_service(dagger_client, "global-docker-host")
     main_logger.warn("Hack: starting the global dockerd service")
     task_group.start_soon(dockerd_service.sync)
     # Wait for the docker service to be ready

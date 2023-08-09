@@ -17,10 +17,7 @@ class BuildConnectorDistributionTar(GradleTask):
 
     async def _prepare_container_for_build(self) -> Container:
         return (
-            environments.with_gradle(
-                self.context,
-                self.build_include,
-            )
+            self.gradle_container
             # We exclude the Dockerfile to avoid running airbyteDocker task
             .with_mounted_directory(
                 str(self.context.connector.code_directory), await self.context.get_connector_dir(exclude=["Dockerfile"])
