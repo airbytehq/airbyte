@@ -98,6 +98,7 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     parquet_file_with_decimal_as_string_scenario,
     parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
+    parquet_with_invalid_config_scenario,
     single_parquet_scenario,
     single_partitioned_parquet_scenario,
 )
@@ -194,7 +195,8 @@ discover_scenarios = [
     avro_file_with_double_as_number_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_autogenerate_column_names_scenario,
-    single_partitioned_parquet_scenario
+    parquet_with_invalid_config_scenario,
+    single_partitioned_parquet_scenario,
 ]
 
 

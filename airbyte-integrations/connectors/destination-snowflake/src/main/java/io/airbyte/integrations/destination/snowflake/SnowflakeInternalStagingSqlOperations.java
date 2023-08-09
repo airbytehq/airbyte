@@ -7,16 +7,14 @@ package io.airbyte.integrations.destination.snowflake;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -30,24 +28,52 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
   private static final String PUT_FILE_QUERY = "PUT file://%s @%s/%s PARALLEL = %d;";
   private static final String LIST_STAGE_QUERY = "LIST @%s/%s/%s;";
-  private static final String COPY_QUERY = "COPY INTO %s.%s FROM '@%s/%s' "
-      + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF=('') )";
+  // the 1s1t copy query explicitly quotes the raw table+schema name.
+  private static final String COPY_QUERY_1S1T =
+      """
+      COPY INTO "%s"."%s" FROM '@%s/%s'
+      file_format = (
+        type = csv
+        compression = auto
+        field_delimiter = ','
+        skip_header = 0
+        FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+        NULL_IF=('')
+      )""";
+  private static final String COPY_QUERY = """
+      COPY INTO %s.%s FROM '@%s/%s'
+      file_format = (
+        type = csv
+        compression = auto
+        field_delimiter = ','
+        skip_header = 0
+        FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+        NULL_IF=('')
+      )""";
   private static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
   private static final String REMOVE_QUERY = "REMOVE @%s;";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
   private final NamingConventionTransformer nameTransformer;
+  private final boolean use1s1t;
 
   public SnowflakeInternalStagingSqlOperations(final NamingConventionTransformer nameTransformer) {
     this.nameTransformer = nameTransformer;
+    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
   }
 
   @Override
   public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join(".",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
+    if (use1s1t) {
+      return String.join(".",
+          '"' + nameTransformer.convertStreamName(namespace) + '"',
+          '"' + nameTransformer.convertStreamName(streamName) + '"');
+    } else {
+      return nameTransformer.applyDefaultCase(String.join(".",
+          nameTransformer.convertStreamName(namespace),
+          nameTransformer.convertStreamName(streamName)));
+    }
   }
 
   @Override
@@ -187,7 +213,11 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
                                 final List<String> stagedFiles,
                                 final String dstTableName,
                                 final String schemaName) {
-    return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
+    if (use1s1t) {
+      return String.format(COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
+    } else {
+      return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
+    }
   }
 
   @Override
