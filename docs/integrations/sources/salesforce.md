@@ -90,7 +90,6 @@ The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](htt
 :::tip
 
 Airbyte recommends to use at least [Enterpise edition](https://help.salesforce.com/s/articleView?id=sf.users_add_products_subscription_management.htm&type=5) for daily base syncs.
-You may also turn on feature `Force to use BULK API` for faster syncs.
 
 :::
 
