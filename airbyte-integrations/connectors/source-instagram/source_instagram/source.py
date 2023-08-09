@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, DestinationSyncMode, OAuthConfigSpecification
 from airbyte_cdk.sources import AbstractSource
@@ -32,6 +32,18 @@ class ConnectorConfig(BaseModel):
             "information"
         ),
         airbyte_secret=True,
+    )
+
+    client_id: Optional[str] = Field(
+        description=("The Client ID for your Oauth application"),
+        airbyte_secret=True,
+        airbyte_hidden=True,
+    )
+
+    client_secret: Optional[str] = Field(
+        description=("The Client Secret for your Oauth application"),
+        airbyte_secret=True,
+        airbyte_hidden=True,
     )
 
 

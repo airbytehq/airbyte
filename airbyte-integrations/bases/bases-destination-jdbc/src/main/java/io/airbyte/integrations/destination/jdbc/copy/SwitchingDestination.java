@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -64,6 +65,16 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
     return typeToDestination.get(destinationType).getConsumer(config, catalog, outputRecordCollector);
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    final T destinationType = configToType.apply(config);
+    LOGGER.info("Using destination type: " + destinationType.name());
+    return typeToDestination.get(destinationType).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
   }
 
 }
