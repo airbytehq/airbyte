@@ -675,7 +675,7 @@ class Tags(FullRefreshZendeskSupportStream):
     primary_key = "name"
 
 
-class Topics(SourceZendeskSupportCursorPaginationStream):
+class Topics(CursorPaginationZendeskSupportStream):
     """
     Topics stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics
     """
@@ -684,7 +684,6 @@ class Topics(SourceZendeskSupportCursorPaginationStream):
 
     def path(self, **kwargs):
         return "community/topics"
-
 
 
 class SlaPolicies(FullRefreshZendeskSupportStream):
