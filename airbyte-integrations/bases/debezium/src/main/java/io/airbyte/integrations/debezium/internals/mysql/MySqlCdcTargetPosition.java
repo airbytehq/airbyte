@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.debezium.internals.mysql;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
@@ -100,6 +102,50 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
   @Override
   public boolean isHeartbeatSupported() {
     return true;
+  }
+
+  @Override
+  public boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
+    if (offset.size() != 1) {
+      return false;
+    }
+
+    final String eventFileName = event.eventValueAsJson().get("source").get("file").asText();
+    final long eventPosition = event.eventValueAsJson().get("source").get("pos").asLong();
+
+    final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
+
+    final String offsetFileName = offsetJson.get("file").asText();
+    final long offsetPosition = offsetJson.get("pos").asLong();
+    if (eventFileName.compareTo(offsetFileName) != 0) {
+      return eventFileName.compareTo(offsetFileName) > 0;
+    }
+
+    return eventPosition > offsetPosition;
+  }
+
+  @Override
+  public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
+    if (offsetA == null || offsetA.size() != 1) {
+      return false;
+    }
+    if (offsetB == null || offsetB.size() != 1) {
+      return false;
+    }
+
+    final JsonNode offsetJsonA = Jsons.deserialize((String) offsetA.values().toArray()[0]);
+    final String offsetAFileName = offsetJsonA.get("file").asText();
+    final long offsetAPosition = offsetJsonA.get("pos").asLong();
+
+    final JsonNode offsetJsonB = Jsons.deserialize((String) offsetB.values().toArray()[0]);
+    final String offsetBFileName = offsetJsonB.get("file").asText();
+    final long offsetBPosition = offsetJsonB.get("pos").asLong();
+
+    if (offsetAFileName.compareTo(offsetBFileName) != 0) {
+      return false;
+    }
+
+    return offsetAPosition == offsetBPosition;
   }
 
   @Override

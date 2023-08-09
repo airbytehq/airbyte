@@ -87,7 +87,7 @@ import org.slf4j.LoggerFactory;
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
-  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 1;
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
       """
         SELECT (EXISTS (SELECT * from `%s`.`%s` where `%s` IS NULL LIMIT 1)) AS %s
