@@ -6,7 +6,7 @@
 
 <!-- env:oss -->
 
-For **Airbyte Open Source** users, we recommend using an API token to authenticate your Zendesk account. You can follow the steps in our [full documentation](https://docs.airbyte.com/integrations/sources/zendesk-support#enable-api-token-access-and-generate-a-token) to generate this token.
+For **Airbyte Open Source** users, we recommend using an API token to authenticate your Zendesk account. You can follow the steps in our [full documentation](https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide) to generate this token.
 
 <!-- /env:oss -->
 
@@ -17,7 +17,7 @@ For **Airbyte Open Source** users, we recommend using an API token to authentica
    - **For Airbyte Cloud:** To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk and authorize your account.
    <!-- /env:cloud -->
    <!-- env:oss -->
-   - **For Airbyte Open Source**: To authenticate using an API token, select **API Token** from the Authentication dropdown and enter the [token you generated](https://docs.airbyte.com/integrations/sources/zendesk-support#enable-api-token-access-and-generate-a-token), as well as the email address associated with your Zendesk account.
+   - **For Airbyte Open Source**: To authenticate using an API token, select **API Token** from the Authentication dropdown and enter the [token you generated](https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide), as well as the email address associated with your Zendesk account.
    <!-- /env:oss -->
 
 3. For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.

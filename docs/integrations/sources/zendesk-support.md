@@ -23,7 +23,7 @@ For **Airbyte Open Source** users, we recommend using an API token to authentica
 If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can follow the steps laid out in [this Zendesk article](https://support.zendesk.com/hc/en-us/articles/4408845965210) to obtain your client ID, client secret and access token. Please ensure you set the scope to `read` when generating the access token.
 :::
 
-### Enable API token access and generate a token
+### (Airbyte Open Source) Enable API token access and generate a token
 
 1. Log in to your Zendesk account.
 2. Click the **Zendesk Products** icon (four squares) in the top-right corner, then select **Admin Center**.
