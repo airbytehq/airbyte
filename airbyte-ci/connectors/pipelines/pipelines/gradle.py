@@ -24,7 +24,6 @@ class GradleTask(Step, ABC):
     """
 
     DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
-    BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
 
     DEFAULT_SOURCES_TO_INCLUDE = [
@@ -138,10 +137,9 @@ class GradleTask(Step, ABC):
         return gradle_container
 
     @property
-    def custom_bound_docker_host(self) -> Optional[Callable]:
-        if self.BIND_TO_DOCKER_HOST:
-            docker_host_name = slugify(f"{self.context.connector.name}-gradle-docker-host")
-            return environments.bound_docker_host(self.context, docker_host_name)
+    def custom_docker_host_binding(self) -> Optional[Callable]:
+        docker_host_name = slugify(f"{self.context.connector.technical_name}-gradle-docker-host")
+        return environments.bound_docker_host(self.context, docker_host_name)
 
     @property
     def gradle_container(
@@ -159,7 +157,7 @@ class GradleTask(Step, ABC):
         # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
         # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
-        openjdk_with_docker = (
+        return (
             self.context.dagger_client.container()
             .from_("openjdk:17.0.1-jdk-slim")
             .with_exec(["apt-get", "update"])
@@ -177,9 +175,5 @@ class GradleTask(Step, ABC):
             .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
+            .with_(self.custom_docker_host_binding)
         )
-
-        if self.custom_bound_docker_host:
-            return openjdk_with_docker.with_(self.custom_bound_docker_host)
-        else:
-            return openjdk_with_docker

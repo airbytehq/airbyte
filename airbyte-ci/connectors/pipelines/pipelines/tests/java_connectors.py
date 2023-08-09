@@ -23,7 +23,6 @@ class IntegrationTest(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     gradle_task_name = "integrationTest"
-    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
 
     @property
     def title(self) -> str:
@@ -33,14 +32,14 @@ class IntegrationTest(GradleTask):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
         await environments.load_image_to_docker_host(
-            self.context, normalization_tar_file, normalization_image_tag, self.custom_bound_docker_host
+            self.context, normalization_tar_file, normalization_image_tag, self.custom_docker_host_binding
         )
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
     async def _load_connector_image(self, connector_tar_file: File):
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
-        await environments.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag, self.custom_bound_docker_host)
+        await environments.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag, self.custom_docker_host_binding)
         self.context.logger.info("Successfully loaded the connector image to the docker host.")
 
     async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:

@@ -559,13 +559,14 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
     docker_cli = with_docker_cli(context, custom_bound_to_docker_host).with_mounted_file(tar_name, tar_file)
-
-    image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
+    docker_cli = await docker_cli.with_exec(["docker", "load", "--input", tar_name])
+    image_load_output = await docker_cli.stdout()
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        await with_docker_cli(context, custom_bound_to_docker_host).with_exec(["docker", "tag", image_id, image_tag])
-    image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
+        docker_cli = await docker_cli.with_exec(["docker", "tag", image_id, image_tag])
+    inspect_output = await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout()
+    image_sha = json.loads(inspect_output)[0].get("Id")
     return image_sha
 
 
