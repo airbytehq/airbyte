@@ -11,7 +11,7 @@ from urllib.parse import unquote
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -55,7 +55,7 @@ class ParquetParser(FileTypeParser):
         parquet_format = config.format or ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             logger.info(f"Expected ParquetFormat, got {parquet_format}")
-            raise ConfigValidationError(f"Expected ParquetFormat, got {parquet_format}")
+            raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR)
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             reader = pq.ParquetFile(fp)
             partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
