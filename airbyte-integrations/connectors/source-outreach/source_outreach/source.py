@@ -135,7 +135,7 @@ class SequenceSteps(IncrementalOutreachStream):
     """
 
     def path(self, **kwargs) -> str:
-        return "sequenceStates"
+        return "sequenceSteps"
 
 
 class Accounts(IncrementalOutreachStream):
