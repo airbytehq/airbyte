@@ -22,6 +22,9 @@ DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
 
 class CsvFormat(BaseModel):
+    class Config:
+        title = "CSV Format"
+
     filetype: Literal["csv"] = "csv"
     delimiter: str = Field(
         title="Delimiter",

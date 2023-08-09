@@ -268,13 +268,14 @@ If you know there are database changes to be synced, but the connector cannot re
 In [Step 2](#step-2-set-up-the-postgres-connector-in-airbyte) of the connector setup guide, enter the replication slot and publication you just created.
 
 ## Xmin replication mode
+
 Xmin replication is a new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which is available in all Postgres databases is used to track inserts and updates to your source data.
 
 This is a good solution if:
+
 - There is not a well-defined cursor candidate to use for Standard incremental mode.
 - You want to replace a previously configured full-refresh sync.
 - You are replicating Postgres tables less than 500GB.
-
 
 ## Supported sync modes
 
@@ -283,7 +284,7 @@ The Postgres source connector supports the following [sync modes](https://docs.a
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported cursors
 
@@ -406,14 +407,14 @@ Some larger tables may encounter an error related to the temporary file size lim
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | 3.1.3   | 2023-08-03 | [28708](https://github.com/airbytehq/airbyte/pull/28708) | Enable checkpointing snapshots in CDC connections                                                                                                                          |
 | 3.1.2   | 2023-08-01 | [28954](https://github.com/airbytehq/airbyte/pull/28954) | Fix an issue that prevented use of tables with names containing uppercase letters                                                                                          |
 | 3.1.1   | 2023-07-31 | [28892](https://github.com/airbytehq/airbyte/pull/28892) | Fix an issue that prevented use of cursor columns with names containing uppercase letters                                                                                  |
 | 3.1.0   | 2023-07-25 | [28339](https://github.com/airbytehq/airbyte/pull/28339) | Checkpointing initial load for incremental syncs: enabled for xmin and cursor based only.                                                                                  |
 | 3.0.2   | 2023-07-18 | [28336](https://github.com/airbytehq/airbyte/pull/28336) | Add full-refresh mode back to Xmin syncs.                                                                                                                                  |
 | 3.0.1   | 2023-07-14 | [28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                                                                       |
-| 3.0.0   | 2023-07-12 | [27442](https://github.com/airbytehq/airbyte/pull/27442) | Set _ab_cdc_lsn as the source defined cursor for CDC mode to prepare for Destination v2 normalization                                                                      |
+| 3.0.0   | 2023-07-12 | [27442](https://github.com/airbytehq/airbyte/pull/27442) | Set \_ab_cdc_lsn as the source defined cursor for CDC mode to prepare for Destination v2 normalization                                                                     |
 | 2.1.1   | 2023-07-06 | [26723](https://github.com/airbytehq/airbyte/pull/26723) | Add new xmin replication method.                                                                                                                                           |
 | 2.1.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                                                                                       |
 | 2.0.34  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                                                   |
@@ -509,13 +510,13 @@ Some larger tables may encounter an error related to the temporary file size lim
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226) | Make connectionTimeoutMs configurable through JDBC url parameters                                                                                                          |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273) | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                                                                              |
 | 0.4.41  | 2022-08-03 | [15077](https://github.com/airbytehq/airbyte/pull/15077) | Sync data from beginning if the LSN is no longer valid in CDC                                                                                                              |
-|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                         |
+|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                        |
 | 0.4.40  | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187) | Add support for BCE dates/timestamps                                                                                                                                       |
 |         | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534) | Align regular and CDC integration tests and data mappers                                                                                                                   |
 | 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                                                                  |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                                                                                       |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                                                                                |
-| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                              |     |
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |     |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                                                                                             |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates.                                                                                               |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586) | Validate source JDBC url parameters                                                                                                                                        |
