@@ -42,6 +42,99 @@
           }
         }
       }
+    },
+    "lastUpdatedByUserId": {
+      "type" : ["null", "integer"]
+    },
+    "contactCounts": {
+      "type": ["null", "object"],
+      "properties" : {
+        "active": {
+          "type" : ["null", "integer"]
+        },
+        "enrolled": {
+          "type" : ["null", "integer"]
+        }
+      }
+    },
+    "description": {
+      "type" : ["null", "string"]
+    },
+    "originalAuthorUserId": {
+      "type" : ["null", "integer"]
+    },
+    "migrationStatus": {
+      "type": ["null", "object"],
+      "properties" : {
+        "enrollmentMigrationStatus": {
+          "type" : ["null", "string"]
+        },
+        "enrollmentMigrationTimestamp": {
+          "type" : ["null", "integer"]
+        },
+        "flowId": {
+          "type" : ["null", "integer"]
+        },
+        "lastSuccessfulMigrationTimestamp": {
+          "type" : ["null", "integer"]
+        },
+        "migrationStatus": {
+          "type" : ["null", "string"]
+        },
+        "platformOwnsActions": {
+          "type" : ["null", "boolean"]
+        },
+        "portalId": {
+          "type" : ["null", "integer"]
+        },
+        "workflowId": {
+          "type" : ["null", "integer"]
+        }
+      }
+    },
+    "updateSource": {
+      "type": ["null", "object"],
+      "properties" : {
+        "sourceApplication": {
+          "properties" : {
+          "serviceName": {"type" : ["null", "string"]},
+          "source": {"type" : ["null", "string"]}
+          }
+        },
+        "updatedAt": {"type" : ["null", "integer"]},
+        "updatedByUser": {
+          "properties" : {
+            "userEmail": {"type" : ["null", "string"]},
+            "userId": {"type" : ["null", "integer"]}
+          }
+        }
+      }
+    },
+    "creationSource": {
+      "type": ["null", "object"],
+      "properties" : {
+        "clonedFromWorkflowId": {
+          "type" : ["null", "integer"]
+        },
+        "createdAt": {
+          "type" : ["null", "integer"]
+        },
+        "createdByUser": {
+          "properties" : {
+            "userEmail": {"type" : ["null", "string"]},
+            "userId": {"type" : ["null", "integer"]}
+          }
+        },
+        "sourceApplication": {
+          "properties" : {
+            "serviceName": {"type" : ["null", "string"]},
+            "source": {"type" : ["null", "string"]}
+          }
+        }
+      }
+    },
+    "portalId": {
+      "type" : ["null", "integer"]
     }
   }
 }

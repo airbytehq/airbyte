@@ -10,5 +10,6 @@ package io.airbyte.integrations.destination.iceberg.config.catalog;
 public enum CatalogType {
   HIVE,
   HADOOP,
-  JDBC
+  JDBC,
+  REST
 }

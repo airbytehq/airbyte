@@ -18,13 +18,23 @@ import com.google.cloud.storage.StorageOptions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -57,6 +67,11 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("GCS staging is slated for deprecation and will not be upgraded to Destinations v2. Please use the Snowflake internal staging destination instead.");
+    }
     final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeGcsStagingSqlOperations snowflakeGcsStagingSqlOperations =
@@ -93,7 +108,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
 
     storageClient.create(blobInfo);
 
-    try (WriteChannel writer = storageClient.writer(blobInfo)) {
+    try (final WriteChannel writer = storageClient.writer(blobInfo)) {
       // Try to write a dummy message to make sure user has all required permissions
       final byte[] content = "Hello, World!".getBytes(UTF_8);
       writer.write(ByteBuffer.wrap(content, 0, content.length));
@@ -113,7 +128,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   @Override
-  protected DataSource getDataSource(final JsonNode config) {
+  public DataSource getDataSource(final JsonNode config) {
     return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
@@ -138,6 +153,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
+
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
@@ -146,7 +162,11 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
         config,
         catalog,
-        isPurgeStagingData(config));
+        isPurgeStagingData(config),
+        new TypeAndDedupeOperationValve(),
+        new NoopTyperDeduper(),
+        null,
+        null);
 
   }
 

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 _base_single_stream_scenario = (
@@ -206,21 +206,21 @@ skip_record_scenario_single_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                 }
             ]
         }
     )
     .set_expected_records(
         [
-            # {"data": {"col1": "val_a_11", "col2": "val_a_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
-            # {"data": {"col1": "val_a_12", "col2": "val_a_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
-            {"data": {"col1": "val_b_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_b_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_a_11", "col2": "val_a_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
+            # {"data": {"col1": "val_a_12", "col2": "val_a_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
+            {"data": {"col1": "val_b_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_b_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
+            {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
         ]
     )
     .set_expected_logs({
@@ -248,13 +248,13 @@ skip_record_scenario_multi_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a/*.csv"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                 }
 
             ]
@@ -262,20 +262,20 @@ skip_record_scenario_multi_stream = (
     )
     .set_expected_records(
         [
-            # {"data": {"col1": "val_aa1_11", "col2": "val_aa1_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
-            # {"data": {"col1": "val_aa1_12", "col2": "val_aa1_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
-            {"data": {"col1": "val_aa2_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_aa2_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},  # This record is skipped because it does not conform
-            {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},  # This record is skipped because it does not conform
-            # {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb2_12", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
+            # {"data": {"col1": "val_aa1_11", "col2": "val_aa1_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
+            # {"data": {"col1": "val_aa1_12", "col2": "val_aa1_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
+            {"data": {"col1": "val_aa2_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_aa2_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
+            {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},  # This record is skipped because it does not conform
+            {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},  # This record is skipped because it does not conform
+            # {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
+            # {"data": {"col1": "val_bb2_12", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
         ]
     )
     .set_expected_logs({
@@ -307,21 +307,21 @@ emit_record_scenario_single_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val_a_11", "col2": "val_a_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_a_12", "col2": "val_a_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_b_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_b_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            # {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
-            # {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_a_11", "col2": "val_a_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_a_12", "col2": "val_a_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_b_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_b_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
+            # {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
+            # {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
         ]
     )
     .set_expected_logs({
@@ -345,13 +345,13 @@ emit_record_scenario_multi_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a/*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
 
             ]
@@ -359,20 +359,20 @@ emit_record_scenario_multi_stream = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val_aa1_11", "col2": "val_aa1_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_aa1_12", "col2": "val_aa1_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_aa2_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_aa2_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
-            # {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val_bb2_12", "col2": "val_bb2_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_aa1_11", "col2": "val_aa1_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_aa1_12", "col2": "val_aa1_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_aa2_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_aa2_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
+            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
+            # {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_bb2_12", "col2": "val_bb2_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
         ]
     )
     .set_expected_logs({
@@ -396,7 +396,7 @@ wait_for_rediscovery_scenario_single_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "wait_for_discover",
+                    "validation_policy": "Wait for Discover",
                 }
             ]
         }
@@ -408,7 +408,7 @@ wait_for_rediscovery_scenario_single_stream = (
         "read": [
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a.csv validation_policy=wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a.csv validation_policy=Wait for Discover n_skipped=0",
             },
         ]
     })
@@ -425,13 +425,13 @@ wait_for_rediscovery_scenario_multi_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a/*.csv"],
-                    "validation_policy": "wait_for_discover",
+                    "validation_policy": "Wait for Discover",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
-                    "validation_policy": "wait_for_discover",
+                    "validation_policy": "Wait for Discover",
                 }
 
             ]
@@ -439,70 +439,32 @@ wait_for_rediscovery_scenario_multi_stream = (
     )
     .set_expected_records(
         [
-            # {"data": {"col1": "val_aa1_11", "col2": "val_aa1_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},  # The first record does not conform so we don't sync anything from this stream
-            # {"data": {"col1": "val_aa1_12", "col2": "val_aa1_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa2_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa2_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},  # No more records from this stream are emitted after a nonconforming record is encountered
-            # {"data": {"col1": "val_bb2_12", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
+            # {"data": {"col1": "val_aa1_11", "col2": "val_aa1_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},  # The first record does not conform so we don't sync anything from this stream
+            # {"data": {"col1": "val_aa1_12", "col2": "val_aa1_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa2_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa2_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
+            {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
+            # {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},  # No more records from this stream are emitted after a nonconforming record is encountered
+            # {"data": {"col1": "val_bb2_12", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
+            # {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
+            # {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
         ]
     )
     .set_expected_logs({
         "read": [
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a/a1.csv validation_policy=wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a/a1.csv validation_policy=Wait for Discover n_skipped=0",
             },
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=Wait for Discover n_skipped=0",
             },
         ]
     })
-).build()
-
-
-invalid_validation_policy = (
-    _base_single_stream_scenario.copy()
-    .set_name("invalid_validation_policy")
-    .set_config(
-        {
-            "streams": [
-                {
-                    "name": "stream1",
-                    "file_type": "csv",
-                    "globs": ["*.csv"],
-                    "validation_policy": "x",
-                }
-            ]
-        }
-    )
-    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
-).build()
-
-
-no_validation_policy = (
-    _base_single_stream_scenario.copy()
-    .set_name("empty_validation_policy")
-    .set_config(
-        {
-            "streams": [
-                {
-                    "name": "stream1",
-                    "file_type": "csv",
-                    "globs": ["*.csv"],
-                    "validation_policy": "",
-                }
-            ]
-        }
-    )
-    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()

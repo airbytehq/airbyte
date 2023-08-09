@@ -10,8 +10,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
@@ -20,6 +28,8 @@ import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
 import io.airbyte.integrations.destination.s3.EncryptionConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -51,11 +61,16 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
-    if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
+    if (!isPurgeStagingData(config) && encryptionConfig instanceof final AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(
               "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
+    }
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage("S3 staging is slated for deprecation and will not be upgraded to Destinations v2. Please use the Snowflake internal staging destination instead.");
     }
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeS3StagingSqlOperations snowflakeS3StagingSqlOperations =
@@ -129,6 +144,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
+
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
@@ -137,7 +153,11 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
         config,
         catalog,
-        isPurgeStagingData(config));
+        isPurgeStagingData(config),
+        new TypeAndDedupeOperationValve(),
+        new NoopTyperDeduper(),
+        null,
+        null);
   }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {

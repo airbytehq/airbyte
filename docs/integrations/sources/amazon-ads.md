@@ -80,6 +80,10 @@ This source is capable of syncing the following streams:
 
 All the reports are generated relative to the target profile' timezone.
 
+Campaign reports may sometimes have no data or not presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
+
+Report data synchronization only cover the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
+
 ## Performance considerations
 
 Information about expected report generation waiting time you may find [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
@@ -99,6 +103,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 3.0.0   | 2023-07-24 | [27868](https://github.com/airbytehq/airbyte/pull/27868) | Fix attribution report stream schemas                                                                           |
 | 2.3.1   | 2023-07-11 | [28155](https://github.com/airbytehq/airbyte/pull/28155) | Bugfix: validation error when record values are missing                                                         |
 | 2.3.0   | 2023-07-06 | [28002](https://github.com/airbytehq/airbyte/pull/28002) | Add sponsored_product_ad_group_suggested_keywords, sponsored_product_ad_group_bid_recommendations streams       |
 | 2.2.0   | 2023-07-05 | [27607](https://github.com/airbytehq/airbyte/pull/27607) | Add stream for sponsored brands v3 purchased product reports                                                    |

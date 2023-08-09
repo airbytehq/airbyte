@@ -12,7 +12,7 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
     @sensor(
         name=f"{job.name}_on_registry_updated",
         job=job,
-        minimum_interval_seconds=30,
+        minimum_interval_seconds=(2 * 60),
         default_status=DefaultSensorStatus.STOPPED,
     )
     def registry_updated_sensor_definition(context: SensorEvaluationContext):

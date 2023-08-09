@@ -3,12 +3,12 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
 import dpath.exceptions
 import dpath.util
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import FieldPointer, Record
+from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
 
 
 @dataclass
@@ -41,7 +41,13 @@ class RemoveFields(RecordTransformation):
     field_pointers: List[FieldPointer]
     parameters: InitVar[Mapping[str, Any]]
 
-    def transform(self, record: Record, **kwargs) -> Record:
+    def transform(
+        self,
+        record: Mapping[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Mapping[str, Any]:
         """
         :param record: The record to be transformed
         :return: the input record with the requested fields removed

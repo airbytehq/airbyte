@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "order_id": {
+      "type": ["null", "integer"]
+    },
+    "checkout_id": {
+      "type": ["null", "integer"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "score": {
+      "type": ["null", "number"]
+    },
+    "recommendation": {
+      "type": ["null", "string"]
+    },
+    "display": {
+      "type": ["null", "boolean"]
+    },
+    "cause_cancel": {
+      "type": ["null", "boolean"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "merchant_message": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
+    }
+  }
+}
