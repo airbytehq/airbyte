@@ -61,11 +61,16 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
-    if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
+    if (!isPurgeStagingData(config) && encryptionConfig instanceof final AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(
               "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
+    }
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage("S3 staging is slated for deprecation and will not be upgraded to Destinations v2. Please use the Snowflake internal staging destination instead.");
     }
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeS3StagingSqlOperations snowflakeS3StagingSqlOperations =
@@ -140,23 +145,9 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
 
-    SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
-    final ParsedCatalog parsedCatalog;
-    TyperDeduper typerDeduper;
-    JdbcDatabase database = getDatabase(getDataSource(config));
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-      SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
-      parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
-    } else {
-      parsedCatalog = null;
-      typerDeduper = new NoopTyperDeduper();
-    }
-
     return new StagingConsumerFactory().create(
         outputRecordCollector,
-        database,
+        getDatabase(getDataSource(config)),
         new SnowflakeS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
@@ -164,8 +155,8 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         catalog,
         isPurgeStagingData(config),
         new TypeAndDedupeOperationValve(),
-        typerDeduper,
-        parsedCatalog,
+        new NoopTyperDeduper(),
+        null,
         null);
   }
 
