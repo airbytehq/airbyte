@@ -162,7 +162,7 @@ class CsvParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-        discovered_schema: Optional[SchemaType],
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         config_format = _extract_format(config)
         cast_fn = CsvParser._get_cast_function(discovered_schema, config_format, logger)
@@ -177,7 +177,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger
+        schema: Optional[Mapping[str, SchemaType]], config_format: CsvFormat, logger: logging.Logger
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if schema:

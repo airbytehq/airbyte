@@ -48,7 +48,7 @@ class ParquetParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-        discovered_schema: Optional[SchemaType],
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         parquet_format = config.format or ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):

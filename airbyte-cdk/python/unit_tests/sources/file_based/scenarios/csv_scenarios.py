@@ -135,7 +135,7 @@ single_csv_scenario = (
                                                 },
                                                 "inference_type": {
                                                     "default": "None",
-                                                    "description": "How to infer the types of the columns.",
+                                                    "description": "How to infer the types of the columns. If none, inference default to strings.",
                                                     "title": "Inference Type",
                                                     "enum": [
                                                         "None",
