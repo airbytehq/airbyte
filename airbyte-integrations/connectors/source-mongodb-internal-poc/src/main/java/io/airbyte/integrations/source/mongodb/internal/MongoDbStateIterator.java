@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.mongodb.MongoUtils;
@@ -50,13 +51,20 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public boolean hasNext() {
-    if (iter.hasNext()) {
-      return true;
+    try {
+      if (iter.hasNext()) {
+        return true;
+      }
+    } catch (MongoException e) {
+      // If hasNext throws an exception, log it and move on. Treat it the same as if hasNext returned false.
+      LOGGER.info("hasNext threw an exception: {}", e.getMessage(), e);
     }
+
     if (!finalStateNext) {
       finalStateNext = true;
       return true;
     }
+
     return false;
   }
 
