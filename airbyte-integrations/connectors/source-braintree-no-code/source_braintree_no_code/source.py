@@ -2,10 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import datetime
-import json
 from dataclasses import dataclass
 from typing import List, Union
 
+import requests
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from braintree.attribute_getter import AttributeGetter
 from braintree.customer import Customer
 from braintree.discount import Discount
@@ -15,11 +18,6 @@ from braintree.plan import Plan
 from braintree.subscription import Subscription
 from braintree.transaction import Transaction
 from braintree.util.xml_util import XmlUtil
-
-import requests
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.types import Record
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
@@ -145,6 +143,7 @@ class PlanExtractor(BraintreeExtractor):
         data = XmlUtil.dict_from_xml(response.text)
         plans = self._extract_as_array(data, 'plans')
         return [self._get_json_from_resource(Plan(None, plan)) for plan in plans]
+
 
 @dataclass
 class DisputeExtractor(BraintreeExtractor):

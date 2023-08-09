@@ -12,7 +12,7 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties: {}
         type: object
@@ -21,7 +21,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
         path: /merchant_accounts
         http_method: GET
         request_parameters: {}
@@ -52,7 +52,7 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties: {}
         type: object
@@ -61,7 +61,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
         path: /customers/advanced_search
         http_method: POST
         request_parameters: {}
@@ -96,7 +96,7 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties: {}
         type: object
@@ -105,7 +105,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
         path: /discounts/
         http_method: GET
         request_parameters: {}
@@ -138,7 +138,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
         path: /plans/
         http_method: GET
         request_parameters: {}
@@ -162,7 +162,7 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties: {}
         type: object
@@ -171,7 +171,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
         path: /transactions/advanced_search
         http_method: POST
         request_parameters: {}
@@ -206,7 +206,7 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties: {}
         type: object
@@ -215,7 +215,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
         path: /subscriptions/advanced_search
         http_method: GET
         request_parameters: {}
@@ -250,7 +250,7 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties: {}
         type: object
@@ -259,7 +259,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://api.sandbox.braintreegateway.com/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
         path: /disputes/advanced_search
         http_method: POST
         request_parameters: {}
@@ -296,33 +296,30 @@ streams:
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
 spec:
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     type: object
     required:
-      - environment
       - merchant_id
-      - private_key
       - public_key
-      - start_date
+      - private_key
+      - environment
     properties:
-      environment:
-        enum:
-          - sandbox
-          - production
-          - qa
-          - development
-        type: string
-        order: 0
-        title: Environment
-        description: Environment specifies where the data will come from.
       merchant_id:
         type: string
-        order: 1
+        order: 0
         title: Merchant ID
         description: >-
           The unique identifier for your entire gateway account. See the <a
           href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
           for more information on how to obtain this ID.
+      public_key:
+        type: string
+        order: 1
+        title: Public Key
+        description: >-
+          Braintree Public Key. See the <a
+          href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
+          for more information on how to obtain this key.
       private_key:
         type: string
         order: 2
@@ -332,23 +329,25 @@ spec:
           href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
           for more information on how to obtain this key.
         airbyte_secret: true
-      public_key:
-        type: string
-        order: 3
-        title: Public Key
-        description: >-
-          Braintree Public Key. See the <a
-          href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
-          for more information on how to obtain this key.
       start_date:
         type: string
         title: Start Date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 4
+        order: 3
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated.
+      environment:
+        enum:
+          - Development
+          - Sandbox
+          - Qa
+          - Production
+        type: string
+        order: 4
+        title: Environment
+        description: Environment specifies where the data will come from.
     additionalProperties: true
   documentation_url: https://example.org
   type: Spec
