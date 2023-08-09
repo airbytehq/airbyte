@@ -159,7 +159,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * Remove all the Container output from the tests.
    */
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     final BlobServiceClient storageClient =
         new BlobServiceClientBuilder()
             .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())

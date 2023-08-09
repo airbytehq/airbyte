@@ -61,7 +61,7 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws ExecutionException, InterruptedException {
+  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws ExecutionException, InterruptedException {
     var topics = adminClient.listTopics().listings().get().stream()
         .filter(tl -> !tl.isInternal())
         .map(TopicListing::name)

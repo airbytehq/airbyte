@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
@@ -52,12 +53,13 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   /**
    * Removes data from bigquery and GCS This function will be called after EACH test
    *
-   * @see DestinationAcceptanceTest#tearDownInternal()
-   * @param testEnv - information about the test environment.
+   * @param testEnv      - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
+   * @see DestinationAcceptanceTest#tearDownInternal()
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     tearDownBigQuery();
     tearDownGcs();
   }

@@ -34,6 +34,7 @@ import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.MinioContainer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.util.HostPortResolver;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     IcebergIntegrationTestUtil.stopAndCloseContainer(s3Storage, "Minio");
     IcebergIntegrationTestUtil.stopAndCloseContainer(catalogDb, "PostgreSQL");
   }

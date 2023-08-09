@@ -112,7 +112,7 @@ public class DorisDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     // TODO Implement this method to run any cleanup actions needed after every test case
   }
 

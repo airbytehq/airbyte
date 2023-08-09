@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +35,13 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
   /**
    * Removes data from bigquery This function will be called after EACH test
    *
-   * @see DestinationAcceptanceTest#tearDownInternal()
-   * @param testEnv - information about the test environment.
+   * @param testEnv      - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
+   * @see DestinationAcceptanceTest#tearDownInternal()
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     tearDownBigQuery();
   }
 

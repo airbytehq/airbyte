@@ -21,6 +21,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -63,7 +64,7 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws SQLException {
     // clean up s3
     final List<KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
@@ -82,7 +83,7 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
     }
     s3Client.shutdown();
 
-    super.tearDown(testEnv);
+    super.tearDown(testEnv, TEST_SCHEMAS);
   }
 
 }

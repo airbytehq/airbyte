@@ -139,7 +139,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
     for (final String collectionName : mongoDatabase.getCollectionNames()) {
       mongoDatabase.getDatabase().getCollection(collectionName).drop();
     }

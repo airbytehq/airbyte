@@ -156,7 +156,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws MqttException {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws MqttException {
     client.disconnectForcibly();
     client.close();
   }

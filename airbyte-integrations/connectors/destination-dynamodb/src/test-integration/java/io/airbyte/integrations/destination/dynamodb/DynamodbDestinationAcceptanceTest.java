@@ -139,7 +139,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     final var dynamodb = new DynamoDB(this.client);
     final List<String> tables = new ArrayList<String>();
     dynamodb.listTables().forEach(o -> {

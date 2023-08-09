@@ -165,7 +165,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     dslContext.close();
   }
 

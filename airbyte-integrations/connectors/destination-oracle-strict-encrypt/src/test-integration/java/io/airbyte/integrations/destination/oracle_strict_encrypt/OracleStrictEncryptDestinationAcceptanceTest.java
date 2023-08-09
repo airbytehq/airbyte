@@ -162,7 +162,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     db.stop();
     db.close();
   }

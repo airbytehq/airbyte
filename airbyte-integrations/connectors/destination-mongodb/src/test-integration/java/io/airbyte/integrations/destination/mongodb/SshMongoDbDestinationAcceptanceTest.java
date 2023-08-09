@@ -81,7 +81,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     container.stop();
     container.close();
     bastion.getContainer().stop();

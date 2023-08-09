@@ -18,6 +18,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws SQLException {
     final BlobServiceClient storageClient = new BlobServiceClientBuilder()
         .endpoint(azureBlobStorageConfig.getEndpointUrl())
         .sasToken(azureBlobStorageConfig.getSasToken())
@@ -83,7 +84,7 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
       blobContainerClient.delete();
     }
 
-    super.tearDown(testEnv);
+    super.tearDown(testEnv, TEST_SCHEMAS);
   }
 
 }

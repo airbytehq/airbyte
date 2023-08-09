@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.util.HostPortResolver;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +42,7 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     cassandraCqlProvider.retrieveMetadata().forEach(meta -> {
       var keyspace = meta.value1();
       meta.value2().forEach(table -> cassandraCqlProvider.truncate(keyspace, table));

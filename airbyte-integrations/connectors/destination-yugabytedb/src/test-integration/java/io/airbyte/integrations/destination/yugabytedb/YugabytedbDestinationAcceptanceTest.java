@@ -15,6 +15,7 @@ import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanc
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,7 +70,7 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
     database.execute(connection -> {
       var statement = connection.createStatement();
       cleanupTables.forEach(tb -> {

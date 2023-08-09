@@ -17,6 +17,7 @@ import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanc
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -142,7 +143,7 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     container.stop();
     container.close();
   }

@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -106,7 +107,7 @@ public abstract class StarburstGalaxyDestinationAcceptanceTest extends Destinati
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws SQLException {
     // clean up database
     List<JsonNode> schemas = executeQuery(format("SHOW SCHEMAS LIKE '%s'", galaxyDestinationConfig.galaxyCatalogSchema().toLowerCase(ENGLISH)));
     schemas.stream().map(node -> node.get("Schema").asText())

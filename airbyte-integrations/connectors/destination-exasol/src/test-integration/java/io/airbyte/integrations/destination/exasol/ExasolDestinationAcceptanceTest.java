@@ -142,7 +142,7 @@ public class ExasolDestinationAcceptanceTest extends JdbcDestinationAcceptanceTe
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
     EXASOL.purgeDatabase();
   }
 
