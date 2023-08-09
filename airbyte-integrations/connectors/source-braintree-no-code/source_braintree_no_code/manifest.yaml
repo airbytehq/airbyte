@@ -14,7 +14,10 @@ streams:
       schema:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
-        properties: {}
+        properties:
+          id:
+            type:
+              - string
         type: object
     retriever:
       type: SimpleRetriever
@@ -54,7 +57,13 @@ streams:
       schema:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
-        properties: {}
+        properties:
+          id:
+            type:
+              - string
+          created_at:
+            type:
+              - datetime
         type: object
     retriever:
       type: SimpleRetriever
@@ -98,7 +107,10 @@ streams:
       schema:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
-        properties: {}
+        properties:
+          id:
+            type:
+              - string
         type: object
     retriever:
       type: SimpleRetriever
@@ -131,7 +143,10 @@ streams:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         additionalProperties: true
-        properties: {}
+        properties:
+          id:
+            type:
+              - string
         type: object
     retriever:
       type: SimpleRetriever
@@ -164,7 +179,13 @@ streams:
       schema:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
-        properties: {}
+        properties:
+          id:
+            type:
+              - string
+          created_at:
+            type:
+              - datetime
         type: object
     retriever:
       type: SimpleRetriever
@@ -208,7 +229,13 @@ streams:
       schema:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
-        properties: {}
+        properties:
+          id:
+            type:
+              - string
+          created_at:
+            type:
+              - datetime
         type: object
     retriever:
       type: SimpleRetriever
@@ -252,7 +279,13 @@ streams:
       schema:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
-        properties: {}
+        properties:
+          id:
+            type:
+              - string
+          received_date:
+            type:
+              - datetime
         type: object
     retriever:
       type: SimpleRetriever
