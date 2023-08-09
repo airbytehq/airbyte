@@ -135,7 +135,7 @@ class CsvParser(FileTypeParser):
                 config_format.true_values,
                 config_format.false_values,
                 config_format.null_values,
-                config_format.inference_type == InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
+                config_format.inference_type == InferenceType.PRIMITIVE_AND_COMPLEX_TYPES,
             )
             if config_format.inference_type != InferenceType.NONE
             else _DisabledTypeInferrer()
