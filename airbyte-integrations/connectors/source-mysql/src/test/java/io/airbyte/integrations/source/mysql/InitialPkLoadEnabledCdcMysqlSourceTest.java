@@ -61,6 +61,21 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
   }
 
   @Override
+  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
+    if (syncNumber == 1) {
+      assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(stateMessages);
+    } else if (syncNumber == 2) {
+      // Sync number 2 uses the state from sync number 1 but before we trigger the sync 2 we purge the binary logs and as a result the validation of
+      // logs present on the server fails, and we trigger a sync from scratch
+      assertEquals(47, stateMessages.size());
+      assertStateTypes(stateMessages, 44);
+    } else {
+      throw new RuntimeException("Unknown sync number");
+    }
+
+  }
+
+  @Override
   protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
     assertStateTypes(stateAfterFirstBatch, 24);
@@ -155,58 +170,6 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
             new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
     assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
-  }
-
-  @Override
-  @Test
-  protected void syncShouldHandlePurgedLogsGracefully() throws Exception {
-
-    // Do an initial sync
-    final int recordsToCreate = 20;
-    // first batch of records. 20 created here and 6 created in setup method.
-    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
-      writeModelRecord(record);
-    }
-
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
-    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
-
-    final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
-
-    // Add a batch of 20 records
-    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
-      writeModelRecord(record);
-    }
-
-    // Purge the binary logs. The current code reverts to the debezium snapshot when binary logs are purged, and does
-    // not do an initial primary key load. Thus, we only expect one state message for now.
-    purgeAllBinaryLogs();
-
-    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
-    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
-        .toListAndClose(secondBatchIterator);
-
-    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    assertEquals(1, stateAfterSecondBatch.size());
-    assertNotNull(stateAfterSecondBatch.get(0).getData());
-    assertStateTypes(stateAfterSecondBatch, -1);
-    final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
-        dataFromSecondBatch);
-    assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount, recordsFromSecondBatch.size(),
-        "Expected 46 records to be replicated in the second sync.");
   }
 
   @Test

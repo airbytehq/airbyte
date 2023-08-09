@@ -115,9 +115,9 @@ def test_encoding_is_passed_to_stream_reader():
     file = RemoteFile(uri="s3://bucket/key.csv", last_modified=datetime.now())
     config = FileBasedStreamConfig(
         name="test",
-        validation_policy="emit_record",
+        validation_policy="Emit Record",
         file_type="csv",
-        format={"csv": CsvFormat(encoding=encoding)}
+        format=CsvFormat(encoding=encoding)
     )
     list(parser.parse_records(config, file, stream_reader, logger))
     stream_reader.open_file.assert_has_calls([

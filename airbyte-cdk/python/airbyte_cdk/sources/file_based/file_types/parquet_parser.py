@@ -11,6 +11,7 @@ from urllib.parse import unquote
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -28,7 +29,7 @@ class ParquetParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Dict[str, Any]:
-        parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
+        parquet_format = config.format or ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
 
@@ -51,18 +52,23 @@ class ParquetParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
+        parquet_format = config.format or ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
-            raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
+            logger.info(f"Expected ParquetFormat, got {parquet_format}")
+            raise ConfigValidationError(f"Expected ParquetFormat, got {parquet_format}")
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             reader = pq.ParquetFile(fp)
             partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
             for row_group in range(reader.num_row_groups):
-                batch_dict = reader.read_row_group(row_group).to_pydict()
-                for record_values in zip(*batch_dict.values()):
-                    record = dict(zip(batch_dict.keys(), record_values))
-                    record.update(partition_columns)
-                    yield record
+                batch = reader.read_row_group(row_group)
+                for row in range(batch.num_rows):
+                    yield {
+                        **{
+                            column: ParquetParser._to_output_value(batch.column(column)[row], parquet_format)
+                            for column in batch.column_names
+                        },
+                        **partition_columns,
+                    }
 
     @staticmethod
     def _extract_partitions(filepath: str) -> List[str]:

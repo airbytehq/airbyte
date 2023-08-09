@@ -48,7 +48,7 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Dict[str, Any]:
-        avro_format = config.format[config.file_type] if config.format else AvroFormat()
+        avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
@@ -68,7 +68,7 @@ class AvroParser(FileTypeParser):
     def _convert_avro_type_to_json(cls, avro_format: AvroFormat, field_name: str, avro_field: str) -> Mapping[str, Any]:
         if isinstance(avro_field, str) and avro_field in AVRO_TYPE_TO_JSON_TYPE:
             # Legacy behavior to retain backwards compatibility. Long term we should always represent doubles as strings
-            if avro_field == "double" and avro_format.decimal_as_float:
+            if avro_field == "double" and not avro_format.double_as_string:
                 return {"type": "number"}
             return {"type": AVRO_TYPE_TO_JSON_TYPE[avro_field]}
         if isinstance(avro_field, Mapping):
@@ -133,7 +133,7 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        avro_format = config.format[config.file_type] if config.format else AvroFormat()
+        avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
@@ -154,10 +154,18 @@ class AvroParser(FileTypeParser):
     @staticmethod
     def _to_output_value(avro_format: AvroFormat, record_type: Mapping[str, Any], record_value: Any) -> Any:
         if not isinstance(record_type, Mapping):
-            if record_type == "double" and not avro_format.decimal_as_float:
+            if record_type == "double" and avro_format.double_as_string:
                 return str(record_value)
             return record_value
         if record_type.get("logicalType") == "uuid":
             return uuid.UUID(bytes=record_value)
+        elif record_type.get("logicalType") == "decimal":
+            return str(record_value)
+        elif record_type.get("logicalType") == "date":
+            return record_value.isoformat()
+        elif record_type.get("logicalType") == "local-timestamp-millis":
+            return record_value.isoformat(sep="T", timespec="milliseconds")
+        elif record_type.get("logicalType") == "local-timestamp-micros":
+            return record_value.isoformat(sep="T", timespec="microseconds")
         else:
             return record_value

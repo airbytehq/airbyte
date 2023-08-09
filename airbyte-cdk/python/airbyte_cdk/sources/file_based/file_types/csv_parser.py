@@ -35,7 +35,7 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Dict[str, Any]:
-        config_format = config.format.get(config.file_type) if config.format else CsvFormat()
+        config_format = config.format or CsvFormat()
         if not isinstance(config_format, CsvFormat):
             raise ValueError(f"Invalid format config: {config_format}")
         dialect_name = config.name + DIALECT_NAME
@@ -62,8 +62,8 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        schema: Mapping[str, Any] = config.input_schema  # type: ignore
-        config_format = config.format.get(config.file_type) if config.format else CsvFormat()
+        schema: Optional[Mapping[str, Any]] = config.get_input_schema()
+        config_format = config.format or CsvFormat()
         if not isinstance(config_format, CsvFormat):
             raise ValueError(f"Invalid format config: {config_format}")
         # Formats are configured individually per-stream so a unique dialect should be registered for each stream.

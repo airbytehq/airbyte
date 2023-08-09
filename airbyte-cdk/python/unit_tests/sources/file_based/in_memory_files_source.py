@@ -27,7 +27,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
 from avro import datafile
-from pydantic import AnyUrl, Field
+from pydantic import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -87,7 +87,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         globs: List[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        yield from AbstractFileBasedStreamReader.filter_files_by_globs([
+        yield from self.filter_files_by_globs_and_start_date([
             RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
             for f, data in self.files.items()
         ], globs)
@@ -137,15 +137,6 @@ class InMemorySpec(AbstractFileBasedSpec):
     @classmethod
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
-
-    start_date: Optional[str] = Field(
-        title="Start Date",
-        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
-        examples=["2021-01-01T00:00:00Z"],
-        format="date-time",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        order=1,
-    )
 
 
 class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
