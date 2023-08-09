@@ -10,7 +10,7 @@
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "The UTC date and time from which you'd like to replicate data for Zendesk Support API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        "description": "The UTC date and time from which you'd like to replicate data, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2020-10-15T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "format": "date-time"
