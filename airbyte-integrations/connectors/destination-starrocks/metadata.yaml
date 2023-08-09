@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 5c4d966a-19ff-45d8-9687-876ad0f5d0d9
-  dockerImageTag: latest
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-starrocks
   githubIssueLabel: destination-starrocks
   icon: starrocks.svg
