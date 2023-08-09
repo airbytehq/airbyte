@@ -186,25 +186,24 @@ class CsvParser(FileTypeParser):
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if deduped_property_types:
-            return partial(CsvParser._cast_types, property_types=deduped_property_types, config_format=config_format, logger=logger)
+            return partial(CsvParser._cast_types, deduped_property_types=deduped_property_types, config_format=config_format, logger=logger)
         else:
             # If no schema is provided, yield the rows as they are
             return _no_cast
 
     @staticmethod
     def _to_nullable(
-        row: Mapping[str, str], property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
+        row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
     ) -> Dict[str, Optional[str]]:
-        if not property_types:
-            property_types = {}
         nullable = row | {
-            k: None if CsvParser._value_is_none(v, property_types.get(k), null_values, strings_can_be_null) else v for k, v in row.items()
+            k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
+            for k, v in row.items()
         }
         return nullable
 
     @staticmethod
-    def _value_is_none(value: Any, property_type: Optional[str], null_values: Set[str], strings_can_be_null: bool) -> bool:
-        return value in null_values and (strings_can_be_null or property_type != "string")
+    def _value_is_none(value: Any, deduped_property_type: Optional[str], null_values: Set[str], strings_can_be_null: bool) -> bool:
+        return value in null_values and (strings_can_be_null or deduped_property_type != "string")
 
     @staticmethod
     def _pre_propcess_property_types(property_types: Dict[str, Any]) -> None:
@@ -234,7 +233,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _cast_types(
-        row: Dict[str, str], property_types: Dict[str, str], config_format: CsvFormat, logger: logging.Logger
+        row: Dict[str, str], deduped_property_types: Dict[str, str], config_format: CsvFormat, logger: logging.Logger
     ) -> Dict[str, Any]:
         """
         Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
@@ -247,7 +246,7 @@ class CsvParser(FileTypeParser):
         result = {}
 
         for key, value in row.items():
-            prop_type = property_types.get(key)
+            prop_type = deduped_property_types.get(key)
             cast_value: Any = value
 
             if prop_type in TYPE_PYTHON_MAPPING and prop_type is not None:
