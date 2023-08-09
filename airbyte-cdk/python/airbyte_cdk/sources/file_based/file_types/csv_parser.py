@@ -38,7 +38,7 @@ class _CsvReader:
         logger: logging.Logger,
         file_read_mode: FileReadMode,
     ) -> Generator[Dict[str, Any], None, None]:
-        config_format = _extract_config_format(config)
+        config_format = config.format or CsvFormat()
 
         # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
         # We don't unregister the dialect because we are lazily parsing each csv file to generate records
@@ -129,7 +129,7 @@ class CsvParser(FileTypeParser):
 
         # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-        config_format = _extract_config_format(config)
+        config_format = config.format or CsvFormat()
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
             lambda: _JsonTypeInferrer(
                 config_format.true_values,
@@ -164,7 +164,7 @@ class CsvParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[SchemaType],
     ) -> Iterable[Dict[str, Any]]:
-        config_format = _extract_config_format(config)
+        config_format = config.format or CsvFormat()
         cast_fn = CsvParser._get_cast_function(discovered_schema, config_format, logger)
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         for row in data_generator:
@@ -411,10 +411,3 @@ def _format_warning(key: str, value: str, expected_type: Optional[Any]) -> str:
 
 def _no_cast(row: Mapping[str, str]) -> Mapping[str, str]:
     return row
-
-
-def _extract_config_format(config: FileBasedStreamConfig) -> CsvFormat:
-    config_format = config.format.get(config.file_type) if config.format else CsvFormat()
-    if not isinstance(config_format, CsvFormat):
-        raise ValueError(f"Invalid format config: {config_format}")
-    return config_format

@@ -103,7 +103,7 @@ class SchemaInferenceTestCase(TestCase):
         self._config_format.infer_datatypes_legacy = False
         self._config = Mock()
         self._config.input_schema = None
-        self._config.format.get.return_value = self._config_format
+        self._config.format = self._config_format
 
         self._file = Mock(spec=RemoteFile)
         self._stream_reader = Mock(spec=AbstractFileBasedStreamReader)
@@ -218,7 +218,7 @@ class CsvReaderTest(unittest.TestCase):
         self._config_format = CsvFormat()
         self._config = Mock()
         self._config.name = self._CONFIG_NAME
-        self._config.format.get.return_value = self._config_format
+        self._config.format = self._config_format
 
         self._file = Mock(spec=RemoteFile)
         self._stream_reader = Mock(spec=AbstractFileBasedStreamReader)
