@@ -21,7 +21,7 @@ class LegacyConfigTransformer:
                     "name": legacy_config.dataset,
                     "file_type": legacy_config.format.filetype,
                     "globs": cls.create_globs(legacy_config.path_pattern, legacy_config.provider.path_prefix),
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     # todo: add formats on a per-type basis in follow up PRs
                 }
             ]
