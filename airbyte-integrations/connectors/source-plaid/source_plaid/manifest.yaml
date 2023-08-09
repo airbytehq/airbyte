@@ -42,7 +42,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{config['plaid_environment']}}.plaid.com
+        url_base: https://{{config['plaid_env']}}.plaid.com
         path: /accounts/balance/get
         http_method: POST
         request_parameters: {}
@@ -275,219 +275,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{config['plaid_environment']}}.plaid.com
-        path: /transactions/sync
-        http_method: POST
-        request_parameters: {}
-        request_headers: {}
-        authenticator:
-          type: NoAuth
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: SUCCESS
-                  predicate: '{{ response[''has_more''] == true }}'
-        request_body_json:
-          secret: '{{config[''api_key'']}}'
-          client_id: '{{config[''client_id'']}}'
-          access_token: '{{config[''access_token'']}}'
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - added
-            - '*'
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: body_json
-          field_name: cursor
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("next_cursor", {}) }}'
-          stop_condition: '{{ not response.get("next_cursor", {}) }}'
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date
-      datetime_format: '%Y-%m-%d'
-      is_data_feed: true
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{config[''start_date'']}}'
-        datetime_format: '%Y-%m-%d'
-  - type: DeclarativeStream
-    name: transaction_v1
-    primary_key:
-      - transaction_id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          account_id:
-            type: string
-          account_owner:
-            type:
-              - string
-              - 'null'
-          amount:
-            type: number
-          authorized_date:
-            type:
-              - string
-              - 'null'
-          authorized_datetime:
-            type:
-              - string
-              - 'null'
-          category:
-            items:
-              type: string
-            type: array
-          category_id:
-            type:
-              - string
-              - 'null'
-          check_number:
-            type:
-              - string
-              - 'null'
-          date:
-            type: string
-          datetime:
-            type:
-              - string
-              - 'null'
-          iso_currency_code:
-            type: string
-          location:
-            properties:
-              address:
-                type:
-                  - string
-                  - 'null'
-              city:
-                type:
-                  - string
-                  - 'null'
-              country:
-                type:
-                  - string
-                  - 'null'
-              lat:
-                type:
-                  - string
-                  - 'null'
-              lon:
-                type:
-                  - string
-                  - 'null'
-              postal_code:
-                type:
-                  - string
-                  - 'null'
-              region:
-                type:
-                  - string
-                  - 'null'
-              store_number:
-                type:
-                  - string
-                  - 'null'
-            type:
-              - object
-              - 'null'
-          merchant_name:
-            type:
-              - string
-              - 'null'
-          name:
-            type: string
-          payment_channel:
-            type:
-              - string
-              - 'null'
-          payment_meta:
-            properties:
-              by_order_of:
-                type:
-                  - string
-                  - 'null'
-              payee:
-                type:
-                  - string
-                  - 'null'
-              payer:
-                type:
-                  - string
-                  - 'null'
-              payment_method:
-                type:
-                  - string
-                  - 'null'
-              payment_processor:
-                type:
-                  - string
-                  - 'null'
-              ppd_id:
-                type:
-                  - string
-                  - 'null'
-              reason:
-                type:
-                  - string
-                  - 'null'
-              reference_number:
-                type:
-                  - string
-                  - 'null'
-            type:
-              - object
-              - 'null'
-          pending:
-            type:
-              - boolean
-              - 'null'
-          pending_transaction_id:
-            type:
-              - string
-              - 'null'
-          personal_finance_category:
-            type:
-              - string
-              - 'null'
-          transaction_code:
-            type:
-              - string
-              - 'null'
-          transaction_id:
-            type: string
-          transaction_type:
-            type: string
-          unofficial_currency_code:
-            type:
-              - string
-              - 'null'
-        required:
-          - account_id
-          - amount
-          - iso_currency_code
-          - name
-          - transaction_id
-          - category
-          - date
-          - transaction_type
-        type: object
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://{{config['plaid_environment']}}.plaid.com
+        url_base: https://{{config['plaid_env']}}.plaid.com
         path: /transactions/get
         http_method: POST
         request_parameters: {}
@@ -539,8 +327,7 @@ spec:
       - access_token
       - api_key
       - client_id
-      - plaid_environment
-      - start_date
+      - plaid_env
     properties:
       access_token:
         type: string
@@ -559,7 +346,7 @@ spec:
         order: 2
         title: Client ID
         description: The Plaid client id.
-      plaid_environment:
+      plaid_env:
         enum:
           - sandbox
           - development
@@ -585,4 +372,3 @@ metadata:
   autoImportSchema:
     balance: false
     transaction: false
-    transaction_v1: false
