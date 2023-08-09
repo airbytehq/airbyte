@@ -36,7 +36,7 @@ There are two types of incremental sync:
 
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
-   :::
+:::
 
 The Zendesk Support source connector supports the following streams:
 
@@ -80,6 +80,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `1.0.0`  | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | fix retry logic & update cursor for `Tickets` stream                                                                                                                                                                               |
+| `0.10.6` | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                                                                                                                                                                               |
+| `0.10.5` | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references                                                                                                                                                                                           |
 | `0.10.4` | 2023-07-25 | [28397](https://github.com/airbytehq/airbyte/pull/28397) | Handle 404 Error                                                                                                                                                                                                                   |
 | `0.10.3` | 2023-07-24 | [28612](https://github.com/airbytehq/airbyte/pull/28612) | Fix pagination for stream `TicketMetricEvents`                                                                                                                                                                                     |
 | `0.10.2` | 2023-07-19 | [28487](https://github.com/airbytehq/airbyte/pull/28487) | Remove extra page from params                                                                                                                                                                                                      |

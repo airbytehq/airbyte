@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
-  dockerImageTag: 0.1.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-zoom
   githubIssueLabel: source-zoom
   icon: zoom.svg
@@ -18,4 +18,8 @@ data:
   tags:
     - language:low-code
     - language:python
+  ab_internal:
+    sl: 200
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"
