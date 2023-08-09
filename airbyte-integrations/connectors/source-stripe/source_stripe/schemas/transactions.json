@@ -9,9 +9,7 @@
     "amount_details": {
       "type": ["null", "object"],
       "properties": {
-        "atm_fee": {
-          "type": ["null", "integer"]
-        }
+        "atm_fee": ["null", "integer"]
       }
     },
     "authorization": {
