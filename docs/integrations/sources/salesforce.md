@@ -89,9 +89,26 @@ The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](htt
 
 :::tip
 
-Airbyte recommends to use at least [Enterpise edition](https://help.salesforce.com/s/articleView?id=sf.users_add_products_subscription_management.htm&type=5) for daily base syncs.
+Airbyte recommends to use at least [Enterprise edition](https://help.salesforce.com/s/articleView?id=sf.users_add_products_subscription_management.htm&type=5) for daily base syncs. This subscription level provides the minimum required API limits.
 
 :::
+
+### BULK API vs REST API
+
+The main difference between BULK API and REST API is that **REST** API uses the standard synchronous approach (request -> response), while **BULK** uses an asynchronous one (create job with query -> wait for completion -> download response).
+Bulk API is recommended to use by SalesForce if data operation includes more than 2,000 records.
+
+Connector uses BULK API if it is possible, unless any of conditions met:
+
+- Stream has unsupported properties in schema: `base64` or `object`-like
+- Stream is not supported by BULK API (list was obtained experimentally)
+
+:::danger BULK API
+
+If you set an option `Force Use Bulk API` to `true`, connector will ignore unsupported properties and sync stream using BULK API.
+
+:::
+
 
 ## Supported Objects
 
@@ -103,7 +120,9 @@ Airbyte fetches and handles all the possible and available streams dynamically b
 
 - If the stream has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with.
 
-**Note:** [BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) cannot be used to receive data from the following streams due to Salesforce API limitations. The Salesforce connector syncs them using the REST API which will occasionally cost more of your API quota:
+:::note BULK API Limitations
+
+[BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) cannot be used to receive data from the following streams due to Salesforce API limitations. The Salesforce connector syncs them using the REST API which will occasionally cost more of your API quota:
 
 - AcceptedEventRelation
 - Attachment
@@ -125,6 +144,8 @@ Airbyte fetches and handles all the possible and available streams dynamically b
 - TaskPriority
 - TaskStatus
 - UndecidedEventRelation
+
+:::
 
 ## Tutorials
 
