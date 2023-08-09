@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 _base_single_stream_scenario = (
@@ -206,7 +206,7 @@ skip_record_scenario_single_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                 }
             ]
         }
@@ -248,13 +248,13 @@ skip_record_scenario_multi_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a/*.csv"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                 }
 
             ]
@@ -307,7 +307,7 @@ emit_record_scenario_single_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -345,13 +345,13 @@ emit_record_scenario_multi_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a/*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
 
             ]
@@ -396,7 +396,7 @@ wait_for_rediscovery_scenario_single_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "wait_for_discover",
+                    "validation_policy": "Wait for Discover",
                 }
             ]
         }
@@ -408,7 +408,7 @@ wait_for_rediscovery_scenario_single_stream = (
         "read": [
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a.csv validation_policy=wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a.csv validation_policy=Wait for Discover n_skipped=0",
             },
         ]
     })
@@ -425,13 +425,13 @@ wait_for_rediscovery_scenario_multi_stream = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["a/*.csv"],
-                    "validation_policy": "wait_for_discover",
+                    "validation_policy": "Wait for Discover",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
-                    "validation_policy": "wait_for_discover",
+                    "validation_policy": "Wait for Discover",
                 }
 
             ]
@@ -459,50 +459,12 @@ wait_for_rediscovery_scenario_multi_stream = (
         "read": [
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a/a1.csv validation_policy=wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a/a1.csv validation_policy=Wait for Discover n_skipped=0",
             },
             {
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=Wait for Discover n_skipped=0",
             },
         ]
     })
-).build()
-
-
-invalid_validation_policy = (
-    _base_single_stream_scenario.copy()
-    .set_name("invalid_validation_policy")
-    .set_config(
-        {
-            "streams": [
-                {
-                    "name": "stream1",
-                    "file_type": "csv",
-                    "globs": ["*.csv"],
-                    "validation_policy": "x",
-                }
-            ]
-        }
-    )
-    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
-).build()
-
-
-no_validation_policy = (
-    _base_single_stream_scenario.copy()
-    .set_name("empty_validation_policy")
-    .set_config(
-        {
-            "streams": [
-                {
-                    "name": "stream1",
-                    "file_type": "csv",
-                    "globs": ["*.csv"],
-                    "validation_policy": "",
-                }
-            ]
-        }
-    )
-    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
