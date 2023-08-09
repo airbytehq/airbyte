@@ -187,7 +187,7 @@ class Step(ABC):
     async def retry(self, step_result, *args, **kwargs) -> StepResult:
         self.retry_count += 1
         self.logger.warn(
-            f"Failed with error: {step_result.stderr}. Retry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
+            f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
         )
         await anyio.sleep(self.retry_delay.total_seconds())
         return await self.run(*args, **kwargs)
