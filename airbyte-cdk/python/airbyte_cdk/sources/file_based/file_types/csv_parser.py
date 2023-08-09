@@ -166,10 +166,10 @@ class CsvParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
         config_format = _extract_format(config)
         if discovered_schema:
-            property_types = {col: prop["type"] for col, prop in discovered_schema["properties"].items()}
+            property_types = {col: prop["type"] for col, prop in discovered_schema["properties"].items()}  # type: ignore # discovered_schema["properties"] is known to be a mapping
             CsvParser._pre_propcess_property_types(property_types)
         else:
-            property_types = None
+            property_types = {}
         cast_fn = CsvParser._get_cast_function(property_types, config_format, logger)
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         for row in data_generator:
@@ -192,10 +192,14 @@ class CsvParser(FileTypeParser):
             return _no_cast
 
     @staticmethod
-    def _to_nullable(row: Mapping[str, str], property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool) -> Dict[str, Optional[str]]:
+    def _to_nullable(
+        row: Mapping[str, str], property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
+    ) -> Dict[str, Optional[str]]:
         if not property_types:
             property_types = {}
-        nullable = row | {k: None if CsvParser._value_is_none(v, property_types.get(k), null_values, strings_can_be_null) else v for k, v in row.items()}
+        nullable = row | {
+            k: None if CsvParser._value_is_none(v, property_types.get(k), null_values, strings_can_be_null) else v for k, v in row.items()
+        }
         return nullable
 
     @staticmethod
@@ -203,7 +207,7 @@ class CsvParser(FileTypeParser):
         return value in null_values and (strings_can_be_null or property_type != "string")
 
     @staticmethod
-    def _pre_propcess_property_types(property_types: Dict[str, Any]):
+    def _pre_propcess_property_types(property_types: Dict[str, Any]) -> None:
         for prop, prop_type in property_types.items():
             if isinstance(prop_type, list):
                 prop_type_distinct = set(prop_type)
