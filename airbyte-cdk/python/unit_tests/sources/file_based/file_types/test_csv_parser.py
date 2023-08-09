@@ -12,7 +12,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat
+from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat, InferenceType
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser, _CsvReader
@@ -99,10 +99,9 @@ class SchemaInferenceTestCase(TestCase):
         self._config_format.true_values = _DEFAULT_TRUE_VALUES
         self._config_format.false_values = _DEFAULT_FALSE_VALUES
         self._config_format.null_values = {self._A_NULL_VALUE}
-        self._config_format.infer_datatypes = False
-        self._config_format.infer_datatypes_legacy = False
+        self._config_format.inference_type = InferenceType.NONE
         self._config = Mock()
-        self._config.input_schema = None
+        self._config.get_input_schema.return_value = None
         self._config.format = self._config_format
 
         self._file = Mock(spec=RemoteFile)
@@ -112,71 +111,71 @@ class SchemaInferenceTestCase(TestCase):
         self._parser = CsvParser(self._csv_reader)
 
     def test_given_user_schema_defined_when_infer_schema_then_return_user_schema(self) -> None:
-        self._config.input_schema = {self._HEADER_NAME: {"type": "potato"}}
+        self._config.get_input_schema.return_value = {self._HEADER_NAME: {"type": "potato"}}
         self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "potato")
 
     def test_given_booleans_only_when_infer_schema_then_type_is_boolean(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "boolean")
 
-    def test_given_legacy_and_booleans_only_when_infer_schema_then_type_is_boolean(self) -> None:
-        self._config_format.infer_datatypes_legacy = True
+    def test_given_primitive_only_and_booleans_only_when_infer_schema_then_type_is_boolean(self) -> None:
+        self._config_format.inference_type = InferenceType.PRIMITIVE_TYPES_ONLY
         self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "boolean")
 
     def test_given_integers_only_when_infer_schema_then_type_is_integer(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(["2", "90329", "5645"], "integer")
 
-    def test_given_legacy_and_integers_only_when_infer_schema_then_type_is_integer(self) -> None:
-        self._config_format.infer_datatypes_legacy = True
+    def test_given_primitive_only_and_integers_only_when_infer_schema_then_type_is_integer(self) -> None:
+        self._config_format.inference_type = InferenceType.PRIMITIVE_TYPES_ONLY
         self._test_infer_schema(["2", "90329", "5645"], "integer")
 
     def test_given_numbers_and_integers_when_infer_schema_then_type_is_number(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(["2", "90329", "2.312"], "number")
 
-    def test_given_legacy_and_numbers_and_integers_when_infer_schema_then_type_is_number(self) -> None:
-        self._config_format.infer_datatypes_legacy = True
+    def test_given_primitive_only_and_numbers_and_integers_when_infer_schema_then_type_is_number(self) -> None:
+        self._config_format.inference_type = InferenceType.PRIMITIVE_TYPES_ONLY
         self._test_infer_schema(["2", "90329", "2.312"], "number")
 
     def test_given_arrays_only_when_infer_schema_then_type_is_array(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(['["first_item", "second_item"]', '["first_item_again", "second_item_again"]'], "array")
 
     def test_given_arrays_only_when_infer_schema_then_type_is_string(self) -> None:
-        self._config_format.infer_datatypes_legacy = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_TYPES_ONLY
         self._test_infer_schema(['["first_item", "second_item"]', '["first_item_again", "second_item_again"]'], "string")
 
     def test_given_objects_only_when_infer_schema_then_type_is_object(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(['{"object1_key": 1}', '{"object2_key": 2}'], "object")
 
-    def test_given_legacy_and_objects_only_when_infer_schema_then_type_is_string(self) -> None:
-        self._config_format.infer_datatypes_legacy = True
+    def test_given_primitive_only_and_objects_only_when_infer_schema_then_type_is_string(self) -> None:
+        self._config_format.inference_type = InferenceType.PRIMITIVE_TYPES_ONLY
         self._test_infer_schema(['{"object1_key": 1}', '{"object2_key": 2}'], "string")
 
     def test_given_arrays_and_objects_only_when_infer_schema_then_type_is_object(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(['["first_item", "second_item"]', '{"an_object_key": "an_object_value"}'], "object")
 
     def test_given_strings_and_objects_only_when_infer_schema_then_type_is_object(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(['["first_item", "second_item"]', "this is a string"], "object")
 
     def test_given_strings_only_when_infer_schema_then_type_is_string(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(["a string", "another string"], "string")
 
     def test_given_a_null_value_when_infer_then_ignore_null(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(["2", "90329", "5645", self._A_NULL_VALUE], "integer")
 
     def test_given_only_null_values_when_infer_then_type_is_string(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema([self._A_NULL_VALUE, self._A_NULL_VALUE, self._A_NULL_VALUE], "string")
 
     def test_given_big_file_when_infer_schema_then_stop_early(self) -> None:
-        self._config_format.infer_datatypes = True
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._csv_reader.read_data.return_value = ({self._HEADER_NAME: row} for row in ["2." + "2" * 1_000_000] + ["this is a string"])
         inferred_schema = self._infer_schema()
         # since the type is number, we know the string at the end was not considered

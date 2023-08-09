@@ -17,6 +17,12 @@ class QuotingBehavior(Enum):
     QUOTE_NONE = "Quote None"
 
 
+class InferenceType(Enum):
+    NONE = "None"
+    PRIMITIVE_TYPES_ONLY = "Primitive Types Only"
+    PRIMITIVE_AND_COMPLEX_TYPES = "Primitive and Complex Types"
+
+
 DEFAULT_TRUE_VALUES = ["y", "yes", "t", "true", "on", "1"]
 DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
@@ -81,15 +87,10 @@ class CsvFormat(BaseModel):
         default=DEFAULT_FALSE_VALUES,
         description="A set of case-sensitive strings that should be interpreted as false values.",
     )
-    infer_datatypes: bool = Field(
+    inference_type: InferenceType = Field(
         title="Infer Datatypes",
-        default=False,
+        default=InferenceType.NONE,
         description="Whether to autogenerate the schema based the file content.",
-    )
-    infer_datatypes_legacy: bool = Field(
-        title="Infer Datatypes (legacy)",
-        default=False,
-        description="Whether to autogenerate the schema based the file content. This inference does not support list and objects.",
     )
 
     @validator("delimiter")
@@ -126,12 +127,4 @@ class CsvFormat(BaseModel):
         auto_generate_column_names = values.get("autogenerate_column_names", False)
         if skip_rows_before_header > 0 and auto_generate_column_names:
             raise ValueError("Cannot skip rows before header and autogenerate column names at the same time.")
-        return values
-
-    @root_validator
-    def validate_option_inference(cls, values: Mapping[str, Any]) -> Mapping[str, Any]:
-        infer_datatypes = values.get("infer_datatypes", False)
-        infer_datatypes_legacy = values.get("infer_datatypes_legacy", False)
-        if infer_datatypes and infer_datatypes_legacy:
-            raise ValueError("Only one way to infer can be configured but both infer_datatypes and infer_datatypes_legacy are enabled.")
         return values

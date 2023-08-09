@@ -11,7 +11,7 @@ from functools import partial
 from io import IOBase
 from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional, Set
 
-from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingBehavior
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, InferenceType, QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
@@ -38,7 +38,7 @@ class _CsvReader:
         logger: logging.Logger,
         file_read_mode: FileReadMode,
     ) -> Generator[Dict[str, Any], None, None]:
-        config_format = config.format or CsvFormat()
+        config_format = _extract_format(config)
 
         # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
         # We don't unregister the dialect because we are lazily parsing each csv file to generate records
@@ -123,21 +123,21 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        if config.input_schema:
-            # FIXME change type of method to Mapping
-            return config.input_schema  # type: ignore # conversion to mapping is handled by pydantic and we shouldn't have a str here
+        input_schema = config.get_input_schema()
+        if input_schema:
+            return input_schema
 
         # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-        config_format = config.format or CsvFormat()
+        config_format = _extract_format(config)
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
             lambda: _JsonTypeInferrer(
                 config_format.true_values,
                 config_format.false_values,
                 config_format.null_values,
-                config_format.infer_datatypes and not config_format.infer_datatypes_legacy,
+                config_format.inference_type == InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
             )
-            if config_format.infer_datatypes or config_format.infer_datatypes_legacy
+            if config_format.inference_type != InferenceType.NONE
             else _DisabledTypeInferrer()
         )
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
@@ -164,7 +164,7 @@ class CsvParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[SchemaType],
     ) -> Iterable[Dict[str, Any]]:
-        config_format = config.format or CsvFormat()
+        config_format = _extract_format(config)
         cast_fn = CsvParser._get_cast_function(discovered_schema, config_format, logger)
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         for row in data_generator:
@@ -411,3 +411,10 @@ def _format_warning(key: str, value: str, expected_type: Optional[Any]) -> str:
 
 def _no_cast(row: Mapping[str, str]) -> Mapping[str, str]:
     return row
+
+
+def _extract_format(config: FileBasedStreamConfig) -> CsvFormat:
+    config_format = config.format or CsvFormat()
+    if not isinstance(config_format, CsvFormat):
+        raise ValueError(f"Invalid format config: {config_format}")
+    return config_format
