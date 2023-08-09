@@ -280,6 +280,13 @@ class Connector:
 
     @property
     def ab_internal_sl(self) -> int:
+        """Airbyte Internal Field.
+
+        More info can be found here: https://www.notion.so/Internal-Metadata-Fields-32b02037e7b244b7934214019d0b7cc9
+
+        Returns:
+            int: The value
+        """
         default_value = 100
         sl_value = get(self.metadata, "ab_internal.sl")
 
@@ -291,6 +298,13 @@ class Connector:
 
     @property
     def ab_internal_ql(self) -> int:
+        """Airbyte Internal Field.
+
+        More info can be found here: https://www.notion.so/Internal-Metadata-Fields-32b02037e7b244b7934214019d0b7cc9
+
+        Returns:
+            int: The value
+        """
         default_value = 100
         ql_value = get(self.metadata, "ab_internal.ql")
 
