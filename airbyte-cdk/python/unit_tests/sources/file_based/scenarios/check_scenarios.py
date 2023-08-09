@@ -19,7 +19,7 @@ _base_success_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -57,13 +57,13 @@ success_multi_stream_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv", "*.gz"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["*.csv", "*.gz"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -81,7 +81,7 @@ success_extensionless_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -111,7 +111,7 @@ success_user_provided_schema_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "string"}',
                 }
             ],
@@ -189,13 +189,13 @@ error_multi_stream_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "jsonl",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ],
         }

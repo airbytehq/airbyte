@@ -28,14 +28,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   @Override
-  public StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride) {
-    // TODO
+  public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
+    // No escaping needed, as far as I can tell. We quote all our identifier names.
     return new StreamId(namespace, name, rawNamespaceOverride, StreamId.concatenateRawTableName(namespace, name), namespace, name);
   }
 
   @Override
-  public ColumnId buildColumnId(String name) {
-    // TODO
+  public ColumnId buildColumnId(final String name) {
+    // No escaping needed, as far as I can tell. We quote all our identifier names.
     return new ColumnId(name, name, name);
   }
 
@@ -77,7 +77,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String createTable(StreamConfig stream, String suffix) {
+  public String createTable(final StreamConfig stream, final String suffix) {
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
         .collect(joining(",\n"));
@@ -99,35 +99,35 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public boolean existingSchemaMatchesStreamConfig(StreamConfig stream, SnowflakeTableDefinition existingTable) throws TableNotMigratedException {
-    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES)) {
+  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable) throws TableNotMigratedException {
+    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS)) {
       throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
     }
 
     // Check that the columns match, with special handling for the metadata columns.
-    LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
+    final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
             LinkedHashMap::putAll);
-    LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
+    final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
         .filter(column -> !JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.contains(column.getKey()))
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey(), column.getValue()),
             LinkedHashMap::putAll);
-    boolean sameColumns = actualColumns.equals(intendedColumns)
+    final boolean sameColumns = actualColumns.equals(intendedColumns)
         && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
         && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_DATA));
+        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META));
 
     return sameColumns;
   }
 
   @Override
-  public String updateTable(StreamConfig stream, String finalSuffix) {
+  public String updateTable(final StreamConfig stream, final String finalSuffix) {
     return updateTable(stream, finalSuffix, true);
   }
 
-  private String updateTable(StreamConfig stream, String finalSuffix, boolean verifyPrimaryKeys) {
+  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
     String validatePrimaryKeys = "";
     if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
@@ -171,10 +171,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     } else if (airbyteType == AirbyteProtocolType.TIME_WITH_TIMEZONE) {
       // We're using TEXT for this type, so need to explicitly check the string format.
       // There's a bunch of ways we could do this; this regex is approximately correct and easy to implement.
+      // It'll match anything like HH:MM:SS[.SSS](Z|[+-]HH[:]MM), e.g.:
+      // 12:34:56Z
+      // 12:34:56.7+08:00
+      // 12:34:56.7890123-0800
+      // 12:34:56-08
       return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
           """
           CASE
-            WHEN NOT ("_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}:\\\\d{2})')
+            WHEN NOT ("_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
               THEN NULL
             ELSE "_airbyte_data":"${column_name}"
           END
@@ -182,6 +187,27 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     } else {
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
+        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+          // Handle offsets in +/-HHMM and +/-HH formats
+          // The four cases, in order, match:
+          // 2023-01-01T12:34:56-0800
+          // 2023-01-01T12:34:56-08
+          // 2023-01-01T12:34:56.7890123-0800
+          // 2023-01-01T12:34:56.7890123-08
+          // And the ELSE will try to handle everything else.
+            """
+                CASE
+                  WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
+                    THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+                  WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
+                    THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
+                  WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
+                    THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
+                  WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
+                    THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
+                  ELSE TRY_CAST("_airbyte_data":"${column_name}"::TEXT AS TIMESTAMP_TZ)
+                END
+                """);
         // try_cast doesn't support variant/array/object, so handle them specially
         case "VARIANT" -> "\"_airbyte_data\":\"" + column.originalName() + "\"";
         // We need to validate that the struct is actually a struct.
@@ -273,7 +299,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       cdcConditionalOrIncludeStatement = """
       OR (
         "_airbyte_loaded_at" IS NOT NULL
-        AND "_airbyte_data":"_ab_cdc_deleted_at" IS NOT NULL
+        AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE')
       )
       """;
     }
@@ -402,7 +428,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String overwriteFinalTable(StreamId stream, String finalSuffix) {
+  public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "final_table", stream.finalTableId(QUOTE),
         "tmp_final_table", stream.finalTableId(QUOTE, finalSuffix))).replace(
@@ -416,9 +442,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String softReset(StreamConfig stream) {
-    String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
-    String clearLoadedAt = clearLoadedAt(stream.id());
+  public String softReset(final StreamConfig stream) {
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    final String clearLoadedAt = clearLoadedAt(stream.id());
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
     return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
