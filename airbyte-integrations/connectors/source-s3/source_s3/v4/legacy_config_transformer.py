@@ -2,9 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
+
 from source_s3.source import SourceS3Spec
 from typing import Mapping, Any, List
 
+
+SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 class LegacyConfigTransformer:
     """
@@ -20,15 +25,15 @@ class LegacyConfigTransformer:
                 {
                     "name": legacy_config.dataset,
                     "file_type": legacy_config.format.filetype,
-                    "globs": cls.create_globs(legacy_config.path_pattern, legacy_config.provider.path_prefix),
-                    "validation_policy": "emit_record",
+                    "globs": cls._create_globs(legacy_config.path_pattern, legacy_config.provider.path_prefix),
+                    "validation_policy": "Emit Record",
                     # todo: add formats on a per-type basis in follow up PRs
                 }
             ]
         }
 
         if legacy_config.provider.start_date:
-            transformed_config["start_date"] = legacy_config.provider.start_date
+            transformed_config["start_date"] = cls._transform_seconds_to_micros(legacy_config.provider.start_date)
         if legacy_config.provider.aws_access_key_id:
             transformed_config["aws_access_key_id"] = legacy_config.provider.aws_access_key_id
         if legacy_config.provider.aws_secret_access_key:
@@ -40,8 +45,16 @@ class LegacyConfigTransformer:
 
         return transformed_config
 
-    @ classmethod
-    def create_globs(cls, path_pattern: str, path_prefix: str) -> List[str]:
+    @classmethod
+    def _create_globs(cls, path_pattern: str, path_prefix: str) -> List[str]:
         if path_prefix:
             return [path_prefix + path_pattern]
         return [path_pattern]
+
+    @classmethod
+    def _transform_seconds_to_micros(cls, datetime_str: str) -> str:
+        try:
+            parsed_datetime = datetime.strptime(datetime_str, SECONDS_FORMAT)
+            return datetime.strftime(parsed_datetime, MICROS_FORMAT)
+        except ValueError as e:
+            raise e

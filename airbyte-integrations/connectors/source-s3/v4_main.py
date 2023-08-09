@@ -6,7 +6,6 @@
 import sys
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from source_s3.v4 import Config, SourceS3, SourceS3StreamReader
 
 if __name__ == "__main__":

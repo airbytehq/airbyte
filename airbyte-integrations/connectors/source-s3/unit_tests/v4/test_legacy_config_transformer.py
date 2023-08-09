@@ -40,13 +40,13 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 "aws_access_key_id": "some_access_key",
                 "aws_secret_access_key": "some_secret",
                 "endpoint": "https://external-s3.com",
-                "start_date": "2022-01-01T01:02:03Z",
+                "start_date": "2022-01-01T01:02:03.000000Z",
                 "streams": [
                     {
                         "name": "test_data",
                         "file_type": "csv",
                         "globs": ["a_folder/**/*.csv"],
-                        "validation_policy": "emit_record",
+                        "validation_policy": "Emit Record",
                         "input_schema": '{"col1": "string", "col2": "integer"}',
                     }
                 ]
@@ -72,7 +72,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "name": "test_data",
                         "file_type": "avro",
                         "globs": ["**/*.csv"],
-                        "validation_policy": "emit_record",
+                        "validation_policy": "Emit Record",
                     }
                 ]
             }
