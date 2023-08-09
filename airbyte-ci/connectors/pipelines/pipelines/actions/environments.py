@@ -455,11 +455,15 @@ def with_dockerd_service(dagger_client: Client, name: str) -> Container:
     return (
         dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
+        .with_env_variable("DOCKERD_SERVICE_NAME", name)
         .with_mounted_cache(
             "/tmp",
             dagger_client.cache_volume("shared-tmp"),
         )
-        .with_env_variable("DOCKERD_SERVICE_NAME", name)
+        .with_mounted_cache(
+            "/var/lib/docker",
+            dagger_client.cache_volume(f"{dagger_client.__hash__()}-{name}"),
+        )
         .with_exposed_port(2375)
         .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
@@ -527,16 +531,21 @@ def bound_docker_host(context: ConnectorContext, custom_docker_host_name: Option
     return bound_docker_host_inner
 
 
-def with_docker_cli(context: PipelineContext, custom_bound_to_docker_host: Callable) -> Container:
+def with_docker_cli(context: PipelineContext, docker_host_binding: Callable) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
         context (ConnectorContext): The current connector context.
-
+        docker_host_binding (Callable): A callable that will bind the container to a docker host.
     Returns:
         Container: A docker cli container bound to a docker host.
     """
-    return context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE).with_(custom_bound_to_docker_host)
+    return (
+        context.dagger_client.container()
+        .from_(consts.DOCKER_CLI_IMAGE)
+        .with_(docker_host_binding)
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+    )
 
 
 async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str, custom_bound_to_docker_host: Callable):

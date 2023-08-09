@@ -105,8 +105,10 @@ class IntegrationTests(PytestStep):
             StepResult: Failure or success of the integration tests with stdout and stdout.
         """
 
-        connector_under_test = connector_under_test.with_(environments.bound_docker_host(self.context)).with_(
-            environments.mounted_connector_secrets(self.context)
+        connector_under_test = (
+            connector_under_test
+            # We bind the docker host to the container to be able to run docker commands in integration tests.
+            .with_(environments.bound_docker_host(self.context)).with_(environments.mounted_connector_secrets(self.context))
         )
         return await self._run_tests_in_directory(connector_under_test, "integration_tests")
 
