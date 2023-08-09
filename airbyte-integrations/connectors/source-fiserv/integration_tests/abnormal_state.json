@@ -1,5 +1,14 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "chargeback": {
+    "last_sync_at": "21000101"
+  },
+  "settlement": {
+    "last_sync_at": "21000101"
+  },
+  "disbursement": {
+    "last_sync_at": "21000101"
+  },
+  "funding": {
+    "last_sync_at": "21000101"
   }
 }

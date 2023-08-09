@@ -1,7 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
+    "last_sync_at":{
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "feesAmt": {
       "type": [
         "number",
@@ -16,7 +23,7 @@
     },
     "accountCurrency": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -40,31 +47,31 @@
     },
     "referenceNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "bankReferenceNo": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "majorCategoryKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "siteID": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "tranCategoryCode": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -82,7 +89,7 @@
     },
     "airLineTicketNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -90,8 +97,7 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "debitAmount": {
       "type": [
@@ -131,7 +137,7 @@
     },
     "ddaLast4": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -149,7 +155,7 @@
     },
     "depositTypeCdKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -169,8 +175,7 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "minorCategory": {
       "type": [
@@ -180,7 +185,7 @@
     },
     "addendumARN": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -198,7 +203,7 @@
     },
     "relatedSourceTran": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -206,15 +211,13 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "recordDate": {
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "currency": {
       "type": [
@@ -230,7 +233,7 @@
     },
     "processorKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -248,13 +251,13 @@
     },
     "referenceNo": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "minorCategoryKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -266,13 +269,13 @@
     },
     "productCodeKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "paymentRefNo": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -288,7 +291,229 @@
         "null"
       ]
     },
+    "factorAgent": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdPaidbyOthersKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdChargebacksReversals": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "instructionType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdPaidbyOthers": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paymentBaseAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "merchantIdShort": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "executionCount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdAdjustments": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "amountLimit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdFeesKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paymentMaximumAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "startDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdFees": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "intraAccountRefNo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "endDt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "minrCtgrOrg": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastExecutionDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdChargebacksReversalsKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdNetSalesKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paymentMinimumAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "majorCtgrOrg": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdICChargesKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdServiceCharges": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdNetSales": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "note": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdServiceChargesKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "countLimit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "aba": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdAdjustmentsKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "postedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCdICCharges": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "period": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "accountCurrencyGross": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
     "chargebackAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "destinationAccountType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paymentPercent": {
       "type": [
         "number",
         "null"
@@ -302,7 +527,7 @@
     },
     "feeSeqCode": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },

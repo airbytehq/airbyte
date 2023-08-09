@@ -1,7 +1,14 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
+        "last_sync_at":{
+            "type": [
+              "string",
+              "null"
+            ]
+          },
         "BYOM": {
             "type": [
                 "string",

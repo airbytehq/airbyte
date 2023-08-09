@@ -1,10 +1,17 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
+        "last_sync_at":{
+            "type": [
+              "string",
+              "null"
+            ]
+          },
         "accountLastFour": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -22,7 +29,7 @@
         },
         "accountTypeKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -34,7 +41,7 @@
         },
         "approvalCodeKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -46,7 +53,7 @@
         },
         "batchOrigId": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -70,13 +77,13 @@
         },
         "checkID": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "checkNumber": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -88,7 +95,7 @@
         },
         "checkStatusKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -130,7 +137,7 @@
         },
         "currencyKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -160,7 +167,7 @@
         },
         "fundingAccount": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -196,13 +203,13 @@
         },
         "merchantStatusKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "mid": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -214,7 +221,7 @@
         },
         "origId": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -232,7 +239,7 @@
         },
         "paymentChannelKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -256,7 +263,7 @@
         },
         "paymentStatusKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -274,7 +281,7 @@
         },
         "paymentTypeKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -286,7 +293,7 @@
         },
         "postalCode": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -310,7 +317,7 @@
         },
         "recipientExtension": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -328,7 +335,7 @@
         },
         "recipientGuestKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -340,7 +347,7 @@
         },
         "recipientIdentifier": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -358,7 +365,7 @@
         },
         "recipientPhone": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -370,7 +377,7 @@
         },
         "recipientReasonKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -382,7 +389,7 @@
         },
         "recipientStatusKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -400,7 +407,7 @@
         },
         "recipientTypeKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -418,7 +425,7 @@
         },
         "routingNumber": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -430,7 +437,7 @@
         },
         "settlementStatusKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -442,7 +449,7 @@
         },
         "stateKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },

@@ -6,6 +6,7 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 
 import requests
@@ -25,7 +26,6 @@ logger = logging.getLogger("airbyte")
 
 
 class FiservStream(HttpStream, ABC):
-    cursor_field = None
     url_base = "https://prod.api.fiservapps.com/"
     endpoint = None
 
@@ -48,10 +48,10 @@ class FiservStream(HttpStream, ABC):
     def http_method(self) -> str:
         return "POST"
 
+
     def _chunk_date_range(self, start_date: str, end_date: str) -> Iterable[Mapping[str, str]]:
         start_date = pendulum.parse(start_date)
         end_date = pendulum.parse(end_date)
-
         chunk_start_date = start_date
         while chunk_start_date < end_date:
             chunck_end_date = chunk_start_date.add(days=1)
@@ -74,18 +74,17 @@ class FiservStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
-        body = stream_slice
+        body = stream_slice if stream_slice else {}
         if self._fields:
             body["fields"] = self._fields
 
-        logger.info(body)
         return body
-    
+
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         request_id = str(uuid.uuid4())
-        ts = str(int(pendulum.now(tz='UTC').timestamp() * 1000))
+        ts = str(int(pendulum.now(tz="UTC").timestamp() * 1000))
         body = self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         hmac_signature = self._generate_hmac(request_id, ts, body)
         return {
@@ -112,11 +111,19 @@ class FiservStream(HttpStream, ABC):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Mapping[str, str]]:
         stream_state = stream_state or {}
-        start_date = stream_state.get(self.cursor_field, self._start_date)
+        start_date = self._start_date
+
+        if cursor_field:
+            field = cursor_field[0]
+            start_date = stream_state.get(field, self._start_date)
+  
         yield from self._chunk_date_range(start_date, self.end_date)
 
+    @property
+    def availability_strategy(self):
+        return None
 
-# Basic incremental stream
+
 class IncrementalFiservStream(FiservStream, IncrementalMixin):
     cursor_field = "last_sync_at"
     _cursor_value = None
@@ -127,7 +134,7 @@ class IncrementalFiservStream(FiservStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, self._start_date)
+        self._cursor_value = value.get(self.cursor_field) or self._start_date
 
     def read_records(
         self,
@@ -136,20 +143,23 @@ class IncrementalFiservStream(FiservStream, IncrementalMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
-        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        self._cursor_value = self.end_date
+        stream_slice = stream_slice or {}
+        records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        
+        old_cursor = self._cursor_value or self._start_date
+        new_cursor = stream_slice.get("toDate", self.end_date)
+
+        for record in records:
+            record[self.cursor_field] = new_cursor
+            yield record
+
+        self._cursor_value = max(new_cursor, old_cursor)
+
 
 
 class Settlement(IncrementalFiservStream):
-    primary_key = "tokenRequesterId"
+    primary_key = "visaTranId"
     endpoint = "settlement"
-
-
-# implement, given a start abd end date return interval(ex. Jan 1 and end Jan 3, return array with start and end dates for every day, return all these ranges as an object)
-# stream slices return and set to that interval, so when process request body, use stream slices to define from and end date
-# make sure whatever function you write, given that one day range, 1 object range
-# stream slices takes into account state
-# stream clices for each day given an interval, yield from to end date a key and make it request body function deal with that and check if state is aviable if it is
 class Chargeback(IncrementalFiservStream):
     primary_key = "chargebackReferenceId"  # represents the last date data was fetched
     endpoint = "chargeback"
@@ -185,17 +195,17 @@ class Retrieval(IncrementalFiservStream):
     endpoint = "retrieval"
 
 
-class Sites(IncrementalFiservStream): #why is the discover fails when it inherits from Fiserv Stream?? 
+class Sites(FiservStream):
     primary_key = "corpID"
     endpoint = "reference/sites"
 
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, str]]:
-        return None
-    
     def request_body_json(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Optional[Union[Mapping[str, Any], str]]:
-        return {}
+    ) -> Optional[Mapping[str, Any]]:
+        return {"filters": {}}
+
+    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
+        return [None]
 
 
 class Transactions(IncrementalFiservStream):
@@ -203,32 +213,38 @@ class Transactions(IncrementalFiservStream):
     endpoint = "prepaid/transactions"
 
 
-class Bin(IncrementalFiservStream):
+class Bin(FiservStream):
     primary_key = "id"
     endpoint = "reference/bins"
-    parent_streams = [(Chargeback, "BinId"), (Retrieval, "BinId"), (Settlement, "BinID")]
+
+    parent_streams = [(Chargeback, "First6", "first6"), (Retrieval, "First6", "first6"), (Settlement, "First6", "first6")]
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:  # Collect all the bin IDs from the parent streams
+    ) -> Mapping[str, Any]:
+        logger.info("Requesting stream slices")
         all_bin_ids = set()
-
-        for ParentStream, field in self.parent_streams:
+        for ParentStream, filter_field, target_field in self.parent_streams:
             kwargs = {
                 "api_key": self._api_key,
                 "api_secret": self._api_secret,
                 "start_date": self._start_date,
-                "fields": [field],
+                "fields": [filter_field],
             }
 
             parent_stream_instance = ParentStream(**kwargs)
-            bin_ids = []
-            for record in parent_stream_instance.read_records(sync_mode=SyncMode.full_refresh):
-                logger.info(record)
-                bin_id = record.get("binId")
-                if bin_ids:
-                    all_bin_ids.update(*bin_ids)
+            logger.info("========================")
+            logger.info(f"Processing {parent_stream_instance.name} from {self._start_date}")
 
+            for stream_slice in parent_stream_instance.stream_slices(sync_mode=SyncMode.full_refresh):
+                for record in parent_stream_instance.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                    bin_ids = record.get(target_field)
+                    if bin_ids:
+                        all_bin_ids.add(bin_ids)
+
+        logger.info("Done processing bin parent streams")
+        logger.info("===========================")
+        logger.info(all_bin_ids)
         for bin_id in all_bin_ids:
             yield {"bin_id": bin_id}
 
@@ -238,15 +254,11 @@ class Bin(IncrementalFiservStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
-        if not stream_slice:
-            raise ValueError()
-
         bin_id = stream_slice.get("bin_id")
         return {"filters": {"bin": bin_id}}
 
 
-# state get passed correctly -fix this
-# Source
+
 class SourceFiserv(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         kwargs = {
@@ -255,10 +267,10 @@ class SourceFiserv(AbstractSource):
             "start_date": pendulum.now(tz="UTC").date().subtract(days=2),
         }
 
-        # sites = Sites(**kwargs).read_records(
-        #     sync_mode=SyncMode.full_refresh,
-        # )
-        # next(sites)
+        sites = Sites(**kwargs).read_records(
+            sync_mode=SyncMode.full_refresh,
+        )
+        next(sites)
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

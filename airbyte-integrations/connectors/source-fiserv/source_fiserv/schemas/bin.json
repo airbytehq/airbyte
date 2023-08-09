@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
         "affn": {
             "type": [
@@ -28,11 +29,221 @@
         },
         "bin": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "productSubTypeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "day": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "productSubType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "largeTicket": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "moneySend": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "binLength": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "originalCreditKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "debitNetwork": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "moneyTransfer": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "onlineGambling": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenBin": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "panLength": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "month": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "fundSourceKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "moneyTransferKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fastFundsKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fsa": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "panMinLength": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "tokenBinKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "b2bProgramKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "prepaid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingCurrency": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "moneySendKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fundSource": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "b2bProgram": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fsaKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "year": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "billingCurrencyKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processingIndicatorKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "onlineGamblingKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "originalCredit": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "debitNetworkKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "panMaxLength": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "fastFunds": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processingIndicator": {
             "type": [
                 "string",
                 "null"
@@ -52,19 +263,19 @@
         },
         "cardSubTypeKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "athKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "visaKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -76,7 +287,7 @@
         },
         "interlinkKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -94,7 +305,7 @@
         },
         "id": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -106,13 +317,13 @@
         },
         "ebtKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "cardClassKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -124,37 +335,37 @@
         },
         "binMapKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "lowacct": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "highacct": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "shazamKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "active": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "cardBrandKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -166,19 +377,19 @@
         },
         "countryKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "nyceKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "starKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -202,13 +413,13 @@
         },
         "maestroKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "reloadableKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -220,7 +431,7 @@
         },
         "accelKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -238,13 +449,13 @@
         },
         "binMap": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "typeKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -262,7 +473,7 @@
         },
         "affnKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -274,25 +485,25 @@
         },
         "jeanieKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "interacKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "detailsKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "EBTStateKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -304,13 +515,13 @@
         },
         "issuerKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "regulatedKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },

@@ -1,10 +1,11 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
         "corpID": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -22,7 +23,7 @@
         },
         "altid": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -80,9 +81,51 @@
                 "null"
             ]
         },
+        "networkTokenOfferingType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "agntName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "leadName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fundingTypeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mrchID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fundingType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "corpName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
         "fax": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -94,13 +137,13 @@
         },
         "zip": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "agentID": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -124,25 +167,25 @@
         },
         "storeNo": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "platformKey": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "phone": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
         "merchantCategoryCode": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         },
@@ -156,12 +199,11 @@
             "type": [
                 "string",
                 "null"
-            ],
-            "format": "date-time"
+            ]
         },
         "leadID": {
             "type": [
-                "integer",
+                "string",
                 "null"
             ]
         }

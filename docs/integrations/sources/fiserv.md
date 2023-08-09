@@ -16,12 +16,8 @@ This documentation provides details on setting up Fiserv source connector with A
 
 The Fiserv source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
- - Full Refresh: This mode fetches all the data from the source every time a sync is run
- - Incremental: Fetches only new or updated records since the last sync, based on the state. This is more efficient than a full refresh. 
-
-## Incremental Stream 
-
-For incremental sync, the connector uses the provided 'Start date' as a baseline. Every subsequent sync the leverages the 'last_sync_at' timestamp from the previous sync, ensuring that only new or updated records are fetched. This avoids duplication and excessive data transfer. 
+ - Full Refresh | Overwrite
+ - Incremental | Append 
 
 ## Supported Streams
 
@@ -37,4 +33,6 @@ The Fiserv source connector supports the following streams, some of them may nee
 * [Settlement](https://developer.fiserv.com/product/Reporting/api/?type=post&path=/v1/settlement/search&branch=main&version=1.0.0) \(Incremental\)
 * [Transactions](https://developer.fiserv.com/product/Reporting/api/?type=post&path=/v1/prepaid/transactions/search&branch=main&version=1.0.0) \(Incremental\)
 
-## Changelog
+## Performance Considerations 
+
+* To handle streams with large volumes of data, we implemented a hierarchical structure using stream inheritance. We designed the Bin stream to inherit from Chargeback, Settlement, and Retrieval streams which we were able to pull data in smaller, manageable batches rather than single large pull.

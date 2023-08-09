@@ -1,13 +1,19 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
+    "last_sync_at":{
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "statusDate": {
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "userData": {
       "type": [
@@ -23,7 +29,7 @@
     },
     "DispositionKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -41,19 +47,19 @@
     },
     "tokenResponseIndKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "binId": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "referenceNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -71,7 +77,7 @@
     },
     "origTranCurrency": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -85,15 +91,13 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "adjDate": {
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "reversedToIssuer": {
       "type": [
@@ -103,7 +107,7 @@
     },
     "categoryKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -115,7 +119,7 @@
     },
     "responseReceived": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -127,13 +131,13 @@
     },
     "origSlipNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "externalMid": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -151,43 +155,43 @@
     },
     "last4": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "airlineTicketNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "merchantFUndingAmount": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "terminalId": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "omnipayClienNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "itemSlipNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "submittedMerchantId": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -211,13 +215,13 @@
     },
     "reasonCode": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "tokenResponseInd": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -231,12 +235,11 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "workTypeKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -254,7 +257,7 @@
     },
     "accountNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -266,7 +269,7 @@
     },
     "submittedTxnCurrencyCodeKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -278,13 +281,13 @@
     },
     "currencyKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "recurringKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -296,7 +299,7 @@
     },
     "sendModeKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -314,7 +317,7 @@
     },
     "authRecordSequence": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -326,13 +329,13 @@
     },
     "orderNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "winLossKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -346,12 +349,11 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "networkSettleCurrencyKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -359,12 +361,11 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "first6": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -378,12 +379,11 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "backendProcessorKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -395,7 +395,7 @@
     },
     "networkSettleAmount": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -407,37 +407,37 @@
     },
     "statusKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "siteID": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "chargebackReferenceId": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "trackingNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "originalChargebackSlipNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
     "batchNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -449,7 +449,7 @@
     },
     "nonFinancialKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -467,7 +467,7 @@
     },
     "merchantCategoryKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -475,8 +475,7 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "vmeAdditionalAuthMethod": {
       "type": [
@@ -504,7 +503,7 @@
     },
     "authNetworkKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -516,13 +515,13 @@
     },
     "vmeAdditionalAuthReasonCode": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "merchantFundingCurrencyKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -552,13 +551,13 @@
     },
     "ReasonKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "transactionTypeKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -576,7 +575,7 @@
     },
     "invoiceNumber": {
       "type": [
-        "number",
+        "string",
         "null"
       ]
     },
@@ -602,8 +601,7 @@
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "customTracking": {
       "type": [
@@ -613,19 +611,19 @@
     },
     "paymentMethodKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "retrievalRequestId": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "mobileWalletKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
@@ -649,11 +647,167 @@
     },
     "relevanceKey": {
       "type": [
-        "integer",
+        "string",
         "null"
       ]
     },
     "workType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "multiClearingSequenceNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "banknetRef": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "alternateMid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "acquirer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "diputeCurrency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nativeDebitNetworkId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "merchantProductCodeKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "loanNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "debitNetworkIdKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "diputeCurrencyKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "acquirerKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "posEntryModeDescriptionKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uploadID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "webOrderNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "svcCdKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "posEntryModeDescription": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "multiClearingSequenceCount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tokenRequesterID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requestDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "experienceProvider": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "merchantProductCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dda": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nativeEciIndicator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "CAVVResponseCodeKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "CAVVResponseCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "chargebackCycle": {
       "type": [
         "string",
         "null"
