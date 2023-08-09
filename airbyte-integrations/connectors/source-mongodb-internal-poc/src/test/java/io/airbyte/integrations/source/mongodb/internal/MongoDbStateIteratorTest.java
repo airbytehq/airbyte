@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -111,6 +112,43 @@ class MongoDbStateIteratorTest {
     assertEquals(Type.STATE, message.getType());
     assertEquals(
         docs.get(2).get("_id").toString(),
+        message.getState().getStream().getStreamState().get("id").asText(),
+        "state id should match last record id"
+    );
+
+    assertFalse(iter.hasNext(), "should have no more records");
+  }
+
+  @Test
+  void treatHasNextExceptionAsFalse() {
+    final var docs = docs();
+
+    // on the second hasNext call, throw an exception
+    when(mongoCursor.hasNext())
+        .thenReturn(true)
+        .thenThrow(new MongoException("test exception"));
+
+    when(mongoCursor.next()).thenReturn(docs.get(0));
+
+    final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
+
+    final var iter = new MongoDbStateIterator(mongoCursor, stream, Instant.now(), BATCH_SIZE);
+
+    // with a batch size of 2, the MongoDbStateIterator should return the following after each `hasNext`/`next` call:
+    // true, record Air Force Blue
+    // true (exception thrown), state (with Air Force Blue as the state)
+    // false
+    AirbyteMessage message;
+    assertTrue(iter.hasNext(), "air force blue should be next");
+    message = iter.next();
+    assertEquals(Type.RECORD, message.getType());
+    assertEquals(docs.get(0).get("_id").toString(), message.getRecord().getData().get("_id").asText());
+
+    assertTrue(iter.hasNext(), "state should be next");
+    message = iter.next();
+    assertEquals(Type.STATE, message.getType());
+    assertEquals(
+        docs.get(0).get("_id").toString(),
         message.getState().getStream().getStreamState().get("id").asText(),
         "state id should match last record id"
     );
