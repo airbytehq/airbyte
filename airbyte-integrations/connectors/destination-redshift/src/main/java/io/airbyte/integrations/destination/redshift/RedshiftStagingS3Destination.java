@@ -165,6 +165,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         new TypeAndDedupeOperationValve(),
         new NoopTyperDeduper(),
         // The parsedcatalog is only used in v2 mode, so just pass null for now
+        null,
+        // Overwriting null namespace with null is perfectly safe
         null);
   }
 
