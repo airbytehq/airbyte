@@ -100,6 +100,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
+        .put("sync_checkpoint_records", 1)
         .put("is_test", true)
         .build());
   }
@@ -116,7 +117,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     executeQuery("GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO " + container.getUsername() + "@'%';");
   }
 
-  private void purgeAllBinaryLogs() {
+  protected void purgeAllBinaryLogs() {
     executeQuery("RESET MASTER;");
   }
 
@@ -212,7 +213,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  public void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
     for (final AirbyteStateMessage stateMessage : stateMessages) {
@@ -254,9 +255,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
-    assertEquals(1, stateAfterFirstBatch.size());
-    assertNotNull(stateAfterFirstBatch.get(0).getData());
-    assertExpectedStateMessages(stateAfterFirstBatch);
+    assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterFirstBatch, 1);
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
         dataFromFirstBatch);
 
@@ -281,21 +280,23 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
     purgeAllBinaryLogs();
 
-    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    assertEquals(1, stateAfterSecondBatch.size());
-    assertNotNull(stateAfterSecondBatch.get(0).getData());
-    assertExpectedStateMessages(stateAfterSecondBatch);
+    assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterSecondBatch, 2);
 
     final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
         dataFromSecondBatch);
     assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount, recordsFromSecondBatch.size(),
         "Expected 46 records to be replicated in the second sync.");
+  }
+
+  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
+    assertExpectedStateMessages(stateMessages);
   }
 
 }

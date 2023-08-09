@@ -22,17 +22,17 @@ To set up the Sentry source connector, you'll need the Sentry [project name](htt
 
 The Sentry source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
-* [Events](https://docs.sentry.io/api/events/list-a-projects-events/)
-* [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
-* [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
-* [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
+- [Events](https://docs.sentry.io/api/events/list-a-projects-events/)
+- [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
+- [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
+- [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
 
 ## Data type map
 

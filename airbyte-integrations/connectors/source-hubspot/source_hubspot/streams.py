@@ -16,6 +16,7 @@ import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -25,9 +26,17 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
-from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
+from source_hubspot.errors import (
+    HubspotAccessDenied,
+    HubspotBadRequest,
+    HubspotInvalidAuth,
+    HubspotRateLimited,
+    HubspotTimeout,
+    InvalidStartDateConfigError,
+)
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
@@ -183,20 +192,27 @@ class API:
         if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
             message = response.json().get("message")
 
-        if response.status_code == HTTPStatus.FORBIDDEN:
-            """Once hit the forbidden endpoint, we return the error message from response."""
-            pass
+        if response.status_code == HTTPStatus.BAD_REQUEST:
+            message = f"Request to {response.url} didn't succeed. Please verify your credentials and try again.\nError message from Hubspot API: {message}"
+            raise HubspotBadRequest(internal_message=message, failure_type=FailureType.config_error, response=response)
+        elif response.status_code == HTTPStatus.FORBIDDEN:
+            message = f"The authenticated user does not have permissions to access the URL {response.url}. Verify your permissions to access this endpoint."
+            raise HubspotAccessDenied(internal_message=message, failure_type=FailureType.config_error, response=response)
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
-            raise HubspotInvalidAuth(message, response=response)
+            message = (
+                "The user cannot be authorized with provided credentials. Please verify that your credentails are valid and try again."
+            )
+            raise HubspotInvalidAuth(internal_message=message, failure_type=FailureType.config_error, response=response)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
             retry_after = response.headers.get("Retry-After")
             raise HubspotRateLimited(
-                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
+                internal_message=f"You have reached your Hubspot API limit. We will resume replication once after {retry_after} seconds."
                 " See https://developers.hubspot.com/docs/api/usage-details",
+                failure_type=FailureType.config_error,
                 response=response,
             )
         elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
-            raise HubspotTimeout(message, response=response)
+            raise HubspotTimeout(message, response)
         else:
             response.raise_for_status()
 
@@ -462,7 +478,11 @@ class Stream(HttpStream, ABC):
             # Always return an empty generator just in case no records were ever yielded
             yield from []
         except requests.exceptions.HTTPError as e:
-            raise e
+            response = e.response
+            if response.status_code == HTTPStatus.UNAUTHORIZED:
+                raise AirbyteTracedException("The authentication to HubSpot has expired. Re-authenticate to restore access to HubSpot.")
+            else:
+                raise e
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
         try:
