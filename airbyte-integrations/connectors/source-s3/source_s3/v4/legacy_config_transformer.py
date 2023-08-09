@@ -3,13 +3,13 @@
 #
 
 from datetime import datetime
+from typing import Any, List, Mapping
 
 from source_s3.source import SourceS3Spec
-from typing import Mapping, Any, List
-
 
 SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+
 
 class LegacyConfigTransformer:
     """
@@ -29,7 +29,7 @@ class LegacyConfigTransformer:
                     "validation_policy": "Emit Record",
                     # todo: add formats on a per-type basis in follow up PRs
                 }
-            ]
+            ],
         }
 
         if legacy_config.provider.start_date:

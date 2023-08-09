@@ -13,7 +13,7 @@ class Config(AbstractFileBasedSpec):
     NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
     because it is responsible for converting legacy S3 v3 configs into v4 configs using the File-Based CDK.
     """
-    
+
     @classmethod
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")

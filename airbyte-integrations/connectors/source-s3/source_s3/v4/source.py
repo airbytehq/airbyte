@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from source_s3.source import SourceS3Spec
