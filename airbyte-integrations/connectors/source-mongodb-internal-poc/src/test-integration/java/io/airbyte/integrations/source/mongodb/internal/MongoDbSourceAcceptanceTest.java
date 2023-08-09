@@ -17,13 +17,11 @@ import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -105,23 +103,21 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     final List<Field> fields = List.of(
-        Field.of(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING),
-        Field.of("id", JsonSchemaType.STRING),
-        Field.of("name", JsonSchemaType.STRING),
-        Field.of("test", JsonSchemaType.STRING),
-        Field.of("test_array", JsonSchemaType.ARRAY),
-        Field.of("empty_test", JsonSchemaType.STRING),
-        Field.of("double_test", JsonSchemaType.NUMBER),
-        Field.of("int_test", JsonSchemaType.NUMBER),
-        Field.of("object_test", JsonSchemaType.OBJECT));
-    final List<AirbyteStream> airbyteStreams = List.of(
-        MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields),
-        MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields));
+            Field.of(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING),
+            Field.of("id", JsonSchemaType.STRING),
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("test", JsonSchemaType.STRING),
+            Field.of("test_array", JsonSchemaType.ARRAY),
+            Field.of("empty_test", JsonSchemaType.STRING),
+            Field.of("double_test", JsonSchemaType.NUMBER),
+            Field.of("int_test", JsonSchemaType.NUMBER),
+            Field.of("object_test", JsonSchemaType.OBJECT)
+    );
 
-    return new ConfiguredAirbyteCatalog().withStreams(
-        List.of(
-            convertToConfiguredAirbyteStream(airbyteStreams.get(0), SyncMode.INCREMENTAL),
-            convertToConfiguredAirbyteStream(airbyteStreams.get(1), SyncMode.FULL_REFRESH)));
+    final AirbyteStream airbyteStream = MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields);
+    final ConfiguredAirbyteStream configuredIncrementalAirbyteStream = convertToConfiguredAirbyteStream(airbyteStream, SyncMode.INCREMENTAL);
+
+    return new ConfiguredAirbyteCatalog().withStreams(List.of(configuredIncrementalAirbyteStream));
   }
 
   @Override

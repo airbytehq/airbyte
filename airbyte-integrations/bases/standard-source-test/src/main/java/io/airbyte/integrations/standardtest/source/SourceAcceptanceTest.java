@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -174,6 +175,11 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testFullRefreshRead() throws Exception {
+    if (!sourceSupportsFullRefresh()) {
+      LOGGER.info("Test skipped. Source does not support full refresh.");
+      return;
+    }
+
     final ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalog());
     final List<AirbyteMessage> allMessages = runRead(catalog);
 
@@ -195,6 +201,11 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testIdenticalFullRefreshes() throws Exception {
+    if (!sourceSupportsFullRefresh()) {
+      LOGGER.info("Test skipped. Source does not support full refresh.");
+      return;
+    }
+
     if (IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES.contains(getImageName().split(":")[0])) {
       return;
     }
@@ -274,6 +285,11 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
       return;
     }
 
+    if (!sourceSupportsFullRefresh()) {
+      LOGGER.info("Test skipped. Source does not support full refresh.");
+      return;
+    }
+
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     final ConfiguredAirbyteCatalog fullRefreshCatalog = withFullRefreshSyncModes(configuredCatalog);
 
@@ -326,9 +342,17 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
   }
 
   private boolean sourceSupportsIncremental() throws Exception {
+    return sourceSupports(INCREMENTAL);
+  }
+
+  private boolean sourceSupportsFullRefresh() throws Exception {
+    return sourceSupports(FULL_REFRESH);
+  }
+
+  private boolean sourceSupports(final SyncMode syncMode) throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      if (stream.getStream().getSupportedSyncModes().contains(INCREMENTAL)) {
+      if (stream.getStream().getSupportedSyncModes().contains(syncMode)) {
         return true;
       }
     }

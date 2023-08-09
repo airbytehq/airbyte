@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -163,8 +164,10 @@ public class MongoDbSource extends BaseConnector implements Source {
   ) {
     return catalog.getStreams()
         .stream()
-        // commented out to so that all sync-modes are treated equally... this allows the tests to pass
-        //  .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+        .peek(airbyteStream -> {
+          if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
+        })
+        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var collection = database.getCollection(collectionName);
