@@ -323,6 +323,13 @@ def previous_discovered_catalog_fixture(
             )
             return None
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+
+        if catalogs[-1] is None:
+            logging.warning(
+                "\nWe did not find the previous connector catalog. This probably means that the previous connector version does not support DISCOVER."
+            )
+            return None
+
         for stream in catalogs[-1].streams:
             previous_cached_schemas[stream.name] = stream
     return previous_cached_schemas
