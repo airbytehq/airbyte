@@ -6,7 +6,7 @@ data:
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
   maxSecondsBetweenMessages: 21600
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-linkedin-ads
   githubIssueLabel: source-linkedin-ads
   icon: linkedin.svg
