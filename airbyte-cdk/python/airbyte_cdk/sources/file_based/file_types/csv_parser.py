@@ -162,18 +162,18 @@ class CsvParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-        discovered_schema: Optional[SchemaType],
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         config_format = _extract_format(config)
         if discovered_schema:
             property_types = {col: prop["type"] for col, prop in discovered_schema["properties"].items()}  # type: ignore # discovered_schema["properties"] is known to be a mapping
-            CsvParser._pre_propcess_property_types(property_types)
+            deduped_property_types = CsvParser._pre_propcess_property_types(property_types)
         else:
-            property_types = {}
-        cast_fn = CsvParser._get_cast_function(property_types, config_format, logger)
+            deduped_property_types = {}
+        cast_fn = CsvParser._get_cast_function(deduped_property_types, config_format, logger)
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         for row in data_generator:
-            yield CsvParser._to_nullable(cast_fn(row), property_types, config_format.null_values, config_format.strings_can_be_null)
+            yield CsvParser._to_nullable(cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null)
         data_generator.close()
 
     @property
@@ -182,7 +182,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        deduped_property_types: Mapping[str, Any], config_format: CsvFormat, logger: logging.Logger
+        deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if deduped_property_types:
@@ -206,7 +206,7 @@ class CsvParser(FileTypeParser):
         return value in null_values and (strings_can_be_null or deduped_property_type != "string")
 
     @staticmethod
-    def _pre_propcess_property_types(property_types: Dict[str, Any]) -> None:
+    def _pre_propcess_property_types(property_types: Dict[str, Any]) -> Mapping[str, str]:
         """
         Transform the property types to be non-nullable and remove duplicate types if any.
         Sample input:
@@ -223,13 +223,17 @@ class CsvParser(FileTypeParser):
         "col3": "integer",
         }
         """
+        output = {}
         for prop, prop_type in property_types.items():
             if isinstance(prop_type, list):
                 prop_type_distinct = set(prop_type)
                 prop_type_distinct.remove("null")
                 if len(prop_type_distinct) != 1:
                     raise ValueError(f"Could not get non nullable type from {prop_type}")
-                property_types[prop] = next(iter(prop_type_distinct))
+                output[prop] = next(iter(prop_type_distinct))
+            else:
+                output[prop] = prop_type
+        return output
 
     @staticmethod
     def _cast_types(

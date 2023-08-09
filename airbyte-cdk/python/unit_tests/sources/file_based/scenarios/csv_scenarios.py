@@ -145,6 +145,16 @@ single_csv_scenario = (
                                                     ],
                                                     "type": "string"
                                                 },
+                                                "inference_type": {
+                                                    "default": "None",
+                                                    "description": "How to infer the types of the columns. If none, inference default to strings.",
+                                                    "title": "Inference Type",
+                                                    "enum": [
+                                                        "None",
+                                                        "Primitive Types Only",
+                                                        "Primitive and Complex Types",
+                                                    ]
+                                                },
                                                 "delimiter": {
                                                     "title": "Delimiter",
                                                     "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
@@ -253,16 +263,6 @@ single_csv_scenario = (
                                                     },
                                                     "uniqueItems": True
                                                 },
-                                                "inference_type": {
-                                                    "title": "Inference Type",
-                                                    "description": "How to infer the types of the columns.",
-                                                    "default": "None",
-                                                    "enum": [
-                                                        "None",
-                                                        "Primitive Types Only",
-                                                        "Primitive and Complex Types"
-                                                    ]
-                                                }
                                             }
                                         },
                                         {

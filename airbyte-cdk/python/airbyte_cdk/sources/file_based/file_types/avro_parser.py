@@ -131,7 +131,7 @@ class AvroParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-        discovered_schema: Optional[SchemaType],
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):

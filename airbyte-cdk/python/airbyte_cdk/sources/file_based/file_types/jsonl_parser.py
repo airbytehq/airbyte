@@ -52,7 +52,7 @@ class JsonlParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-        discovered_schema: Optional[SchemaType],
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
             for line in fp:

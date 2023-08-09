@@ -95,7 +95,7 @@ class CsvFormat(BaseModel):
     inference_type: InferenceType = Field(
         title="Inference Type",
         default=InferenceType.NONE,
-        description="How to infer the types of the columns.",
+        description="How to infer the types of the columns. If none, inference default to strings.",
     )
 
     @validator("delimiter")
