@@ -1,7 +1,3 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
-
 import gzip
 import json
 import logging
@@ -22,7 +18,8 @@ runtime_to_root_file_mapping = {
     "@kyvejs/celo": "celo/block",
     "@kyvejs/cosmos": "cosmos/block",
     "@kyvejs/evm": "evm/block",
-    "@kyvejs/uniswap": "uniswap/event",
+    "@kyvejs/tendermint": "tendermint/dataItem",
+    "@kyvejs/uniswap": "uniswap/event"
 }
 
 
@@ -60,8 +57,18 @@ class KYVEStream(HttpStream, IncrementalMixin):
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
-            "properties": {"key": {"type": "integer"}, "value": {"type": "object"}},
-            "required": ["key", "value"],
+            "properties": {
+                "key": {
+                    "type": "integer"
+                },
+                "value": {
+                    "type": "object"
+                }
+            },
+            "required": [
+                "key",
+                "value"
+            ]
         }
         # in case we have defined a schema file, we can get it from the mapping
         schema_root_file = runtime_to_root_file_mapping.get(self.runtime, None)
@@ -69,26 +76,28 @@ class KYVEStream(HttpStream, IncrementalMixin):
         # we update the default schema in case there is a root_file
         if schema_root_file:
             inlay_schema = CustomResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(schema_root_file)
-            schema["properties"]["value"] = inlay_schema
+            schema['properties']['value'] = inlay_schema
         return schema
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/kyve/query/v1beta1/finalized_bundles/{self.pool_id}"
+    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+             next_page_token: Mapping[str, Any] = None) -> str:
+        if "korellia" in self.url_base:
+            return f"/kyve/query/v1beta1/finalized_bundles/{self.pool_id}"
+        else:
+            return f"/kyve/v1/bundles/{self.pool_id}"
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # Set the pagesize in the request parameters
         params = {"pagination.limit": self.page_size}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
-            params["next_page_token"] = next_page_token
+            params['next_page_token'] = next_page_token
 
         # In case we use incremental streaming, we start with the stored _offset
         offset = stream_state.get(self.cursor_field, self._offset) or 0
@@ -98,11 +107,11 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return params
 
     def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         try:
             # set the state to store the latest bundle_id

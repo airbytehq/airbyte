@@ -1,0 +1,688 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "block" : {
+      "type" : "object",
+      "properties" : {
+        "block_id" : {
+          "type" : "object",
+          "properties" : {
+            "hash" : {
+              "type" : "string"
+            },
+            "parts" : {
+              "type" : "object",
+              "properties" : {
+                "total" : {
+                  "type" : "integer"
+                },
+                "hash" : {
+                  "type" : "string"
+                }
+              },
+              "required" : [
+                "total",
+                "hash"
+              ]
+            }
+          },
+          "required" : [
+            "hash",
+            "parts"
+          ]
+        },
+        "header" : {
+          "type" : "object",
+          "properties" : {
+            "version" : {
+              "type" : "object",
+              "properties" : {
+                "block" : {
+                  "type" : "string"
+                }
+              },
+              "required" : [
+                "block"
+              ]
+            },
+            "chain_id" : {
+              "type" : "string"
+            },
+            "height" : {
+              "type" : "string"
+            },
+            "time" : {
+              "type" : "string"
+            },
+            "last_block_id" : {
+              "type" : "object",
+              "properties" : {
+                "hash" : {
+                  "type" : "string"
+                },
+                "parts" : {
+                  "type" : "object",
+                  "properties" : {
+                    "total" : {
+                      "type" : "integer"
+                    },
+                    "hash" : {
+                      "type" : "string"
+                    }
+                  },
+                  "required" : [
+                    "total",
+                    "hash"
+                  ]
+                }
+              },
+              "required" : [
+                "hash",
+                "parts"
+              ]
+            },
+            "last_commit_hash" : {
+              "type" : "string"
+            },
+            "data_hash" : {
+              "type" : "string"
+            },
+            "validators_hash" : {
+              "type" : "string"
+            },
+            "next_validators_hash" : {
+              "type" : "string"
+            },
+            "consensus_hash" : {
+              "type" : "string"
+            },
+            "app_hash" : {
+              "type" : "string"
+            },
+            "last_results_hash" : {
+              "type" : "string"
+            },
+            "evidence_hash" : {
+              "type" : "string"
+            },
+            "proposer_address" : {
+              "type" : "string"
+            }
+          },
+          "required" : [
+            "version",
+            "chain_id",
+            "height",
+            "time",
+            "last_block_id",
+            "last_commit_hash",
+            "data_hash",
+            "validators_hash",
+            "next_validators_hash",
+            "consensus_hash",
+            "app_hash",
+            "last_results_hash",
+            "evidence_hash",
+            "proposer_address"
+          ]
+        },
+        "data" : {
+          "type" : "object",
+          "properties" : {
+            "txs" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "required" : [
+            "txs"
+          ]
+        },
+        "evidence" : {
+          "type" : "object",
+          "properties" : {
+            "evidence" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "type" : {
+                    "type" : "string"
+                  },
+                  "value" : {
+                    "type" : "object",
+                    "properties" : {
+                      "vote_a" : {
+                        "type" : "object",
+                        "properties" : {
+                          "type" : {
+                            "type" : "integer"
+                          },
+                          "height" : {
+                            "type" : "string"
+                          },
+                          "round" : {
+                            "type" : "integer"
+                          },
+                          "block_id" : {
+                            "type" : "object",
+                            "properties" : {
+                              "hash" : {
+                                "type" : "string"
+                              },
+                              "parts" : {
+                                "type" : "object",
+                                "properties" : {
+                                  "total" : {
+                                    "type" : "integer"
+                                  },
+                                  "hash" : {
+                                    "type" : "string"
+                                  }
+                                },
+                                "required" : [
+                                  "total",
+                                  "hash"
+                                ]
+                              }
+                            },
+                            "required" : [
+                              "hash",
+                              "parts"
+                            ]
+                          },
+                          "timestamp" : {
+                            "type" : "string"
+                          },
+                          "validator_address" : {
+                            "type" : "string"
+                          },
+                          "validator_index" : {
+                            "type" : "integer"
+                          },
+                          "signature" : {
+                            "type" : "string"
+                          }
+                        },
+                        "required" : [
+                          "type",
+                          "height",
+                          "round",
+                          "block_id",
+                          "timestamp",
+                          "validator_address",
+                          "validator_index",
+                          "signature"
+                        ]
+                      },
+                      "vote_b" : {
+                        "type" : "object",
+                        "properties" : {
+                          "type" : {
+                            "type" : "integer"
+                          },
+                          "height" : {
+                            "type" : "string"
+                          },
+                          "round" : {
+                            "type" : "integer"
+                          },
+                          "block_id" : {
+                            "type" : "object",
+                            "properties" : {
+                              "hash" : {
+                                "type" : "string"
+                              },
+                              "parts" : {
+                                "type" : "object",
+                                "properties" : {
+                                  "total" : {
+                                    "type" : "integer"
+                                  },
+                                  "hash" : {
+                                    "type" : "string"
+                                  }
+                                },
+                                "required" : [
+                                  "total",
+                                  "hash"
+                                ]
+                              }
+                            },
+                            "required" : [
+                              "hash",
+                              "parts"
+                            ]
+                          },
+                          "timestamp" : {
+                            "type" : "string"
+                          },
+                          "validator_address" : {
+                            "type" : "string"
+                          },
+                          "validator_index" : {
+                            "type" : "integer"
+                          },
+                          "signature" : {
+                            "type" : "string"
+                          }
+                        },
+                        "required" : [
+                          "type",
+                          "height",
+                          "round",
+                          "block_id",
+                          "timestamp",
+                          "validator_address",
+                          "validator_index",
+                          "signature"
+                        ]
+                      },
+                      "TotalVotingPower" : {
+                        "type" : "string"
+                      },
+                      "ValidatorPower" : {
+                        "type" : "string"
+                      },
+                      "Timestamp" : {
+                        "type" : "string"
+                      }
+                    },
+                    "required" : [
+                      "vote_a",
+                      "vote_b",
+                      "TotalVotingPower",
+                      "ValidatorPower",
+                      "Timestamp"
+                    ]
+                  }
+                },
+                "required" : [
+                  "type",
+                  "value"
+                ]
+              }
+            }
+          },
+          "required" : [
+            "evidence"
+          ]
+        },
+        "last_commit" : {
+          "type" : "object",
+          "properties" : {
+            "height" : {
+              "type" : "string"
+            },
+            "round" : {
+              "type" : "integer"
+            },
+            "block_id" : {
+              "type" : "object",
+              "properties" : {
+                "hash" : {
+                  "type" : "string"
+                },
+                "parts" : {
+                  "type" : "object",
+                  "properties" : {
+                    "total" : {
+                      "type" : "integer"
+                    },
+                    "hash" : {
+                      "type" : "string"
+                    }
+                  },
+                  "required" : [
+                    "total",
+                    "hash"
+                  ]
+                }
+              },
+              "required" : [
+                "hash",
+                "parts"
+              ]
+            },
+            "signatures" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "block_id_flag" : {
+                    "type" : "integer"
+                  },
+                  "validator_address" : {
+                    "type" : "string"
+                  },
+                  "timestamp" : {
+                    "type" : "string"
+                  },
+                  "signature" : {
+                    "type" : [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required" : [
+                  "block_id_flag",
+                  "validator_address",
+                  "timestamp",
+                  "signature"
+                ]
+              }
+            }
+          },
+          "required" : [
+            "height",
+            "round",
+            "block_id",
+            "signatures"
+          ]
+        }
+      },
+      "required" : [
+        "block_id",
+        "header",
+        "data",
+        "evidence",
+        "last_commit"
+      ]
+    },
+    "block_results" : {
+      "type" : "object",
+      "properties" : {
+        "height" : {
+          "type" : "string"
+        },
+        "txs_results" : {
+          "type" : [
+            "array",
+            "null"
+          ],
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "code" : {
+                "type" : "integer"
+              },
+              "data" : {
+                "type" : [
+                  "string",
+                  "null"
+                ]
+              },
+              "log" : {
+                "type" : "string"
+              },
+              "info" : {
+                "type" : "string"
+              },
+              "gas_wanted" : {
+                "type" : "string"
+              },
+              "gas_used" : {
+                "type" : "string"
+              },
+              "events" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "object",
+                  "properties" : {
+                    "type" : {
+                      "type" : "string"
+                    },
+                    "attributes" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "key" : {
+                            "type" : "string"
+                          },
+                          "value" : {
+                            "type" : [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "index" : {
+                            "type" : "boolean"
+                          }
+                        },
+                        "required" : [
+                          "key",
+                          "value",
+                          "index"
+                        ]
+                      }
+                    }
+                  },
+                  "required" : [
+                    "type",
+                    "attributes"
+                  ]
+                }
+              },
+              "codespace" : {
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "code",
+              "data",
+              "log",
+              "info",
+              "gas_wanted",
+              "gas_used",
+              "events",
+              "codespace"
+            ]
+          }
+        },
+        "begin_block_events" : {
+          "type" : [
+            "array",
+            "null"
+          ],
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "type" : {
+                "type" : "string"
+              },
+              "attributes" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "object",
+                  "properties" : {
+                    "key" : {
+                      "type" : "string"
+                    },
+                    "value" : {
+                      "type" : "string"
+                    },
+                    "index" : {
+                      "type" : "boolean"
+                    }
+                  },
+                  "required" : [
+                    "key",
+                    "value",
+                    "index"
+                  ]
+                }
+              }
+            },
+            "required" : [
+              "type",
+              "attributes"
+            ]
+          }
+        },
+        "end_block_events" : {
+          "type" : [
+            "array",
+            "null"
+          ],
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "type" : {
+                "type" : "string"
+              },
+              "attributes" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "object",
+                  "properties" : {
+                    "key" : {
+                      "type" : "string"
+                    },
+                    "value" : {
+                      "type" : "string"
+                    },
+                    "index" : {
+                      "type" : "boolean"
+                    }
+                  },
+                  "required" : [
+                    "key",
+                    "value",
+                    "index"
+                  ]
+                }
+              }
+            },
+            "required" : [
+              "type",
+              "attributes"
+            ]
+          }
+        },
+        "validator_updates" : {
+          "type" : [
+            "array",
+            "null"
+          ],
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "pub_key" : {
+                "type" : "object",
+                "properties" : {
+                  "Sum" : {
+                    "type" : "object",
+                    "properties" : {
+                      "type" : {
+                        "type" : "string"
+                      },
+                      "value" : {
+                        "type" : "object",
+                        "properties" : {
+                          "ed25519" : {
+                            "type" : "string"
+                          }
+                        },
+                        "required" : [
+                          "ed25519"
+                        ]
+                      }
+                    },
+                    "required" : [
+                      "type",
+                      "value"
+                    ]
+                  }
+                },
+                "required" : [
+                  "Sum"
+                ]
+              },
+              "power" : {
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "pub_key"
+            ]
+          }
+        },
+        "consensus_param_updates" : {
+          "type" : "object",
+          "properties" : {
+            "block" : {
+              "type" : "object",
+              "properties" : {
+                "max_bytes" : {
+                  "type" : "string"
+                },
+                "max_gas" : {
+                  "type" : "string"
+                }
+              },
+              "required" : [
+                "max_bytes",
+                "max_gas"
+              ]
+            },
+            "evidence" : {
+              "type" : "object",
+              "properties" : {
+                "max_age_num_blocks" : {
+                  "type" : "string"
+                },
+                "max_age_duration" : {
+                  "type" : "string"
+                },
+                "max_bytes" : {
+                  "type" : "string"
+                }
+              },
+              "required" : [
+                "max_age_num_blocks",
+                "max_age_duration",
+                "max_bytes"
+              ]
+            },
+            "validator" : {
+              "type" : "object",
+              "properties" : {
+                "pub_key_types" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              },
+              "required" : [
+                "pub_key_types"
+              ]
+            }
+          },
+          "required" : [
+            "block",
+            "evidence",
+            "validator"
+          ]
+        }
+      },
+      "required" : [
+        "height",
+        "txs_results",
+        "begin_block_events",
+        "end_block_events",
+        "validator_updates",
+        "consensus_param_updates"
+      ]
+    }
+  },
+  "required" : [
+    "block",
+    "block_results"
+  ]
+}

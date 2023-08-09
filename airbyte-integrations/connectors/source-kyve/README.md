@@ -1,4 +1,4 @@
-# Kyve Source
+# KYVE Source
 
 This is the repository for the Kyve source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/kyve).
