@@ -9,7 +9,7 @@ data:
       enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: 14dac961-bba0-482f-be0b-7462535467dd
+  definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-twilio
   githubIssueLabel: source-twilio
@@ -20,5 +20,5 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"
