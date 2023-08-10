@@ -88,7 +88,7 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
-@pytest.mark.default_timeout(60 * 5)
+@pytest.mark.default_timeout(30)
 class TestSpec(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     async def skip_backward_compatibility_tests_fixture(
