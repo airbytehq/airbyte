@@ -8,6 +8,7 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DAT
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.CursorType;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -191,13 +192,11 @@ public class MongoDbSource extends BaseConnector implements Source {
               .filter(filter)
               .projection(fields)
               .sort(Sorts.ascending("_id"))
-//              .batchSize(BATCH_SIZE)
+              .batchSize(BATCH_SIZE)
               .cursor();
 
-          // wrap the mongodb iterator into an AutoCloseableIterator
-          final var closeableIterator = AutoCloseableIterators.fromIterator(new MongoDbStateIterator(cursor, airbyteStream, emittedAt, BATCH_SIZE));
-          // ensure the cursor is closed when this AutoCloseableIterator completes
-          return AutoCloseableIterators.appendOnClose(closeableIterator, cursor::close);
+          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, emittedAt, BATCH_SIZE);
+          return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
   }
