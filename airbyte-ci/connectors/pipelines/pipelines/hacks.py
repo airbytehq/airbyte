@@ -162,6 +162,6 @@ def never_fail_exec(command: List[str]) -> Callable:
     """
 
     def never_fail_exec_inner(container: Container):
-        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"])
+        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
 
     return never_fail_exec_inner
