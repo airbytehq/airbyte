@@ -28,6 +28,11 @@ data:
   supportsDbt: true
   tags:
     - language:java
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Remove GCS/S3 loading method support."
+        upgradeDeadline: "2023-08-31"
   ab_internal:
     sl: 200
     ql: 300
