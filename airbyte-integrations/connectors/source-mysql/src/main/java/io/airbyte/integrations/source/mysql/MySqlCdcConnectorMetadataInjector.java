@@ -19,13 +19,23 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MysqlDebeziumStateAttributes> {
 
-  private final long emittedAt;
+  private final long emittedAtConverted;
+
   // This now makes this class stateful. Please make sure to use the same instance within a sync
   private final AtomicLong recordCounter = new AtomicLong(1);
   private static final long ONE_HUNDRED_MILLION = 100_000_000;
+  private static MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector;
 
-  public MySqlCdcConnectorMetadataInjector(final Instant emittedAt) {
-    this.emittedAt = emittedAt.getEpochSecond() * ONE_HUNDRED_MILLION;
+  private MySqlCdcConnectorMetadataInjector(final Instant emittedAt) {
+    this.emittedAtConverted = emittedAt.getEpochSecond() * ONE_HUNDRED_MILLION;
+  }
+
+  public static MySqlCdcConnectorMetadataInjector getInstance(final Instant emittedAt) {
+    if (mySqlCdcConnectorMetadataInjector == null) {
+      mySqlCdcConnectorMetadataInjector = new MySqlCdcConnectorMetadataInjector(emittedAt);
+    }
+
+    return mySqlCdcConnectorMetadataInjector;
   }
 
   @Override
@@ -36,8 +46,9 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
   }
 
   @Override
-  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp,
-      final MysqlDebeziumStateAttributes debeziumStateAttributes) {
+  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record,
+                                                      final String transactionTimestamp,
+                                                      final MysqlDebeziumStateAttributes debeziumStateAttributes) {
     record.put(CDC_UPDATED_AT, transactionTimestamp);
     record.put(CDC_LOG_FILE, debeziumStateAttributes.binlogFilename());
     record.put(CDC_LOG_POS, debeziumStateAttributes.binlogPosition());
@@ -51,7 +62,7 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
   }
 
   private Long getCdcDefaultCursor() {
-    return this.emittedAt + recordCounter.getAndIncrement();
+    return emittedAtConverted + this.recordCounter.getAndIncrement();
   }
 
 }
