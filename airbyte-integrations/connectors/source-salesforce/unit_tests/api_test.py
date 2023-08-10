@@ -28,7 +28,7 @@ from source_salesforce.streams import (
     RestSalesforceStream,
 )
 
-from .utils import read_full_refresh
+from utils import read_full_refresh
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
