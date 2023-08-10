@@ -13,6 +13,8 @@ from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, Fil
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, Field, validator
 
+from airbyte_cdk.sources.file_based.types import StreamSchema
+
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
 
@@ -99,7 +101,7 @@ class FileBasedStreamConfig(BaseModel):
                 raise ConfigValidationError(FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA)
         return None
 
-    def get_input_schema(self) -> Optional[Mapping[str, Any]]:
+    def get_input_schema(self) -> Optional[StreamSchema]:
         """
         User defined input_schema is defined as a string in the config. This method takes the string representation
         and converts it into a Mapping[str, Any] which is used by file-based CDK components.

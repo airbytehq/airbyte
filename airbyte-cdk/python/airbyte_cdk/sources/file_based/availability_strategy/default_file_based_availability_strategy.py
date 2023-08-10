@@ -11,6 +11,8 @@ from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBas
 from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
+from airbyte_cdk.sources.file_based.types import StreamSchema
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -90,7 +92,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         except Exception as exc:
             raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
 
-        schema = stream.catalog_schema or stream.config.input_schema
+        schema = stream.catalog_schema or type_mapping_to_jsonschema(stream.config.input_schema) if stream.config.input_schema else None
         if schema and stream.validation_policy.validate_schema_before_sync:
             if not schema.value_is_conform(record):
                 raise CheckAvailabilityError(

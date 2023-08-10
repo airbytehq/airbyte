@@ -160,7 +160,7 @@ def _parse_json_input(input_schema: Union[str, Mapping[str, str]]) -> Optional[M
     return schema
 
 
-def type_mapping_to_jsonschema(input_schema: Optional[Union[str, Mapping[str, str]]]) -> Optional[Mapping[str, Any]]:
+def type_mapping_to_jsonschema(input_schema: Optional[Union[str, Mapping[str, str]]]) -> Optional[StreamSchema]:
     """
     Return the user input schema (type mapping), transformed to JSON Schema format.
 
@@ -193,4 +193,4 @@ def type_mapping_to_jsonschema(input_schema: Optional[Union[str, Mapping[str, st
         json_schema_type = _json_schema_type[0]
         result_schema[col_name] = {"type": json_schema_type}
 
-    return {"type": "object", "properties": result_schema}
+    return StreamSchema.parse_obj({"type": "object", "properties": result_schema})

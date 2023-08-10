@@ -16,6 +16,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING
+from airbyte_cdk.sources.file_based.types import StreamSchema
 
 DIALECT_NAME = "_config_dialect"
 
@@ -62,7 +63,7 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        schema: Optional[Mapping[str, Any]] = config.get_input_schema()
+        schema: Optional[StreamSchema] = config.get_input_schema()
         config_format = config.format or CsvFormat()
         if not isinstance(config_format, CsvFormat):
             raise ValueError(f"Invalid format config: {config_format}")
@@ -92,7 +93,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _read_and_cast_types(
-        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger  # type: ignore
+        reader: csv.DictReader, schema: Optional[StreamSchema], config_format: CsvFormat, logger: logging.Logger  # type: ignore
     ) -> Iterable[Dict[str, Any]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
@@ -113,11 +114,11 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger
+        schema: Optional[StreamSchema], config_format: CsvFormat, logger: logging.Logger
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if schema:
-            property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
+            property_types = {col: prop.type for col, prop in schema.properties.items()}
             return partial(_cast_types, property_types=property_types, config_format=config_format, logger=logger)
         else:
             # If no schema is provided, yield the rows as they are

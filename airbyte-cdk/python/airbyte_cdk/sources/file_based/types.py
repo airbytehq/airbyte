@@ -4,15 +4,16 @@
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from functools import total_ordering
-from typing import Any, Mapping, MutableMapping, List, Union, Optional
+from typing import Any, Mapping, MutableMapping, List, Union, Optional, Tuple, Type
 
 StreamSlice = Mapping[str, Any]
 StreamState = MutableMapping[str, Any]
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 @total_ordering
 class ComparableType(Enum):
@@ -97,7 +98,7 @@ class FieldType(ABC):
 
 
 class PrimitiveFieldType(BaseModel, FieldType):
-    type: Union[str, List[str]]
+    type: Union[str, List[str]] = Field(..., hidden=True)
 
     def is_type_conform(self, value: Any) -> bool:
         return _is_equal_or_narrower_type(value, self.get_type())
@@ -108,14 +109,17 @@ class PrimitiveFieldType(BaseModel, FieldType):
         return self.type
 
 class ObjectFieldType(BaseModel, FieldType):
-    type: str
+    type: str = Field(..., hidden=True)
     properties: Mapping[str, Union[PrimitiveFieldType, ArrayFieldType, ObjectFieldType]]
 
     def is_type_conform(self, value: Any) -> bool:
         return isinstance(value, dict) # FIXME this is probably not enough?
 
+    def get_type(self) -> str:
+        return self.type
+
 class ArrayFieldType(BaseModel, FieldType):
-    type: str
+    type: str = Field(..., hidden=True)
     items: Union[PrimitiveFieldType, ArrayFieldType, ObjectFieldType]
 
     def is_type_conform(self, value: Any) -> bool:
@@ -123,10 +127,14 @@ class ArrayFieldType(BaseModel, FieldType):
             return False
         return all(_is_equal_or_narrower_type(value, self.items.get_type()) for v in value)
 
+    def get_type(self) -> str:
+        return self.type
+
 
 class StreamSchema(BaseModel):
     type: str
     properties: Mapping[str, Union[PrimitiveFieldType, ArrayFieldType, ObjectFieldType]]
+
 
     def value_is_conform(self, record: Mapping[str, Any]) -> bool:
         schema_columns = set(self.properties.keys())
@@ -135,15 +143,8 @@ class StreamSchema(BaseModel):
             return False
 
         for column, definition in self.properties.items():
-            expected_type = definition.get_type()
             value = record.get(column)
-
             if value is not None:
-                if expected_type == "object":
-                    return definition.is_type_conform(value)
-                elif expected_type == "array":
-                    return definition.is_type_conform(value)
-                elif not definition.is_type_conform(value):
+                if not definition.is_type_conform(value):
                     return False
-
         return True
