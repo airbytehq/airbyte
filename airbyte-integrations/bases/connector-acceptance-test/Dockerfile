@@ -22,6 +22,7 @@ RUN echo "Etc/UTC" > /etc/timezone
 
 # Bash is installed for more convenient debugging.
 RUN apt-get install bash curl
+# Docker is installed to make it possible to run dagger in docker.
 ENV DOCKER_VERSION = "24.0.2"
 RUN curl -fsSL https://get.docker.com | sh
 
