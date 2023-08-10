@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import CodeBlock from '@theme/CodeBlock';
 
 function concatenateRawTableName(namespace, name) {
   let plainConcat = namespace + name;
@@ -23,14 +24,6 @@ function convertStreamName(str) {
     .replaceAll(/\s+/g, "_")
     .replaceAll(/[^A-Za-z0-9_]/g, "_");
 }
-
-const SqlOutput = ({ destination, defaultMessage }) => {
-  return (
-    <pre id={ "sql_output_block_" + destination }>
-      { defaultMessage }
-    </pre>
-  );
-};
 
 export const BigQueryMigrationGenerator = () => {
   // See BigQuerySQLNameTransformer
@@ -115,6 +108,10 @@ export const MigrationGenerator = ({destination, generateSql}) => {
   const defaultMessage =
 `Enter your stream's name and namespace to see the SQL output.
 If your stream has no namespace, take the default value from the destination connector's settings.`;
+  const [message, updateMessage] = useState({
+    'message': defaultMessage,
+    'language': 'text'
+  });
   function updateSql(event) {
     let namespace = document.getElementById("stream_namespace_" + destination).value;
     let name = document.getElementById("stream_name_" + destination).value;
@@ -123,14 +120,19 @@ If your stream has no namespace, take the default value from the destination con
       raw_dataset = 'airbyte_internal';
     }
     let sql = generateSql(namespace, name, raw_dataset);
-    var output;
     if (namespace != "" && name != "") {
-      output = sql;
+      updateMessage({
+        'message': sql,
+        'language': 'sql'
+      });
     } else {
-      output = defaultMessage;
+      updateMessage({
+        'message': defaultMessage,
+        'language': 'text'
+      });
     }
-    document.getElementById("sql_output_block_" + destination).innerHTML = output;
   }
+
   return (
     <div>
       <label>Stream namespace </label>
@@ -139,7 +141,9 @@ If your stream has no namespace, take the default value from the destination con
       <input type="text" id={"stream_name_" + destination} onChange={ updateSql }/><br/>
       <label>Raw table dataset/schema (defaults to <code>airbyte_internal</code>) </label>
       <input type="text" id={"raw_dataset_" + destination} onChange={ updateSql }/><br/>
-      <SqlOutput destination={destination} defaultMessage={ defaultMessage }/>
+      <CodeBlock id={ "sql_output_block_" + destination } language={ message['language'] }>
+        { message['message'] }
+      </CodeBlock>
     </div>
   );
 }
