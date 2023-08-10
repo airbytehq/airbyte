@@ -52,7 +52,7 @@ class _CsvReader:
             doublequote=config_format.double_quote,
             quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
         )
-        with stream_reader.open_file(file, file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, file_read_mode, config_format.encoding, logger) as fp:
             headers = self._get_headers(fp, config_format, dialect_name)
 
             # we assume that if we autogenerate columns, it is because we don't have headers
