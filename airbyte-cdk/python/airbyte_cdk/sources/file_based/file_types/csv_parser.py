@@ -35,7 +35,7 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Dict[str, Any]:
-        config_format = config.format.get(config.file_type) if config.format else CsvFormat()
+        config_format = config.format or CsvFormat()
         if not isinstance(config_format, CsvFormat):
             raise ValueError(f"Invalid format config: {config_format}")
         dialect_name = config.name + DIALECT_NAME
@@ -47,7 +47,7 @@ class CsvParser(FileTypeParser):
             doublequote=config_format.double_quote,
             quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
         )
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, config_format.encoding, logger) as fp:
             # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
             #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
             headers = self._get_headers(fp, config_format, dialect_name)
@@ -62,8 +62,8 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        schema: Mapping[str, Any] = config.input_schema  # type: ignore
-        config_format = config.format.get(config.file_type) if config.format else CsvFormat()
+        schema: Optional[Mapping[str, Any]] = config.get_input_schema()
+        config_format = config.format or CsvFormat()
         if not isinstance(config_format, CsvFormat):
             raise ValueError(f"Invalid format config: {config_format}")
         # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
@@ -78,7 +78,7 @@ class CsvParser(FileTypeParser):
             doublequote=config_format.double_quote,
             quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
         )
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, config_format.encoding, logger) as fp:
             # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
             #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
             self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
