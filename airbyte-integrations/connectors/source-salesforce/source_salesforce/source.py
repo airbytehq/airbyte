@@ -61,7 +61,7 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
-    def _get_api_type(cls, stream_name: str, properties: dict, force_use_bulk_api: bool) -> str:
+    def _get_api_type(cls, stream_name: str, properties: Mapping[str, Any], force_use_bulk_api: bool) -> str:
         # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
         properties_not_supported_by_bulk = {
             key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
