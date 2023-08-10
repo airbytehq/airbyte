@@ -31,7 +31,7 @@ def future_state_configuration_fixture(inputs, base_path, test_strictness_level)
 
 
 @pytest.fixture(name="future_state")
-async def future_state_fixture(future_state_configuration, test_strictness_level, configured_catalog) -> List[MutableMapping]:
+def future_state_fixture(future_state_configuration, test_strictness_level, configured_catalog) -> List[MutableMapping]:
     """"""
     future_state_path, missing_streams = future_state_configuration
     with open(str(future_state_path), "r") as file:
@@ -41,7 +41,7 @@ async def future_state_fixture(future_state_configuration, test_strictness_level
         if not all([missing_stream.bypass_reason is not None for missing_stream in missing_streams]):
             pytest.fail("High test strictness level error: all missing_streams must have a bypass reason specified.")
         all_stream_names = {
-            stream.stream.name for stream in await configured_catalog.streams if SyncMode.incremental in stream.stream.supported_sync_modes
+            stream.stream.name for stream in configured_catalog.streams if SyncMode.incremental in stream.stream.supported_sync_modes
         }
         streams_in_states = set([state["stream"]["stream_descriptor"]["name"] for state in states])
         declared_missing_streams_names = set([missing_stream.name for missing_stream in missing_streams])
@@ -54,7 +54,7 @@ async def future_state_fixture(future_state_configuration, test_strictness_level
 
 
 @pytest.fixture(name="cursor_paths")
-async def cursor_paths_fixture(inputs, configured_catalog_for_incremental) -> Mapping[str, Any]:
+def cursor_paths_fixture(inputs, configured_catalog_for_incremental) -> Mapping[str, Any]:
     cursor_paths = getattr(inputs, "cursor_paths") or {}
     result = {}
 
@@ -66,7 +66,7 @@ async def cursor_paths_fixture(inputs, configured_catalog_for_incremental) -> Ma
 
 
 @pytest.fixture(name="configured_catalog_for_incremental")
-async def configured_catalog_for_incremental_fixture(configured_catalog) -> ConfiguredAirbyteCatalog:
+def configured_catalog_for_incremental_fixture(configured_catalog) -> ConfiguredAirbyteCatalog:
     catalog = incremental_only_catalog(configured_catalog)
     for stream in catalog.streams:
         if not stream.cursor_field:

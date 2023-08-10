@@ -57,7 +57,7 @@ from connector_acceptance_test.utils.json_schema_helper import (
 
 
 @pytest.fixture(name="connector_spec_dict")
-async def connector_spec_dict_fixture(actual_connector_spec):
+def connector_spec_dict_fixture(actual_connector_spec):
     return json.loads(actual_connector_spec.json())
 
 
@@ -143,7 +143,7 @@ class TestSpec(BaseTest):
                 enum_list
             ), f"Enum lists should not contain duplicate values. Misconfigured enum array: {enum_list}. {docs_msg}"
 
-    async def test_oneof_usage(self, actual_connector_spec: ConnectorSpecification):
+    def test_oneof_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that if spec contains oneOf it follows the rules according to reference
         https://docs.airbyte.io/connector-development/connector-specification-reference
         """
@@ -238,7 +238,7 @@ class TestSpec(BaseTest):
         # if a property can store a secret, additional check should be done if it's a constant value
         return not is_property_constant_value
 
-    async def test_secret_is_properly_marked(self, connector_spec_dict: dict, detailed_logger, secret_property_names):
+    def test_secret_is_properly_marked(self, connector_spec_dict: dict, detailed_logger, secret_property_names):
         """
         Each field has a type, therefore we can make a flat list of fields from the returned specification.
         Iterate over the list, check if a field name is a secret name, can potentially hold a secret value
@@ -482,7 +482,7 @@ class TestSpec(BaseTest):
         check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
         assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
-    async def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
+    def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
         """Check if connector has correct oauth flow parameters according to
         https://docs.airbyte.io/connector-development/connector-specification-reference
         """
@@ -515,7 +515,7 @@ class TestSpec(BaseTest):
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    async def test_backward_compatibility(
+    def test_backward_compatibility(
         self,
         skip_backward_compatibility_tests: bool,
         actual_connector_spec: ConnectorSpecification,
@@ -528,7 +528,7 @@ class TestSpec(BaseTest):
         checker.assert_is_backward_compatible()
         validate_previous_configs(previous_connector_spec, actual_connector_spec, number_of_configs_to_generate)
 
-    async def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
+    def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
         """Check that value of the "additionalProperties" field is always true.
         A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
         Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
@@ -611,7 +611,7 @@ class TestDiscovery(BaseTest):
     ]
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    async def skip_backward_compatibility_tests_fixture(
+    def skip_backward_compatibility_tests_fixture(
         self,
         inputs: DiscoveryTestConfig,
         previous_connector_docker_runner: ConnectorRunner,
@@ -640,7 +640,7 @@ class TestDiscovery(BaseTest):
         assert catalog_messages[0].catalog, "Message should have catalog"
         assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
 
-    async def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
+    def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check if all of the source defined cursor fields are exists on stream's json schema."""
         for stream_name, stream in discovered_catalog.items():
             if not stream.default_cursor_field:
@@ -654,7 +654,7 @@ class TestDiscovery(BaseTest):
                 f"properties for {stream_name} stream"
             )
 
-    async def test_defined_refs_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
+    def test_defined_refs_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check the presence of unresolved `$ref`s values within each json schema."""
         schemas_errors = []
         for stream_name, stream in discovered_catalog.items():
@@ -665,7 +665,7 @@ class TestDiscovery(BaseTest):
         assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
 
     @pytest.mark.parametrize("keyword", ["allOf", "not"])
-    async def test_defined_keyword_exist_in_schema(self, keyword, discovered_catalog):
+    def test_defined_keyword_exist_in_schema(self, keyword, discovered_catalog):
         """Checking for the presence of not allowed keywords within each json schema"""
         schemas_errors = []
         for stream_name, stream in discovered_catalog.items():
@@ -675,7 +675,7 @@ class TestDiscovery(BaseTest):
 
         assert not schemas_errors, f"Found not allowed `{keyword}` keyword for selected streams: {schemas_errors}."
 
-    async def test_primary_keys_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
+    def test_primary_keys_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check that all primary keys are present in catalog."""
         for stream_name, stream in discovered_catalog.items():
             for pk in stream.source_defined_primary_key or []:
@@ -684,13 +684,13 @@ class TestDiscovery(BaseTest):
                 pk_field_location = dpath.util.search(schema["properties"], pk_path)
                 assert pk_field_location, f"One of the PKs ({pk}) is not specified in discover schema for {stream_name} stream"
 
-    async def test_streams_has_sync_modes(self, discovered_catalog: Mapping[str, Any]):
+    def test_streams_has_sync_modes(self, discovered_catalog: Mapping[str, Any]):
         """Checking that the supported_sync_modes is a not empty field in streams of the catalog."""
         for _, stream in discovered_catalog.items():
             assert stream.supported_sync_modes is not None, f"The stream {stream.name} is missing supported_sync_modes field declaration."
             assert len(stream.supported_sync_modes) > 0, f"supported_sync_modes list on stream {stream.name} should not be empty."
 
-    async def test_additional_properties_is_true(self, discovered_catalog: Mapping[str, Any]):
+    def test_additional_properties_is_true(self, discovered_catalog: Mapping[str, Any]):
         """Check that value of the "additionalProperties" field is always true.
         A stream schema declaring "additionalProperties": false introduces the risk of accidental breaking changes.
         Specifically, when removing a property from the stream schema, existing connector catalog will no longer be valid.
@@ -705,7 +705,7 @@ class TestDiscovery(BaseTest):
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    async def test_backward_compatibility(
+    def test_backward_compatibility(
         self,
         skip_backward_compatibility_tests: bool,
         discovered_catalog: MutableMapping[str, AirbyteStream],
@@ -717,7 +717,7 @@ class TestDiscovery(BaseTest):
         checker.assert_is_backward_compatible()
 
     @pytest.mark.skip("This tests currently leads to too much failures. We need to fix the connectors at scale first.")
-    async def test_catalog_has_supported_data_types(self, discovered_catalog: Mapping[str, Any]):
+    def test_catalog_has_supported_data_types(self, discovered_catalog: Mapping[str, Any]):
         """Check that all streams have supported data types, format and airbyte_types.
         Supported data types are listed there: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
         """
@@ -922,7 +922,7 @@ class TestBasicRead(BaseTest):
         return inputs.validate_data_points
 
     @pytest.fixture(name="configured_catalog")
-    async def configured_catalog_fixture(
+    def configured_catalog_fixture(
         self,
         test_strictness_level: Config.TestStrictnessLevel,
         configured_catalog_path: Optional[str],
