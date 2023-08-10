@@ -558,7 +558,7 @@ class BulkSalesforceStream(SalesforceStream):
             salesforce_bulk_api_locator = None
             while True:
                 req = PreparedRequest()
-                req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator})  # 'maxRecords': 5
+                req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator})
                 tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
                 for record in self.read_with_chunks(tmp_file, response_encoding):
                     yield record
