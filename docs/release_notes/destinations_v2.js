@@ -116,11 +116,11 @@ If your stream has no namespace, take the default value from the destination con
     let namespace = document.getElementById("stream_namespace_" + destination).value;
     let name = document.getElementById("stream_name_" + destination).value;
     var raw_dataset = document.getElementById("raw_dataset_" + destination).value;
-    if (raw_dataset == '') {
+    if (raw_dataset === '') {
       raw_dataset = 'airbyte_internal';
     }
     let sql = generateSql(namespace, name, raw_dataset);
-    if (namespace != "" && name != "") {
+    if (namespace !== "" && name !== "") {
       updateMessage({
         'message': sql,
         'language': 'sql'
