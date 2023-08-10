@@ -1291,6 +1291,7 @@ class ContactLists(IncrementalStream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
+    primary_key = "listId"
     need_chunk = False
     scopes = {"crm.lists.read"}
 
@@ -1715,6 +1716,7 @@ class PropertyHistory(Stream):
     data_field = "contacts"
     page_field = "vid-offset"
     page_filter = "vidOffset"
+    primary_key = "vid"
     denormalize_records = True
     limit_field = "count"
     limit = 100
