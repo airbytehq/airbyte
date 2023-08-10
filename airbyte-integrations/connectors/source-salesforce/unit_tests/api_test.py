@@ -318,6 +318,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
+    stream_config.update({'start_date': '2021-10-01'})
     stream_1: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     stream_2: BulkIncrementalSalesforceStream = generate_stream("Asset", stream_config, stream_api)
     streams = [stream_1, stream_2]
@@ -341,7 +342,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
 
                 m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
 
-                resp = ["Field1,LastModifiedDate,Id"] + [f"test,2021-11-0{i},{i}" for i in range(1, 7)]  # 6 records per page
+                resp = ["Field1,LastModifiedDate,Id"] + [f"test,2021-10-0{i},{i}" for i in range(1, 7)]  # 6 records per page
 
                 if page == 1:
                     # Read the first page successfully
@@ -364,7 +365,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
         assert len(records) == 6  # stream page size: 6
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-11-05"  # state checkpoint interval is 5.
+        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00+00:00"  # state checkpoint interval is 5.
 
 
 def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
@@ -374,6 +375,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
+    stream_config.update({'start_date': '2021-11-01'})
 
     stream_1: IncrementalRestSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
     stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
@@ -432,7 +434,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
         assert len(records) == 5
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17"
+        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00+00:00"
 
 
 def test_pagination_rest(stream_config, stream_api):
