@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -587,6 +588,39 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             """
             DROP TABLE IF EXISTS ${final_table_id};
             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
+            """);
+  }
+
+  private String wrapAndQuote(final String namespace, final String tableName) {
+    return Stream.of(namespace, tableName)
+        .map(part -> StringUtils.wrap(part, QUOTE))
+        .collect(joining("."));
+  }
+
+  @Override
+  public String migrateFromV1toV2(StreamId streamId, String namespace, String tableName) {
+    return new StringSubstitutor(Map.of(
+        "v2_raw_table", streamId.rawTableId(QUOTE),
+        "v1_raw_table", wrapAndQuote(namespace, tableName)
+    )
+    ).replace(
+        """      
+            CREATE OR REPLACE TABLE ${v2_raw_table} (
+              _airbyte_raw_id STRING,
+              _airbyte_data JSON,
+              _airbyte_extracted_at TIMESTAMP,
+              _airbyte_loaded_at TIMESTAMP
+            )
+            PARTITION BY DATE(_airbyte_extracted_at)
+            CLUSTER BY _airbyte_extracted_at
+            AS (
+                SELECT
+                    _airbyte_ab_id AS _airbyte_raw_id,
+                    PARSE_JSON(_airbyte_data) AS _airbyte_data,
+                    _airbyte_emitted_at AS _airbyte_extracted_at,
+                    CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
+                FROM ${v1_raw_table}
+            );
             """);
   }
 
