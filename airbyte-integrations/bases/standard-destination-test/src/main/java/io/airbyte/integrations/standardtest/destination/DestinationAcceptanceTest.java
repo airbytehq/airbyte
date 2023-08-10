@@ -100,7 +100,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
-  private static final ArrayList<String> TEST_SCHEMAS = new ArrayList<>();
+  private static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
 
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
@@ -213,9 +213,7 @@ public abstract class DestinationAcceptanceTest {
       return null;
     }
     final String schema = config.get("schema").asText();
-    if (!TEST_SCHEMAS.contains(schema)) {
-      TEST_SCHEMAS.add(schema);
-    }
+    TEST_SCHEMAS.add(schema);
     return schema;
   }
 
@@ -338,7 +336,7 @@ public abstract class DestinationAcceptanceTest {
    * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception;
+  protected abstract void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
 
   /**
    * @deprecated This method is moved to the AdvancedTestDataComparator. Please move your destination

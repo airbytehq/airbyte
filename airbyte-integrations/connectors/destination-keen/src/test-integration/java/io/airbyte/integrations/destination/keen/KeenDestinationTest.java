@@ -20,7 +20,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -110,7 +109,7 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     for (final String keenCollection : collectionsToDelete) {
       keenHttpClient.eraseStream(keenCollection, projectId, apiKey);
     }

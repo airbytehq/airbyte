@@ -16,6 +16,7 @@ import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.bson.Document;
 import org.testcontainers.containers.MongoDBContainer;
@@ -81,7 +82,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     container.stop();
     container.close();
     bastion.getContainer().stop();

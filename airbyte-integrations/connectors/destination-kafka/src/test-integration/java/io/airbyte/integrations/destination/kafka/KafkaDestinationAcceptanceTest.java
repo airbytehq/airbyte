@@ -19,6 +19,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -172,7 +173,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     KAFKA.close();
   }
 

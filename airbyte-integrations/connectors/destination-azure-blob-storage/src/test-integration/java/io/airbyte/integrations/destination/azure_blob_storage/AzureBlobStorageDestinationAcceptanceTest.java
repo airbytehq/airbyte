@@ -21,6 +21,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestD
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -159,7 +160,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * Remove all the Container output from the tests.
    */
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final BlobServiceClient storageClient =
         new BlobServiceClientBuilder()
             .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())

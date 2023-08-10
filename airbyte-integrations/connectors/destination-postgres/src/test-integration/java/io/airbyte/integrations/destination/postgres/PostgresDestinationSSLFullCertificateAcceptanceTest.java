@@ -18,7 +18,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -142,7 +142,7 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     db.stop();
     db.close();
   }

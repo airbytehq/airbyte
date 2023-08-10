@@ -27,6 +27,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
@@ -170,7 +171,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db.stop();
     db.close();
   }

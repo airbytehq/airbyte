@@ -12,8 +12,8 @@ import io.airbyte.integrations.destination.e2e_test.TestingDestinations.TestDest
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -48,7 +48,7 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // do nothing
   }
 

@@ -35,6 +35,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
@@ -182,7 +183,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     database.execute(dropSchemaQuery);
 

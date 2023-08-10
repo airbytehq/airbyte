@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeAll;
@@ -139,7 +140,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     for (final String collectionName : mongoDatabase.getCollectionNames()) {
       mongoDatabase.getDatabase().getCollection(collectionName).drop();
     }

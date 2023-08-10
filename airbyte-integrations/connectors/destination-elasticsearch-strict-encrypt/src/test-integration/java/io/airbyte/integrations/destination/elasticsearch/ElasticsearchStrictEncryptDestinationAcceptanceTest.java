@@ -17,7 +17,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
@@ -138,7 +138,7 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
   protected void setup(final DestinationAcceptanceTest.TestDestinationEnv testEnv) {}
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     connection.allIndices().forEach(connection::deleteIndexIfPresent);
   }

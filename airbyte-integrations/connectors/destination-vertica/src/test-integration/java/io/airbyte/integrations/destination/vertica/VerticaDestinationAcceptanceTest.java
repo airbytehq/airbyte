@@ -16,7 +16,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -125,7 +125,7 @@ public class VerticaDestinationAcceptanceTest extends JdbcDestinationAcceptanceT
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // TODO Implement this method to run any cleanup actions needed after every test case
   }
 

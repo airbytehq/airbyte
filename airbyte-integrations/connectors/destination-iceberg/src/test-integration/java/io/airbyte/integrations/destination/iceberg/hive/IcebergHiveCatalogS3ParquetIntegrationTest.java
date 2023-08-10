@@ -11,7 +11,7 @@ import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.HiveMetastoreS3PostgresCompose;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -52,7 +52,7 @@ public class IcebergHiveCatalogS3ParquetIntegrationTest extends DestinationAccep
   protected void setup(final TestDestinationEnv testEnv) {}
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {}
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}
 
   @Override
   protected String getImageName() {

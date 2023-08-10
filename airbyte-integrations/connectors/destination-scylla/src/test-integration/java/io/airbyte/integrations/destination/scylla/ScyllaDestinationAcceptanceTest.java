@@ -11,8 +11,8 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
@@ -48,7 +48,7 @@ class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     scyllaCqlProvider.metadata().stream()
         .filter(m -> !m.value1().startsWith("system"))
         .forEach(meta -> {

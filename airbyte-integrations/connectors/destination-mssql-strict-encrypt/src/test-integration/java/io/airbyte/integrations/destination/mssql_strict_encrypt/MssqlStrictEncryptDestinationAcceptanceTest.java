@@ -24,6 +24,7 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -165,7 +166,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     dslContext.close();
   }
 

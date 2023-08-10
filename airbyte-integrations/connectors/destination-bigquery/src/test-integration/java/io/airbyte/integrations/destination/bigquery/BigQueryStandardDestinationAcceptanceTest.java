@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.HashSet;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
    * @see DestinationAcceptanceTest#tearDownInternal()
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     tearDownBigQuery();
   }
 

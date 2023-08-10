@@ -27,6 +27,7 @@ import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanc
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -184,7 +185,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     // blow away the test schema at the end.
     SshTunnel.sshWrap(
         getConfig(),

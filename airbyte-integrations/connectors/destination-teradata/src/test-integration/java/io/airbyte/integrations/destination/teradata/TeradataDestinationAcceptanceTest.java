@@ -21,7 +21,7 @@ import io.airbyte.integrations.destination.teradata.envclient.TeradataHttpClient
 import io.airbyte.integrations.destination.teradata.envclient.dto.*;
 import io.airbyte.integrations.destination.teradata.envclient.exception.BaseException;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import java.util.ArrayList;
+import java.util.HashSet;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -155,7 +155,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     }
 
     @Override
-    protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws Exception {
+    protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
         final String deleteQuery = String.format(String.format(DELETE_DATABASE, SCHEMA_NAME));
         final String dropQuery = String.format(String.format(DROP_DATABASE, SCHEMA_NAME));
         try {

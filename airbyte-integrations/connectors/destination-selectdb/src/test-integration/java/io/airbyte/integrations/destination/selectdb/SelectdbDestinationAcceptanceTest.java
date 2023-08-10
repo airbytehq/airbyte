@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -111,7 +112,7 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // TODO Implement this method to run any cleanup actions needed after every test case
   }
 

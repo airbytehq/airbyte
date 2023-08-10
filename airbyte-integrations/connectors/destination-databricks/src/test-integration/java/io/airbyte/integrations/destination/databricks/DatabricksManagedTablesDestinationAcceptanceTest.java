@@ -22,6 +22,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -86,7 +87,7 @@ public class DatabricksManagedTablesDestinationAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
     DatabricksUtilTest.cleanUpData(databricksConfig);
   }
 

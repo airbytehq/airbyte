@@ -16,7 +16,7 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.HashSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
    * @see DestinationAcceptanceTest#tearDownInternal()
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, ArrayList<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     tearDownBigQuery();
     tearDownGcs();
   }
