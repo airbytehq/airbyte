@@ -15,16 +15,16 @@ public class SnowflakeTestUtils {
   public static List<JsonNode> dumpRawTable(JdbcDatabase database, String tableIdentifier) throws SQLException {
     return dumpTable(
         List.of(
-            quoteColumnName(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
-            timestampToString(quoteColumnName(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)),
-            timestampToString(quoteColumnName(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
-            quoteColumnName(JavaBaseConstants.COLUMN_NAME_DATA)
+            quote(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
+            timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)),
+            timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
+            quote(JavaBaseConstants.COLUMN_NAME_DATA)
         ),
         database,
         tableIdentifier);
   }
 
-  public static List<JsonNode> dumpFinalTable(JdbcDatabase database, String tableIdentifier, String databaseName, String schema, String table) throws SQLException {
+  public static List<JsonNode> dumpFinalTable(JdbcDatabase database, String databaseName, String schema, String table) throws SQLException {
     // We have to discover the column names, because if we just SELECT * then snowflake will upcase all column names.
     List<String> columns = database.queryJsons(
             """
@@ -40,7 +40,7 @@ public class SnowflakeTestUtils {
             table
         ).stream()
         .map(column -> {
-          String quotedName = quoteColumnName(column.get("COLUMN_NAME").asText());
+          String quotedName = quote(column.get("COLUMN_NAME").asText());
           String type = column.get("DATA_TYPE").asText();
           return switch (type) {
             // something about JDBC is mangling date/time values
@@ -54,7 +54,7 @@ public class SnowflakeTestUtils {
           };
         })
         .toList();
-    return dumpTable(columns, database, tableIdentifier);
+    return dumpTable(columns, database, quote(schema) + "." + quote(table));
   }
 
   /**
@@ -75,7 +75,7 @@ public class SnowflakeTestUtils {
        )), new SnowflakeTestSourceOperations()::rowToJson);
   }
 
-  private static String quoteColumnName(String name) {
+  private static String quote(String name) {
     return '"' + name + '"';
   }
 
