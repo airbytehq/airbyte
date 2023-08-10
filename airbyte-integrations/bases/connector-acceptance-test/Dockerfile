@@ -1,40 +1,33 @@
-FROM python:3.10.12 as base
-
-# build and load all requirements
-FROM base as builder
-WORKDIR /airbyte/integration_code
-
-# upgrade pip to the latest version
+FROM python:3.10.12 as builder
 RUN apt-get update \
     && pip install --upgrade pip \
     && apt-get install tzdata
-COPY setup.py ./
-# install necessary packages to a temporary folder
-RUN python setup.py egg_info
-RUN pip install --prefix=/install -r *.egg-info/requires.txt
 
-# build a clean environment
-FROM base
-WORKDIR /airbyte/connector_acceptance_test
+RUN pip install poetry==1.5.1
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
-# copy all loaded and built libraries to a pure basic image
-COPY --from=builder /install /usr/local
-# add default timezone settings
+
+WORKDIR /app
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+
+FROM python:3.10.12 as runtime
+
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
+ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
 RUN echo "Etc/UTC" > /etc/timezone
+
 # Bash is installed for more convenient debugging.
 RUN apt-get install bash curl
 ENV DOCKER_VERSION = "24.0.2"
 RUN curl -fsSL https://get.docker.com | sh
 
-ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
-
-# copy payload code only
-COPY pytest.ini setup.py ./
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 COPY connector_acceptance_test ./connector_acceptance_test
-RUN pip install .
-
-LABEL io.airbyte.version=1.0.0
-LABEL io.airbyte.name=airbyte/connector-acceptance-test
 
 ENTRYPOINT ["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx", "--show-capture=log"]
