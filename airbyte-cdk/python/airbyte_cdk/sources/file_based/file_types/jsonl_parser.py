@@ -7,6 +7,7 @@ import logging
 from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -54,9 +55,38 @@ class JsonlParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
+        """
+        This code supports parsing json objects over multiple lines even though this does not align with the JSONL format. This is for
+        backward compatibility reasons i.e. the previous source-s3 parser did support this. The drawback is:
+        * performance as the way we support json over multiple lines is very brute forced
+        * given that we don't have `newlines_in_values` config to scope the possible inputs, we might parse the whole file before knowing if
+          the input is improperly formatted or if the json is over multiple lines
+
+        The goal is to run the V4 of source-s3 in production, track the warning log emitted when there are multiline json objects and
+        deprecate this feature if it's not a valid use case.
+        """
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
+            json_parsing_error = False
+            has_multiline_json_object = False
+            yielded_at_least_once = False
+
+            accumulator = b""
             for line in fp:
-                yield json.loads(line)
+                accumulator += line
+                try:
+                    record = json.loads(accumulator)
+                    if not has_multiline_json_object:
+                        logger.warning(f"File at {file.uri} is using multiline JSON. Performance could be greatly reduced")
+                        has_multiline_json_object = True
+
+                    yield record
+                    yielded_at_least_once = True
+                    accumulator = b""
+                except json.JSONDecodeError:
+                    json_parsing_error = True
+
+            if json_parsing_error and not yielded_at_least_once:
+                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD)
 
     @classmethod
     def infer_schema_for_record(cls, record: Dict[str, Any]) -> Dict[str, Any]:
