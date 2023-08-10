@@ -3,7 +3,8 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - Domain history
+    - Domains summary
+
 streams:
   - type: DeclarativeStream
     name: Domain history
@@ -52,7 +53,7 @@ streams:
           X-request-sender: Airbyte
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
           inject_into:
             type: RequestOption
             field_name: token
@@ -64,7 +65,7 @@ streams:
               response_filters:
                 - type: HttpResponseFilter
                   action: RETRY
-                  predicate: '{{response.error.code == 32000}}'
+                  predicate: "{{response.error.code == 32000}}"
                   error_message: >-
                     You are sending more requests per second then available for
                     your Serpstat plan
@@ -72,15 +73,15 @@ streams:
                 - type: ExponentialBackoffStrategy
                   factor: 2
         request_body_json:
-          id: '{{ now_utc() }}'
+          id: "{{ now_utc() }}"
           method: SerpstatDomainProcedure.getDomainsHistory
           params:
-            se: '{{config[''region_id'']}}'
-            page: '{{(next_page_token[''next_page_token''] or 0) + 1}}'
-            size: '{{config[''page_size'']}}'
+            se: "{{config['region_id']}}"
+            page: "{{(next_page_token['next_page_token'] or 0) + 1}}"
+            size: "{{config['page_size']}}"
             sort:
               date: desc
-            domain: '{{config[''domain'']}}'
+            domain: "{{config['domain']}}"
             during_all_time: true
       record_selector:
         type: RecordSelector
@@ -97,8 +98,8 @@ streams:
           field_name: X-page
         pagination_strategy:
           type: CursorPagination
-          cursor_value: '{{response.result.summary_info.page}}'
-          stop_condition: '{{response.result.summary_info.page > config[''pages_to_fetch''] - 1}}'
+          cursor_value: "{{response.result.summary_info.page}}"
+          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
   - type: DeclarativeStream
     name: Domains summary
     primary_key:
@@ -151,7 +152,7 @@ streams:
           X-request-sender: Airbyte
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
           inject_into:
             type: RequestOption
             field_name: token
@@ -159,11 +160,14 @@ streams:
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
+            - response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  predicate: "{{ 'Invalid token' in response.error.message }}"
+                  error_message: Invalid Token
                 - type: HttpResponseFilter
                   action: RETRY
-                  predicate: '{{response.error.code == 32000}}'
+                  predicate: "{{ 'Too Many Requests' in response.error.message }}"
                   error_message: >-
                     You are sending more requests per second then available for
                     your Serpstat plan
@@ -171,11 +175,11 @@ streams:
                 - type: ExponentialBackoffStrategy
                   factor: 2
         request_body_json:
-          id: '{{ now_utc() }}'
+          id: "{{ now_utc() }}"
           method: SerpstatDomainProcedure.getDomainsInfo
           params:
-            se: '{{config[''region_id'']}}'
-            domains: '{{config[''domains'']}}'
+            se: "{{config['region_id']}}"
+            domains: "{{config['domains']}}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -204,7 +208,7 @@ streams:
             type: string
           dynamic:
             type:
-              - 'null'
+              - "null"
               - number
           found_results:
             type: number
@@ -222,7 +226,7 @@ streams:
             type: number
           subdomain:
             type:
-              - 'null'
+              - "null"
               - string
           traff:
             type: number
@@ -245,7 +249,7 @@ streams:
           X-request-sender: Airbyte
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
           inject_into:
             type: RequestOption
             field_name: token
@@ -257,7 +261,7 @@ streams:
               response_filters:
                 - type: HttpResponseFilter
                   action: RETRY
-                  predicate: '{{response.error.code == 32000}}'
+                  predicate: "{{response.error.code == 32000}}"
                   error_message: >-
                     You are sending more requests per second then available for
                     your Serpstat plan
@@ -265,17 +269,17 @@ streams:
                 - type: ExponentialBackoffStrategy
                   factor: 2
         request_body_json:
-          id: '{{ now_utc() }}'
+          id: "{{ now_utc() }}"
           method: SerpstatDomainProcedure.getDomainKeywords
           params:
-            se: '{{config[''region_id'']}}'
-            page: '{{(next_page_token[''next_page_token''] or 0) + 1}}'
-            size: '{{config[''page_size'']}}'
+            se: "{{config['region_id']}}"
+            page: "{{(next_page_token['next_page_token'] or 0) + 1}}"
+            size: "{{config['page_size']}}"
             sort:
-              '{{config[''sort_by'']}}': '{{config[''sort_value'']}}'
-            domain: '{{config[''domain'']}}'
+              "{{config['sort_by']}}": "{{config['sort_value']}}"
+            domain: "{{config['domain']}}"
             filters:
-              '{{config[''filter_by'']}}': '{{config[''filter_value'']}}'
+              "{{config['filter_by']}}": "{{config['filter_value']}}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -291,8 +295,8 @@ streams:
           field_name: X-page
         pagination_strategy:
           type: CursorPagination
-          cursor_value: '{{response.result.summary_info.page}}'
-          stop_condition: '{{response.result.summary_info.page > config[''pages_to_fetch''] - 1}}'
+          cursor_value: "{{response.result.summary_info.page}}"
+          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
   - type: DeclarativeStream
     name: Domain keywords by region
     primary_key:
@@ -323,7 +327,7 @@ streams:
           X-request-sender: Airbyte
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
           inject_into:
             type: RequestOption
             field_name: token
@@ -335,7 +339,7 @@ streams:
               response_filters:
                 - type: HttpResponseFilter
                   action: RETRY
-                  predicate: '{{response.error.code == 32000}}'
+                  predicate: "{{response.error.code == 32000}}"
                   error_message: >-
                     You are sending more requests per second then available for
                     your Serpstat plan
@@ -343,12 +347,12 @@ streams:
                 - type: ExponentialBackoffStrategy
                   factor: 2
         request_body_json:
-          id: '{{ now_utc() }}'
+          id: "{{ now_utc() }}"
           method: SerpstatDomainProcedure.getRegionsCount
           params:
-            sort: '{{config[''sort_by'']}}'
-            order: '{{config[''sort_value'']}}'
-            domain: '{{config[''domain'']}}'
+            sort: "{{config['sort_by']}}"
+            order: "{{config['sort_value']}}"
+            domain: "{{config['domain']}}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -422,7 +426,7 @@ streams:
           X-request-sender: Airbyte
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
           inject_into:
             type: RequestOption
             field_name: token
@@ -434,7 +438,7 @@ streams:
               response_filters:
                 - type: HttpResponseFilter
                   action: RETRY
-                  predicate: '{{response.error.code == 32000}}'
+                  predicate: "{{response.error.code == 32000}}"
                   error_message: >-
                     You are sending more requests per second then available for
                     your Serpstat plan
@@ -442,14 +446,14 @@ streams:
                 - type: ExponentialBackoffStrategy
                   factor: 2
         request_body_json:
-          id: '{{ now_utc() }}'
+          id: "{{ now_utc() }}"
           method: SerpstatDomainProcedure.getCompetitors
           params:
-            se: '{{config[''region_id'']}}'
-            size: '{{config[''page_size'']}}'
+            se: "{{config['region_id']}}"
+            size: "{{config['page_size']}}"
             sort:
-              '{{config[''sort_by'']}}': '{{config[''sort_value'']}}'
-            domain: '{{config[''domain'']}}'
+              "{{config['sort_by']}}": "{{config['sort_value']}}"
+            domain: "{{config['domain']}}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -488,7 +492,7 @@ streams:
           X-request-sender: Airbyte
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
           inject_into:
             type: RequestOption
             field_name: token
@@ -500,7 +504,7 @@ streams:
               response_filters:
                 - type: HttpResponseFilter
                   action: RETRY
-                  predicate: '{{response.error.code == 32000}}'
+                  predicate: "{{response.error.code == 32000}}"
                   error_message: >-
                     You are sending more requests per second then available for
                     your Serpstat plan
@@ -508,17 +512,17 @@ streams:
                 - type: ExponentialBackoffStrategy
                   factor: 2
         request_body_json:
-          id: '{{ now_utc() }}'
+          id: "{{ now_utc() }}"
           method: SerpstatDomainProcedure.getTopUrls
           params:
-            se: '{{config[''region_id'']}}'
-            page: '{{(next_page_token[''next_page_token''] or 0) + 1}}'
-            size: '{{config[''page_size'']}}'
+            se: "{{config['region_id']}}"
+            page: "{{(next_page_token['next_page_token'] or 0) + 1}}"
+            size: "{{config['page_size']}}"
             sort:
-              '{{config[''sort_by'']}}': '{{config[''sort_value'']}}'
-            domain: '{{config[''domain'']}}'
+              "{{config['sort_by']}}": "{{config['sort_value']}}"
+            domain: "{{config['domain']}}"
             filters:
-              '{{config[''filter_by'']}}': '{{config[''filter_value'']}}'
+              "{{config['filter_by']}}": "{{config['filter_value']}}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -534,97 +538,9 @@ streams:
           field_name: X-page
         pagination_strategy:
           type: CursorPagination
-          cursor_value: '{{response.result.summary_info.page}}'
-          stop_condition: '{{response.result.summary_info.page > config[''pages_to_fetch''] - 1}}'
-spec:
-  connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    required:
-      - api_key
-    properties:
-      api_key:
-        type: string
-        title: API Key
-        airbyte_secret: true
-        order: 0
-        description: >-
-          Serpstat API key can be found here:
-          https://serpstat.com/users/profile/
-      domain:
-        type: string
-        order: 1
-        title: Domain
-        default: serpstat.com
-        description: The domain name to get data for (ex. serpstat.com)
-      page_size:
-        type: integer
-        order: 2
-        title: Page size
-        default: 10
-        description: >-
-          The number of data rows per page to be returned. Each data row can
-          contain multiple data points. The max value is 1000. Reducing the size
-          of the page will result in fewer API credits spent.
-      domains:
-        type: array
-        order: 3
-        title: Domains
-        description: >-
-          The list of domains that will be used in streams that support batch
-          operations. You can set a single domain here.
-      filter_by:
-        type: string
-        order: 4
-        title: Filter by
-        description: >-
-          The field name by which the results should be filtered. Filtering the
-          results will result in fewer API credits spent. Each stream has
-          different filtering options. See https://serpstat.com/api/ for more
-          details.
-      filter_value:
-        type: string
-        order: 5
-        title: Filter value
-        description: >-
-          The value of the field to filter by. Each stream has different
-          filtering options. See https://serpstat.com/api/ for more details.
-      sort_by:
-        type: string
-        order: 6
-        title: Sort by
-        description: >-
-          The field name by which the results should be sorted. Each stream has
-          different sorting options. See https://serpstat.com/api/ for more
-          details.
-      sort_value:
-        type: string
-        order: 7
-        title: Sort value
-        description: >-
-          The value of the field to sort by. Each stream has different sorting
-          options. See https://serpstat.com/api/ for more details.
-      pages_to_fetch:
-        type: integer
-        order: 8
-        title: Pages to fetch
-        default: 1
-        description: >-
-          The number of pages that should be fetched. All results will be
-          obtained if left blank. Reducing the number of pages will result in
-          fewer API credits spent.
-      region_id:
-        type: string
-        order: 9
-        title: Region ID
-        default: g_us
-        description: >-
-          The ID of a region to get data from in the form of a two-letter
-          country code prepended with the g_ prefix. See the list of supported
-          region IDs here: https://serpstat.com/api/664-request-parameters-v4/.
-    additionalProperties: true
-  documentation_url: https://docs.airbyte.com/integrations/sources/serpstat
-  type: Spec
+          cursor_value: "{{response.result.summary_info.page}}"
+          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
+
 metadata:
   autoImportSchema:
     Domain history: true
