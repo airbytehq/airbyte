@@ -321,6 +321,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         LOGGER.info("Using PK + CDC");
         return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
       }
+      // TODO : Delete all code here.
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
