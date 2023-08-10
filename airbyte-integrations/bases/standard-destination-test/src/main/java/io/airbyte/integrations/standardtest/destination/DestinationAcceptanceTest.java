@@ -360,7 +360,7 @@ public abstract class DestinationAcceptanceTest {
     testEnv = new TestDestinationEnv(localRoot);
     mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
 
-    setup(testEnv, );
+    setup(testEnv, TEST_SCHEMAS);
 
     processFactory = new DockerProcessFactory(
         workspaceRoot,
