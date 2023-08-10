@@ -180,7 +180,7 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     PULSAR = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.8.1"));
     PULSAR.start();
   }

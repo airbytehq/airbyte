@@ -140,7 +140,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws MqttException {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws MqttException {
     recordsPerTopic.clear();
     client = new MqttClient("tcp://" + extension.getHost() + ":" + extension.getMqttPort(), UUID.randomUUID().toString(), new MemoryPersistence());
 

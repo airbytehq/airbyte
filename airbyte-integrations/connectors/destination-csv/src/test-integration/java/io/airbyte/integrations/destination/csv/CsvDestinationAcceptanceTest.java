@@ -119,7 +119,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // no op
   }
 

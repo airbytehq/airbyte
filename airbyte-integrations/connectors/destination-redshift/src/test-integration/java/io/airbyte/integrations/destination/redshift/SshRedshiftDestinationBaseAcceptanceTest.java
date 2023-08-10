@@ -26,7 +26,6 @@ import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperat
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -157,10 +156,11 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     baseConfig = getStaticConfig();
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
+    TEST_SCHEMAS.add(schemaName);
     ((ObjectNode) configForSchema).put("schema", schemaName);
     config = configForSchema;
 

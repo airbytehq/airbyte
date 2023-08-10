@@ -147,7 +147,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     dslContext = getDslContext(configWithoutDbName);

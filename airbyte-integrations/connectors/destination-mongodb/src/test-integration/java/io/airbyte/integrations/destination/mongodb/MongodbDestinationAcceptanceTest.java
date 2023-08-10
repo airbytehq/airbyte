@@ -181,7 +181,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     container = new MongoDBContainer(DOCKER_IMAGE_NAME);
     container.start();
   }

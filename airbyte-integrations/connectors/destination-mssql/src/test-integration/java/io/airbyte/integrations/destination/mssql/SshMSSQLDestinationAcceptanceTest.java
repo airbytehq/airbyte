@@ -115,7 +115,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     startTestContainers();
 
     SshTunnel.sshWrap(
@@ -127,7 +127,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
             ctx.fetch(String.format("CREATE DATABASE %s;", database));
             ctx.fetch(String.format("USE %s;", database));
             ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName));
-
+            TEST_SCHEMAS.add(schemaName);
             return null;
           });
         });

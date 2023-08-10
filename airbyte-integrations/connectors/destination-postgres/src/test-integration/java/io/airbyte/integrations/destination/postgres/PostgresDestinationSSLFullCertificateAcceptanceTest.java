@@ -134,7 +134,7 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"));
     db.start();

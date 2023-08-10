@@ -38,7 +38,7 @@ class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     configJson = TestDataFactory.jsonConfig(
         HostPortResolver.resolveHost(scyllaContainer),
         HostPortResolver.resolvePort(scyllaContainer));

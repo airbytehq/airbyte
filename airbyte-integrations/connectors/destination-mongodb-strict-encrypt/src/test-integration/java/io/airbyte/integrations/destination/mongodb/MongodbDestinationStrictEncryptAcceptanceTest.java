@@ -128,7 +128,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final var credentials = String.format("%s:%s@", config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText());
     final String connectionString = String.format("mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true",

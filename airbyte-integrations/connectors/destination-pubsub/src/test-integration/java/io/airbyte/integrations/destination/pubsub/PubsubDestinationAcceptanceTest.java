@@ -186,7 +186,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a gcp service account credentials file. By default {module-root}/"

@@ -148,7 +148,7 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // Nothing to do
   }
 

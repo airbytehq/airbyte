@@ -107,7 +107,7 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // TODO Implement this method to run any setup actions needed before every test case
   }
 

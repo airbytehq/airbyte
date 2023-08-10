@@ -134,7 +134,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
 
     startTestContainers();
     // do everything in a randomly generated schema so that we can wipe it out at the end.
@@ -144,6 +144,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
         JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
+          TEST_SCHEMAS.add(schemaName);
         });
   }
 

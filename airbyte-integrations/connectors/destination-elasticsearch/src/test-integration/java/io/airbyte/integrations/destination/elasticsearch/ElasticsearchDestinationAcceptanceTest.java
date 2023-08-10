@@ -115,7 +115,7 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {}
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {}
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {

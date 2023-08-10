@@ -161,7 +161,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * <li>Construct the GCS client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random GCS bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);

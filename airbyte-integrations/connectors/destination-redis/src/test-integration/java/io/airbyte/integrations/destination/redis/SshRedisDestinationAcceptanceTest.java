@@ -49,7 +49,7 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     jsonConfig = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());

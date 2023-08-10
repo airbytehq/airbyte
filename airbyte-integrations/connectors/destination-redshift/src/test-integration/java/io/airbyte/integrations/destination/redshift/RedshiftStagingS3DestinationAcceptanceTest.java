@@ -26,7 +26,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -206,7 +205,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
@@ -216,12 +215,14 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     getDatabase().query(ctx -> ctx.execute(createUser));
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
+    TEST_SCHEMAS.add(schemaName);
     config = configForSchema;
     this.testDestinationEnv = testEnv;
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+    System.out.println("TEST_SCHEMAS: " + TEST_SCHEMAS);
     getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText())));
     for (String schema : TEST_SCHEMAS) {
       getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schema)));

@@ -150,7 +150,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     db = new OracleContainer()
         .withUsername("test")

@@ -52,7 +52,7 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     this.redpandaNameTransformer = new RedpandaNameTransformer();
     this.adminClient = AdminClient.create(Map.of(
         AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, redpandaContainer.getBootstrapServers(),

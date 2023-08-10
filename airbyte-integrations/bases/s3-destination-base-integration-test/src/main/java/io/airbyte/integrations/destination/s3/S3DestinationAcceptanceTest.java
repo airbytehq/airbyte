@@ -126,7 +126,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * <li>Construct the S3 client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);

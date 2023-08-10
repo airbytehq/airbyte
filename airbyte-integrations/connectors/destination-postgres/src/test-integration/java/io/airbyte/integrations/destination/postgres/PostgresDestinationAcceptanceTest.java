@@ -128,7 +128,7 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db = new PostgreSQLContainer<>("postgres:13-alpine");
     db.start();
   }

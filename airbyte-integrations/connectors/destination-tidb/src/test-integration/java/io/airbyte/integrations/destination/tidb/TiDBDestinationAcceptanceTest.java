@@ -136,7 +136,7 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
         .withExposedPorts(4000);
     container.start();

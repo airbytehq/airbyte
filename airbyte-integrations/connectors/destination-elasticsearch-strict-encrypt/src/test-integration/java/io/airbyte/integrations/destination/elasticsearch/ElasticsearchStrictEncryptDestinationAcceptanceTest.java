@@ -135,7 +135,7 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
   }
 
   @Override
-  protected void setup(final DestinationAcceptanceTest.TestDestinationEnv testEnv) {}
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {

@@ -68,7 +68,7 @@ public abstract class StarburstGalaxyDestinationAcceptanceTest extends Destinati
   private Database database;
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     dslContext = create(galaxyDestinationConfig.galaxyUsername(), galaxyDestinationConfig.galaxyPassword(), STARBURST_GALAXY_DRIVER_CLASS,
         getGalaxyConnectionString(galaxyDestinationConfig), SQLDialect.DEFAULT);
     database = new Database(dslContext);

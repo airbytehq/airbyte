@@ -126,7 +126,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * <li>Construct the Azure Blob client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
 
     configJson = Jsons.jsonNode(ImmutableMap.builder()

@@ -155,7 +155,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     bastion.initAndStartBastion(network);
     db = (ClickHouseContainer) new ClickHouseContainer("clickhouse/clickhouse-server:22.5").withNetwork(network);
     db.start();

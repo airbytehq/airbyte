@@ -47,7 +47,7 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
 
     // Set a random s3 bucket path and database schema for each integration test

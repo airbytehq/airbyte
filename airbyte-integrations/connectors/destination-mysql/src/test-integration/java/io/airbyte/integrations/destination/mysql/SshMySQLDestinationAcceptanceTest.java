@@ -136,7 +136,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
     final var config = getConfig();
     SshTunnel.sshWrap(

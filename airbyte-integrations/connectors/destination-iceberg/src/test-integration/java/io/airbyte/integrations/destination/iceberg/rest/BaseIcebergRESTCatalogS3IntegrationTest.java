@@ -39,7 +39,7 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {}
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}

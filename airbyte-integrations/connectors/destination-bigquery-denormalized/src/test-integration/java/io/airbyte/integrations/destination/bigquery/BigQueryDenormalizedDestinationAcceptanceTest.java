@@ -204,7 +204,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     config = createConfig();
     bigquery = configureBigQuery(config);
     dataset = getBigQueryDataSet(config, bigquery);

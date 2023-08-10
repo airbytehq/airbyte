@@ -46,7 +46,7 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
 
     // Set a random Azure path and database schema for each integration test

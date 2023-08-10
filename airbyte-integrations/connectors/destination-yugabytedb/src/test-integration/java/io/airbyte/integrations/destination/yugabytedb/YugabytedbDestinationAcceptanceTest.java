@@ -49,7 +49,7 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     jsonConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", yugabytedbContainer.getHost())
         .put("port", yugabytedbContainer.getMappedPort(5433))

@@ -81,7 +81,7 @@ public class DatabricksManagedTablesDestinationAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     this.configJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
   }

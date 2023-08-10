@@ -49,7 +49,7 @@ public class IcebergHiveCatalogS3ParquetIntegrationTest extends DestinationAccep
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {}
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}

@@ -35,7 +35,7 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     configJson = KinesisDataFactory.jsonConfig(
         kinesisContainer.getEndpointOverride().toString(),
         kinesisContainer.getRegion(),

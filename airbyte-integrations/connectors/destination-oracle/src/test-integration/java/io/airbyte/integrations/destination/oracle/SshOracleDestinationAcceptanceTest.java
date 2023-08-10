@@ -132,7 +132,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     startTestContainers();
     SshTunnel.sshWrap(
         getConfig(),

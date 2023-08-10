@@ -30,7 +30,7 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     configJson = TestDataFactory.createJsonConfig(
         cassandraContainer.getUsername(),
         cassandraContainer.getPassword(),

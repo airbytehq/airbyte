@@ -44,7 +44,7 @@ public abstract class BaseIcebergHadoopCatalogS3IntegrationTest extends Destinat
   private MinioContainer s3Storage;
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     s3Storage = IcebergIntegrationTestUtil.createAndStartMinioContainer(null);
     IcebergIntegrationTestUtil.createS3WarehouseBucket(getConfig());
   }

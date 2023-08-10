@@ -85,7 +85,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
 

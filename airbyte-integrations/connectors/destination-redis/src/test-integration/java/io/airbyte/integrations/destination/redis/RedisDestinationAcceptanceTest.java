@@ -31,7 +31,7 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     jsonConfig = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());

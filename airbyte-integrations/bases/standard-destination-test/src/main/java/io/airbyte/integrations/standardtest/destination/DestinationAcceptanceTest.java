@@ -319,13 +319,14 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Function that performs any setup of external resources required for the test. e.g. instantiate a
-   * postgres database. This function will be called before EACH test.
+   * Function that performs any setup of external resources required for the test. e.g. instantiate a postgres database. This function will be called
+   * before EACH test.
    *
-   * @param testEnv - information about the test environment.
+   * @param testEnv      - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void setup(TestDestinationEnv testEnv) throws Exception;
+  protected abstract void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
 
   /**
    * Function that performs any clean up of external resources required for the test. e.g. delete a
@@ -359,7 +360,7 @@ public abstract class DestinationAcceptanceTest {
     testEnv = new TestDestinationEnv(localRoot);
     mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
 
-    setup(testEnv);
+    setup(testEnv, );
 
     processFactory = new DockerProcessFactory(
         workspaceRoot,

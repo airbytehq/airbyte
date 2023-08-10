@@ -142,7 +142,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     }
 
     @Override
-    protected void setup(TestDestinationEnv testEnv) {
+    protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
         final String createSchemaQuery = String.format(CREATE_DATABASE, SCHEMA_NAME);
         try {
             ((ObjectNode) configJson).put("schema", SCHEMA_NAME);

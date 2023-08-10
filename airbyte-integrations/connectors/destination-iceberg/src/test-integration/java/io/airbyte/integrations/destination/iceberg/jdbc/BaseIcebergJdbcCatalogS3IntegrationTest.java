@@ -53,7 +53,7 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
   private MinioContainer s3Storage;
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     catalogDb = new PostgreSQLContainer<>("postgres:13-alpine");
     catalogDb.start();
     LOGGER.info("==> Started PostgreSQL docker container...");
