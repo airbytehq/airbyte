@@ -115,11 +115,11 @@ AS (
 END;
 ```
 
-2. Go to your newly created connection, and navigate to the `Settings` tab.
-3. Open the `Advanced` settings to see the connection state (which manages incremental syncs). Select the existing connection you are duplicating, then click `Inherit State`. This will ensure historical data is not replicated again.
+2. Navigate to the existing connection you are duplicating, and navigate to the `Settings` tab. Open the `Advanced` settings to see the connection state (which manages incremental syncs). Copy the state to your clipboard.
 
-![img.png](assets/airbyte_inherit_state.png)
+![img.png](assets/airbyte_connection_update_state.png)
 
+3. Go to your newly created connection, replace the state with the copied contents in the previous step, then click `Update State`. This will ensure historical data is not replicated again.
 4. Enabling the connection will now provide a parallel copy of all streams in the updated format. 
 5. You can move your dashboards to rely on the new tables, then pause the out-of-date connection.
 
