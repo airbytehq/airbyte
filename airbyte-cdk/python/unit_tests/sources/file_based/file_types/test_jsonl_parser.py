@@ -121,6 +121,15 @@ def test_given_one_json_per_line_when_parse_records_then_return_records(stream_r
     assert records == [{"a": 1, "b": "1"}, {"a": 2, "b": "2"}]
 
 
+def test_given_one_json_per_line_when_parse_records_then_do_not_send_warning(stream_reader: MagicMock) -> None:
+    stream_reader.open_file.return_value.__enter__.return_value = JSONL_CONTENT_WITHOUT_MULTILINE_JSON_OBJECTS
+    logger = Mock()
+
+    list(JsonlParser().parse_records(Mock(), Mock(), stream_reader, logger))
+
+    assert logger.warning.call_count == 0
+
+
 def test_given_multiline_json_object_when_parse_records_then_return_records(stream_reader: MagicMock) -> None:
     stream_reader.open_file.return_value.__enter__.return_value = JSONL_CONTENT_WITH_MULTILINE_JSON_OBJECTS
     records = list(JsonlParser().parse_records(Mock(), Mock(), stream_reader, Mock()))

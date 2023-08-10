@@ -17,7 +17,6 @@ from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, m
 class JsonlParser(FileTypeParser):
 
     MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1_000_000
-    _WITH_READ_LIMIT = True
     ENCODING = "utf8"
 
     async def infer_schema(
@@ -33,7 +32,7 @@ class JsonlParser(FileTypeParser):
         """
         inferred_schema: Dict[str, Any] = {}
 
-        for entry in self._parse_jsonl_entries(file, stream_reader, logger, self._WITH_READ_LIMIT):
+        for entry in self._parse_jsonl_entries(file, stream_reader, logger, read_limit=True):
             line_schema = self._infer_schema_for_record(entry)
             inferred_schema = merge_schemas(inferred_schema, line_schema)
 
