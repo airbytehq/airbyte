@@ -36,7 +36,7 @@ public interface StarRocksConstants {
     //jdbc
     String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     String CJ_JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-    String PATTERN_JDBC_URL = "jdbc:mysql://%s:%d/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8";
+    String PATTERN_JDBC_URL = "jdbc:mysql://%s:%d/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8&enabledTLSProtocols=TLSv1.3";
 
 
     //stream load
