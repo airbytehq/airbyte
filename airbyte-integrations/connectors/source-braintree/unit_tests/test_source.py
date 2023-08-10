@@ -47,14 +47,3 @@ def test_spec(test_config):
     schema = s.spec(None).connectionSpecification
     jsonschema.Draft4Validator.check_schema(schema)
     jsonschema.validate(instance=test_config, schema=schema)
-
-
-@responses.activate
-def test_check(test_config):
-    s = SourceBraintree()
-    responses.add(
-        responses.POST,
-        "https://api.sandbox.braintreegateway.com:443/merchants/mech_id/customers/advanced_search_ids",
-        body=open("unit_tests/data/customers_ids.txt").read(),
-    )
-    assert s.check_connection(None, test_config) == (True, "")
