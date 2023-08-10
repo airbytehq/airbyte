@@ -1,15 +1,16 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import datetime
 import pathlib
 import time
 from typing import List
-from unittest.mock import MagicMock
 
 import dagger
 import pytest
 import yaml
-from pipelines.bases import StepStatus
+from freezegun import freeze_time
+from pipelines.bases import ConnectorWithModifiedFiles, StepStatus
 from pipelines.tests import common
 
 pytestmark = [
@@ -35,8 +36,8 @@ class TestAcceptanceTests:
         return container.with_new_file("/stupid_bash_script.sh", contents=f"echo {stdout}; echo {stderr} >&2; exit {exit_code}")
 
     @pytest.fixture
-    def test_context(self, dagger_client):
-        return MagicMock(connector=MagicMock(), dagger_client=dagger_client)
+    def test_context(self, mocker, dagger_client):
+        return mocker.MagicMock(connector=ConnectorWithModifiedFiles("source-faker", frozenset()), dagger_client=dagger_client)
 
     @pytest.fixture
     def dummy_connector_under_test_image_tar(self, dagger_client, tmpdir) -> dagger.File:
@@ -44,8 +45,14 @@ class TestAcceptanceTests:
         dummy_tar_file.write_text("dummy", encoding="utf8")
         return dagger_client.host().directory(str(tmpdir), include=["dummy.tar"]).file("dummy.tar")
 
-    async def test_skipped_when_no_acceptance_test_config(self, test_context):
-        test_context.connector.acceptance_test_config = None
+    @pytest.fixture
+    def another_dummy_connector_under_test_image_tar(self, dagger_client, tmpdir) -> dagger.File:
+        dummy_tar_file = tmpdir / "another_dummy.tar"
+        dummy_tar_file.write_text("another_dummy", encoding="utf8")
+        return dagger_client.host().directory(str(tmpdir), include=["another_dummy.tar"]).file("another_dummy.tar")
+
+    async def test_skipped_when_no_acceptance_test_config(self, mocker, test_context):
+        test_context.connector = mocker.MagicMock(acceptance_test_config=None)
         acceptance_test_step = common.AcceptanceTests(test_context)
         step_result = await acceptance_test_step._run(None)
         assert step_result.status == StepStatus.SKIPPED
@@ -147,7 +154,6 @@ class TestAcceptanceTests:
 
         mocker.patch.object(common.environments, "load_image_to_docker_host", return_value="image_sha")
         mocker.patch.object(common.environments, "with_bound_docker_host", lambda _, cat_container: cat_container)
-        mocker.patch.object(common.AcceptanceTests, "get_cache_buster", return_value="cache_buster")
         return common.AcceptanceTests(test_context)
 
     async def test_cat_container_provisioning(
@@ -169,29 +175,53 @@ class TestAcceptanceTests:
         )
         assert await cat_container.with_exec(["cat", f"{acceptance_test_step.CONTAINER_SECRETS_DIRECTORY}/config.json"]).stdout() == "***"
         env_vars = {await env_var.name(): await env_var.value() for env_var in await cat_container.env_variables()}
-        assert env_vars["CACHEBUSTER"] == "cache_buster"
+        assert "CACHEBUSTER" in env_vars
 
-    async def test_cat_container_caching(self, dagger_client, mocker, test_context, test_input_dir, dummy_connector_under_test_image_tar):
+    async def test_cat_container_caching(
+        self,
+        dagger_client,
+        mocker,
+        test_context,
+        test_input_dir,
+        dummy_connector_under_test_image_tar,
+        another_dummy_connector_under_test_image_tar,
+    ):
         """Check that the acceptance test container caching behavior is correct."""
 
-        acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
-        cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_image_tar, test_input_dir)
-        cat_container = cat_container.with_exec(["date"])
-        fist_date_result = await cat_container.stdout()
+        initial_datetime = datetime.datetime(year=1992, month=6, day=19, hour=13, minute=1, second=0)
 
-        time.sleep(1)
-        # Check that cache is used
-        cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_image_tar, test_input_dir)
-        cat_container = cat_container.with_exec(["date"])
-        second_date_result = await cat_container.stdout()
-        assert fist_date_result == second_date_result
+        with freeze_time(initial_datetime) as frozen_datetime:
 
-        time.sleep(1)
-        # Check that cache buster is used to invalidate the cache
-        previous_cache_buster_value = await acceptance_test_step.get_cache_buster()
-        new_cache_buster_value = previous_cache_buster_value + "1"
-        mocker.patch.object(common.AcceptanceTests, "get_cache_buster", return_value=new_cache_buster_value)
-        cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_image_tar, test_input_dir)
-        cat_container = cat_container.with_exec(["date"])
-        third_date_result = await cat_container.stdout()
-        assert third_date_result != second_date_result
+            acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
+            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+                dummy_connector_under_test_image_tar, test_input_dir
+            )
+            cat_container = cat_container.with_exec(["date"])
+            fist_date_result = await cat_container.stdout()
+
+            frozen_datetime.tick(delta=datetime.timedelta(hours=5))
+            # Check that cache is used in the same day
+            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+                dummy_connector_under_test_image_tar, test_input_dir
+            )
+            cat_container = cat_container.with_exec(["date"])
+            second_date_result = await cat_container.stdout()
+            assert fist_date_result == second_date_result
+
+            # Check that cache bursted after a day
+            frozen_datetime.tick(delta=datetime.timedelta(days=1, seconds=1))
+            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+                dummy_connector_under_test_image_tar, test_input_dir
+            )
+            cat_container = cat_container.with_exec(["date"])
+            third_date_result = await cat_container.stdout()
+            assert third_date_result != second_date_result
+
+            time.sleep(1)
+            # Check that changing the tarball invalidates the cache
+            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+                another_dummy_connector_under_test_image_tar, test_input_dir
+            )
+            cat_container = cat_container.with_exec(["date"])
+            fourth_date_result = await cat_container.stdout()
+            assert fourth_date_result != third_date_result
