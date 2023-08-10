@@ -18,6 +18,9 @@ RUN poetry config virtualenvs.create false
 RUN echo "Etc/UTC" > /etc/timezone
 
 WORKDIR /app
+COPY pyproject.toml /app
+COPY poetry.lock /app
+RUN poetry install --no-root --only main --no-interaction --no-ansi
 COPY . /app
 RUN poetry install --only main --no-cache --no-interaction --no-ansi
 
