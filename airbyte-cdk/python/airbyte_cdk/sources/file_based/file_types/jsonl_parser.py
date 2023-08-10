@@ -16,6 +16,7 @@ from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, m
 class JsonlParser(FileTypeParser):
 
     MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1_000_000
+    ENCODING = "utf8"
 
     async def infer_schema(
         self,
@@ -31,7 +32,7 @@ class JsonlParser(FileTypeParser):
         inferred_schema: Dict[str, Any] = {}
         read_bytes = 0
 
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             for line in fp:
                 if read_bytes < self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE:
                     line_schema = self.infer_schema_for_record(json.loads(line))
@@ -53,7 +54,7 @@ class JsonlParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             for line in fp:
                 yield json.loads(line)
 

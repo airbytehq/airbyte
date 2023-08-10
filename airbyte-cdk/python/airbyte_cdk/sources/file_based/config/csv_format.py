@@ -98,7 +98,7 @@ class CsvFormat(BaseModel):
 
     @validator("escape_char")
     def validate_escape_char(cls, v: str) -> str:
-        if len(v) != 1:
+        if v is not None and len(v) != 1:
             raise ValueError("escape_char should only be one character")
         return v
 
