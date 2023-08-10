@@ -150,6 +150,10 @@ def anyio_backend():
 
 @pytest.fixture(scope="session")
 async def dagger_client(anyio_backend):
+    """Exposes a Dagger client available for the whole test session.
+    Dagger is a tool to programmatically create and interact with containers with out of the box caching.
+    More info here: https://dagger.io/
+    """
     async with dagger.Connection(config=dagger.Config(log_output=sys.stderr)) as client:
         yield client
 

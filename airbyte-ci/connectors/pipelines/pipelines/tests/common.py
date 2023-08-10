@@ -194,6 +194,11 @@ class AcceptanceTests(PytestStep):
         ]
 
     async def get_cat_command(self, connector_dir: Directory) -> List[str]:
+        """
+        Connectors can optionally setup or teardown resources before and after the acceptance tests are run.
+        This is done via the acceptance.py file in their integration_tests directory.
+        We append this module as a plugin the acceptance will use.
+        """
         cat_command = self.base_cat_command
         if "integration_tests" in await connector_dir.entries():
             if "acceptance.py" in await connector_dir.directory("integration_tests").entries():
