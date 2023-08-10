@@ -7,7 +7,7 @@ from typing import Dict, List
 
 import pytest
 from _pytest.outcomes import Failed
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
@@ -24,7 +24,7 @@ class ReadTestConfigWithIgnoreFields(ConnectionTestConfig):
     ignored_fields: Dict[str, List[IgnoredFieldsConfiguration]] = {
         "test_stream": [
             IgnoredFieldsConfiguration(name="ignore_me", bypass_reason="test"),
-            IgnoredFieldsConfiguration(name="ignore_me_too", bypass_reason="test")
+            IgnoredFieldsConfiguration(name="ignore_me_too", bypass_reason="test"),
         ]
     }
 
@@ -120,7 +120,10 @@ def test_read_with_ignore_fields(mocker, schema, record, expected_record, fail_c
         sequence_of_docker_callread_results,
         list(reversed(sequence_of_docker_callread_results)),
     ):
-        docker_runner_mock.call_read.side_effect = [record_message_from_record([first], emitted_at=111), record_message_from_record([second], emitted_at=112)]
+        docker_runner_mock.call_read.side_effect = [
+            record_message_from_record([first], emitted_at=111),
+            record_message_from_record([second], emitted_at=112),
+        ]
 
         t = _TestFullRefresh()
         with fail_context:
@@ -241,7 +244,7 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
             ],
-            does_not_raise()
+            does_not_raise(),
         ),
         (
             {"type": "object"},
@@ -253,7 +256,7 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
             ],
-            does_not_raise()
+            does_not_raise(),
         ),
         (
             {"type": "object"},
@@ -265,7 +268,7 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
             ],
-            pytest.raises(AssertionError, match="emitted_at should increase on subsequent runs")
+            pytest.raises(AssertionError, match="emitted_at should increase on subsequent runs"),
         ),
     ],
 )

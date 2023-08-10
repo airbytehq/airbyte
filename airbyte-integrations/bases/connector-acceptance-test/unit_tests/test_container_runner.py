@@ -6,14 +6,14 @@
 import json
 
 import pytest
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     OrchestratorType,
 )
-from airbyte_cdk.models import Type as AirbyteMessageType
+from airbyte_protocol.models import Type as AirbyteMessageType
 from connector_acceptance_test.utils import connector_runner
 
 
@@ -38,7 +38,7 @@ class TestContainerRunner:
         mocker.patch.object(connector_runner.ConnectorRunner, "read", mocker.Mock(return_value=records_reads))
         mocker.patch.object(connector_runner.ConnectorRunner, "_persist_new_configuration")
         runner = connector_runner.ConnectorRunner(
-            "source-test:dev", tmp_path, connector_configuration_path=old_configuration_path, custom_environment_variables={"foo": "bar"}
+            "source-test:dev", connector_configuration_path=old_configuration_path, custom_environment_variables={"foo": "bar"}
         )
         list(runner.run("dummy_cmd"))
         runner._persist_new_configuration.assert_called_once_with(new_configuration, 1)
@@ -92,7 +92,7 @@ class TestContainerRunner:
         else:
             old_configuration_path = None
         mocker.patch.object(connector_runner, "docker")
-        runner = connector_runner.ConnectorRunner("source-test:dev", tmp_path, old_configuration_path)
+        runner = connector_runner.ConnectorRunner("source-test:dev", old_configuration_path)
         new_configuration_path = runner._persist_new_configuration(new_configuration, new_configuration_emitted_at)
         if not expect_new_configuration:
             assert new_configuration_path is None

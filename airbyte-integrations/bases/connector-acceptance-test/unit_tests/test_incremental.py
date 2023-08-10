@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pendulum
 import pytest
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateBlob,
@@ -197,13 +197,8 @@ def test_incremental_two_sequential_reads(
     [
         (
             "test_stream",
-            {
-                    "dateCreated": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-            },
-            {'test_stream': ['dateCreated']},
+            {"dateCreated": {"type": "string", "format": "date-time"}},
+            {"test_stream": ["dateCreated"]},
             [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
             [],
             {"dateCreated": "2020-01-02T01:01:01.000000Z"},
@@ -211,17 +206,12 @@ def test_incremental_two_sequential_reads(
         ),
         (
             "test_stream",
-            {
-                    "dateCreated": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-            },
-            {'test_stream': ['dateCreated']},
+            {"dateCreated": {"type": "string", "format": "date-time"}},
+            {"test_stream": ["dateCreated"]},
             [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
             [],
             {},
-            pytest.raises(AssertionError, match="At least one valid state should be produced, given a cursor path")
+            pytest.raises(AssertionError, match="At least one valid state should be produced, given a cursor path"),
         ),
     ],
 )
@@ -834,8 +824,12 @@ def test_future_state_configuration_fixture(mocker, test_strictness_level, input
         test_incremental.pytest.fail.assert_not_called()
 
 
-TEST_AIRBYTE_STREAM_A = AirbyteStream(name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
-TEST_AIRBYTE_STREAM_B = AirbyteStream(name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
+TEST_AIRBYTE_STREAM_A = AirbyteStream(
+    name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+)
+TEST_AIRBYTE_STREAM_B = AirbyteStream(
+    name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+)
 
 TEST_CONFIGURED_AIRBYTE_STREAM_A = ConfiguredAirbyteStream(
     stream=TEST_AIRBYTE_STREAM_A,

@@ -240,3 +240,17 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
 
     _scan_schema(schema)
     return paths
+
+
+def flatten_tuples(to_flatten):
+    """Flatten a tuple of tuples into a single tuple."""
+    types = set()
+
+    if not isinstance(to_flatten, tuple):
+        to_flatten = (to_flatten,)
+    for thing in to_flatten:
+        if isinstance(thing, tuple):
+            types.update(flatten_tuples(thing))
+        else:
+            types.add(thing)
+    return tuple(types)

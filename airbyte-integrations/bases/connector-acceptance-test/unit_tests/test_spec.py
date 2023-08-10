@@ -5,7 +5,7 @@
 from typing import Any, Callable, Dict
 
 import pytest
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_protocol.models import ConnectorSpecification
 from connector_acceptance_test import conftest
 from connector_acceptance_test.tests.test_core import TestSpec as _TestSpec
 

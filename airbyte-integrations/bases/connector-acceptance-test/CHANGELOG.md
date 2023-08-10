@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0
+Bump to Python 3.10, use dagger instead of docker-py in the ConnectorRunner.
+
 ## 0.11.1
 Test connector image labels and make sure they are set correctly and match metadata.yaml.
 

@@ -15,7 +15,7 @@ from xmlrpc.client import Boolean
 import dpath.util
 import jsonschema
 import pytest
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
     AirbyteTraceMessage,
@@ -46,12 +46,16 @@ from connector_acceptance_test.utils.common import (
     find_all_values_for_key_in_schema,
     find_keyword_schema,
 )
-from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
-from jsonschema._utils import flatten
+from connector_acceptance_test.utils.json_schema_helper import (
+    JsonSchemaHelper,
+    flatten_tuples,
+    get_expected_schema_structure,
+    get_object_structure,
+)
 
 
 @pytest.fixture(name="connector_spec_dict")
-def connector_spec_dict_fixture(actual_connector_spec):
+async def connector_spec_dict_fixture(actual_connector_spec):
     return json.loads(actual_connector_spec.json())
 
 
@@ -82,14 +86,10 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
-@pytest.mark.default_timeout(30)
+@pytest.mark.default_timeout(60 * 5)
 class TestSpec(BaseTest):
-
-    spec_cache: ConnectorSpecification = None
-    previous_spec_cache: ConnectorSpecification = None
-
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(
+    async def skip_backward_compatibility_tests_fixture(
         self,
         inputs: SpecTestConfig,
         previous_connector_docker_runner: ConnectorRunner,
@@ -109,11 +109,10 @@ class TestSpec(BaseTest):
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
         return False
 
-    def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
+    async def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
         """Check that config matches the actual schema from the spec call"""
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
-
         try:
             jsonschema.validate(instance=config, schema=actual_connector_spec.connectionSpecification)
         except jsonschema.exceptions.ValidationError as err:
@@ -121,12 +120,12 @@ class TestSpec(BaseTest):
         except jsonschema.exceptions.SchemaError as err:
             pytest.fail(f"Spec is invalid: {err}")
 
-    def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
+    async def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
             assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
 
-    def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
+    async def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that enum lists in specs contain distinct values."""
         docs_url = "https://docs.airbyte.io/connector-development/connector-specification-reference"
         docs_msg = f"See specification reference at {docs_url}."
@@ -140,7 +139,7 @@ class TestSpec(BaseTest):
                 enum_list
             ), f"Enum lists should not contain duplicate values. Misconfigured enum array: {enum_list}. {docs_msg}"
 
-    def test_oneof_usage(self, actual_connector_spec: ConnectorSpecification):
+    async def test_oneof_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that if spec contains oneOf it follows the rules according to reference
         https://docs.airbyte.io/connector-development/connector-specification-reference
         """
@@ -235,7 +234,7 @@ class TestSpec(BaseTest):
         # if a property can store a secret, additional check should be done if it's a constant value
         return not is_property_constant_value
 
-    def test_secret_is_properly_marked(self, connector_spec_dict: dict, detailed_logger, secret_property_names):
+    async def test_secret_is_properly_marked(self, connector_spec_dict: dict, detailed_logger, secret_property_names):
         """
         Each field has a type, therefore we can make a flat list of fields from the returned specification.
         Iterate over the list, check if a field name is a secret name, can potentially hold a secret value
@@ -477,7 +476,7 @@ class TestSpec(BaseTest):
         check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
         assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
-    def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
+    async def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
         """Check if connector has correct oauth flow parameters according to
         https://docs.airbyte.io/connector-development/connector-specification-reference
         """
@@ -504,7 +503,7 @@ class TestSpec(BaseTest):
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    def test_backward_compatibility(
+    async def test_backward_compatibility(
         self,
         skip_backward_compatibility_tests: bool,
         actual_connector_spec: ConnectorSpecification,
@@ -517,7 +516,7 @@ class TestSpec(BaseTest):
         checker.assert_is_backward_compatible()
         validate_previous_configs(previous_connector_spec, actual_connector_spec, number_of_configs_to_generate)
 
-    def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
+    async def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
         """Check that value of the "additionalProperties" field is always true.
         A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
         Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
@@ -534,45 +533,41 @@ class TestSpec(BaseTest):
     # This test should not be part of TestSpec because it's testing the connector's docker image content, not the spec itself
     # But it's cumbersome to declare a separate, non configurable, test class
     # See https://github.com/airbytehq/airbyte/issues/15551
-    def test_image_labels(self, docker_runner: ConnectorRunner, connector_metadata: dict):
+    async def test_image_labels(self, docker_runner: ConnectorRunner, connector_metadata: dict):
         """Check that connector's docker image has required labels"""
-        assert docker_runner.labels.get("io.airbyte.name"), "io.airbyte.name must be set in dockerfile"
-        assert docker_runner.labels.get("io.airbyte.version"), "io.airbyte.version must be set in dockerfile"
         assert (
-            docker_runner.labels.get("io.airbyte.name") == connector_metadata["data"]["dockerRepository"]
+            await docker_runner.get_container_label("io.airbyte.name") == connector_metadata["data"]["dockerRepository"]
         ), "io.airbyte.name must be equal to dockerRepository in metadata.yaml"
         assert (
-            docker_runner.labels.get("io.airbyte.version") == connector_metadata["data"]["dockerImageTag"]
+            await docker_runner.get_container_label("io.airbyte.version") == connector_metadata["data"]["dockerImageTag"]
         ), "io.airbyte.version must be equal to dockerImageTag in metadata.yaml"
 
     # This test should not be part of TestSpec because it's testing the connector's docker image content, not the spec itself
     # But it's cumbersome to declare a separate, non configurable, test class
     # See https://github.com/airbytehq/airbyte/issues/15551
-    def test_image_environment_variables(self, docker_runner: ConnectorRunner):
+    async def test_image_environment_variables(self, docker_runner: ConnectorRunner):
         """Check that connector's docker image has required envs"""
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
-            docker_runner.entry_point
-        ), "env should be equal to space-joined entrypoint"
+        assert await docker_runner.get_container_env_variable_value("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+        assert await docker_runner.get_container_env_variable_value("AIRBYTE_ENTRYPOINT") == await docker_runner.get_container_entrypoint()
 
 
 @pytest.mark.default_timeout(30)
 class TestConnection(BaseTest):
-    def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
+    async def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
-            output = docker_runner.call_check(config=connector_config)
+            output = await docker_runner.call_check(config=connector_config)
             con_messages = filter_output(output, Type.CONNECTION_STATUS)
 
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.SUCCEEDED
         elif inputs.status == ConnectionTestConfig.Status.Failed:
-            output = docker_runner.call_check(config=connector_config)
+            output = await docker_runner.call_check(config=connector_config)
             con_messages = filter_output(output, Type.CONNECTION_STATUS)
 
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.FAILED
         elif inputs.status == ConnectionTestConfig.Status.Exception:
-            output = docker_runner.call_check(config=connector_config, raise_container_error=False)
+            output = await docker_runner.call_check(config=connector_config, raise_container_error=False)
             trace_messages = filter_output(output, Type.TRACE)
             assert len(trace_messages) == 1, "A trace message should be emitted in case of unexpected errors"
             trace = trace_messages[0].trace
@@ -604,7 +599,7 @@ class TestDiscovery(BaseTest):
     ]
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(
+    async def skip_backward_compatibility_tests_fixture(
         self,
         inputs: DiscoveryTestConfig,
         previous_connector_docker_runner: ConnectorRunner,
@@ -624,16 +619,16 @@ class TestDiscovery(BaseTest):
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
         return False
 
-    def test_discover(self, connector_config, docker_runner: ConnectorRunner):
+    async def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         """Verify that discover produce correct schema."""
-        output = docker_runner.call_discover(config=connector_config)
+        output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
         assert catalog_messages[0].catalog, "Message should have catalog"
         assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
 
-    def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
+    async def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check if all of the source defined cursor fields are exists on stream's json schema."""
         for stream_name, stream in discovered_catalog.items():
             if not stream.default_cursor_field:
@@ -647,7 +642,7 @@ class TestDiscovery(BaseTest):
                 f"properties for {stream_name} stream"
             )
 
-    def test_defined_refs_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
+    async def test_defined_refs_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check the presence of unresolved `$ref`s values within each json schema."""
         schemas_errors = []
         for stream_name, stream in discovered_catalog.items():
@@ -658,7 +653,7 @@ class TestDiscovery(BaseTest):
         assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
 
     @pytest.mark.parametrize("keyword", ["allOf", "not"])
-    def test_defined_keyword_exist_in_schema(self, keyword, discovered_catalog):
+    async def test_defined_keyword_exist_in_schema(self, keyword, discovered_catalog):
         """Checking for the presence of not allowed keywords within each json schema"""
         schemas_errors = []
         for stream_name, stream in discovered_catalog.items():
@@ -668,7 +663,7 @@ class TestDiscovery(BaseTest):
 
         assert not schemas_errors, f"Found not allowed `{keyword}` keyword for selected streams: {schemas_errors}."
 
-    def test_primary_keys_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
+    async def test_primary_keys_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check that all primary keys are present in catalog."""
         for stream_name, stream in discovered_catalog.items():
             for pk in stream.source_defined_primary_key or []:
@@ -677,13 +672,13 @@ class TestDiscovery(BaseTest):
                 pk_field_location = dpath.util.search(schema["properties"], pk_path)
                 assert pk_field_location, f"One of the PKs ({pk}) is not specified in discover schema for {stream_name} stream"
 
-    def test_streams_has_sync_modes(self, discovered_catalog: Mapping[str, Any]):
+    async def test_streams_has_sync_modes(self, discovered_catalog: Mapping[str, Any]):
         """Checking that the supported_sync_modes is a not empty field in streams of the catalog."""
         for _, stream in discovered_catalog.items():
             assert stream.supported_sync_modes is not None, f"The stream {stream.name} is missing supported_sync_modes field declaration."
             assert len(stream.supported_sync_modes) > 0, f"supported_sync_modes list on stream {stream.name} should not be empty."
 
-    def test_additional_properties_is_true(self, discovered_catalog: Mapping[str, Any]):
+    async def test_additional_properties_is_true(self, discovered_catalog: Mapping[str, Any]):
         """Check that value of the "additionalProperties" field is always true.
         A stream schema declaring "additionalProperties": false introduces the risk of accidental breaking changes.
         Specifically, when removing a property from the stream schema, existing connector catalog will no longer be valid.
@@ -698,7 +693,7 @@ class TestDiscovery(BaseTest):
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    def test_backward_compatibility(
+    async def test_backward_compatibility(
         self,
         skip_backward_compatibility_tests: bool,
         discovered_catalog: MutableMapping[str, AirbyteStream],
@@ -710,7 +705,7 @@ class TestDiscovery(BaseTest):
         checker.assert_is_backward_compatible()
 
     @pytest.mark.skip("This tests currently leads to too much failures. We need to fix the connectors at scale first.")
-    def test_catalog_has_supported_data_types(self, discovered_catalog: Mapping[str, Any]):
+    async def test_catalog_has_supported_data_types(self, discovered_catalog: Mapping[str, Any]):
         """Check that all streams have supported data types, format and airbyte_types.
         Supported data types are listed there: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
         """
@@ -836,7 +831,7 @@ class TestBasicRead(BaseTest):
         In case of `oneOf` or `anyOf` schema props, compare only choice which is present in records.
         """
         expected_paths = get_expected_schema_structure(schema, annotate_one_of=True)
-        expected_paths = set(flatten(tuple(expected_paths)))
+        expected_paths = set(flatten_tuples(tuple(expected_paths)))
 
         for record in records:
             record_paths = set(get_object_structure(record))
@@ -921,7 +916,7 @@ class TestBasicRead(BaseTest):
         return inputs.validate_data_points
 
     @pytest.fixture(name="configured_catalog")
-    def configured_catalog_fixture(
+    async def configured_catalog_fixture(
         self,
         test_strictness_level: Config.TestStrictnessLevel,
         configured_catalog_path: Optional[str],
@@ -952,7 +947,7 @@ class TestBasicRead(BaseTest):
         else:
             return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
 
-    def test_read(
+    async def test_read(
         self,
         connector_config,
         configured_catalog,
@@ -966,7 +961,7 @@ class TestBasicRead(BaseTest):
         docker_runner: ConnectorRunner,
         detailed_logger,
     ):
-        output = docker_runner.call_read(connector_config, configured_catalog)
+        output = await docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
         assert records, "At least one record should be read using provided catalog"
@@ -996,7 +991,7 @@ class TestBasicRead(BaseTest):
                 detailed_logger=detailed_logger,
             )
 
-    def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
+    async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:
             pytest.skip("Skipping `test_airbyte_trace_message_on_failure` because `inputs.expect_trace_message_on_failure=False`")
             return
@@ -1016,7 +1011,7 @@ class TestBasicRead(BaseTest):
             ]
         )
 
-        output = docker_runner.call_read(connector_config, invalid_configured_catalog, raise_container_error=False)
+        output = await docker_runner.call_read(connector_config, invalid_configured_catalog, raise_container_error=False)
         trace_messages = filter_output(output, Type.TRACE)
         error_trace_messages = list(filter(lambda m: m.trace.type == TraceType.ERROR, trace_messages))
 

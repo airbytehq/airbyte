@@ -63,18 +63,18 @@ def connector_image_with_ne_properties():
 
 class TestEnvAttributes:
     def test_correct_connector_image(self, correct_connector_image, tmp_path):
-        docker_runner = ConnectorRunner(image_name=correct_connector_image, volume=tmp_path)
+        docker_runner = ConnectorRunner(image_name=correct_connector_image)
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
             docker_runner.entry_point
         ), "env should be equal to space-joined entrypoint"
 
     def test_connector_image_without_env(self, connector_image_without_env, tmp_path):
-        docker_runner = ConnectorRunner(image_name=connector_image_without_env, volume=tmp_path)
+        docker_runner = ConnectorRunner(image_name=connector_image_without_env)
         assert not docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "this test should fail if AIRBYTE_ENTRYPOINT defined"
 
     def test_docker_image_env_ne_entrypoint(self, connector_image_with_ne_properties, tmp_path):
-        docker_runner = ConnectorRunner(image_name=connector_image_with_ne_properties, volume=tmp_path)
+        docker_runner = ConnectorRunner(image_name=connector_image_with_ne_properties)
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") != " ".join(docker_runner.entry_point), (
             "This test should fail if we have " ".join(ENTRYPOINT)==ENV"

@@ -6,26 +6,32 @@
 import setuptools
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.2",
-    "docker~=5.0.3",
+    "airbyte-protocol-models",
+    "dagger-io==0.6.4",
     "PyYAML~=6.0",
     "icdiff~=1.9",
     "inflection~=0.5",
     "pdbpp~=0.10",
-    "pydantic~=1.6",
+    "pydantic",
     "pytest~=6.2",
     "pytest-sugar~=0.9",
     "pytest-timeout~=1.4",
     "pprintpp~=0.4",
     "dpath~=2.0.1",
-    "jsonschema~=3.2.0",
+    "jsonschema",
     "jsonref==0.2",
     "deepdiff~=5.8.0",
     "requests-mock~=1.9.3",
     "pytest-mock~=3.6.1",
+    "pendulum",
     "pytest-cov~=3.0.0",
-    "hypothesis~=6.54.1",
-    "hypothesis-jsonschema~=0.20.1",  # TODO alafanechere upgrade to latest when jsonschema lib is upgraded to >= 4.0.0 in airbyte-cdk and connector acceptance tests
+    "hypothesis",
+    "hypothesis-jsonschema",
+    "urllib3",
+    "requests",
+    "anyio",
+    "pytest-custom_exit_code",
+    "docker>=6,<7",
     # Pinning requests and urllib3 to avoid an issue with dockerpy and requests 2.
     # Related issue: https://github.com/docker/docker-py/issues/3113
     "urllib3<2.0",

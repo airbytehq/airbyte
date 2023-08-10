@@ -15,7 +15,7 @@ from unittest.mock import Mock
 import docker
 import pytest
 import yaml
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from connector_acceptance_test.config import EmptyStreamConfiguration
 from connector_acceptance_test.utils import common
 from connector_acceptance_test.utils.compare import make_hashable
@@ -254,13 +254,7 @@ def test_failed_reading(traceback, container_error, last_line, expected_error):
         status = {"StatusCode": 1}
         if container_error:
             status["Error"] = container_error
-        list(
-            ConnectorRunner.read(
-                container=MockContainer(
-                    status=status, iter_logs=binary_generator(line_lengths, traceback or last_line)
-                )
-            )
-        )
+        list(ConnectorRunner.read(container=MockContainer(status=status, iter_logs=binary_generator(line_lengths, traceback or last_line))))
 
     assert expected_error == exc.value.stderr
 

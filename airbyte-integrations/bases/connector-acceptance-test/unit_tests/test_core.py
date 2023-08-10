@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from _pytest.outcomes import Failed
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
