@@ -10,7 +10,9 @@ MAIN_REQUIREMENTS = [
     "pendulum",
 ]
 
-TEST_REQUIREMENTS = []
+TEST_REQUIREMENTS = [
+    "pytest-mock~=3.6.1",
+]
 
 setup(
     name="source_zuora",

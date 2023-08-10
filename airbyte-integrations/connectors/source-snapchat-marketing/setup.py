@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "requests_mock"]
+TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "requests_mock"]
 
 setup(
     name="source_snapchat_marketing",

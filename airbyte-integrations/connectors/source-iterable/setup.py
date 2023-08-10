@@ -12,7 +12,7 @@ MAIN_REQUIREMENTS = [
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "responses==0.23.1", "freezegun==1.1.0"]
+TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "responses==0.23.1", "freezegun==1.1.0"]
 
 
 setup(

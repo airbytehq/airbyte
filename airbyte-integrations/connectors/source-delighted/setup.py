@@ -10,6 +10,7 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
+    "pytest-mock~=3.6.1",
     "pytest~=6.1",
     "responses~=0.13.3",
 ]

@@ -8,6 +8,7 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "firebolt-sdk>=0.12.0"]
 
 TEST_REQUIREMENTS = [
+    "pytest-mock~=3.6.1",
     "pytest>=6.2.5",  # 6.2.5 has python10 compatibility fixes
     "pytest-asyncio>=0.18.0",
 ]
