@@ -1,11 +1,11 @@
 # Postgres
 
 Airbyte's certified Postgres connector offers the following features:
-* Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](./../../understanding-airbyte/cdc.md) and replication using the [xmin system column](#xmin). 
+* Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin). 
 * All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
-* Reliable replication at any table size with [checkpointing](./../../understanding-airbyte/airbyte-protocol.md#state--checkpointing) and chunking of database reads.
+* Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](./postgres/postgres-troubleshooting.md) to troubleshooting issues with the Postgres connector.
+The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshooting issues with the Postgres connector.
 
 ![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png)
 
@@ -75,8 +75,8 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 ### Setup using CDC
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
-* See [here](./../../understanding-airbyte/cdc.md) to learn more on how Airbyte implements CDC.
-* See [here](./postgres/postgres-troubleshooting.md#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
+* See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
+* See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
 
 We recommend configuring your Postgres source with CDC when:
 - You need a record of deletions.
@@ -248,7 +248,7 @@ The command produces the private key in PEM format and the public key remains in
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting.md).
+To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
 
 ## Data type mapping
 
