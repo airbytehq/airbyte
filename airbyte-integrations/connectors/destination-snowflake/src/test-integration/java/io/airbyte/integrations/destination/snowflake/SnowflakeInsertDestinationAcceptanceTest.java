@@ -97,6 +97,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return true;
   }
 
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
+
   public JsonNode getStaticConfig() {
     final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
     Preconditions.checkArgument(!SnowflakeDestinationResolver.isS3Copy(insertConfig));
