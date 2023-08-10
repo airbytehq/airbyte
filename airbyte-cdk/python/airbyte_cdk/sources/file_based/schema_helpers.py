@@ -3,12 +3,14 @@
 #
 
 import json
+import logging
 from copy import deepcopy
 from enum import Enum
 from functools import total_ordering
 from typing import Any, Dict, List, Literal, Mapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.types import StreamSchema
 
 JsonSchemaSupportedType = Union[List[str], Literal["string"], str]
 SchemaType = Dict[str, Dict[str, JsonSchemaSupportedType]]
@@ -139,57 +141,6 @@ def _choose_wider_type(key: str, t1: Dict[str, Any], t2: Dict[str, Any]) -> Dict
         return max(
             [t1, t2], key=lambda x: ComparableType(get_comparable_type(TYPE_PYTHON_MAPPING[x["type"]][0]))
         )  # accessing the type_mapping value
-
-
-def is_equal_or_narrower_type(value: Any, expected_type: str) -> bool:
-    if isinstance(value, list):
-        # We do not compare lists directly; the individual items are compared.
-        # If we hit this condition, it means that the expected type is not
-        # compatible with the inferred type.
-        return False
-
-    inferred_type = ComparableType(get_inferred_type(value))
-
-    if inferred_type is None:
-        return False
-
-    return ComparableType(inferred_type) <= ComparableType(get_comparable_type(expected_type))
-
-
-def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
-    """
-    Return true iff the record conforms to the supplied schema.
-
-    The record conforms to the supplied schema iff:
-    - All columns in the record are in the schema.
-    - For every column in the record, that column's type is equal to or narrower than the same column's
-      type in the schema.
-    """
-    schema_columns = set(schema.get("properties", {}).keys())
-    record_columns = set(record.keys())
-
-    if not record_columns.issubset(schema_columns):
-        return False
-
-    for column, definition in schema.get("properties", {}).items():
-        expected_type = definition.get("type")
-        value = record.get(column)
-
-        if value is not None:
-            if isinstance(expected_type, list):
-                return any(is_equal_or_narrower_type(value, e) for e in expected_type)
-            elif expected_type == "object":
-                return isinstance(value, dict)
-            elif expected_type == "array":
-                if not isinstance(value, list):
-                    return False
-                array_type = definition.get("items", {}).get("type")
-                if not all(is_equal_or_narrower_type(v, array_type) for v in value):
-                    return False
-            elif not is_equal_or_narrower_type(value, expected_type):
-                return False
-
-    return True
 
 
 def _parse_json_input(input_schema: Union[str, Mapping[str, str]]) -> Optional[Mapping[str, str]]:

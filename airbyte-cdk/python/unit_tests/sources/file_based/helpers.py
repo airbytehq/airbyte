@@ -15,6 +15,7 @@ from airbyte_cdk.sources.file_based.file_types.jsonl_parser import JsonlParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.types import StreamSchema
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesStreamReader
 
 
@@ -51,7 +52,7 @@ class FailingSchemaValidationPolicy(AbstractSchemaValidationPolicy):
     ALWAYS_FAIL = "always_fail"
     validate_schema_before_sync = True
 
-    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
+    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[StreamSchema]) -> bool:
         return False
 
 

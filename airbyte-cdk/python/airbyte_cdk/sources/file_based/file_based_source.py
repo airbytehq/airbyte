@@ -5,7 +5,7 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
@@ -19,11 +19,11 @@ from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
+from airbyte_cdk.sources.file_based.stream.abstract_file_based_stream import StreamSchema
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams import Stream
 from pydantic.error_wrappers import ValidationError
-
 
 class FileBasedSource(AbstractSource, ABC):
     def __init__(
@@ -44,7 +44,7 @@ class FileBasedSource(AbstractSource, ABC):
         self.parsers = parsers
         self.validation_policies = validation_policies
         catalog = self.read_catalog(catalog_path) if catalog_path else None
-        self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
+        self.stream_schemas: Mapping[str, StreamSchema] = {s.stream.name: StreamSchema.parse_obj(s.stream.json_schema) for s in catalog.streams} if catalog else {}
         self.cursor_cls = cursor_cls
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 

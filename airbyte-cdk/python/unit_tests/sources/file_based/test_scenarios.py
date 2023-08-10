@@ -289,8 +289,8 @@ def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: Optional[Li
             actual_level, actual_message = actual["level"], actual["message"]
             expected_level = expected["level"]
             expected_message = expected["message"]
-            assert actual_level == expected_level
             assert expected_message in actual_message
+            assert actual_level == expected_level
 
 
 spec_scenarios = [
