@@ -160,18 +160,21 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                   """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
     }
 
-    return new StagingConsumerFactory().createAsync(
-            outputRecordCollector,
-            getDatabase(getDataSource(config)),
-            new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
-            getNamingResolver(),
-            config,
-            catalog,
-            isPurgeStagingData(s3Options),
-            new TypeAndDedupeOperationValve(),
-            new NoopTyperDeduper(),
-            // The parsedcatalog is only used in v2 mode, so just pass null for now
-            null);
+    return new StagingConsumerFactory().create(
+        outputRecordCollector,
+        getDatabase(getDataSource(config)),
+        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
+        getNamingResolver(),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numberOfFileBuffers)),
+        config,
+        catalog,
+        isPurgeStagingData(s3Options),
+        new TypeAndDedupeOperationValve(),
+        new NoopTyperDeduper(),
+        // The parsedcatalog is only used in v2 mode, so just pass null for now
+        null,
+        // Overwriting null namespace with null is perfectly safe
+        null);
   }
 
   /**
