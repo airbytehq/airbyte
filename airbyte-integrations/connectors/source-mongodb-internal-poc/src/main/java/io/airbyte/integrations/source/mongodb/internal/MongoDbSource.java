@@ -191,7 +191,7 @@ public class MongoDbSource extends BaseConnector implements Source {
               .filter(filter)
               .projection(fields)
               .sort(Sorts.ascending("_id"))
-              .batchSize(BATCH_SIZE)
+//              .batchSize(BATCH_SIZE)
               .cursor();
 
           // wrap the mongodb iterator into an AutoCloseableIterator
