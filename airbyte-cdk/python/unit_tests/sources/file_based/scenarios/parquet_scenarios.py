@@ -6,6 +6,7 @@ import datetime
 import decimal
 
 import pyarrow as pa
+from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryParquetFilesStreamReader
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -172,7 +173,7 @@ single_parquet_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -228,7 +229,7 @@ single_partitioned_parquet_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["path_prefix/**/*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -290,7 +291,7 @@ multi_parquet_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -353,7 +354,7 @@ parquet_various_types_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -494,7 +495,7 @@ parquet_file_with_decimal_no_config_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -545,12 +546,10 @@ parquet_file_with_decimal_as_string_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "format": {
-                        "parquet": {
-                            "filetype": "parquet",
-                            "decimal_as_float": False
-                        }
+                        "filetype": "parquet",
+                        "decimal_as_float": False
                     }
                 }
             ]
@@ -602,12 +601,10 @@ parquet_file_with_decimal_as_float_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "format": {
-                        "parquet": {
-                            "filetype": "parquet",
-                            "decimal_as_float": True
-                        }
+                        "filetype": "parquet",
+                        "decimal_as_float": True
                     }
                 }
             ]
@@ -685,6 +682,68 @@ parquet_file_with_decimal_legacy_config_scenario = (
                         "properties": {
                             "col1": {
                                 "type": ["null", "number"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        }
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+).build()
+
+parquet_with_invalid_config_scenario = (
+    TestScenarioBuilder()
+    .set_name("parquet_with_invalid_config")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "parquet",
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                    "format": {
+                        "filetype": "csv"
+                    }
+                }
+            ]
+        }
+    )
+    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
+    .set_file_type("parquet")
+    .set_expected_records(
+        [
+        ]
+    )
+    .set_expected_logs({"read": [
+        {
+            "level": "ERROR",
+            "message": "Error parsing record"
+        }
+    ]})
+    .set_expected_discover_error(SchemaInferenceError, "Error inferring schema from files")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"

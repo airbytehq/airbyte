@@ -30,6 +30,7 @@ public final class JavaBaseConstants {
   public static final String COLUMN_NAME_AB_RAW_ID = "_airbyte_raw_id";
   public static final String COLUMN_NAME_AB_LOADED_AT = "_airbyte_loaded_at";
   public static final String COLUMN_NAME_AB_EXTRACTED_AT = "_airbyte_extracted_at";
+  public static final String COLUMN_NAME_AB_META = "_airbyte_meta";
   public static final List<String> V2_RAW_TABLE_COLUMN_NAMES = List.of(
       COLUMN_NAME_AB_RAW_ID,
       COLUMN_NAME_AB_EXTRACTED_AT,
@@ -37,7 +38,8 @@ public final class JavaBaseConstants {
       COLUMN_NAME_DATA);
   public static final List<String> V2_FINAL_TABLE_METADATA_COLUMNS = List.of(
       COLUMN_NAME_AB_RAW_ID,
-      COLUMN_NAME_AB_EXTRACTED_AT);
+      COLUMN_NAME_AB_EXTRACTED_AT,
+      COLUMN_NAME_AB_META);
 
   public static final String AIRBYTE_NAMESPACE_SCHEMA = "airbyte";
 
