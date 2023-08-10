@@ -89,11 +89,11 @@ The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](htt
 
 :::tip
 
-Airbyte recommends to use at least [Enterprise edition](https://help.salesforce.com/s/articleView?id=sf.users_add_products_subscription_management.htm&type=5) for daily base syncs. This subscription level provides the minimum required API limits.
+To use this connector, you'll need at least the Enterprise edition of Salesforce or the Professional Edition with API access purchased as an add-on. Reference the [Salesforce docs about API access](https://help.salesforce.com/s/articleView?id=000385436&type=1) for more information.
 
 :::
 
-### BULK API vs REST API
+### A note on the BULK API vs REST API
 
 The main difference between BULK API and REST API is that **REST** API uses the standard synchronous approach (request -> response), while **BULK** uses an asynchronous one (create job with query -> wait for completion -> download response).
 Bulk API is recommended to use by SalesForce if data operation includes more than 2,000 records.
