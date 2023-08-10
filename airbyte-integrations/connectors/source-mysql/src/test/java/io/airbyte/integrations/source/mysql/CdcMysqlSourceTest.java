@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -35,21 +34,16 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.jooq.SQLDialect;
@@ -207,7 +201,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @Override
   protected void addCdcDefaultCursorField(final AirbyteStream stream) {
-    stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    }
   }
 
   @Override
@@ -311,47 +307,4 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
     assertExpectedStateMessages(stateMessages);
   }
-
-  @Override
-  protected AirbyteCatalog expectedCatalogForDiscover() {
-    final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
-
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
-                columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.empty()));
-
-    final List<AirbyteStream> streams = expectedCatalog.getStreams();
-    // stream with PK
-    streams.get(0).setSourceDefinedCursor(true);
-    addCdcMetadataColumns(streams.get(0));
-    addCdcDefaultCursorField(streams.get(0));
-
-    final AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
-        MODELS_STREAM_NAME + "_2",
-        MODELS_SCHEMA,
-        Field.of(COL_ID, JsonSchemaType.INTEGER),
-        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-        Field.of(COL_MODEL, JsonSchemaType.STRING));
-    streamWithoutPK.setSourceDefinedPrimaryKey(Collections.emptyList());
-    streamWithoutPK.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
-    addCdcMetadataColumns(streamWithoutPK);
-
-    final AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
-            MODELS_STREAM_NAME + "_random",
-            randomTableSchema(),
-            Field.of(COL_ID + "_random", JsonSchemaType.INTEGER),
-            Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER),
-            Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
-        .withSourceDefinedCursor(true)
-        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-        .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random")));
-
-    addCdcDefaultCursorField(randomStream);
-    addCdcMetadataColumns(randomStream);
-
-    streams.add(streamWithoutPK);
-    streams.add(randomStream);
-    expectedCatalog.withStreams(streams);
-    return expectedCatalog;
-  }
-
 }
