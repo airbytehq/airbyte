@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from uuid import uuid4
+
 import pytest
 from connector_ops.utils import Connector
 from pipelines.actions import environments
@@ -72,3 +74,21 @@ async def test_with_docker_cli(context):
     fourth_docker_cli = environments.with_docker_cli(context, custom_docker_host_binding)
     images = (await fourth_docker_cli.with_exec(["docker", "images"]).stdout()).splitlines()[1:]
     assert len(images) == 1
+
+
+@pytest.fixture
+async def docker_image_tar_file(dagger_client, tmpdir):
+
+    # await dagger_client.host().directory(str(Connector("source-openweather").code_directory)).docker_build().with_exec(["spec"]).export(str(tmpdir / "image.tar"))
+    await dagger_client.container().from_("hello-world").export(str(tmpdir / "image.tar"))
+    return dagger_client.host().directory(str(tmpdir), include=["image.tar"]).file("image.tar")
+
+
+async def test_load_image_to_docker_host(context, docker_image_tar_file):
+
+    docker_host_binding = environments.bound_docker_host(context, f"{uuid4()}-test-docker-host")
+
+    image_tag = "test:dev"
+    for _ in range(10):
+        image_sha = await environments.load_image_to_docker_host(context, docker_image_tar_file, image_tag, docker_host_binding)
+        assert image_sha is not None

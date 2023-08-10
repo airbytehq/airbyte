@@ -543,22 +543,23 @@ def with_docker_cli(context: PipelineContext, docker_host_binding: Callable) -> 
     return (
         context.dagger_client.container()
         .from_(consts.DOCKER_CLI_IMAGE)
-        .with_(docker_host_binding)
         .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+        .with_(docker_host_binding)
     )
 
 
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str, custom_bound_to_docker_host: Callable):
+async def load_image_to_docker_host(context: PipelineContext, tar_file: File, image_tag: str, docker_host_binding: Callable):
     """Load a docker image tar archive to the docker host.
 
     Args:
-        context (ConnectorContext): The current connector context.
+        context (PipelineContext): The current pipeline context.
         tar_file (File): The file object holding the docker image tar archive.
         image_tag (str): The tag to create on the image if it has no tag.
+        docker_host_binding (Callable): A callable that will bind the container to a docker host.
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context, custom_bound_to_docker_host).with_mounted_file(tar_name, tar_file)
+    docker_cli = with_docker_cli(context, docker_host_binding).with_mounted_file(tar_name, tar_file)
     docker_cli = await docker_cli.with_exec(["docker", "load", "--input", tar_name])
     image_load_output = await docker_cli.stdout()
     # Not tagged images only have a sha256 id the load output shares.
