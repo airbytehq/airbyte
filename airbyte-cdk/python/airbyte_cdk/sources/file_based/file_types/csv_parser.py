@@ -303,41 +303,50 @@ class _JsonTypeInferrer(_TypeInferrer):
         self._values.add(value)
 
     def infer(self) -> str:
-        types = {self._infer_type(value) for value in self._values}
-        if types == {self._NULL_TYPE}:
+        types_by_value = {value: self._infer_type(value) for value in self._values}
+        types_excluding_null_values = [types for types in types_by_value.values() if self._NULL_TYPE not in types]
+        if not types_excluding_null_values:
             # this is highly unusual but we will consider the column as a string
             return self._STRING_TYPE
 
-        types.discard(self._NULL_TYPE)
-        if types == {self._BOOLEAN_TYPE}:
+        types = set.intersection(*types_excluding_null_values)
+        if self._BOOLEAN_TYPE in types:
             return self._BOOLEAN_TYPE
-        elif types == {self._INTEGER_TYPE}:
+        elif self._INTEGER_TYPE in types:
             return self._INTEGER_TYPE
-        elif types == {self._NUMBER_TYPE} or types == {self._INTEGER_TYPE, self._NUMBER_TYPE}:
+        elif self._NUMBER_TYPE in types:
             return self._NUMBER_TYPE
         elif not self._allow_for_objects_and_arrays:
             return self._STRING_TYPE
-        elif types == {self._ARRAY_TYPE}:
+        elif self._ARRAY_TYPE in types:
             return self._ARRAY_TYPE
-        elif self._ARRAY_TYPE in types or self._OBJECT_TYPE in types:
+        elif any(self._OBJECT_TYPE in _type for _type in types_by_value.values()):
             return self._OBJECT_TYPE
         return self._STRING_TYPE
 
-    def _infer_type(self, value: str) -> str:
+    def _infer_type(self, value: str) -> Set[str]:
+        inferred_types = set()
+
         if value in self._null_values:
-            return self._NULL_TYPE
-        elif self._is_boolean(value):
-            return self._BOOLEAN_TYPE
-        elif self._is_integer(value):
-            return self._INTEGER_TYPE
+            inferred_types.add(self._NULL_TYPE)
+        if self._is_boolean(value):
+            inferred_types.add(self._BOOLEAN_TYPE)
+        if self._is_integer(value):
+            inferred_types.add(self._INTEGER_TYPE)
+            inferred_types.add(self._NUMBER_TYPE)
         elif self._is_number(value):
-            return self._NUMBER_TYPE
-        elif self._is_array(value):
-            return self._ARRAY_TYPE
-        elif self._is_object(value):
-            return self._OBJECT_TYPE
-        else:
-            return self._STRING_TYPE
+            inferred_types.add(self._NUMBER_TYPE)
+
+        # if it can be infered as a primitive, it can't be a complex type so we'll avoid json parsing
+        if not inferred_types:
+            if self._is_array(value):
+                inferred_types.add(self._ARRAY_TYPE)
+                inferred_types.add(self._OBJECT_TYPE)
+            elif self._is_object(value):
+                inferred_types.add(self._OBJECT_TYPE)
+
+        inferred_types.add(self._STRING_TYPE)
+        return inferred_types
 
     def _is_boolean(self, value: str) -> bool:
         try:

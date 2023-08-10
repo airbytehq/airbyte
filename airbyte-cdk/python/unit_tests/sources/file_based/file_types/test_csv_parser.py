@@ -86,8 +86,8 @@ def test_cast_to_python_type(row: Dict[str, str], true_values: Set[str], false_v
     assert CsvParser._cast_types(row, PROPERTY_TYPES, csv_format, logger) == expected_output
 
 
-_DEFAULT_TRUE_VALUES = {"yes", "yeah", "right"}
-_DEFAULT_FALSE_VALUES = {"no", "nop", "wrong"}
+_DEFAULT_TRUE_VALUES = {"1", "yes", "yeah", "right"}
+_DEFAULT_FALSE_VALUES = {"0", "no", "nop", "wrong"}
 
 
 class SchemaInferenceTestCase(TestCase):
@@ -125,6 +125,10 @@ class SchemaInferenceTestCase(TestCase):
     def test_given_integers_only_when_infer_schema_then_type_is_integer(self) -> None:
         self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
         self._test_infer_schema(["2", "90329", "5645"], "integer")
+
+    def test_given_integer_overlap_with_bool_value_only_when_infer_schema_then_type_is_integer(self) -> None:
+        self._config_format.inference_type = InferenceType.PRIMITIVE_AND_COMPLEX_TYPES
+        self._test_infer_schema(["1", "90329", "5645"], "integer")  # here, "1" is also considered a boolean
 
     def test_given_primitive_only_and_integers_only_when_infer_schema_then_type_is_integer(self) -> None:
         self._config_format.inference_type = InferenceType.PRIMITIVE_TYPES_ONLY

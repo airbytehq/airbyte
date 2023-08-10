@@ -9,7 +9,7 @@ _base_single_stream_scenario = (
     TestScenarioBuilder()
     .set_files(
         {
-            "a.csv": {  # The records in this file do not conform to the schema
+            "a.csv": {
                 "contents": [
                     ("col1", "col2"),
                     ("val_a_11", "1"),
@@ -17,7 +17,7 @@ _base_single_stream_scenario = (
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
-            "b.csv": {
+            "b.csv": {  # The records in this file do not conform to the schema
                 "contents": [
                     ("col1", "col2"),
                     ("val_b_11", "this is text that will trigger validation policy"),
