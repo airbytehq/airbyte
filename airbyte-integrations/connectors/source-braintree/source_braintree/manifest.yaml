@@ -3750,7 +3750,7 @@ streams:
         request_body_json:
           search:
             created_at:
-              min: '{{ config[''start_date''] }}'
+              min: '{{ stream_interval.start_time }}'
       record_selector:
         type: RecordSelector
         extractor:
@@ -9737,7 +9737,7 @@ streams:
         request_body_json:
           search:
             created_at:
-              min: '{{ config[''start_date''] }}'
+              min: '{{ stream_interval.start_time }}'
       record_selector:
         type: RecordSelector
         extractor:
@@ -15679,7 +15679,7 @@ streams:
         request_body_json:
           search:
             created_at:
-              min: '{{ config[''start_date''] }}'
+              min: '{{ stream_interval.start_time }}'
       record_selector:
         type: RecordSelector
         extractor:
@@ -15880,7 +15880,7 @@ streams:
         request_body_json:
           search:
             received_date:
-              min: '{{ config[''start_date''] }}'
+              min: '{{ stream_interval.start_time }}'
       record_selector:
         type: RecordSelector
         extractor:
@@ -15897,7 +15897,7 @@ streams:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: received_date
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%d %H:%M:%S'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
