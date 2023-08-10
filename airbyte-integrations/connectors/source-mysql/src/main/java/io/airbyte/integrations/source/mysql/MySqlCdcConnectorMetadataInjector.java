@@ -62,7 +62,7 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
   }
 
   private Long getCdcDefaultCursor() {
-    return emittedAtConverted + this.recordCounter.getAndIncrement();
+    return this.emittedAtConverted + this.recordCounter.getAndIncrement();
   }
 
 }
