@@ -27,7 +27,6 @@ from source_salesforce.streams import (
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
 )
-
 from utils import read_full_refresh
 
 
