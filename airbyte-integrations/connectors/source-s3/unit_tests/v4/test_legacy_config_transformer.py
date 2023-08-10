@@ -93,7 +93,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 "format": {
                     "filetype": "parquet",
                 },
-                "path_pattern": "**/*.csv",
+                "path_pattern": "**/*.parquet",
             },
             {
                 "bucket": "test_bucket",
@@ -101,7 +101,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                     {
                         "name": "test_data",
                         "file_type": "parquet",
-                        "globs": ["**/*.csv"],
+                        "globs": ["**/*.parquet"],
                         "validation_policy": "Emit Record",
                         "format": {
                             "filetype": "parquet",
@@ -111,6 +111,34 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 ]
             }
             , id="test_convert_parquet_format"
+        ),
+        pytest.param(
+            {
+                "dataset": "test_data",
+                "provider": {
+                    "storage": "S3",
+                    "bucket": "test_bucket",
+                },
+                "format": {
+                    "filetype": "jsonl",
+                },
+                "path_pattern": "**/*.jsonl",
+            },
+            {
+                "bucket": "test_bucket",
+                "streams": [
+                    {
+                        "name": "test_data",
+                        "file_type": "jsonl",
+                        "globs": ["**/*.jsonl"],
+                        "validation_policy": "Emit Record",
+                        "format": {
+                            "filetype": "jsonl",
+                        }
+                    }
+                ]
+            }
+            , id="test_convert_jsonl_format"
         ),
     ]
 )
