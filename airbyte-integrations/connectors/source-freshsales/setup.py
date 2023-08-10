@@ -12,7 +12,6 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "pytest",
     "pytest-mock",
-    "connector-acceptance-test",
 ]
 
 setup(

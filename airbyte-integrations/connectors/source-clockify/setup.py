@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.2.0",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "connector-acceptance-test", "responses"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "responses"]
 
 setup(
     name="source_clockify",

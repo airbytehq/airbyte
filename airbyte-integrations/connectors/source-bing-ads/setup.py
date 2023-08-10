@@ -9,7 +9,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "bingads~=13.0.13", "vcrpy==4.1.1", "backoff
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "connector-acceptance-test",
 ]
 
 setup(

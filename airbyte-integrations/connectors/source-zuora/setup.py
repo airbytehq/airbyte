@@ -10,9 +10,7 @@ MAIN_REQUIREMENTS = [
     "pendulum",
 ]
 
-TEST_REQUIREMENTS = [
-    "connector-acceptance-test",
-]
+TEST_REQUIREMENTS = []
 
 setup(
     name="source_zuora",

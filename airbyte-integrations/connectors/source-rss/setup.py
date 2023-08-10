@@ -10,7 +10,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "feedparser~=6.0.10", "pytz~=2022.6"]
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
-    "connector-acceptance-test",
 ]
 
 setup(

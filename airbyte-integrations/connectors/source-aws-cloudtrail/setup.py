@@ -9,7 +9,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "boto3==1.17.*"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "connector-acceptance-test",
 ]
 
 setup(

@@ -9,7 +9,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "PyBambooHR"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "connector-acceptance-test",
 ]
 
 setup(

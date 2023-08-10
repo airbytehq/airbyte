@@ -9,7 +9,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "google-cloud-storage==2.5.0", "pandas=
 
 TEST_REQUIREMENTS = [
     "pytest~=6.2",
-    "connector-acceptance-test",
 ]
 
 setup(

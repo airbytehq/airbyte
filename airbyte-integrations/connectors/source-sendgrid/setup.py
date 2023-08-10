@@ -9,7 +9,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "backoff", "requests", "pandas"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "connector-acceptance-test",
     "requests-mock",
 ]
 

@@ -9,7 +9,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "requests==2.25.1"]
 
 TEST_REQUIREMENTS = [
     "pytest",
-    "connector-acceptance-test",
 ]
 
 setup(

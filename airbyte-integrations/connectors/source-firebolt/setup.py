@@ -10,7 +10,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "firebolt-sdk>=0.12.0"]
 TEST_REQUIREMENTS = [
     "pytest>=6.2.5",  # 6.2.5 has python10 compatibility fixes
     "pytest-asyncio>=0.18.0",
-    "connector-acceptance-test",
 ]
 
 setup(
