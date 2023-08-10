@@ -1,34 +1,39 @@
-FROM python:3.10.12 as builder
-RUN apt-get update \
+FROM python:3.9.11-alpine3.15 as base
+
+# build and load all requirements
+FROM base as builder
+WORKDIR /airbyte/integration_code
+
+# upgrade pip to the latest version
+RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apt-get install tzdata
+    && apk --no-cache add tzdata build-base
 
-RUN pip install poetry==1.5.1
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+COPY setup.py ./
+# install necessary packages to a temporary folder
+RUN python setup.py egg_info
+RUN pip install --prefix=/install -r *.egg-info/requires.txt
 
+# build a clean environment
+FROM base
+WORKDIR /airbyte/connector_acceptance_test
 
-WORKDIR /app
-COPY pyproject.toml poetry.lock ./
-RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
-
-FROM python:3.10.12 as runtime
-
+# copy all loaded and built libraries to a pure basic image
+COPY --from=builder /install /usr/local
+# add default timezone settings
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
-ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
 RUN echo "Etc/UTC" > /etc/timezone
-
 # Bash is installed for more convenient debugging.
-RUN apt-get install bash curl
-# Docker is installed to make it possible to run dagger in docker.
-ENV DOCKER_VERSION = "24.0.2"
-RUN curl -fsSL https://get.docker.com | sh
+RUN apk --no-cache add bash
 
-ENV VIRTUAL_ENV=/app/.venv \
-    PATH="/app/.venv/bin:$PATH"
-COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
+
+# copy payload code only
+COPY pytest.ini setup.py ./
 COPY connector_acceptance_test ./connector_acceptance_test
+RUN pip install .
+
+LABEL io.airbyte.version=0.11.5
+LABEL io.airbyte.name=airbyte/connector-acceptance-test
 
 ENTRYPOINT ["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx", "--show-capture=log"]

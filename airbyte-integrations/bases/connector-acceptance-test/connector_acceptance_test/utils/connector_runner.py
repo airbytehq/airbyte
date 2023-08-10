@@ -96,10 +96,10 @@ class ConnectorRunner:
         return " ".join(entrypoint)
 
     def _get_connector_image_tarball_path(self) -> Optional[Path]:
-        if "RUN_IN_AIRBYTE_CI" not in os.environ and not self.image_name.endswith(":dev"):
+        if "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH" not in os.environ and not self.image_name.endswith(":dev"):
             return None
-        if "RUN_IN_AIRBYTE_CI" in os.environ:
-            connector_under_test_image_tar_path = Path("/cat/connector_under_test_image.tar")
+        if "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH" in os.environ:
+            connector_under_test_image_tar_path = Path(os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"])
         elif self.image_name.endswith(":dev"):
             connector_under_test_image_tar_path = Path("/tmp/connector_under_test_image.tar")
             self._export_local_connector_image_to_tarball(self.image_name, connector_under_test_image_tar_path)
