@@ -1,0 +1,1405 @@
+  version: 0.29.0
+  type: DeclarativeSource
+  check:
+    type: CheckStream
+    stream_names:
+      - products
+  streams:
+    - type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            add_to_cart_message:
+              type: string
+            additional_attributes:
+              type: string
+            additional_points_earned:
+              type: number
+            allowed_variable_subscription_types:
+              type: string
+            approval_required:
+              type: boolean
+            break_out_shipping:
+              type: boolean
+            bullets:
+              type: string
+            bullets_external_url:
+              type: string
+            call_for_pricing:
+              type: number
+            call_for_shipping:
+              type: number
+            call_for_shipping_on_whole_order:
+              type: boolean
+            cart_product_id:
+              type: string
+            cost:
+              type: number
+            created_at:
+              type:
+                - 'null'
+                - string
+            custom_flag_1:
+              type: boolean
+            custom_flag_2:
+              type: boolean
+            custom_flag_3:
+              type: boolean
+            custom_flag_4:
+              type: boolean
+            custom_flag_5:
+              type: boolean
+            custom_upsell_url:
+              type: string
+            days_until_reorder_allowed:
+              type: number
+            do_not_discount:
+              type: boolean
+            do_not_send_review_request:
+              type: boolean
+            drop_ship:
+              type: boolean
+            e_product_allow_multiple_deliveries:
+              type: number
+            e_product_delivery_action:
+              type: string
+            e_product_email:
+              type: string
+            e_product_generic_password:
+              type: string
+            e_product_generic_username:
+              type: string
+            e_product_password:
+              type: string
+            e_product_serial_number_file_path:
+              type: string
+            e_product_type:
+              type: string
+            e_product_url:
+              type: string
+            e_product_verification_link_expiration:
+              type: number
+            earns_points:
+              type: boolean
+            enable_low_stock_warning:
+              type: boolean
+            enabled_configurator:
+              type: string
+            exclude_children_from_display:
+              type: boolean
+            exclude_from_commissions:
+              type: boolean
+            exclude_parent_from_display:
+              type: boolean
+            force_separate_order:
+              type: boolean
+            freight_class:
+              type: string
+            gtin:
+              type: string
+            handling_fee:
+              type:
+                - 'null'
+                - number
+            has_visible_variants:
+              type: boolean
+            head_tags:
+              type: string
+            height:
+              type: string
+            hide_variant_surcharges:
+              type: boolean
+            hs_code:
+              type: string
+            id:
+              type: number
+            is_child_product:
+              type: boolean
+            is_discontinued:
+              type: boolean
+            is_featured_item:
+              type: boolean
+            is_hidden:
+              type: number
+            is_kit:
+              type: boolean
+            is_linked_product:
+              type: boolean
+            is_non_inventory:
+              type: boolean
+            is_non_shipping_item:
+              type: boolean
+            is_non_taxable:
+              type: number
+            is_shipped_individually:
+              type: number
+            is_spotlight_item:
+              type: number
+            is_subscription_product:
+              type: boolean
+            item_name:
+              type: string
+            item_number:
+              type: string
+            keywords:
+              type: string
+            last_item_number:
+              type: string
+            length:
+              type: string
+            long_description_1:
+              type: string
+            long_description_2:
+              type: string
+            long_description_3:
+              type: string
+            long_description_4:
+              type: string
+            long_description_5:
+              type: string
+            long_description_external_url_1:
+              type: string
+            long_description_external_url_2:
+              type: string
+            long_description_external_url_3:
+              type: string
+            long_description_external_url_4:
+              type: string
+            long_description_external_url_5:
+              type: string
+            long_description_tab_name_1:
+              type: string
+            long_description_tab_name_2:
+              type: string
+            long_description_tab_name_3:
+              type: string
+            long_description_tab_name_4:
+              type: string
+            long_description_tab_name_5:
+              type: string
+            manufacturer_id:
+              type: number
+            manufacturer_part_number:
+              type: string
+            material_code:
+              type: string
+            maximum_quantity:
+              type: number
+            meta_description:
+              type: string
+            minimum_quantity:
+              type: number
+            no_price_mask:
+              type: string
+            override_theme_use_tabs:
+              type: boolean
+            page_title:
+              type: string
+            price:
+              type: number
+            primary_category_id:
+              type: number
+            product_line_code:
+              type: string
+            product_rating_dimension_group_override_id:
+              type:
+                - 'null'
+                - string
+            product_status_id:
+              type: number
+            quantity_increment:
+              type: number
+            quantity_on_hand:
+              type: number
+            quantity_on_order:
+              type: number
+            quickbooks_item_id:
+              type: string
+            rate_adjustment_type:
+              type: string
+            related_name:
+              type: string
+            retail:
+              type: number
+            shipper_hq_dimensional_rule_groups:
+              type: string
+            shipper_hq_packing_boxes:
+              type: string
+            shipper_hq_shipping_groups:
+              type: string
+            shipping_classification_code:
+              type: string
+            short_description:
+              type: string
+            size_unit:
+              type: string
+            sort_order:
+              type: number
+            starting_quantity:
+              type: number
+            subscription_frequency_type:
+              type: string
+            tax_code:
+              type: string
+            updated_at:
+              type: string
+            url_rewrite:
+              type: string
+            use_map_pricing:
+              type: boolean
+            use_pricing_from_parent:
+              type: boolean
+            use_tabs:
+              type: boolean
+            use_variant_inventory:
+              type: boolean
+            warehouse_id:
+              type: number
+            weight:
+              type: number
+            weight_unit:
+              type: string
+            width:
+              type: string
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: products
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - products
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: order_payments
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            amount:
+              type: number
+            approved_at:
+              type: string
+            authorization_code:
+              type: string
+            avs_code:
+              type: string
+            card_expiration_month:
+              type: number
+            card_expiration_year:
+              type: number
+            cardholder_name:
+              type: string
+            created_at:
+              type: string
+            customer_id:
+              type: number
+            customer_payment_method_id:
+              type: number
+            cvv_response_code:
+              type: string
+            gateway_response_code:
+              type: string
+            id:
+              type: number
+            is_approved:
+              type: boolean
+            is_captured:
+              type: boolean
+            is_declined:
+              type: boolean
+            is_void:
+              type: boolean
+            last_four:
+              type: string
+            order_id:
+              type: number
+            payment_method_id:
+              type: number
+            payment_method_name:
+              type: string
+            payment_note:
+              type: string
+            payment_ref_num:
+              type: string
+            payment_type:
+              type: string
+            reject_reason:
+              type: string
+            sent_to_spark_pay:
+              type: boolean
+            store_payment_method_id:
+              type: number
+            token:
+              type: string
+            transaction_id:
+              type: string
+            transaction_type:
+              type: string
+            updated_at:
+              type: string
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: order_payments
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - payments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: order_items
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            admin_comments:
+              type: string
+            configuration:
+              type: string
+            cost:
+              type: number
+            created_at:
+              type: string
+            description:
+              type: string
+            discount_amount:
+              type: number
+            discount_percentage:
+              type: number
+            do_not_discount:
+              type: boolean
+            fitment:
+              type: string
+            gift_message:
+              type: string
+            height:
+              type: number
+            id:
+              type: number
+            is_discount_item:
+              type: boolean
+            is_non_shipping_item:
+              type: boolean
+            is_quantity_bound_to_parent:
+              type: boolean
+            is_subscription_product:
+              type: boolean
+            is_taxable:
+              type: boolean
+            item_name:
+              type: string
+            item_number:
+              type: string
+            item_number_full:
+              type: string
+            length:
+              type: number
+            line_item_note:
+              type: string
+            order_id:
+              type: number
+            order_shipping_address_id:
+              type: number
+            parent_order_item_id:
+              type: number
+            price:
+              type: number
+            product_id:
+              type: number
+            quantity:
+              type: number
+            selected_shipping_method:
+              type: string
+            selected_shipping_provider_service:
+              type: string
+            size_unit:
+              type: string
+            status:
+              type: string
+            tax_code:
+              type: string
+            updated_at:
+              type: string
+            variant_inventory_id:
+              type: number
+            warehouse_id:
+              type: number
+            weight:
+              type: number
+            weight_unit:
+              type: string
+            width:
+              type: number
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: order_items
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            adcode:
+              type: string
+            adcode_id:
+              type: number
+            alternate_phone_number:
+              type: string
+            comments:
+              type: string
+            company:
+              type: string
+            created_at:
+              type: string
+            customer_number:
+              type: string
+            customer_payment_methods_availability:
+              type: array
+            email:
+              type: string
+            first_name:
+              type: string
+            id:
+              type: number
+            is_affiliate_customer:
+              type: boolean
+            is_contact_information_only:
+              type: boolean
+            is_no_tax_customer:
+              type: boolean
+            last_name:
+              type: string
+            no_account:
+              type: boolean
+            payment_net_term:
+              type: number
+            phone_number:
+              type: string
+            registered_at:
+              type: string
+            sales_person:
+              type: string
+            search_string:
+              type: string
+            source:
+              type: string
+            source_group:
+              type: string
+            store_id:
+              type: number
+            store_payment_methods_enabled:
+              type: array
+            sub:
+              type: string
+            tax_exemption_number:
+              type: string
+            updated_at:
+              type: string
+            username:
+              type: string
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: customers
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            alternate_thumbnail:
+              type: string
+            are_subcategory_products_displayed:
+              type: boolean
+            cat_image_alt_text:
+              type: string
+            category_image:
+              type: string
+            category_thumbnail:
+              type: string
+            default_product_picture:
+              type: string
+            external_content_url:
+              type: string
+            head_tags:
+              type: string
+            id:
+              type: number
+            is_category_content_displayed:
+              type: boolean
+            is_hidden:
+              type: boolean
+            is_hide_from_site_maps:
+              type: boolean
+            keywords:
+              type: string
+            lookup_path:
+              type: string
+            
+            created_at:
+              type:
+                - 'null'
+                - string
+            max_quantity:
+              type: number
+            meta_description:
+              type: string
+            name:
+              type: string
+            page_title:
+              type: string
+            parent_category_id:
+              type: number
+            short_description:
+              type: string
+            sort_order:
+              type: number
+            thumb_image_alt_text:
+              type: string
+            updated_at:
+              type: string
+            url_rewrite:
+              type: string
+            vendor_store_id:
+              type: number
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: categories
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: manufacturers
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            brand_code:
+              type: string
+            description:
+              type: string
+            head_tags:
+              type: string
+            id:
+              type: number
+            is_hidden:
+              type: boolean
+            keywords:
+              type: string
+            manufacturer_logo_url:
+              type: string
+            meta_description:
+              type: string
+            name:
+              type: string
+            page_title:
+              type: string
+            sort_order:
+              type: number
+            updated_at:
+              type: string
+            url_rewrite:
+              type: string
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: manufacturers
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - manufacturers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            alternate_phone:
+              type: string
+            email:
+              type: string
+            fax:
+              type: string
+            first_name:
+              type: string
+            id:
+              type: number
+            last_login_at:
+              type: string
+            last_login_attempt_at:
+              type: string
+            last_name:
+              type: string
+            phone:
+              type: string
+            phone_extension:
+              type: string
+            profile_id:
+              type: number
+            updated_at:
+              type: string
+            username:
+              type: string
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: users
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: addresses
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            address_line_1:
+              type: string
+            address_line_2:
+              type: string
+            address_type:
+              type: string
+            alternate_phone:
+              type: string
+            city:
+              type: string
+            comments:
+              type: string
+            company:
+              type: string
+            country:
+              type: string
+            created_at:
+              type: string
+            customer_id:
+              type: number
+            fax:
+              type: string
+            first_name:
+              type: string
+            id:
+              type: number
+            is_default_billing_address:
+              type: boolean
+            is_default_shipping_address:
+              type: boolean
+            last_name:
+              type: string
+            phone:
+              type: string
+            postal_code:
+              type: string
+            state:
+              type: string
+            updated_at:
+              type: string
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: addresses
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - addresses
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            adcode:
+              type: string
+            additional_fees:
+              type: number
+            admin_comments:
+              type: string
+            campaign_code:
+              type: string
+            channel:
+              type: string
+            cost_total:
+              type: number
+            coupon_code:
+              type: string
+            created_at:
+              type: string
+            customer_id:
+              type: number
+            customer_type_id:
+              type: number
+            device:
+              type: string
+            discount_total:
+              type: number
+            discounted_shipping_total:
+              type: number
+            entered_by:
+              type: string
+            entered_by_type:
+              type: string
+            expires:
+              type: boolean
+            gift_message:
+              type: string
+            grand_total:
+              type: number
+            handling_total:
+              type: number
+            id:
+              type: number
+            instructions:
+              type: string
+            ip_address:
+              type: string
+            is_gift:
+              type: boolean
+            is_payment_order_only:
+              type: boolean
+            manufacturer_invoice_number:
+              type: string
+            manufacturer_invoice_paid:
+              type: boolean
+            order_billing_address_id:
+              type: number
+            order_number:
+              type: string
+            order_shipping_address_id:
+              type: number
+            order_status_id:
+              type: number
+            order_status_last_changed_at:
+              type: string
+            order_type:
+              type: string
+            ordered_at:
+              type: string
+            ppc_keyword:
+              type: string
+            previous_order_status_id:
+              type: number
+            public_comments:
+              type: string
+            referrer:
+              type: string
+            reward_points_credited:
+              type: boolean
+            search_phrase:
+              type: string
+            selected_shipping_method:
+              type: string
+            selected_shipping_provider_service:
+              type: string
+            session_id:
+              type: number
+            shipping_total:
+              type: number
+            source:
+              type: string
+            source_group:
+              type: string
+            special_instructions:
+              type: string
+            store_id:
+              type: number
+            subtotal:
+              type: number
+            tax_total:
+              type: number
+            updated_at:
+              type: string
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: orders
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+            updated_at: gt:{{ stream_interval.start_time }}
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    - type: DeclarativeStream
+      name: order_statuses
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/schema#
+          properties:
+            color:
+              type: string
+            email_template_id:
+              type:
+                - 'null'
+                - number
+            id:
+              type: number
+            is_cancelled:
+              type: boolean
+            is_declined:
+              type: boolean
+            is_fully_refunded:
+              type: boolean
+            is_open:
+              type: boolean
+            is_partially_refunded:
+              type: boolean
+            is_partially_shipped:
+              type: boolean
+            is_quote_status:
+              type: boolean
+            is_shipped:
+              type: boolean
+            name:
+              type: string
+            updated_at:
+              type:
+                - 'null'
+                - string
+          type: object
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['storename'] }}/api/v1/
+          path: order_statuses
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            count: '{{ config[''stream_count''] }}'
+          request_headers: {}
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: '{{ config[''api_key''] }}'
+            inject_into:
+              type: RequestOption
+              field_name: X-AC-Auth-Token
+              inject_into: header
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+          request_body_json: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - order_statuses
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response[''next_page''] }}'
+            stop_condition: '{{ ''next_page'' not in response }}'
+  spec:
+    connection_specification:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      required:
+        - api_key
+        - storename
+        - stream_count
+        - start_date
+      properties:
+        api_key:
+          type: string
+          title: API Key
+          airbyte_secret: true
+          order: 0
+          description: Your Api Key from the Cart UI
+        storename:
+          type: string
+          order: 1
+          title: storename
+          description: >-
+            Your store name including the domain name. Usually in the format
+            `yourstorename.domainname.com`
+        stream_count:
+          type: integer
+          order: 2
+          title: stream_count
+          default: '100'
+          description: The number of records to get from each stream per page.
+        start_date:
+          type: string
+          title: start_date
+          format: date-time
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          order: 3
+          default: '2023-01-01T00:00:00Z'
+          description: >-
+            The date from which to start syncing streams. If not supplied records
+            would start syncing from 2023-01-01T00:00:00Z
+      additionalProperties: true
+    documentation_url: https://docs.airbyte.com/integrations/sources/cart
+    type: Spec
+  metadata:
+    autoImportSchema:
+      products: true
+      order_payments: true
+      order_items: true
+      customers: true
+      categories: true
+      manufacturers: true
+      users: true
+      addresses: true
+      orders: true
+      order_statuses: true

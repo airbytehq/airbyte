@@ -1,0 +1,41 @@
+documentation_url: https://docs.airbyte.com/integrations/sources/cart
+connection_specification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title:Cart spec
+  type: object
+  additionalProperties: true
+  required:
+    - api_key
+    - storename
+    - stream_count
+    - start_date
+  properties:
+    api_key:
+      type: string
+      title: API Key
+      airbyte_secret: true
+      order: 0
+      description: Your Api Key from the Cart UI
+    storename:
+      type: string
+      order: 1
+      title: storename
+      description: >-
+        Your store name including the domain name. Usually in the format
+        `yourstorename.domainname.com`
+    stream_count:
+      type: integer
+      order: 2
+      title: stream_count
+      default: '100'
+      description: The number of records to get from each stream per page.
+    start_date:
+      type: string
+      title: start_date
+      format: date-time
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      order: 3
+      default: '2023-01-01T00:00:00Z'
+      description: >-
+        The date from which to start syncing streams. If not supplied records
+        would start syncing from 2023-01-01T00:00:00Z

@@ -1,24 +1,25 @@
 data:
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
-  dockerImageTag: 0.2.1
+  definitionId: 7d28d793-9cc0-43cc-9bd0-b2c6a851f373
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-cart
   githubIssueLabel: source-cart
   icon: cart.svg
   license: MIT
-  name: Cart.com
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
+  name: Cart
+  releaseDate: TODO
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/cart
   tags:
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 200
-  supportLevel: community
+    - language:lowcode
 metadataSpecVersion: "1.0"
