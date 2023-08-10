@@ -63,6 +63,7 @@ The Zendesk Support source connector supports the following streams:
 - [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\)
 - [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
 - [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
+- [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 - [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/)
@@ -79,9 +80,10 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `0.10.7` | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec |
-| `0.10.6` | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes |
-| `0.10.5` | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references |
+| `0.11.0` | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics`                                                                                                                                                                                                                |
+| `0.10.7` | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec                                                                                                                                                                                                |
+| `0.10.6` | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                                                                                                                                                                               |
+| `0.10.5` | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references                                                                                                                                                                                           |
 | `0.10.4` | 2023-07-25 | [28397](https://github.com/airbytehq/airbyte/pull/28397) | Handle 404 Error                                                                                                                                                                                                                   |
 | `0.10.3` | 2023-07-24 | [28612](https://github.com/airbytehq/airbyte/pull/28612) | Fix pagination for stream `TicketMetricEvents`                                                                                                                                                                                     |
 | `0.10.2` | 2023-07-19 | [28487](https://github.com/airbytehq/airbyte/pull/28487) | Remove extra page from params                                                                                                                                                                                                      |
