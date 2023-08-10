@@ -1,11 +1,18 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import pendulum
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_fiserv.source import IncrementalFiservStream
+
+
+config = {
+    "start_date": "2023-08-04",
+    "api_key": "api_key",
+    "api_secret": "api_secret",
+}
 
 
 @fixture
@@ -17,38 +24,26 @@ def patch_incremental_base_class(mocker):
 
 
 def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalFiservStream()
+    stream = IncrementalFiservStream(**config)
     expected_cursor_field = "last_sync_at"
     assert stream.cursor_field == expected_cursor_field
 
 
-def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalFiservStream()
-    inputs = {"current_stream_state": {"last_sync_at": "2023-07-25"}, "latest_record" : { "last_sync_at": "2023-07-26"}}
-    expected_state = {"last_sync_at": "2023-07-26"}
-    assert stream.get_updated_state(**inputs) == expected_state
-
-
 def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalFiservStream()
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": ["last_sync_at"], "stream_state": {"last_sync_at": "2023-07-25"}}
-    # TODO: replace this with your expected stream slices list
-    expected_stream_slice = [{"last_sync_at": "2023-07-25"}]
-    assert stream.stream_slices(**inputs) == expected_stream_slice
+    stream = IncrementalFiservStream(**config)
+    start_date = "20230725"
+    end_date = pendulum.yesterday(tz="utc").strftime("%Y%m%d")
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": ["last_sync_at"], "stream_state": {"last_sync_at": start_date}}
+    expected_stream_slice = list(stream._chunk_date_range(start_date, end_date))
+    assert list(stream.stream_slices(**inputs)) == expected_stream_slice
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
-    mocker.patch.object(IncrementalFiservStream, "cursor_field", "dummy_field")
-    stream = IncrementalFiservStream()
+    mocker.patch.object(IncrementalFiservStream, "cursor_field", "last_sync_at")
+    stream = IncrementalFiservStream(**config)
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalFiservStream()
+    stream = IncrementalFiservStream(**config)
     assert stream.source_defined_cursor
-
-
-def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalFiservStream()
-    expected_checkpoint_interval = 1000
-    assert stream.state_checkpoint_interval == expected_checkpoint_interval

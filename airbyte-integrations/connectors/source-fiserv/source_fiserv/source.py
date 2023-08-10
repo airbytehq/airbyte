@@ -24,9 +24,11 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 logger = logging.getLogger("airbyte")
 
+BASE_URL = "https://prod.api.fiservapps.com/"
+
 
 class FiservStream(HttpStream, ABC):
-    url_base = "https://prod.api.fiservapps.com/"
+    url_base = BASE_URL
     endpoint = None
 
     def __init__(
@@ -47,7 +49,6 @@ class FiservStream(HttpStream, ABC):
     @property
     def http_method(self) -> str:
         return "POST"
-
 
     def _chunk_date_range(self, start_date: str, end_date: str) -> Iterable[Mapping[str, str]]:
         start_date = pendulum.parse(start_date)
@@ -116,7 +117,7 @@ class FiservStream(HttpStream, ABC):
         if cursor_field:
             field = cursor_field[0]
             start_date = stream_state.get(field, self._start_date)
-  
+
         yield from self._chunk_date_range(start_date, self.end_date)
 
     @property
@@ -145,7 +146,7 @@ class IncrementalFiservStream(FiservStream, IncrementalMixin):
     ) -> Iterable[StreamData]:
         stream_slice = stream_slice or {}
         records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        
+
         old_cursor = self._cursor_value or self._start_date
         new_cursor = stream_slice.get("toDate", self.end_date)
 
@@ -156,10 +157,11 @@ class IncrementalFiservStream(FiservStream, IncrementalMixin):
         self._cursor_value = max(new_cursor, old_cursor)
 
 
-
 class Settlement(IncrementalFiservStream):
     primary_key = "visaTranId"
     endpoint = "settlement"
+
+
 class Chargeback(IncrementalFiservStream):
     primary_key = "chargebackReferenceId"  # represents the last date data was fetched
     endpoint = "chargeback"
@@ -256,7 +258,6 @@ class Bin(FiservStream):
     ) -> Optional[Union[Mapping, str]]:
         bin_id = stream_slice.get("bin_id")
         return {"filters": {"bin": bin_id}}
-
 
 
 class SourceFiserv(AbstractSource):
