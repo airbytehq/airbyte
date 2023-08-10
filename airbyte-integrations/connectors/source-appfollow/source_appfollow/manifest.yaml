@@ -15,13 +15,23 @@ definitions:
       type: "BasicHttpAuthenticator"
       username: "{{ config['api_secret'] }}"
       password: ""
+    request_parameters:
+      ext_id: "{{ config['ext_id'] }}"
+      cid: "{{ config['cid'] }}"
 
   retriever:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: NoPagination
+      type: "DefaultPaginator"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_records['nextPageToken'] }}"
+      page_token_option:
+        type: "RequestPath"
+        field_name: "pageToken"
+        inject_into: "request_parameter"
     requester:
       $ref: "#/definitions/requester"
 
