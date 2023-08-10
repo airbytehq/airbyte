@@ -34,6 +34,13 @@ public class CollectionUtils {
    * @return whether all searchTerms are in the searchCollection
    */
   public static boolean containsAllIgnoreCase(final Collection<String> searchCollection, final Collection<String> searchTerms) {
+    if (searchTerms.isEmpty()) {
+      // There isn't a good behavior for an empty collection. Without this check, an empty collection
+      // would always return
+      // true, but it feels misleading to say that the searchCollection does "contain all" when
+      // searchTerms is empty
+      throw new IllegalArgumentException("Search Terms collection may not be empty");
+    }
     return searchTerms.stream().allMatch(term -> containsIgnoreCase(searchCollection, term));
   }
 
