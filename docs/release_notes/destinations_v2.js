@@ -56,18 +56,18 @@ export const BigQueryMigrationGenerator = () => {
     let v1name = '`' + bigqueryConvertStreamName("_airbyte_raw_" + name) + '`';
     return `CREATE SCHEMA IF NOT EXISTS ${raw_dataset};
 CREATE OR REPLACE TABLE \`${raw_dataset}\`.${v2RawTableName} (
-  _airbyte_raw_id STRING NOT NULL,
-  _airbyte_data JSON NOT NULL,
-  _airbyte_extracted_at TIMESTAMP NOT NULL,
-  _airbyte_loaded_at TIMESTAMP)
+  _airbyte_raw_id STRING,
+  _airbyte_extracted_at TIMESTAMP,
+  _airbyte_loaded_at TIMESTAMP,
+  _airbyte_data JSON)
 PARTITION BY DATE(_airbyte_extracted_at)
 CLUSTER BY _airbyte_extracted_at
 AS (
     SELECT
         _airbyte_ab_id AS _airbyte_raw_id,
-        PARSE_JSON(_airbyte_data) AS _airbyte_data,
         _airbyte_emitted_at AS _airbyte_extracted_at,
-        CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
+        CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at,
+        PARSE_JSON(_airbyte_data) AS _airbyte_data
     FROM ${v1namespace}.${v1name}
 )`;
   }
@@ -88,23 +88,21 @@ export const SnowflakeMigrationGenerator = () => {
     }
   }
   function generateSql(namespace, name, raw_schema) {
-    let v2RawTableName = '"' + snowflakeConvertStreamName(concatenateRawTableName(namespace, name)) + '"';
-    let v1namespace = '"' + snowflakeConvertStreamName(namespace) + '"';
-    let v1name = '"' + snowflakeConvertStreamName("_airbyte_raw_" + name) + '"';
+    let v2RawTableName = '"' + concatenateRawTableName(namespace, name) + '"';
+    let v1namespace = snowflakeConvertStreamName(namespace);
+    let v1name = snowflakeConvertStreamName("_airbyte_raw_" + name);
     return `CREATE SCHEMA IF NOT EXISTS "${raw_schema}";
 CREATE OR REPLACE TABLE "${raw_schema}".${v2RawTableName} (
-  "_airbyte_raw_id" STRING NOT NULL,
-  "_airbyte_data" JSON NOT NULL,
-  "_airbyte_extracted_at" TIMESTAMP NOT NULL,
-  "_airbyte_loaded_at" TIMESTAMP)
-PARTITION BY DATE("_airbyte_extracted_at")
-CLUSTER BY "_airbyte_extracted_at"
+  "_airbyte_raw_id" STRING NOT NULL PRIMARY KEY,
+  "_airbyte_extracted_at" TIMESTAMP_TZ DEFAULT CURRENT_TIMESTAMP(),
+  "_airbyte_loaded_at" TIMESTAMP_TZ,
+  "_airbyte_data" VARIANT)
 AS (
     SELECT
         _airbyte_ab_id AS "_airbyte_raw_id",
-        _airbyte_data AS "_airbyte_data",
         _airbyte_emitted_at AS "_airbyte_extracted_at",
-        CAST(NULL AS TIMESTAMP) AS "_airbyte_loaded_at"
+        CAST(NULL AS TIMESTAMP_TZ) AS "_airbyte_loaded_at",
+        _airbyte_data AS "_airbyte_data"
     FROM ${v1namespace}.${v1name}
 )`;
   }
