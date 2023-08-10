@@ -22,16 +22,16 @@ public class MySqlQueryUtils {
   public static final String TABLE_ESTIMATE_QUERY =
       """
       SELECT
-        (data_length + index_length) as %s, 
+        (data_length + index_length) as %s,
         table_rows as %s
-     FROM 
+     FROM
         information_schema.tables
      WHERE
-        table_schema = %s AND table_name = %s;  
+        table_schema = '%s' AND table_name = '%s'; 
       """;
 
   public static final String TABLE_SIZE_BYTES_COL = "TotalSizeBytes";
-  public static final String TABLE_ROWS_ESTIMATE_COL = "TableRows";
+  public static final String TABLE_ROWS_ESTIMATE_COL = "TABLE_ROWS";
 
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
       final List<ConfiguredAirbyteStream> streams,
@@ -64,7 +64,7 @@ public class MySqlQueryUtils {
     // Construct the table estimate query.
     final String tableEstimateQuery =
         String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, TABLE_ROWS_ESTIMATE_COL, namespace, name);
-    LOGGER.debug("table estimate query: {}", tableEstimateQuery);
+    LOGGER.info("table estimate query: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);

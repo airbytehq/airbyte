@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -93,7 +94,8 @@ public class MySqlInitialLoadHandler {
             .map(CommonField::getName)
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .collect(Collectors.toList());
-        final AutoCloseableIterator<JsonNode> queryStream = queryTablePk(selectedDatabaseFields, table.getNameSpace(), table.getName());
+        final AutoCloseableIterator<JsonNode> queryStream = new MySqlInitialLoadRecordIterator<>();
+        //final AutoCloseableIterator<JsonNode> queryStream = queryTablePk(selectedDatabaseFields, table.getNameSpace(), table.getName());
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -109,7 +111,7 @@ public class MySqlInitialLoadHandler {
       final AirbyteStreamNameNamespacePair airbyteStream) {
     // TODO : Implement this method based on the sub query plan size, table size info and number of rows already synced?
     // TODO : For testing purposes. this needs to be higher than the intermediate emission frequency
-    return new SubQueryPlan(50_000L, 3L);
+    return new SubQueryPlan(50_000L, 1_000L);
     /*if (tableSizeInfo == null) {
       LOGGER.info("Could not determine table size info for stream {}" + airbyteStream);
       return new SubQueryPlan(50_000L, 3L);
@@ -137,21 +139,35 @@ public class MySqlInitialLoadHandler {
     final List<AutoCloseableIterator<JsonNode>> subQueriesIterators = new ArrayList<>();
     for (int i = 0; i < subQueriesPlan.numQueries(); i++) {
       final int subQueryNumber = i;
-      subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
-          try {
-            final boolean isFinalSubquery = (subQueryNumber == subQueriesPlan.numQueries() - 1);
-            LOGGER.info("Subquery number: {}, isFinalSubquery : {}", subQueryNumber, isFinalSubquery);
-            final Stream<JsonNode> stream = database.unsafeQuery(
-                connection -> createPkQueryStatement(connection, columnNames, schemaName, tableName, airbyteStream, pkInfo,
-                    subQueriesPlan, isFinalSubquery), sourceOperations::rowToJson);
+      subQueriesIterators.add(AutoCloseableIterators.lazyIterator(
+          getSubQueryIteratorSupplier(airbyteStream, columnNames, schemaName, tableName, pkInfo, subQueryNumber, subQueriesPlan),
+          airbyteStream));
+    }
 
-            return AutoCloseableIterators.fromStream(stream, airbyteStream);
-          } catch (final SQLException e) {
-            throw new RuntimeException(e);
-          }
-        }, airbyteStream));
-      }
     return AutoCloseableIterators.concatWithEagerClose(subQueriesIterators);
+  }
+
+  private Supplier<AutoCloseableIterator<JsonNode>> getSubQueryIteratorSupplier(
+      final AirbyteStreamNameNamespacePair airbyteStream,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final PrimaryKeyInfo pkInfo,
+      final int subQueryNumber,
+      final SubQueryPlan subQueriesPlan) {
+    return () -> {
+      try {
+        final boolean isFinalSubquery = (subQueryNumber == subQueriesPlan.numQueries() - 1);
+        LOGGER.info("Subquery number: {}, isFinalSubquery : {}", subQueryNumber, isFinalSubquery);
+        final Stream<JsonNode> stream = database.unsafeQuery(
+            connection -> createPkQueryStatement(connection, columnNames, schemaName, tableName, airbyteStream, pkInfo,
+                subQueriesPlan, isFinalSubquery), sourceOperations::rowToJson);
+
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
+      } catch (final SQLException e) {
+        throw new RuntimeException(e);
+      }
+    };
   }
 
   private PreparedStatement createPkQueryStatement(

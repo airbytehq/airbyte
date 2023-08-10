@@ -35,6 +35,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
   // have completed the snapshot.
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
+
   MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
       final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
       final CdcState cdcState, final ConfiguredAirbyteCatalog catalog) {
@@ -54,6 +55,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     });
     return streamsThatHaveCompletedSnapshot;
   }
+
 
   private static Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> initPairToPrimaryKeyLoadStatusMap(
       final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPkStatus) {
@@ -77,12 +79,14 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
 
-    // Update the primary key load status based on state emitted. This is so we can continuosly build the chunking subqueries
-    // TODO : Figure out when when we're done?
-    pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(globalState);
+  }
+
+  @Override
+  public void updatePrimaryKeyLoadState(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus) {
+    pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
   }
 
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
@@ -105,6 +109,11 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
   @Override
   public PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair) {
     return pairToPrimaryKeyLoadStatus.get(pair);
+  }
+
+  @Override
+  public boolean endOfInitialLoad(final AirbyteStreamNameNamespacePair pair) {
+    return streamsThatHaveCompletedSnapshot.contains(pair);
   }
 
   @Override

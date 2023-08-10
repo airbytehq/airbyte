@@ -130,11 +130,6 @@ public class MySqlInitialReadUtil {
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
           emittedAt));
-
-      initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
-          new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
-          tableNameToTable,
-          emittedAt));
     } else {
       LOGGER.info("No streams will be synced via primary key");
     }
