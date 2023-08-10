@@ -9,8 +9,7 @@ import logging
 import unittest
 from datetime import datetime
 from typing import Any, Dict, Generator, List, Set
-from unittest import TestCase
-from unittest import mock
+from unittest import TestCase, mock
 from unittest.mock import Mock
 
 import pytest
