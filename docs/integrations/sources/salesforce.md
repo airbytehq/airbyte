@@ -107,7 +107,7 @@ Airbyte allows exporting all available Salesforce objects dynamically based on:
 
 Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
 
-- The Salesforce object has columns which are unsupported by the BULK API, like properties in schema: `base64` or `object`-like
+- The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
 - The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionalyl cost more of your API quota. This list of objects was obtained experimentally, and includes the following objects: 
    - AcceptedEventRelation
    - Attachment
