@@ -19,13 +19,7 @@ from braintree.subscription import Subscription as BSubscription
 from braintree.transaction import Transaction as BTransaction
 from braintree.util.xml_util import XmlUtil
 
-from source_braintree_no_code.schemas.customer import Customer
-from source_braintree_no_code.schemas.merchant_account import MerchantAccount
-from source_braintree_no_code.schemas.discount import Discount
-from source_braintree_no_code.schemas.subscription import Subscription
-from source_braintree_no_code.schemas.transaction import Transaction
-from source_braintree_no_code.schemas.plan import Plan
-from source_braintree_no_code.schemas.dispute import Dispute
+from source_braintree_no_code.schemas import MerchantAccount, Customer, Discount, Transaction, Subscription, Plan, Dispute
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
