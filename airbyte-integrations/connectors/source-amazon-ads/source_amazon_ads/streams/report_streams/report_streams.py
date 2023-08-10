@@ -163,10 +163,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return
         profile = stream_slice["profile"]
         report_date = stream_slice[self.cursor_field]
-        report_infos = self._init_and_try_read_records(profile, report_date)
+        report_info_list = self._init_and_try_read_records(profile, report_date)
         self._update_state(profile, report_date)
 
-        for report_info in report_infos:
+        for report_info in report_info_list:
             for metric_object in report_info.metric_objects:
                 yield self._model(
                     profileId=report_info.profile_id,
@@ -197,16 +197,16 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     @backoff_max_tries
     def _init_and_try_read_records(self, profile: Profile, report_date):
-        report_infos = self._init_reports(profile, report_date)
-        self.logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
-        self._try_read_records(report_infos)
-        return report_infos
+        report_info_list = self._init_reports(profile, report_date)
+        self.logger.info(f"Waiting for {len(report_info_list)} report(s) to be generated")
+        self._try_read_records(report_info_list)
+        return report_info_list
 
     @backoff_max_time
-    def _try_read_records(self, report_infos):
-        incomplete_report_infos = self._incomplete_report_infos(report_infos)
-        self.logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
-        for report_info in incomplete_report_infos:
+    def _try_read_records(self, report_info_list):
+        incomplete_report_info = self._incomplete_report_info(report_info_list)
+        self.logger.info(f"Checking report status, {len(incomplete_report_info)} report(s) remaining")
+        for report_info in incomplete_report_info:
             report_status, download_url = self._check_status(report_info)
             report_info.status = report_status
 
@@ -219,13 +219,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 except requests.HTTPError as error:
                     raise ReportGenerationFailure(error)
 
-        pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_infos(report_infos)]
+        pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_info(report_info_list)]
         if len(pending_report_status) > 0:
             message = f"Report generation in progress: {repr(pending_report_status)}"
             raise ReportGenerationInProgress(message)
 
-    def _incomplete_report_infos(self, report_infos):
-        return [r for r in report_infos if r.status != Status.SUCCESS and r.status != Status.COMPLETED]
+    def _incomplete_report_info(self, report_info_list):
+        return [r for r in report_info_list if r.status != Status.SUCCESS and r.status != Status.COMPLETED]
 
     def _generate_model(self):
         """
@@ -381,7 +381,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :report_date - date for generating metric report.
         :return List of ReportInfo objects each of them has reportId field to check report status.
         """
-        report_infos = []
+        report_info_list = []
         for record_type, metrics in self.metrics_map.items():
             if len(self._report_record_types) > 0 and record_type not in self._report_record_types:
                 continue
@@ -411,7 +411,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     raise ReportInitFailure(error_msg)
 
                 response = ReportInitResponse.parse_raw(response.text)
-                report_infos.append(
+                report_info_list.append(
                     ReportInfo(
                         report_id=response.reportId,
                         record_type=record_type,
@@ -422,7 +422,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 )
                 self.logger.info("Initiated successfully")
 
-        return report_infos
+        return report_info_list
 
     @backoff.on_exception(
         backoff.expo,
