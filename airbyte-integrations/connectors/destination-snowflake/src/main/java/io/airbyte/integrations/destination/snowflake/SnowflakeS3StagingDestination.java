@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
@@ -142,9 +143,12 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
     final ParsedCatalog parsedCatalog;
     TyperDeduper typerDeduper;
+    JdbcDatabase database = getDatabase(getDataSource(config));
     if (TypingAndDedupingFlag.isDestinationV2()) {
+      String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
+      SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
       parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog);
+      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
     } else {
       parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
@@ -152,7 +156,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
 
     return new StagingConsumerFactory().create(
         outputRecordCollector,
-        getDatabase(getDataSource(config)),
+        database,
         new SnowflakeS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),

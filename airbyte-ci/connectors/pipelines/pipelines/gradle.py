@@ -7,10 +7,10 @@ from __future__ import annotations
 from abc import ABC
 from typing import ClassVar, List, Tuple
 
+from dagger import CacheVolume, Container, Directory, QueryError
 from pipelines import consts
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
-from dagger import CacheVolume, Container, Directory, QueryError
 
 
 class GradleTask(Step, ABC):
@@ -58,7 +58,7 @@ class GradleTask(Step, ABC):
         cat_gradle_plugin_content = cat_gradle_plugin_content.replace(
             "project.integrationTest.dependsOn(project.connectorAcceptanceTest)", ""
         )
-        return build_src_dir.with_new_file("src/main/groovy/airbyte-connector-acceptance-test.gradle", cat_gradle_plugin_content)
+        return build_src_dir.with_new_file("src/main/groovy/airbyte-connector-acceptance-test.gradle", contents=cat_gradle_plugin_content)
 
     def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon", "--scan", "--build-cache")) -> List:
         command = (
