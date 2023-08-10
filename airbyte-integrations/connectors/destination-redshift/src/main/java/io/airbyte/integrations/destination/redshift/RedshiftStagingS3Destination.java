@@ -38,6 +38,7 @@ import io.airbyte.integrations.destination.s3.NoEncryption;
 import io.airbyte.integrations.destination.s3.S3BaseChecks;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -160,12 +161,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                   """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
     }
 
-    return new StagingConsumerFactory().create(
+    return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
         new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numberOfFileBuffers)),
         config,
         catalog,
         isPurgeStagingData(s3Options),
