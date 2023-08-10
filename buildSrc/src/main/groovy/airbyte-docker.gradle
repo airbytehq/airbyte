@@ -201,7 +201,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 outputs.upToDateWhen { true }
                 dependsOn project.assemble
                 workingDir project.rootProject.projectDir
-                commandLine "airbyte-ci", "connectors", "--name", project.name, "build"
+                commandLine "airbyte-ci", "--no-tui", "connectors", "--name", project.name, "build"
             }
         } else if (project.file(dockerFile).exists()) {
             def filteredProjectFiles = project.fileTree(project.projectDir).filter {
