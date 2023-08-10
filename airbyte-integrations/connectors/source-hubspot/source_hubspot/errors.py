@@ -16,6 +16,7 @@ class HubspotError(AirbyteTracedException):
     Base error class.
     Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
     """
+
     def __init__(
         self,
         internal_message: str = None,
