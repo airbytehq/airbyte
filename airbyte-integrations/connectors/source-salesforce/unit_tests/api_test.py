@@ -28,6 +28,8 @@ from source_salesforce.streams import (
     RestSalesforceStream,
 )
 
+from .utils import read_full_refresh
+
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
@@ -732,3 +734,35 @@ def test_bulk_stream_slices(stream_config_date_format, stream_api):
         })
         start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
     assert expected_slices == stream_slices
+
+
+@freezegun.freeze_time("2023-04-01")
+def test_bulk_stream_request_params(stream_config_date_format, stream_api, requests_mock):
+    """Check that request params ignore records cursor and use start date from slice ONLY"""
+    stream_config_date_format.update({'start_date': '2023-01-01'})
+    stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
+
+    job_id_1 = "fake_job_1"
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_1}")
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}/results", text="Field1,LastModifiedDate,ID\ntest,2023-03-15,1")
+    requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_1}")
+
+    job_id_2 = "fake_job_2"
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_2}")
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2")
+    requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_2}")
+
+    job_id_3 = "fake_job_3"
+    queries_history = requests_mock.register_uri("POST", stream.path(), [{"json": {"id": job_id_1}},
+                                                                         {"json": {"id": job_id_2}},
+                                                                         {"json": {"id": job_id_3}}])
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_3}")
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,3")
+    requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_3}")
+    list(read_full_refresh(stream))
+    assert "LastModifiedDate >= 2023-01-01T00:00:00.000+00:00 AND LastModifiedDate < 2023-01-31T00:00:00.000+00:00" in queries_history.request_history[0].text
+    assert "LastModifiedDate >= 2023-01-31T00:00:00.000+00:00 AND LastModifiedDate < 2023-03-02T00:00:00.000+00:00" in queries_history.request_history[1].text
+    assert "LastModifiedDate >= 2023-03-02T00:00:00.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00" in queries_history.request_history[2].text

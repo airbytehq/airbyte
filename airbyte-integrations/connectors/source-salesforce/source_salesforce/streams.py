@@ -677,7 +677,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         object and returning an updated state object. Check if latest record is IN stream slice interval => ignore if not
         """
         latest_record_value: pendulum.DateTime = pendulum.parse(latest_record[self.cursor_field])
-        slice_max_value: pendulum.DateTime = pendulum.parse(self._slice.get('end_date'))
+        slice_max_value: pendulum.DateTime = pendulum.parse(self._slice.get("end_date"))
         max_possible_value = min(latest_record_value, slice_max_value)
         if current_stream_state.get(self.cursor_field):
             if latest_record_value > slice_max_value:
