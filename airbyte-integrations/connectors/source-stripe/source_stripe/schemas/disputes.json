@@ -27,6 +27,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "currency": {
       "type": ["null", "string"]
     },

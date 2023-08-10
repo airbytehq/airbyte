@@ -11,6 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeAvailabilityStrategy, StripeSubStreamAvailabilityStrategy
@@ -66,29 +67,23 @@ class StripeStream(HttpStream, ABC):
         yield from response_json.get("data", [])  # Stripe puts records in a container array "data"
 
 
-class IncrementalStripeStream(StripeStream, ABC):
+class NormalIncrementalStripeStream(StripeStream, ABC):
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
+    cursor_field = "created"
 
-    def __init__(self, lookback_window_days: int = 0, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, lookback_window_days: int = 0, **kwargs):
+        super().__init__(*args, **kwargs)
         self.lookback_window_days = lookback_window_days
-
-    @property
-    @abstractmethod
-    def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
-        and define a cursor field.
-        """
-        pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
+        state_cursor_value = self.get_state_cursor_value(current_stream_state)
+        latest_record_value = latest_record.get(self.cursor_field)
+        return {self.cursor_field: max(latest_record_value, state_cursor_value)}
 
     def request_params(
         self,
@@ -109,18 +104,21 @@ class IncrementalStripeStream(StripeStream, ABC):
             after_ts = before_ts + 1
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        stream_state = stream_state or {}
         start_ts = self.get_start_timestamp(stream_state)
         if start_ts >= pendulum.now().int_timestamp:
             return []
         for start, end in self.chunk_dates(start_ts):
             yield {"created[gte]": start, "created[lte]": end}
 
+    def get_state_cursor_value(self, stream_state) -> int:
+        return stream_state.get(self.cursor_field, 0)
+
     def get_start_timestamp(self, stream_state) -> int:
         start_point = self.start_date
-        if stream_state and self.cursor_field in stream_state:
-            start_point = max(start_point, stream_state[self.cursor_field])
+        start_point = max(start_point, self.get_state_cursor_value(stream_state))
 
         if start_point and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
@@ -129,59 +127,218 @@ class IncrementalStripeStream(StripeStream, ABC):
         return start_point
 
 
-class Authorizations(IncrementalStripeStream):
+class Events(NormalIncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/events/list
+    """
+
+    def path(self, **kwargs):
+        return "events"
+
+
+class EventProxy(Events):
+    """
+    This is an auxiliary class to read incremental data from the Events API.
+    Not designed to be exposed to the end user.
+    """
+
+    cursor_field = "updated"
+
+    def __init__(self, *args, legacy_cursor_field: str, event_types: Optional[Iterable[str]] = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event_types = event_types
+        self.legacy_cursor_field = legacy_cursor_field
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        # set the record updated date = date of event creation
+        for instance in response_json.get("data", []):
+            record = instance["data"]["object"]
+            record["updated"] = instance["created"]
+            yield record
+
+    def get_state_cursor_value(self, stream_state) -> int:
+        return stream_state.get(self.cursor_field, stream_state.get(self.legacy_cursor_field, 0))
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        if self.event_types:
+            params["types[]"] = self.event_types
+        return params
+
+
+class EventIncrementalStripeStream(StripeStream, ABC):
+    """
+    Normal incremental stream does not provide a way to read updated data since given date because the API does not allow to do this.
+    It only returns newly created entities since given date. So to have all the updated data as well we need to make use of the Events API,
+    which allows to retrieve updated data since given date for a number of predefined events which are associated with the corresponding
+    entities.
+    """
+
+    cursor_field = "updated"
+    legacy_cursor_field = "created"
+
+    @property
+    @abstractmethod
+    def event_types(self) -> Iterable[str]:
+        """A list of event types that are associated with entity."""
+
+    def __init__(self, *args, lookback_window_days: int = 0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lookback_window_days = lookback_window_days
+        self.events_stream = EventProxy(
+            authenticator=self.authenticator,
+            lookback_window_days=self.lookback_window_days,
+            account_id=self.account_id,
+            start_date=self.start_date,
+            slice_range=self.slice_range,
+            event_types=self.event_types,
+            legacy_cursor_field=self.legacy_cursor_field,
+        )
+
+    def get_state_cursor_value(self, stream_state) -> int:
+        # support for both legacy and new cursor fields
+        return stream_state.get(self.cursor_field, stream_state.get(self.legacy_cursor_field, 0))
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_record_value = latest_record.get(self.cursor_field)
+        state_value = self.get_state_cursor_value(current_stream_state)
+        return {self.cursor_field: max(latest_record_value, state_value)}
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # When reading from a stream, a `read_records` is called once per slice.
+        # We yield a single slice here because we don't want to make duplicate calls for event based incremental syncs.
+        yield {}
+
+    def read_event_increments(
+        self, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[StreamData]:
+        for event_slice in self.events_stream.stream_slices(
+            sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=stream_state
+        ):
+            yield from self.events_stream.read_records(
+                SyncMode.incremental, cursor_field=cursor_field, stream_slice=event_slice, stream_state=stream_state
+            )
+
+    @classmethod
+    def set_updated_timestamp(cls, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
+        for record in records:
+            # need to fill in the `updated` timestamp for consistency
+            if "updated" not in record:
+                record["updated"] = record[cls.legacy_cursor_field]
+            yield record
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        if not stream_state:
+            # both full refresh and initial incremental sync should use usual endpoints
+            yield from self.set_updated_timestamp(
+                super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+            )
+            return
+        yield from self.read_event_increments(cursor_field=cursor_field, stream_state=stream_state)
+
+
+class SlicedEventIncrementalStripeStream(EventIncrementalStripeStream, NormalIncrementalStripeStream, ABC):
+    """
+    This class combines both normal incremental sync and event based sync. It uses common endpoints for sliced data syncs in
+    the full refresh sync mode and initial incremental sync. For incremental syncs with a state, event based sync comes into action.
+    """
+
+    cursor_field = "updated"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent = EventIncrementalStripeStream if stream_state else NormalIncrementalStripeStream
+        return parent.stream_slices(self, sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        parent_read_records = EventIncrementalStripeStream.read_records if stream_state else NormalIncrementalStripeStream.read_records
+        parent_records = parent_read_records(
+            self, sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
+        if not stream_state:
+            parent_records = self.set_updated_timestamp(parent_records)
+        yield from parent_records
+
+
+class Authorizations(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/issuing/authorizations/list
     """
 
-    cursor_field = "created"
+    event_types = ["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"]
 
     def path(self, **kwargs) -> str:
         return "issuing/authorizations"
 
 
-class Customers(IncrementalStripeStream):
+class Customers(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/customers/list
     """
 
-    cursor_field = "created"
     use_cache = True
+    event_types = ["customer.created", "customer.updated"]
 
     def path(self, **kwargs) -> str:
         return "customers"
 
 
-class BalanceTransactions(IncrementalStripeStream):
+class BalanceTransactions(NormalIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/balance_transactions/list
     """
-
-    cursor_field = "created"
-    name = "balance_transactions"
 
     def path(self, **kwargs) -> str:
         return "balance_transactions"
 
 
-class Cardholders(IncrementalStripeStream):
+class Cardholders(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/issuing/cardholders/list
     """
 
-    cursor_field = "created"
+    event_types = ["issuing_cardholder.created", "issuing_cardholder.updated"]
 
     def path(self, **kwargs) -> str:
         return "issuing/cardholders"
 
 
-class Charges(IncrementalStripeStream):
+class Charges(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/charges/list
     """
 
-    cursor_field = "created"
     extra_request_params = {"expand[]": ["data.refunds"]}
+    event_types = [
+        "charge.captured",
+        "charge.expired",
+        "charge.failed",
+        "charge.pending",
+        "charge.refunded",
+        "charge.succeeded",
+        "charge.updated",
+    ]
 
     def path(self, **kwargs) -> str:
         return "charges"
@@ -192,13 +349,11 @@ class CustomerBalanceTransactions(StripeStream):
     API docs: https://stripe.com/docs/api/customer_balance_transactions/list
     """
 
-    name = "customer_balance_transactions"
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"customers/{stream_slice['id']}/balance_transactions"
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
@@ -212,46 +367,43 @@ class CustomerBalanceTransactions(StripeStream):
                 yield customer
 
 
-class Coupons(IncrementalStripeStream):
+class Coupons(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/coupons/list
     """
 
-    cursor_field = "created"
+    event_types = ["coupon.created", "coupon.updated"]
 
     def path(self, **kwargs):
         return "coupons"
 
 
-class Disputes(IncrementalStripeStream):
+class Disputes(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/disputes/list
     """
 
-    cursor_field = "created"
+    event_types = [
+        "charge.dispute.closed",
+        "charge.dispute.created",
+        "charge.dispute.funds_reinstated",
+        "charge.dispute.funds_withdrawn",
+        "charge.dispute.updated",
+    ]
 
     def path(self, **kwargs):
         return "disputes"
 
 
-class EarlyFraudWarnings(StripeStream):
+class EarlyFraudWarnings(EventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/list
     """
 
+    event_types = ["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]
+
     def path(self, **kwargs):
         return "radar/early_fraud_warnings"
-
-
-class Events(IncrementalStripeStream):
-    """
-    API docs: https://stripe.com/docs/api/events/list
-    """
-
-    cursor_field = "created"
-
-    def path(self, **kwargs):
-        return "events"
 
 
 class StripeLazySubStream(StripeStream, HttpSubStream, ABC):
@@ -360,24 +512,62 @@ class StripeLazySubStream(StripeStream, HttpSubStream, ABC):
             yield item
 
 
-class ApplicationFees(IncrementalStripeStream):
+class EventIncrementalStripeLazySubStream(EventIncrementalStripeStream, StripeLazySubStream, ABC):
+    """
+    Identical to the `SlicedEventIncrementalStripeStream` class, this class defines how stateless syncs should be made
+    using common endpoints on one hand (`StripeLazySubStream`),
+    and stateful syncs - using event-based approach (`EventIncrementalStripeStream`) on the other.
+    """
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent = StripeLazySubStream if not stream_state else EventIncrementalStripeStream
+        return parent.stream_slices(self, sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        parent = StripeLazySubStream if not stream_state else EventIncrementalStripeStream
+        yield from parent.read_records(self, sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+
+
+class EventIncrementalStripeSubStream(EventIncrementalStripeStream, HttpSubStream, ABC):
+    """
+    Identical to the `SlicedEventIncrementalStripeStream` class, this class defines how stateless syncs should be made
+    using common endpoints on one hand (`HttpSubStream`),
+    and stateful syncs - using event-based approach (`EventIncrementalStripeStream`) on the other.
+    """
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent = HttpSubStream if not stream_state else EventIncrementalStripeStream
+        return parent.stream_slices(self, sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+
+class ApplicationFees(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/application_fees
     """
 
     use_cache = True
-    cursor_field = "created"
+    event_types = ["application_fee.created", "application_fee.refunded"]
 
     def path(self, **kwargs):
         return "application_fees"
 
 
-class ApplicationFeesRefunds(StripeLazySubStream):
+class ApplicationFeesRefunds(EventIncrementalStripeLazySubStream):
     """
     API docs: https://stripe.com/docs/api/fee_refunds/list
     """
 
-    name = "application_fees_refunds"
+    event_types = ["application_fee.refund.updated"]
 
     parent_cls = ApplicationFees
     parent_id: str = "refund_id"
@@ -388,13 +578,26 @@ class ApplicationFeesRefunds(StripeLazySubStream):
         return f"application_fees/{stream_slice[self.parent_id]}/refunds"
 
 
-class Invoices(IncrementalStripeStream):
+class Invoices(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/invoices/list
     """
 
     use_cache = True
-    cursor_field = "created"
+    event_types = [
+        "invoice.created",
+        "invoice.finalization_failed",
+        "invoice.finalized",
+        "invoice.marked_uncollectible",
+        "invoice.paid",
+        "invoice.payment_action_required",
+        "invoice.payment_failed",
+        "invoice.payment_succeeded",
+        "invoice.sent",
+        "invoice.upcoming",
+        "invoice.updated",
+        "invoice.voided",
+    ]
 
     def path(self, **kwargs):
         return "invoices"
@@ -405,8 +608,6 @@ class InvoiceLineItems(StripeLazySubStream):
     API docs: https://stripe.com/docs/api/invoices/invoice_lines
     """
 
-    name = "invoice_line_items"
-
     parent_cls = Invoices
     parent_id: str = "invoice_id"
     sub_items_attr = "lines"
@@ -416,93 +617,99 @@ class InvoiceLineItems(StripeLazySubStream):
         return f"invoices/{stream_slice[self.parent_id]}/lines"
 
 
-class InvoiceItems(IncrementalStripeStream):
+class InvoiceItems(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/invoiceitems/list
     """
 
-    cursor_field = "date"
-    name = "invoice_items"
+    legacy_cursor_field = "date"
+    event_types = ["invoiceitem.created", "invoiceitem.updated"]
 
     def path(self, **kwargs):
         return "invoiceitems"
 
 
-class Payouts(IncrementalStripeStream):
+class Payouts(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/payouts/list
     """
 
-    cursor_field = "created"
+    event_types = ["payout.canceled", "payout.created", "payout.failed", "payout.paid", "payout.reconciliation_completed", "payout.updated"]
 
     def path(self, **kwargs):
         return "payouts"
 
 
-class Plans(IncrementalStripeStream):
+class Plans(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/plans/list
     """
 
-    cursor_field = "created"
     extra_request_params = {"expand[]": ["data.tiers"]}
+    event_types = ["plan.created", "plan.updated"]
 
     def path(self, **kwargs):
         return "plans"
 
 
-class Prices(IncrementalStripeStream):
+class Prices(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/prices/list
     """
 
-    cursor_field = "created"
+    event_types = ["price.created", "price.updated"]
 
     def path(self, **kwargs):
         return "prices"
 
 
-class Products(IncrementalStripeStream):
+class Products(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/products/list
     """
 
-    cursor_field = "created"
+    event_types = ["product.created", "product.updated"]
 
     def path(self, **kwargs):
         return "products"
 
 
-class ShippingRates(IncrementalStripeStream):
+class ShippingRates(NormalIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/shipping_rates/list
     """
-
-    cursor_field = "created"
 
     def path(self, **kwargs):
         return "shipping_rates"
 
 
-class Reviews(IncrementalStripeStream):
+class Reviews(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/radar/reviews/list
     """
 
-    cursor_field = "created"
+    event_types = ["review.closed", "review.opened"]
 
     def path(self, **kwargs):
         return "reviews"
 
 
-class Subscriptions(IncrementalStripeStream):
+class Subscriptions(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/subscriptions/list
     """
 
     use_cache = True
-    cursor_field = "created"
     extra_request_params = {"status": "all"}
+    event_types = [
+        "customer.subscription.created",
+        "customer.subscription.paused",
+        "customer.subscription.pending_update_applied",
+        "customer.subscription.pending_update_expired",
+        "customer.subscription.resumed",
+        "customer.subscription.trial_will_end",
+        "customer.subscription.updated",
+    ]
 
     def path(self, **kwargs):
         return "subscriptions"
@@ -514,8 +721,6 @@ class SubscriptionItems(StripeLazySubStream):
     """
 
     use_cache = True
-
-    name = "subscription_items"
 
     parent_cls: StripeStream = Subscriptions
     parent_id: str = "subscription_id"
@@ -530,66 +735,86 @@ class SubscriptionItems(StripeLazySubStream):
         return params
 
 
-class SubscriptionSchedule(IncrementalStripeStream):
+class SubscriptionSchedule(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/subscription_schedules
     """
 
-    cursor_field = "created"
+    event_types = [
+        "subscription_schedule.aborted",
+        "subscription_schedule.canceled",
+        "subscription_schedule.completed",
+        "subscription_schedule.created",
+        "subscription_schedule.expiring",
+        "subscription_schedule.released",
+        "subscription_schedule.updated",
+    ]
 
     def path(self, **kwargs):
         return "subscription_schedules"
 
 
-class Transfers(IncrementalStripeStream):
+class Transfers(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/transfers/list
     """
 
     use_cache = True
-    cursor_field = "created"
+    event_types = ["transfer.created", "transfer.reversed", "transfer.updated"]
 
     def path(self, **kwargs):
         return "transfers"
 
 
-class Refunds(IncrementalStripeStream):
+class Refunds(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/refunds/list
     """
 
-    cursor_field = "created"
+    use_cache = True
+    event_types = ["refund.created", "refund.updated"]
 
     def path(self, **kwargs):
         return "refunds"
 
 
-class PaymentIntents(IncrementalStripeStream):
+class PaymentIntents(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/payment_intents/list
     """
 
-    cursor_field = "created"
+    event_types = [
+        "payment_intent.amount_capturable_updated",
+        "payment_intent.canceled",
+        "payment_intent.created",
+        "payment_intent.partially_funded",
+        "payment_intent.payment_failed",
+        "payment_intent.processing",
+        "payment_intent.requires_action",
+        "payment_intent.succeeded",
+    ]
 
     def path(self, **kwargs):
         return "payment_intents"
 
 
-class PaymentMethods(StripeStream):
+class PaymentMethods(EventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/payment_methods/list
     """
+
+    event_types = ["payment_method.attached", "payment_method.automatically_updated", "payment_method.detached", "payment_method.updated"]
 
     def path(self, **kwargs):
         return "payment_methods"
 
 
-class BankAccounts(StripeLazySubStream):
+class BankAccounts(EventIncrementalStripeLazySubStream):
     """
     API docs: https://stripe.com/docs/api/customer_bank_accounts/list
     """
 
-    name = "bank_accounts"
+    event_types = ["customer.source.created", "customer.source.expiring", "customer.source.updated"]
 
     parent_cls = Customers
     parent_id = "customer_id"
@@ -600,15 +825,33 @@ class BankAccounts(StripeLazySubStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"customers/{stream_slice[self.parent_id]}/sources"
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        # need to filter out data here because it's not done in EventProxy
+        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+            if record["object"] == "bank_account":
+                yield record
 
-class CheckoutSessions(IncrementalStripeStream):
+
+class CheckoutSessions(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/checkout/sessions/list
     """
 
-    name = "checkout_sessions"
     use_cache = True
-    cursor_field = "expires_at"
+    legacy_cursor_field = "expires_at"
+
+    event_types = [
+        "checkout.session.async_payment_failed",
+        "checkout.session.async_payment_succeeded",
+        "checkout.session.completed",
+        "checkout.session.expired",
+    ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -617,12 +860,6 @@ class CheckoutSessions(IncrementalStripeStream):
         # 'expires_at' - can be anywhere from 1 to 24 hours after Checkout Session creation.
         # thus we should always add 1 day to lookback window to avoid possible checkout_sessions losses
         self.lookback_window_days = self.lookback_window_days + 1
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # this is a semi-incremental stream therefore we need to yield a single slice
-        yield from [{}]
 
     def request_params(
         self,
@@ -642,18 +879,17 @@ class CheckoutSessions(IncrementalStripeStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         since_date = self.get_start_timestamp(stream_state)
         for item in super().parse_response(response, **kwargs):
-            # Filter out too old items
+            # Filter out too old items as this is a semi-incremental sync
             expires_at = item.get(self.cursor_field)
             if expires_at and expires_at > since_date:
                 yield item
 
 
-class CheckoutSessionsLineItems(IncrementalStripeStream):
+class CheckoutSessionsLineItems(NormalIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/checkout/sessions/line_items
     """
 
-    name = "checkout_sessions_line_items"
     extra_request_params = {"expand[]": ["data.discounts", "data.taxes"]}
     cursor_field = "checkout_session_expires_at"
 
@@ -681,7 +917,7 @@ class CheckoutSessionsLineItems(IncrementalStripeStream):
         return params
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         checkout_session_state = None
         if stream_state:
@@ -717,21 +953,23 @@ class CheckoutSessionsLineItems(IncrementalStripeStream):
         yield from data
 
 
-class PromotionCodes(IncrementalStripeStream):
+class PromotionCodes(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/promotion_codes/list
     """
 
-    cursor_field = "created"
+    event_types = ["promotion_code.created", "promotion_code.updated"]
 
     def path(self, **kwargs):
         return "promotion_codes"
 
 
-class ExternalAccount(StripeStream, ABC):
+class ExternalAccount(EventIncrementalStripeStream, ABC):
     """
     Bank Accounts and Cards are separate streams because they have different schemas
     """
+
+    event_types = ["account.external_account.created", "account.external_account.updated"]
 
     @property
     @abstractmethod
@@ -741,6 +979,18 @@ class ExternalAccount(StripeStream, ABC):
     @property
     def extra_request_params(self):
         return {"object": self.object}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        # need to filter out data here because it's not done in EventProxy
+        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+            if record["object"] == self.object:
+                yield record
 
     def path(self, **kwargs):
         return f"accounts/{self.account_id}/external_accounts"
@@ -762,12 +1012,18 @@ class ExternalAccountCards(ExternalAccount):
     object = "card"
 
 
-class SetupIntents(IncrementalStripeStream):
+class SetupIntents(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/setup_intents/list
     """
 
-    cursor_field = "created"
+    event_types = [
+        "setup_intent.canceled",
+        "setup_intent.created",
+        "setup_intent.requires_action",
+        "setup_intent.setup_failed",
+        "setup_intent.succeeded",
+    ]
 
     def path(self, **kwargs):
         return "setup_intents"
@@ -782,90 +1038,81 @@ class Accounts(StripeStream):
     use_cache = True
 
     # For some reason Stripe API does not return the `created` field in the response
-    # for some records, therefore this stream does not support incremental syncs in regular mode.
+    # for some records, therefore this stream does not support incremental syncs.
 
     def path(self, **kwargs):
         return "accounts"
 
 
-class Persons(StripeStream, HttpSubStream):
+class Persons(EventIncrementalStripeSubStream):
     """
     API docs: https://stripe.com/docs/api/persons/list
     """
 
-    name = "persons"
+    event_types = ["person.created", "person.updated"]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, parent=Accounts(*args, **kwargs), **kwargs)
+    def __init__(self, *args, lookback_window_days: int = 0, **kwargs):
+        super().__init__(*args, parent=Accounts(*args, **kwargs), lookback_window_days=lookback_window_days, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"accounts/{stream_slice['parent']['id']}/persons"
 
 
-class CreditNotes(StripeStream):
+class CreditNotes(EventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/credit_notes/list
     """
 
-    name = "credit_notes"
+    event_types = ["credit_note.created", "credit_note.updated", "credit_note.voided"]
 
     def path(self, **kwargs) -> str:
         return "credit_notes"
 
 
-class Cards(IncrementalStripeStream):
+class Cards(SlicedEventIncrementalStripeStream):
     """
     Docs: https://stripe.com/docs/api/issuing/cards/list
     """
 
-    cursor_field = "created"
+    event_types = ["issuing_card.created", "issuing_card.updated"]
 
     def path(self, **kwargs):
         return "issuing/cards"
 
 
-class TopUps(IncrementalStripeStream):
+class TopUps(SlicedEventIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/topups/list
     """
 
-    name = "top_ups"
-    cursor_field = "created"
+    event_types = ["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"]
 
     def path(self, **kwargs) -> str:
         return "topups"
 
 
-class Files(IncrementalStripeStream):
+class Files(NormalIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/files/list
     """
-
-    name = "files"
-    cursor_field = "created"
 
     def path(self, **kwargs) -> str:
         return "files"
 
 
-class FileLinks(IncrementalStripeStream):
+class FileLinks(NormalIncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/file_links/list
     """
-
-    name = "file_links"
-    cursor_field = "created"
 
     def path(self, **kwargs) -> str:
         return "file_links"
 
 
-class SetupAttempts(IncrementalStripeStream, HttpSubStream):
+class SetupAttempts(NormalIncrementalStripeStream, HttpSubStream):
     """
     Docs: https://stripe.com/docs/api/setup_attempts/list
     """
-
-    cursor_field = "created"
 
     def __init__(self, **kwargs):
         parent = SetupIntents(**kwargs)
@@ -875,11 +1122,12 @@ class SetupAttempts(IncrementalStripeStream, HttpSubStream):
         return "setup_attempts"
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
+        # this is a unique combination of NormalIncrementalStripeStream and HttpSubStream,
+        # so we need to have all the parent IDs multiplied by all the date slices
         incremental_slices = list(
-            IncrementalStripeStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+            NormalIncrementalStripeStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         )
         if incremental_slices:
             parent_records = HttpSubStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
@@ -912,7 +1160,6 @@ class UsageRecords(StripeStream, HttpSubStream):
 
     def path(
         self,
-        *,
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -932,7 +1179,6 @@ class TransferReversals(StripeStream, HttpSubStream):
 
     def path(
         self,
-        *,
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -941,12 +1187,12 @@ class TransferReversals(StripeStream, HttpSubStream):
         return f"transfers/{transfer_id}/reversals"
 
 
-class Transactions(IncrementalStripeStream):
+class Transactions(SlicedEventIncrementalStripeStream):
     """
     Docs: https://stripe.com/docs/api/issuing/transactions/list
     """
 
-    cursor_field = "created"
+    event_types = ["issuing_transaction.created", "issuing_transaction.updated"]
 
     def path(self, **kwargs) -> str:
         return "issuing/transactions"

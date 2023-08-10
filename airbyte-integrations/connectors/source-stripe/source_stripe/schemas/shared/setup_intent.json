@@ -17,6 +17,9 @@
     "created": {
       "type": ["integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "customer": {
       "type": ["null", "string"]
     },

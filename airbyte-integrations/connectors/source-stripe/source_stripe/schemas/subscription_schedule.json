@@ -21,6 +21,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "current_phase": {
       "type": ["null", "object"],
       "additionalProperties": true,

@@ -31,7 +31,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -45,7 +45,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -55,7 +55,12 @@
         "name": "application_fees_refunds",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -67,6 +72,9 @@
         [
           "id"
         ]
+      ],
+      "cursor_field": [
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -81,7 +89,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -95,7 +103,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -134,7 +142,12 @@
         "name": "bank_accounts",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -146,6 +159,9 @@
         [
           "id"
         ]
+      ],
+      "cursor_field": [
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -160,7 +176,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -174,7 +190,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -189,7 +205,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -203,7 +219,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -218,7 +234,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -232,7 +248,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -247,7 +263,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "expires_at"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -261,7 +277,7 @@
         ]
       ],
       "cursor_field": [
-        "expires_at"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -305,7 +321,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -319,7 +335,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -329,7 +345,12 @@
         "name": "credit_notes",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -341,6 +362,9 @@
         [
           "id"
         ]
+      ],
+      "cursor_field": [
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -376,7 +400,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -390,7 +414,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -405,7 +429,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -419,7 +443,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -429,7 +453,12 @@
         "name": "early_fraud_warnings",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -441,6 +470,9 @@
         [
           "id"
         ]
+      ],
+      "cursor_field": [
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -479,7 +511,12 @@
         "name": "external_account_bank_accounts",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -492,6 +529,9 @@
           "id"
         ]
       ],
+      "cursor_field": [
+        "updated"
+      ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
@@ -500,7 +540,12 @@
         "name": "external_account_cards",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -512,6 +557,9 @@
         [
           "id"
         ]
+      ],
+      "cursor_field": [
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -584,7 +632,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "date"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -598,7 +646,7 @@
         ]
       ],
       "cursor_field": [
-        "date"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -634,7 +682,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -648,7 +696,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -663,7 +711,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -677,7 +725,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -687,7 +735,12 @@
         "name": "payment_methods",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -699,6 +752,9 @@
         [
           "id"
         ]
+      ],
+      "cursor_field": [
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -713,7 +769,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -727,7 +783,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -737,7 +793,12 @@
         "name": "persons",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -749,6 +810,9 @@
         [
           "id"
         ]
+      ],
+      "cursor_field": [
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -763,7 +827,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -777,7 +841,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -792,7 +856,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -806,7 +870,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -821,7 +885,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -835,7 +899,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -850,7 +914,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -864,7 +928,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -879,7 +943,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -893,7 +957,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -908,7 +972,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -922,7 +986,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -966,7 +1030,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -980,7 +1044,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1045,7 +1109,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -1059,7 +1123,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1074,7 +1138,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -1088,7 +1152,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1103,7 +1167,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -1117,7 +1181,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1132,7 +1196,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -1146,7 +1210,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1182,7 +1246,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "created"
+          "updated"
         ],
         "source_defined_primary_key": [
           [
@@ -1196,7 +1260,7 @@
         ]
       ],
       "cursor_field": [
-        "created"
+        "updated"
       ],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

@@ -4,6 +4,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "next_payment_attempt": {
       "type": ["null", "number"]
     },

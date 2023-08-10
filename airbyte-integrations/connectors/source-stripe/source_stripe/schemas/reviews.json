@@ -15,6 +15,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "id": {
       "type": ["null", "string"]
     },

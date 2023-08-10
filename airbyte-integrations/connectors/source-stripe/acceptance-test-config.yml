@@ -13,6 +13,9 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          # default cursor field changed
+          disable_for_version: "3.17.2"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -44,8 +47,6 @@ acceptance_tests:
             bypass_reason: "this stream can't be seeded in our sandbox account"
           - name: "reviews"
             bypass_reason: "this stream can't be seeded in our sandbox account"
-          - name: "transfers"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "transactions"
             bypass_reason: "This stream can't be seeded in our sandbox account"
         expect_records:
