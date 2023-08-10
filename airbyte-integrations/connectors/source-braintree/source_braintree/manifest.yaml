@@ -265,7 +265,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: "source_braintree_no_code.source.MerchantAccountExtractor"
+          class_name: "source_braintree.source.MerchantAccountExtractor"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -3754,7 +3754,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: "source_braintree_no_code.source.CustomerExtractor"
+          class_name: "source_braintree.source.CustomerExtractor"
       paginator:
         type: NoPagination
     incremental_sync:
@@ -3832,7 +3832,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: "source_braintree_no_code.source.DiscountExtractor"
+          class_name: "source_braintree.source.DiscountExtractor"
       paginator:
         type: NoPagination
   - type: DeclarativeStream
@@ -4006,7 +4006,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: "source_braintree_no_code.source.PlanExtractor"
+          class_name: "source_braintree.source.PlanExtractor"
       paginator:
         type: NoPagination
   - type: DeclarativeStream
@@ -9741,7 +9741,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: "source_braintree_no_code.source.TransactionExtractor"
+          class_name: "source_braintree.source.TransactionExtractor"
       paginator:
         type: NoPagination
     incremental_sync:
@@ -15683,7 +15683,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: "source_braintree_no_code.source.SubscriptionExtractor"
+          class_name: "source_braintree.source.SubscriptionExtractor"
       paginator:
         type: NoPagination
     incremental_sync:
@@ -15884,7 +15884,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: "source_braintree_no_code.source.DisputeExtractor"
+          class_name: "source_braintree.source.DisputeExtractor"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -15904,60 +15904,67 @@ streams:
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
 spec:
   connection_specification:
-    $schema: http://json-schema.org/schema#
+    title: Braintree Spec
     type: object
-    required:
-      - merchant_id
-      - public_key
-      - private_key
-      - environment
     properties:
       merchant_id:
-        type: string
-        order: 0
         title: Merchant ID
         description: >-
           The unique identifier for your entire gateway account. See the <a
           href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
           for more information on how to obtain this ID.
-      public_key:
+        name: Merchant ID
         type: string
-        order: 1
+      public_key:
         title: Public Key
         description: >-
           Braintree Public Key. See the <a
           href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
           for more information on how to obtain this key.
-      private_key:
+        name: Public Key
         type: string
-        order: 2
+      private_key:
         title: Private Key
         description: >-
           Braintree Private Key. See the <a
           href="https://docs.airbyte.com/integrations/sources/braintree">docs</a>
           for more information on how to obtain this key.
+        name: Private Key
         airbyte_secret: true
-      start_date:
         type: string
+      start_date:
         title: Start Date
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 3
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated.
+        name: Start Date
+        examples:
+          - '2020'
+          - '2020-12-30'
+          - '2020-11-22 20:20:05'
+        type: string
+        format: date-time
       environment:
+        title: Environment
+        description: Environment specifies where the data will come from.
+        name: Environment
+        examples:
+          - sandbox
+          - production
+          - qa
+          - development
         enum:
           - Development
           - Sandbox
           - Qa
           - Production
         type: string
-        order: 4
-        title: Environment
-        description: Environment specifies where the data will come from.
-    additionalProperties: true
-  documentation_url: https://example.org
+    required:
+      - merchant_id
+      - public_key
+      - private_key
+      - environment
+  documentation_url: https://docs.airbyte.com/integrations/sources/braintree
   type: Spec
 metadata:
   autoImportSchema:
