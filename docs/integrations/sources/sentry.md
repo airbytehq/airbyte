@@ -46,7 +46,8 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.2.3   | 2023-08-03 | [29023](https://github.com/airbytehq/airbyte/pull/29023) | Add incremental for `issues` stream                                     |
 | 0.2.2   | 2023-05-02 | [25759](https://github.com/airbytehq/airbyte/pull/25759) | Change stream that used in check_connection                             |
 | 0.2.1   | 2023-04-27 | [25602](https://github.com/airbytehq/airbyte/pull/25602) | Add validation of project and organization names during connector setup |
 | 0.2.0   | 2023-04-03 | [23923](https://github.com/airbytehq/airbyte/pull/23923) | Add Releases stream                                                     |
