@@ -1716,7 +1716,7 @@ class OwnersArchived(ClientSideIncrementalStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params.update({"archived": "true"})
+        params["archived"] = "true"
         return params
 
 
