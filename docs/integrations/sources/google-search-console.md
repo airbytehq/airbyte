@@ -1,15 +1,21 @@
 # Google Search Console
 
-This page contains the setup guide and reference information for the google search console source connector.
+This page contains the setup guide and reference information for the Google Search Console source connector.
 
 ## Prerequisites
 
-- A verified property in Google Search Console
-- Enable Google Search Console API for GCP project at [GCP console](https://console.cloud.google.com/apis/library/searchconsole.googleapis.com)
-- Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
-- Enable Google Search Console API
+- Access to your Google Search Console sites with your role as either Full User or Owner.
 
 ## Setup guide
+
+The Google Search Console connector supports two authentication methods:
+
+- You can use OAuth
+- Service Account JSON Key
+
+For **Airbyte Cloud** users, we recommend using OAuth authentication, as it simplifies the setup process and allows you to authenticate directly from the Airbyte UI.
+
+For **Airbyte Open Source** users, we recommend setting up a Service Account and creating an associated JSON Key file.
 
 ### Step 1: Set up google search console
 
@@ -17,26 +23,28 @@ This page contains the setup guide and reference information for the google sear
 
 You can either:
 
-- Use the existing `Service Account` for your Google Project with granted Admin Permissions
+- Use an existing Service Account for your Google Project with granted Admin Permissions, or create a new one and grant Admin permissions to it.
 - Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose.
-- Create the new `Service Account` credentials for your Google Project, and grant Admin Permissions to it
 - Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace
 
-### Creating a Google service account
+### Create a Google service account and JSON credentials
 
 A service account's credentials include a generated email address that is unique and at least one public/private key pair. If domain-wide delegation is enabled, then a client ID is also part of the service account's credentials.
 
-1. Open the [Service accounts page](https://console.developers.google.com/iam-admin/serviceaccounts)
-2. If prompted, select an existing project, or create a new project.
-3. Click `+ Create service account`.
-4. Under Service account details, type a `name`, `ID`, and `description` for the service account, then click `Create`.
-   - Optional: Under `Service account permissions`, select the `IAM roles` to grant to the service account, then click `Continue`.
+1. Open the [Service Accounts page](https://console.developers.google.com/iam-admin/serviceaccounts).
+2. Select an existing project, or create a new project.
+3. At the top of the page, click **+ Create service account**.
+4. Enter a name and description for the service account, then click **Create and Continue** .
+5. Under **Service account permissions**, select the roles to grant to the service account, then click **Continue**. We recommend the **Viewer** role.
    - Optional: Under `Grant users access to this service account`, add the `users` or `groups` that are allowed to use and manage the service account.
-5. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created.
-6. Open `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
-7. On `Keys` tab click `+ Add key`, then click `Create new key`.
+6. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) and click on the email address of the service account you just created.
+7. In the **Details** tab, select **Advanced settings** and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
+8. In the **Keys** tab, click **+ Add key**, then click **Create new key**.
+9. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
 
-Your new public/private key pair should be now generated and downloaded to your machine as `<project_id>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely. If you lose this key pair, you will need to generate a new one!
+:::caution
+This file serves as the only copy of your JSON service key, and you will not be able to re-download it. Be sure to store it in a secure location.
+:::
 
 ### Using the existing Service Account
 
@@ -58,21 +66,22 @@ Follow the Google Documentation for performing [Delegating domain-wide authority
 
 At the end of this process, you should have JSON credentials to this Google Service Account.
 
-## Step 2: Set up the google search console connector in Airbyte
+### Step 2: Set up the google search console connector in Airbyte
 
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the google search console connector and select **google search console** from the Source type dropdown.
-4. Click Authenticate your account to sign in with Google and authorize your account.
-5. Fill in the `site_urls` field.
-6. Fill in the `start date` field.
-7. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
-8. Fill in the `data_state` (optionally) in case you want to sync fresher data use `all' value, otherwise use 'final'.
-9. You should be ready to sync data.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Google Search Console** from the list of available sources.
+4. For **Website URL Property**, enter the URL(s) of any properties with data you want to replicate.
+5. For **Start Date**, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
+6. Click Authenticate your account to sign in with Google and authorize your account.
+7. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
+8. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
+9. (Optional) For **Data State**, you may choose whether to only include "fresh" data that has not been finalized. Refer to the [Data State](#data-state) section below for more information on. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`, as selecting `all` could result in data loss.
+10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -89,7 +98,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 
 ## Supported sync modes
 
-The Google Search Console Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Search Console Source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -101,10 +110,10 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 :::
 
 :::note
-Parameter `data_state='all'` should not be used with Incremental Sync mode as it may cause data loss.
+When using Incremental Sync mode, we recommend setting the **Data State** option to `final`, as the `all` option may cause data loss.
 :::
 
-## Supported Streams
+## Supported streams
 
 - [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
 - [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
@@ -120,6 +129,52 @@ Parameter `data_state='all'` should not be used with Incremental Sync mode as it
 - [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - Analytics report by custom dimensions
+
+## Connector-specific configurations
+
+### Custom reports
+
+Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed as a JSON object in the following format:
+
+```json
+{
+   "name": "<report-name>",
+   "dimensions": ["<dimension-name>", "<dimension-name>", ...]
+}
+```
+
+The available dimensions are:
+
+- `country`
+- `date`
+- `device`
+- `page`
+- `query`
+- `searchAppearance`
+
+For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
+
+```json
+[
+   {
+      "name": "country_date",
+      "dimensions": ["country", "date"]
+   }
+]
+```
+
+You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
+
+### Data State
+
+The **Data State** parameter deals with the "freshness", or finality of the data that is being queried.
+
+- `final`: The query will include only finalized, stable data. This is data that has been processed, verified, and is unlikely to change. When you select this option, you're asking for the definitive statistics and information that Google has analyzed and confirmed.
+- `all`: The query will return both finalized data and what Google terms "fresh" data. Fresh data includes more recent data that hasn't gone through the full processing and verification that finalized data has. This option can give you more up-to-the-minute insights, but it may be subject to change as Google continues to process and analyze it.
+
+:::caution
+When using Incremental Sync mode, we highly recommend leaving this parameter to `final`, as the `all` option may result in data loss.
+:::
 
 ## Performance considerations
 
