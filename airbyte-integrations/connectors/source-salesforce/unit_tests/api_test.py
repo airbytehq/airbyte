@@ -27,7 +27,6 @@ from source_salesforce.streams import (
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
 )
-from utils import read_full_refresh
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
@@ -91,9 +90,9 @@ def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
     resp_text = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in range(5)]
     result_uri = requests_mock.register_uri("GET", stream.path() + f"/{job_id}/results",
-                                            [{'text': "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
-                                             {'text': "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
-                                             {'text': "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}}
+                                            [{"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
+                                             {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
+                                             {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}}
                                              ]
                                             )
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
@@ -738,21 +737,25 @@ def test_bulk_stream_slices(stream_config_date_format, stream_api):
 
 
 @freezegun.freeze_time("2023-04-01")
-def test_bulk_stream_request_params(stream_config_date_format, stream_api, requests_mock):
+def test_bulk_stream_request_params_states(stream_config_date_format, stream_api, bulk_catalog, requests_mock):
     """Check that request params ignore records cursor and use start date from slice ONLY"""
-    stream_config_date_format.update({'start_date': '2023-01-01'})
-    stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
+    stream_config_date_format.update({"start_date": "2023-01-01"})
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api)
+
+    source = SourceSalesforce()
+    source.streams = Mock()
+    source.streams.return_value = [stream]
 
     job_id_1 = "fake_job_1"
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}", [{"json": {"state": "JobComplete"}}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_1}")
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}/results", text="Field1,LastModifiedDate,ID\ntest,2023-03-15,1")
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}/results", text="Field1,LastModifiedDate,ID\ntest,2023-01-15,1")
     requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_1}")
 
     job_id_2 = "fake_job_2"
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}", [{"json": {"state": "JobComplete"}}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_2}")
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2")
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2\ntest,2023-02-20,22")
     requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_2}")
 
     job_id_3 = "fake_job_3"
@@ -763,7 +766,19 @@ def test_bulk_stream_request_params(stream_config_date_format, stream_api, reque
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_3}")
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,3")
     requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_3}")
-    list(read_full_refresh(stream))
-    assert "LastModifiedDate >= 2023-01-01T00:00:00.000+00:00 AND LastModifiedDate < 2023-01-31T00:00:00.000+00:00" in queries_history.request_history[0].text
-    assert "LastModifiedDate >= 2023-01-31T00:00:00.000+00:00 AND LastModifiedDate < 2023-03-02T00:00:00.000+00:00" in queries_history.request_history[1].text
-    assert "LastModifiedDate >= 2023-03-02T00:00:00.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00" in queries_history.request_history[2].text
+
+    logger = logging.getLogger("airbyte")
+    state = {"Account": {"LastModifiedDate": "2023-01-01T10:10:10.000Z"}}
+    bulk_catalog.streams.pop(1)
+    result = [i for i in source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state)]
+
+    actual_state_values = [item.state.data.get("Account").get(stream.cursor_field) for item in result if item.type == Type.STATE]
+    # assert request params
+    assert "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00" in queries_history.request_history[0].text
+    assert "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00" in queries_history.request_history[1].text
+    assert "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00" in queries_history.request_history[2].text
+
+    # assert states
+    # if connector meets record with cursor `2023-04-01` out of current slice range 2023-01-31 <> 2023-03-02, we ignore all other values and set state to slice end_date
+    expected_state_values = ["2023-01-15T00:00:00+00:00", "2023-03-02T10:10:10+00:00", "2023-04-01T00:00:00+00:00"]
+    assert actual_state_values == expected_state_values
