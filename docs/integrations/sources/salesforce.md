@@ -103,9 +103,9 @@ Connector uses BULK API if it is possible, unless any of conditions met:
 - Stream has unsupported properties in schema: `base64` or `object`-like
 - Stream is not supported by BULK API (list was obtained experimentally)
 
-:::danger BULK API
+:::danger Force Use Bulk API
 
-If you set an option `Force Use Bulk API` to `true`, connector will ignore unsupported properties and sync stream using BULK API.
+If you set an option `Force Use Bulk API` to `true`, connector will ignore unsupported properties and sync Stream using BULK API.
 
 :::
 
@@ -158,7 +158,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.2   | 2023-07-06 | [28781](https://github.com/airbytehq/airbyte/pull/28781) | Fix pagination for BULK API jobs; Addoption to force use BULK API                                                                    |
+| 2.1.2   | 2023-07-06 | [28781](https://github.com/airbytehq/airbyte/pull/28781) | Fix pagination for BULK API jobs; Add option to force use BULK API                                                                   |
 | 2.1.1   | 2023-07-06 | [28021](https://github.com/airbytehq/airbyte/pull/28021) | Several Vulnerabilities Fixes; switched to use alpine instead of slim, CVE-2022-40897, CVE-2023-29383, CVE-2023-31484, CVE-2016-2781 |
 | 2.1.0   | 2023-06-26 | [27726](https://github.com/airbytehq/airbyte/pull/27726) | License Update: Elv2                                                                                                                 |
 | 2.0.14  | 2023-05-04 | [25794](https://github.com/airbytehq/airbyte/pull/25794) | Avoid pandas inferring wrong data types by forcing all data type as object                                                           |
