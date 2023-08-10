@@ -4,28 +4,30 @@ This page contains the setup guide and reference information for the Google Sear
 
 ## Prerequisites
 
-- Access to your Google Search Console sites with your role as either Full User or Owner.
+- A verified property in Google Search Console
+- Enabled Google Search Console API
 
 ## Setup guide
 
-The Google Search Console connector supports two authentication methods:
+### Authentication Options
 
-- You can use OAuth
-- Service Account JSON Key
+When connecting Airbyte to Google Search Console, you will need to authenticate using one of the following methods:
 
-For **Airbyte Cloud** users, we recommend using OAuth authentication, as it simplifies the setup process and allows you to authenticate directly from the Airbyte UI.
+#### Use OAuth with your personal Google User Account (Recommended for Airbyte Cloud users who are property owners)
 
-For **Airbyte Open Source** users, we recommend setting up a Service Account and creating an associated JSON Key file.
+You can authenticate using your personal Google Account with OAuth if you are the owner of the property or have been granted Admin Permissions for the Google Search Console project you wish to access. Ensure that your account has the necessary permissions to view the Google Search Console project you want to work with.
 
-### Step 1: Set up google search console
+#### Use an existing Service Account with Admin Permissions
 
-#### How to create the client credentials for Google Search Console, to use with Airbyte?
+If you already have a Service Account within your Google Project that has Admin Permissions, you can use it to authenticate. This option is recommended for project owners or administrators who have full control over the Google Project.
 
-You can either:
+#### Create a new Service Account and grant it Admin Permissions
 
-- Use an existing Service Account for your Google Project with granted Admin Permissions, or create a new one and grant Admin permissions to it.
-- Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose.
-- Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace
+If you do not have an existing Service Account with Admin Permissions, you can create a new Service Account and grant it Admin Permissions. This option is recommended for project owners or administrators who have full control over the Google Project.
+
+#### Delegate Domain-wide Authority (Optional)
+
+If you are an employee within a larger organization and need to access sensitive user data from a property you do not own, you may need to gain Domain-wide Delegation Authority from the administrator of the Google Workspace.
 
 ### Create a Google service account and JSON credentials
 
@@ -38,21 +40,13 @@ A service account's credentials include a generated email address that is unique
 5. Under **Service account permissions**, select the roles to grant to the service account, then click **Continue**. We recommend the **Viewer** role.
    - Optional: Under `Grant users access to this service account`, add the `users` or `groups` that are allowed to use and manage the service account.
 6. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) and click on the email address of the service account you just created.
-7. In the **Details** tab, select **Advanced settings** and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
+7. In the **Details** tab, select **Advanced settings** and checkmark **Enable Google Workspace Domain-wide Delegation**.
 8. In the **Keys** tab, click **+ Add key**, then click **Create new key**.
 9. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
 
 :::caution
 This file serves as the only copy of your JSON service key, and you will not be able to re-download it. Be sure to store it in a secure location.
 :::
-
-### Using the existing Service Account
-
-1. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created.
-2. Click on `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
-3. On `Keys` tab click `+ Add key`, then click `Create new key`.
-
-Your new public/private key pair should be now generated and downloaded to your machine as `<project_id>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely. If you lose this key pair, you will need to generate a new one!
 
 ### Note
 
@@ -77,7 +71,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 3. Find and select **Google Search Console** from the list of available sources.
 4. For **Website URL Property**, enter the URL(s) of any properties with data you want to replicate.
 5. For **Start Date**, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
-6. Click Authenticate your account to sign in with Google and authorize your account.
+6. Select **Oauth** from the Authentication dropdown, then click **Authenticate your account** to sign in with Google and authorize your account.
 7. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
 8. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) For **Data State**, you may choose whether to only include "fresh" data that has not been finalized. Refer to the [Data State](#data-state) section below for more information on. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`, as selecting `all` could result in data loss.
