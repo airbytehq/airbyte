@@ -197,6 +197,9 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         // airbyte-ci only supports actual connectors, so exclude all the base modules
         if (project.name.startsWith('source-') || project.name.startsWith('destination-')) {
             project.task(taskName, type: Exec) {
+                inputs.dir('build/distributions')
+                outputs.upToDateWhen { true }
+                dependsOn project.assemble
                 workingDir project.rootProject.projectDir
                 commandLine "airbyte-ci", "connectors", "--name", project.name, "build"
             }

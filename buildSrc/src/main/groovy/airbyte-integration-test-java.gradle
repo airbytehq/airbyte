@@ -43,6 +43,9 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             if(project.hasProperty('airbyteDocker')) {
                 dependsOn project.airbyteDocker
+                project.tasks.named('integrationTestJavaClasses') {
+                    dependsOn project.airbyteDocker
+                }
             }
 
             //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
