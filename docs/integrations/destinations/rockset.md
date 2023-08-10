@@ -6,12 +6,12 @@
 
 ## Features
 
-| Feature                       | Support |
-| :---------------------------- | :-----: |
-| Full Refresh Sync             |   ✅    |
-| Incremental - Append Sync     |   ✅    |
-| Incremental - Deduped History |   ❌    |
-| Namespaces                    |   ❌    |
+| Feature                        | Support |
+| :----------------------------- | :-----: |
+| Full Refresh Sync              |   ✅    |
+| Incremental - Append Sync      |   ✅    |
+| Incremental - Append + Deduped |   ❌    |
+| Namespaces                     |   ❌    |
 
 ## Troubleshooting
 

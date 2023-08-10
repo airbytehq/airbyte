@@ -11,7 +11,7 @@ from source_clockify.source import SourceClockify
 def setup_responses():
     responses.add(
         responses.GET,
-        "https://api.clockify.me/api/v1/workspaces/workspace_id/users",
+        "http://some.test.url/api/v1/workspaces/workspace_id/users",
         json={"access_token": "test_api_key", "expires_in": 3600},
     )
 

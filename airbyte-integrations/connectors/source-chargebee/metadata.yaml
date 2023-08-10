@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-chargebee
   githubIssueLabel: source-chargebee
   icon: chargebee.svg
@@ -21,4 +21,8 @@ data:
   tags:
     - language:low-code
     - language:python
+  ab_internal:
+    sl: 200
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"
