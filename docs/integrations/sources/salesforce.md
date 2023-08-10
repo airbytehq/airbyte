@@ -98,10 +98,10 @@ The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](htt
 
 The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
 
-Airbyte fetches and handles all the possible and available streams dynamically based on:
+Airbyte allows exporting all available Salesforce objects dynamically based on:
 
 - If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
-- If the stream has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
+- If the salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
 
 ### A note on the BULK API vs REST API and their limitations
 
