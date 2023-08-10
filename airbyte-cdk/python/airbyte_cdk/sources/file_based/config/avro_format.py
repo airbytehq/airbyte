@@ -16,5 +16,5 @@ class AvroFormat(BaseModel):
     double_as_string: bool = Field(
         title="Convert Double Fields to Strings",
         description="Whether to convert double fields to strings. There is a loss of precision when converting decimals to floats, so this is recommended.",
-        default=True,
+        default=False,
     )

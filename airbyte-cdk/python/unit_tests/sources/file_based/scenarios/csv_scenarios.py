@@ -116,7 +116,7 @@ single_csv_scenario = (
                                                 "double_as_string": {
                                                     "title": "Convert Double Fields to Strings",
                                                     "description": "Whether to convert double fields to strings. There is a loss of precision when converting decimals to floats, so this is recommended.",
-                                                    "default": True,
+                                                    "default": False,
                                                     "type": "boolean"
                                                 }
                                             }
