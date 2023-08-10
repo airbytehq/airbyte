@@ -1,6 +1,3 @@
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Postgres
 
 Airbyte's certified Postgres connector offers the following features:
@@ -10,7 +7,7 @@ Airbyte's certified Postgres connector offers the following features:
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](./postgres/postgres-troubleshooting.md) to troubleshooting issues with the Postgres connector.
 
-![Airbyte Postgres Connection](./postgres/assets/airbyte_postgres_source.png)
+![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png)
 
 ## Quick Start
 
@@ -43,7 +40,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user
 
 From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
 
-![Create an Airbyte source](./postgres/assets/airbyte_source_selection.png)
+![Create an Airbyte source](https://github.com/airbytehq/airbyte/blob/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_source_selection.png?raw=true)
 
 To fill out the required information:
 1. Enter the hostname, port number, and name for your Postgres database.
@@ -108,32 +105,26 @@ ALTER USER <user_name> REPLICATION;
 
 #### Step 3: Enable logical replication on your Postgres database
 
-<Tabs defaultValue="generic">
-    <TabItem value="generic" label="Generic">
-   To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the <a href="http://https://www.postgresql.org/docs/current/config-setting.html">postgresql.conf file</a> for your Postgres database:
+To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the <a href="http://https://www.postgresql.org/docs/current/config-setting.html">postgresql.conf file</a> for your Postgres database:
 
 | Parameter             | Description                                                                    | Set value to                                                                                                                       |
 | --------------------- | ------------------------------------------------------------------------------ |------------------------------------------------------------------------------------------------------------------------------------|
 | wal_level             | Type of coding used within the Postgres write-ahead log                        | `logical `                                                                                                                         |
 | max_wal_senders       | The maximum number of processes used for handling WAL changes                  | `min: 1`                                                                                                                             |
 | max_replication_slots | The maximum number of replication slots that are allowed to stream WAL changes | `1` (if Airbyte is the only service reading subscribing to WAL changes. More than 1 if other services are also reading from the WAL) |
-</TabItem>
-<TabItem value="aws" label="Amazon RDS / Aurora">
-    <p>To enable logical replication on AWS Postgres RDS or Aurora:</p>
-    <ul>
-      <li>Go to the Configuration tab for your DB cluster.</li>
-      <li>Find your cluster parameter group. Either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy, change your cluster's parameter group before restarting.</li>
-      <li>Within the parameter group page, search for <code>rds.logical_replication</code>. Select this row and click Edit parameters. Set this value to 1.</li>
-      <li>Wait for a maintenance window to automatically restart the instance or restart it manually.</li>
-    </ul>
-</TabItem>
-<TabItem value="azure" label="Azure Database">
-    <p>To enable logical replication on Azure Database for Postgres:</p>
-    <p>Change the replication mode of your Postgres DB on Azure to <code>logical</code> using the <code>Replication</code> menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:</p>
-    <pre><code>az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
-    az postgres server restart --resource-group group --name server</code></pre>
-</TabItem>
-</Tabs>
+
+To enable logical replication on AWS Postgres RDS or Aurora:
+* Go to the Configuration tab for your DB cluster.
+* Find your cluster parameter group. Either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy, change your cluster's parameter group before restarting.
+* Within the parameter group page, search for `rds.logical_replication`. Select this row and click Edit parameters. Set this value to 1.
+* Wait for a maintenance window to automatically restart the instance or restart it manually.
+
+To enable logical replication on Azure Database for Postgres, change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
+
+```
+az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
+az postgres server restart --resource-group group --name server
+```
 
 #### Step 4: Create a replication slot on your Postgres database
 
