@@ -12,7 +12,7 @@
           "type": "string"
         },
         "title": "Website URL Property",
-        "description": "The URLs of the website property attached to your GSC account. Can be a specific part of your website (URL-prefix) or the entire domain. Learn more about properties <a href=\"https://support.google.com/webmasters/answer/34592?hl=en\">here</a>.",
+        "description": "The URLs of the website property attached to your GSC account. Learn more about properties <a href=\"https://support.google.com/webmasters/answer/34592?hl=en\">here</a>.",
         "examples": ["https://example1.com/", "sc-domain:example2.com", "https://example3.com/clients"],
         "order": 0
       },
@@ -119,8 +119,8 @@
         "type": "string",
         "title": "Data State",
         "enum": ["final", "all"],
-        "description": "If set to 'final', the returned data will include only finalized, stable data. If set to 'all', 'fresh' data will be included. Setting this parameter to 'all' is not recommended with Incremental Sync mode as it may cause data loss. More information can be found in our <a href='https://docs.airbyte.com/integrations/source/google-search-console'>full documentation</a>.",
-        "examples": ["final"],
+        "description": "If set to 'final', the returned data will include only finalized, stable data. If set to 'all', fresh data will be included. When using Incremental sync mode, we do not recommend setting this parameter to 'all' as it may cause data loss. More information can be found in our <a href='https://docs.airbyte.com/integrations/source/google-search-console'>full documentation</a>.",
+        "examples": ["final", "all"],
         "default": "final",
         "order": 5
       }
