@@ -43,6 +43,14 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             if(project.hasProperty('airbyteDocker')) {
                 dependsOn project.airbyteDocker
+
+                // This is a hack to make intellij work better with our test setup.
+                // Many of our tests are defined as abstract classes in a shared base module,
+                // which means that you run the test methods from the abstract class in intellij.
+                // Intellij only runs `destination-xyz:integrationTestJavaClass` in this case,
+                // i.e. it does not run `destination-xyz:integrationTestJava`.
+                // So adding this dependency forces intellij to rebuild the docker image
+                // no matter how you run the test.
                 project.tasks.named('integrationTestJavaClasses') {
                     dependsOn project.airbyteDocker
                 }
