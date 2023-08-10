@@ -83,4 +83,7 @@ public class StandardNameTransformer implements NamingConventionTransformer {
     }
   }
 
+  public static void main(final String[] args) {
+    System.out.println(new StandardNameTransformer().convertStreamName("\u0041\u006d\u00e9\u006c\u0069\u0065"));
+  }
 }

@@ -16,6 +16,14 @@ function concatenateRawTableName(namespace, name) {
   return namespace + "_raw" + "_".repeat(longestUnderscoreRun + 1) + "stream_" + name;
 }
 
+// Taken from StandardNameTransformer
+function convertStreamName(str) {
+  return str.normalize('NFKD')
+    .replaceAll(/\p{M}/gu, "")
+    .replaceAll(/\s+/g, "_")
+    .replaceAll(/[^A-Za-z0-9_]/g, "_");
+}
+
 const SqlOutput = ({ destination, defaultMessage }) => {
   return (
     <pre id={ "sql_output_block_" + destination }>
@@ -25,10 +33,29 @@ const SqlOutput = ({ destination, defaultMessage }) => {
 };
 
 export const BigQueryMigrationGenerator = () => {
-  function generateSql(namespace, name) {
-    let v2RawTableName = '`' + concatenateRawTableName(namespace, name) + '`';
-    let v1RawTableName = '`' + namespace + '`.`_airbyte_raw_' + name + '`';
-    return `CREATE OR REPLACE TABLE \`airbyte_internal\`.${v2RawTableName} (
+  // See BigQuerySQLNameTransformer
+  function bigqueryConvertStreamName(str) {
+    str = convertStreamName(str);
+    if (str.charAt(0).match(/[A-Za-z_]/)) {
+      return str;
+    } else {
+      return "_" + str;
+    }
+  }
+  function escapeNamespace(namespace) {
+    namespace = convertStreamName(namespace);
+    if (!namespace.charAt(0).match(/[A-Za-z0-9]/)) {
+      namespace = "n" + namespace;
+    }
+    return namespace;
+  }
+
+  function generateSql(namespace, name, raw_dataset) {
+    let v2RawTableName = '`' + bigqueryConvertStreamName(concatenateRawTableName(namespace, name)) + '`';
+    let v1namespace = '`' + escapeNamespace(namespace) + '`';
+    let v1name = '`' + bigqueryConvertStreamName("_airbyte_raw_" + name) + '`';
+    return `CREATE SCHEMA IF NOT EXISTS ${raw_dataset};
+CREATE OR REPLACE TABLE \`${raw_dataset}\`.${v2RawTableName} (
   _airbyte_raw_id STRING NOT NULL,
   _airbyte_data JSON NOT NULL,
   _airbyte_extracted_at TIMESTAMP NOT NULL,
@@ -41,19 +68,31 @@ AS (
         PARSE_JSON(_airbyte_data) AS _airbyte_data,
         _airbyte_emitted_at AS _airbyte_extracted_at,
         CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
-    FROM ${v1RawTableName}
+    FROM ${v1namespace}.${v1name}
 )`;
   }
+
   return (
     <MigrationGenerator destination="bigquery" generateSql={generateSql}/>
   );
 }
 
 export const SnowflakeMigrationGenerator = () => {
-  function generateSql(namespace, name) {
-    let v2RawTableName = '"' + concatenateRawTableName(namespace, name) + '"';
-    let v1RawTableName = namespace + '._airbyte_raw_' + name;
-    return `CREATE OR REPLACE TABLE "airbyte_internal".${v2RawTableName} (
+  // See SnowflakeSQLNameTransformer
+  function snowflakeConvertStreamName(str) {
+    str = convertStreamName(str);
+    if (str.charAt(0).match(/[A-Za-z_]/)) {
+      return str;
+    } else {
+      return "_" + str;
+    }
+  }
+  function generateSql(namespace, name, raw_schema) {
+    let v2RawTableName = '"' + snowflakeConvertStreamName(concatenateRawTableName(namespace, name)) + '"';
+    let v1namespace = '"' + snowflakeConvertStreamName(namespace) + '"';
+    let v1name = '"' + snowflakeConvertStreamName("_airbyte_raw_" + name) + '"';
+    return `CREATE SCHEMA IF NOT EXISTS "${raw_schema}";
+CREATE OR REPLACE TABLE "${raw_schema}".${v2RawTableName} (
   "_airbyte_raw_id" STRING NOT NULL,
   "_airbyte_data" JSON NOT NULL,
   "_airbyte_extracted_at" TIMESTAMP NOT NULL,
@@ -66,7 +105,7 @@ AS (
         _airbyte_data AS "_airbyte_data",
         _airbyte_emitted_at AS "_airbyte_extracted_at",
         CAST(NULL AS TIMESTAMP) AS "_airbyte_loaded_at"
-    FROM ${v1RawTableName}
+    FROM ${v1namespace}.${v1name}
 )`;
   }
   return (
@@ -81,7 +120,11 @@ If your stream has no namespace, take the default value from the destination con
   function updateSql(event) {
     let namespace = document.getElementById("stream_namespace_" + destination).value;
     let name = document.getElementById("stream_name_" + destination).value;
-    let sql = generateSql(namespace, name);
+    var raw_dataset = document.getElementById("raw_dataset_" + destination).value;
+    if (raw_dataset == '') {
+      raw_dataset = 'airbyte_internal';
+    }
+    let sql = generateSql(namespace, name, raw_dataset);
     var output;
     if (namespace != "" && name != "") {
       output = sql;
@@ -96,6 +139,8 @@ If your stream has no namespace, take the default value from the destination con
       <input type="text" id={"stream_namespace_" + destination} onChange={ updateSql }/><br/>
       <label>Stream name </label>
       <input type="text" id={"stream_name_" + destination} onChange={ updateSql }/><br/>
+      <label>Raw table dataset/schema (defaults to <code>airbyte_internal</code>) </label>
+      <input type="text" id={"raw_dataset_" + destination} onChange={ updateSql }/><br/>
       <SqlOutput destination={destination} defaultMessage={ defaultMessage }/>
     </div>
   );
