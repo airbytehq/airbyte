@@ -145,6 +145,9 @@ def connector_spec_fixture(connector_spec_path) -> Optional[ConnectorSpecificati
 
 @pytest.fixture(scope="session")
 def anyio_backend():
+    """Determine the anyio backend to use for the tests.
+    anyio allows us to run async tests.
+    """
     return "asyncio"
 
 
