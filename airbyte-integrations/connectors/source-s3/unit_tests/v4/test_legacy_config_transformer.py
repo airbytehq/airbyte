@@ -47,6 +47,9 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "globs": ["a_folder/**/*.csv"],
                         "validation_policy": "Emit Record",
                         "input_schema": '{"col1": "string", "col2": "integer"}',
+                        "format": {
+                            "filetype": "csv",
+                        }
                     }
                 ]
             }
@@ -72,10 +75,42 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "file_type": "avro",
                         "globs": ["**/*.csv"],
                         "validation_policy": "Emit Record",
+                        "format": {
+                            "filetype": "avro",
+                        }
                     }
                 ]
             }
             , id="test_convert_no_optional_fields"
+        ),
+        pytest.param(
+            {
+                "dataset": "test_data",
+                "provider": {
+                    "storage": "S3",
+                    "bucket": "test_bucket",
+                },
+                "format": {
+                    "filetype": "parquet",
+                },
+                "path_pattern": "**/*.csv",
+            },
+            {
+                "bucket": "test_bucket",
+                "streams": [
+                    {
+                        "name": "test_data",
+                        "file_type": "parquet",
+                        "globs": ["**/*.csv"],
+                        "validation_policy": "Emit Record",
+                        "format": {
+                            "filetype": "parquet",
+                            "decimal_as_float": True,
+                        }
+                    }
+                ]
+            }
+            , id="test_convert_parquet_format"
         ),
     ]
 )
