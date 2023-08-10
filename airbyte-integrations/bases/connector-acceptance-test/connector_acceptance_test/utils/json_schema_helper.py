@@ -254,3 +254,12 @@ def flatten_tuples(to_flatten):
         else:
             types.add(thing)
     return tuple(types)
+
+
+def get_paths_in_connector_config(schema: dict) -> List[str]:
+    """
+    Traverse through the provided schema's values and extract the path_in_connector_config paths
+    :param properties: jsonschema containing values which may have path_in_connector_config attributes
+    :returns list of path_in_connector_config paths
+    """
+    return ["/" + "/".join(value["path_in_connector_config"]) for value in schema.values()]

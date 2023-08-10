@@ -58,12 +58,12 @@ def chunk_date_range(
     Currently this method returns `start_date` and `end_date` with `range_days` difference which is 15 days in most cases.
     """
     today = pendulum.today(tz=time_zone)
-    end_date = min(pendulum.parse(end_date), today) if end_date else today
-    start_date = pendulum.parse(start_date)
+    end_date = min(pendulum.parse(end_date, tz=time_zone), today) if end_date else today
+    start_date = pendulum.parse(start_date, tz=time_zone)
 
     # For some metrics we can only get data not older than N days, it is Google Ads policy
     if days_of_data_storage:
-        start_date = max(start_date, pendulum.now().subtract(days=days_of_data_storage - conversion_window))
+        start_date = max(start_date, pendulum.now(tz=time_zone).subtract(days=days_of_data_storage - conversion_window))
 
     # As in to return some state when state in abnormal
     if start_date > end_date:

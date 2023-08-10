@@ -13,13 +13,15 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
+avro_dependency = "avro~=1.11.2"
+fastavro_dependency = "fastavro~=1.8.0"
 pyarrow_dependency = "pyarrow==12.0.1"
 
 setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.47.0",
+    version="0.50.2",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -48,7 +50,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
-        "airbyte-protocol-models==0.3.6",
+        "airbyte-protocol-models==0.4.0",
         "backoff",
         "dpath~=2.0.1",
         "isodate~=0.6.1",
@@ -56,7 +58,7 @@ setup(
         "jsonref~=0.2",
         "pendulum",
         "genson==1.2.2",
-        "pydantic~=1.9.2",
+        "pydantic>=1.9.2,<2.0.0",
         "python-dateutil",
         "PyYAML>=6.0.1",
         "requests",
@@ -69,6 +71,8 @@ setup(
     python_requires=">=3.8",
     extras_require={
         "dev": [
+            avro_dependency,
+            fastavro_dependency,
             "freezegun",
             "mypy",
             "pytest",
@@ -84,6 +88,8 @@ setup(
             "sphinx-rtd-theme~=1.0",
         ],
         "file-based": [
+            avro_dependency,
+            fastavro_dependency,
             pyarrow_dependency,
         ],
     },

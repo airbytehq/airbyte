@@ -7,7 +7,7 @@ data:
   connectorType: source
   maxSecondsBetweenMessages: 10800
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 0.10.1
+  dockerImageTag: 0.10.6
   dockerRepository: airbyte/source-zendesk-support
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
@@ -15,7 +15,6 @@ data:
   name: Zendesk Support
   registries:
     cloud:
-      dockerImageTag: 0.10.0  # Fixing P0 https://github.com/airbytehq/oncall/issues/2530
       enabled: true
     oss:
       enabled: true
@@ -23,4 +22,8 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   tags:
     - language:python
+  ab_internal:
+    sl: 300
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"
