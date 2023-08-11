@@ -459,6 +459,10 @@ module.exports = {
       type: "doc",
       id: "troubleshooting",
     },
+    {
+      type: 'doc',
+      id: 'airbyte-pro',
+    },
     sectionHeader("Developer Guides"),
     {
       type: "doc",
