@@ -94,7 +94,7 @@ def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
 
 
 @pytest.fixture(name="configured_catalog")
-async def configured_catalog_fixture(
+def configured_catalog_fixture(
     configured_catalog_path: Optional[str],
     discovered_catalog: MutableMapping[str, AirbyteStream],
 ) -> ConfiguredAirbyteCatalog:

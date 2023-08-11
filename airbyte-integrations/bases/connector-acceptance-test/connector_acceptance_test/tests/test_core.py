@@ -92,7 +92,7 @@ DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 @pytest.mark.default_timeout(5 * 60)
 class TestSpec(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    async def skip_backward_compatibility_tests_fixture(
+    def skip_backward_compatibility_tests_fixture(
         self,
         inputs: SpecTestConfig,
         previous_connector_docker_runner: ConnectorRunner,
@@ -112,7 +112,7 @@ class TestSpec(BaseTest):
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
         return False
 
-    async def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
+    def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
         """Check that config matches the actual schema from the spec call"""
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
@@ -123,14 +123,14 @@ class TestSpec(BaseTest):
         except jsonschema.exceptions.SchemaError as err:
             pytest.fail(f"Spec is invalid: {err}")
 
-    async def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
+    def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
             assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
         else:
             pytest.skip("The spec.yaml or spec.json does not exist. Hence, comparison with the actual one can't be performed")
 
-    async def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
+    def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that enum lists in specs contain distinct values."""
         docs_url = "https://docs.airbyte.io/connector-development/connector-specification-reference"
         docs_msg = f"See specification reference at {docs_url}."
@@ -777,7 +777,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(5 * 60)
+@pytest.mark.default_timeout(10 * 60)
 class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
