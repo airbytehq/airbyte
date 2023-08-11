@@ -18,7 +18,7 @@
     "default_settings": {
       "properties": {
         "invoice_settings": {
-          "type": ["string", "null"]
+          "type": ["string", "null", "object"]
         }
       }
     },
@@ -26,7 +26,7 @@
       "items": {
         "properties": {
           "invoice_settings": {
-            "type": ["string", "null"]
+            "type": ["string", "null", "object"]
           },
           "add_invoice_items": {
             "items": {
