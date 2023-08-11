@@ -88,7 +88,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
 
 
 @pytest.mark.parametrize(
-    "file_type,legacy_format_config,expected_format_config",
+    "file_type,legacy_format_config,expected_format_config, expected_error",
     [
         pytest.param(
             "csv",
@@ -101,6 +101,8 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "encoding": "ansi",
                 "double_quote": False,
                 "newlines_in_values": True,
+                "additional_reader_options": "{\"strings_can_be_null\": true}",
+                "advanced_options": "{\"skip_rows\": 3, \"skip_rows_after_names\": 5, \"autogenerate_column_names\": true}",
                 "blocksize": 20000,
             },
             {
@@ -115,8 +117,12 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "false_values": ["n", "no", "f", "false", "off", "0"],
                 "inference_type": "None",
                 "strings_can_be_null": True,
-            }
-            , id="test_csv_all_legacy_options_set"),
+                "skip_rows_before_header": 3,
+                "skip_rows_after_header": 5,
+                "autogenerate_column_names": True,
+            },
+            None,
+            id="test_csv_all_legacy_options_set"),
         pytest.param(
             "csv",
             {
@@ -136,9 +142,10 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "true_values": ["y", "yes", "t", "true", "on", "1"],
                 "false_values": ["n", "no", "f", "false", "off", "0"],
                 "inference_type": "Primitive Types Only",
-                "strings_can_be_null": True,
-            }
-            , id="test_csv_only_required_options"),
+                "strings_can_be_null": False,
+            },
+            None,
+            id="test_csv_only_required_options"),
         pytest.param(
             "csv",
             {},
@@ -152,9 +159,26 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "true_values": ["y", "yes", "t", "true", "on", "1"],
                 "false_values": ["n", "no", "f", "false", "off", "0"],
                 "inference_type": "Primitive Types Only",
-                "strings_can_be_null": True,
-            }
-            , id="test_csv_empty_format"),
+                "strings_can_be_null": False,
+            },
+            None,
+            id="test_csv_empty_format"),
+        pytest.param(
+            "csv",
+            {
+                "additional_reader_options": "{\"not_valid\": \"at all}",
+            },
+            None,
+            ValueError,
+            id="test_malformed_additional_reader_options"),
+        pytest.param(
+            "csv",
+            {
+                "advanced_options": "{\"not_valid\": \"at all}",
+            },
+            None,
+            ValueError,
+            id="test_malformed_advanced_options"),
         pytest.param(
             "jsonl",
             {
@@ -165,8 +189,9 @@ def test_convert_legacy_config(legacy_config, expected_config):
             },
             {
                 "filetype": "jsonl"
-            }
-            , id="test_jsonl_format"),
+            },
+            None,
+            id="test_jsonl_format"),
         pytest.param(
             "parquet",
             {
@@ -177,8 +202,9 @@ def test_convert_legacy_config(legacy_config, expected_config):
             },
             {
                 "filetype": "parquet"
-            }
-            , id="test_parquet_format"),
+            },
+            None,
+            id="test_parquet_format"),
         pytest.param(
             "avro",
             {
@@ -186,11 +212,12 @@ def test_convert_legacy_config(legacy_config, expected_config):
             },
             {
                 "filetype": "avro"
-            }
-            , id="test_avro_format"),
+            },
+            None,
+            id="test_avro_format"),
     ]
 )
-def test_convert_file_format(file_type, legacy_format_config, expected_format_config):
+def test_convert_file_format(file_type, legacy_format_config, expected_format_config, expected_error):
     legacy_config = {
         "dataset": "test_data",
         "provider": {
@@ -220,6 +247,10 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
     }
 
     parsed_legacy_config = SourceS3Spec(**legacy_config)
-    actual_config = LegacyConfigTransformer.convert(parsed_legacy_config)
 
-    assert actual_config == expected_config
+    if expected_error:
+        with pytest.raises(expected_error):
+            LegacyConfigTransformer.convert(parsed_legacy_config)
+    else:
+        actual_config = LegacyConfigTransformer.convert(parsed_legacy_config)
+        assert actual_config == expected_config
