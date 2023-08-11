@@ -95,10 +95,10 @@ class AbstractFileBasedStream(Stream):
         This method acts as an adapter between the generic Stream interface and the file-based's
         stream since file-based streams manage their own states.
         """
-        return self.compute_slices()
+        return [s.to_dict() for s in self.compute_slices() if s]
 
     @abstractmethod
-    def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
+    def compute_slices(self) -> Iterable[StreamSlice]:
         """
         Return a list of slices that will be used to read files in the current sync.
         :return: The slices to use for the current sync.

@@ -21,6 +21,9 @@ class StreamSlice:
     def get_files(self) -> List[RemoteFile]:
         return self._remotes_files
 
+    def to_dict(self) -> Mapping[str, Any]:
+        return {"files": [f for f in self._remotes_files]}
+
 
 from pydantic import BaseModel, Field
 
