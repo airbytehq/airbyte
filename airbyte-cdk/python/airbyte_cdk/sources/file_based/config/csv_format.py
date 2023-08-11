@@ -20,7 +20,6 @@ class QuotingBehavior(Enum):
 class InferenceType(Enum):
     NONE = "None"
     PRIMITIVE_TYPES_ONLY = "Primitive Types Only"
-    PRIMITIVE_AND_COMPLEX_TYPES = "Primitive and Complex Types"
 
 
 DEFAULT_TRUE_VALUES = ["y", "yes", "t", "true", "on", "1"]

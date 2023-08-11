@@ -131,12 +131,7 @@ class CsvParser(FileTypeParser):
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
         config_format = _extract_format(config)
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
-            lambda: _JsonTypeInferrer(
-                config_format.true_values,
-                config_format.false_values,
-                config_format.null_values,
-                config_format.inference_type == InferenceType.PRIMITIVE_AND_COMPLEX_TYPES,
-            )
+            lambda: _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
             if config_format.inference_type != InferenceType.NONE
             else _DisabledTypeInferrer()
         )
@@ -286,17 +281,12 @@ class _JsonTypeInferrer(_TypeInferrer):
     _BOOLEAN_TYPE = "boolean"
     _INTEGER_TYPE = "integer"
     _NUMBER_TYPE = "number"
-    _ARRAY_TYPE = "array"
-    _OBJECT_TYPE = "object"
     _STRING_TYPE = "string"
 
-    def __init__(
-        self, boolean_trues: Set[str], boolean_falses: Set[str], null_values: Set[str], allow_for_objects_and_arrays: bool
-    ) -> None:
+    def __init__(self, boolean_trues: Set[str], boolean_falses: Set[str], null_values: Set[str]) -> None:
         self._boolean_trues = boolean_trues
         self._boolean_falses = boolean_falses
         self._null_values = null_values
-        self._allow_for_objects_and_arrays = allow_for_objects_and_arrays
         self._values: Set[str] = set()
 
     def add_value(self, value: Any) -> None:
@@ -316,12 +306,6 @@ class _JsonTypeInferrer(_TypeInferrer):
             return self._INTEGER_TYPE
         elif self._NUMBER_TYPE in types:
             return self._NUMBER_TYPE
-        elif not self._allow_for_objects_and_arrays:
-            return self._STRING_TYPE
-        elif self._ARRAY_TYPE in types:
-            return self._ARRAY_TYPE
-        elif any(self._OBJECT_TYPE in _type for _type in types_by_value.values()):
-            return self._OBJECT_TYPE
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> Set[str]:
@@ -336,14 +320,6 @@ class _JsonTypeInferrer(_TypeInferrer):
             inferred_types.add(self._NUMBER_TYPE)
         elif self._is_number(value):
             inferred_types.add(self._NUMBER_TYPE)
-
-        # if it can be infered as a primitive, it can't be a complex type so we'll avoid json parsing
-        if not inferred_types:
-            if self._is_array(value):
-                inferred_types.add(self._ARRAY_TYPE)
-                inferred_types.add(self._OBJECT_TYPE)
-            elif self._is_object(value):
-                inferred_types.add(self._OBJECT_TYPE)
 
         inferred_types.add(self._STRING_TYPE)
         return inferred_types
@@ -371,22 +347,6 @@ class _JsonTypeInferrer(_TypeInferrer):
         except ValueError:
             return False
 
-    @staticmethod
-    def _is_array(value: str) -> bool:
-        try:
-            _value_to_list(value)
-            return True
-        except (ValueError, json.JSONDecodeError):
-            return False
-
-    @staticmethod
-    def _is_object(value: str) -> bool:
-        try:
-            _value_to_object(value)
-            return True
-        except (ValueError, json.JSONDecodeError):
-            return False
-
 
 def _value_to_bool(value: str, true_values: Set[str], false_values: Set[str]) -> bool:
     if value in true_values:
@@ -394,13 +354,6 @@ def _value_to_bool(value: str, true_values: Set[str], false_values: Set[str]) ->
     if value in false_values:
         return False
     raise ValueError(f"Value {value} is not a valid boolean value")
-
-
-def _value_to_object(value: str) -> Dict[Any, Any]:
-    parsed_value = json.loads(value)
-    if isinstance(parsed_value, dict):
-        return parsed_value
-    raise ValueError(f"Value {parsed_value} is not a valid dict value")
 
 
 def _value_to_list(value: str) -> List[Any]:

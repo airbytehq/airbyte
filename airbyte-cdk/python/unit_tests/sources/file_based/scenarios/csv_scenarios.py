@@ -140,7 +140,6 @@ single_csv_scenario = (
                                                     "enum": [
                                                         "None",
                                                         "Primitive Types Only",
-                                                        "Primitive and Complex Types",
                                                     ]
                                                 },
                                                 "delimiter": {
