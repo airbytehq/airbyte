@@ -85,7 +85,7 @@ def test_streams(requests_mock, config):
 
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 29
+    assert len(streams) == 30
 
 
 def test_check_credential_title_exception(config):
