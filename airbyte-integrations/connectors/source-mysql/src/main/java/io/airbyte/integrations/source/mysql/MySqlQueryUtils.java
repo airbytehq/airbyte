@@ -17,13 +17,13 @@ import org.slf4j.LoggerFactory;
 
 public class MySqlQueryUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlQueryUtils.class);
-  public record TableSizeInfo(Long tableSize, Long numRows) { }
+  public record TableSizeInfo(Long tableSize, Long avgRowLength) { }
 
   public static final String TABLE_ESTIMATE_QUERY =
       """
       SELECT
         (data_length + index_length) as %s,
-        table_rows as %s
+        AVG_ROW_LENGTH as %s
      FROM
         information_schema.tables
      WHERE
@@ -31,7 +31,7 @@ public class MySqlQueryUtils {
       """;
 
   public static final String TABLE_SIZE_BYTES_COL = "TotalSizeBytes";
-  public static final String TABLE_ROWS_ESTIMATE_COL = "TABLE_ROWS";
+  public static final String AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
 
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
       final List<ConfiguredAirbyteStream> streams,
@@ -46,9 +46,9 @@ public class MySqlQueryUtils {
         final List<JsonNode> tableEstimateResult = getTableEstimate(database, namespace, name);
         Preconditions.checkState(tableEstimateResult.size() == 1);
         final long tableEstimateBytes = tableEstimateResult.get(0).get(TABLE_SIZE_BYTES_COL).asLong();
-        final long tableEstimateRows = tableEstimateResult.get(0).get(TABLE_ROWS_ESTIMATE_COL).asLong();
-        LOGGER.info("Stream {} size estimate is {}, row estimate is {}", fullTableName, tableEstimateBytes, tableEstimateRows);
-        final TableSizeInfo tableSizeInfo = new TableSizeInfo(tableEstimateBytes, tableEstimateRows);
+        final long avgTableRowSizeBytes = tableEstimateResult.get(0).get(AVG_ROW_LENGTH).asLong();
+        LOGGER.info("Stream {} size estimate is {}, average row size estimate is {}", fullTableName, tableEstimateBytes, avgTableRowSizeBytes);
+        final TableSizeInfo tableSizeInfo = new TableSizeInfo(tableEstimateBytes, avgTableRowSizeBytes);
         final AirbyteStreamNameNamespacePair namespacePair =
             new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
         tableSizeInfoMap.put(namespacePair, tableSizeInfo);
@@ -63,7 +63,7 @@ public class MySqlQueryUtils {
       throws SQLException {
     // Construct the table estimate query.
     final String tableEstimateQuery =
-        String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, TABLE_ROWS_ESTIMATE_COL, namespace, name);
+        String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, AVG_ROW_LENGTH, namespace, name);
     LOGGER.info("table estimate query: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));

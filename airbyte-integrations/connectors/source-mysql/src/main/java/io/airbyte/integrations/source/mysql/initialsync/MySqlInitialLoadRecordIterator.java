@@ -34,10 +34,10 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   private final List<String> columnNames;
   private final AirbyteStreamNameNamespacePair pair;
   private final JdbcDatabase database;
+  // Represents the number of rows to get with each query.
   private final long chunkSize;
   private final PrimaryKeyInfo pkInfo;
   private int numSubqueries = 0;
-
   private AutoCloseableIterator<JsonNode> currentIterator;
 
   MySqlInitialLoadRecordIterator(
@@ -67,6 +67,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> getPkPreparedStatement(connection), sourceOperations::rowToJson);
 
+        // Previous stream (and connection) must be manually closed in this iterator.
         if (currentIterator != null) {
           currentIterator.close();
         }

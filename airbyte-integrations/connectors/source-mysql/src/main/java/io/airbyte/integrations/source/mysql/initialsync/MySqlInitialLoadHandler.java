@@ -85,7 +85,8 @@ public class MySqlInitialLoadHandler {
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .collect(Collectors.toList());
         final AutoCloseableIterator<JsonNode> queryStream =
-            new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair, 20_000);
+            new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
+                calculateChunkSize(tableSizeInfoMap.get(tableSizeInfoMap)));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -97,18 +98,11 @@ public class MySqlInitialLoadHandler {
     return iteratorList;
   }
 
-  private static SubQueryPlan calculateSubQueryPlan(final TableSizeInfo tableSizeInfo, final PrimaryKeyLoadStatus initialLoadStatus,
-      final AirbyteStreamNameNamespacePair airbyteStream) {
+  // Calculates the number of rows to fetch per query.
+  private static long calculateChunkSize(final TableSizeInfo tableSizeInfo) {
     // TODO : Implement this method based on the sub query plan size, table size info and number of rows already synced?
     // TODO : For testing purposes. this needs to be higher than the intermediate emission frequency
-    return new SubQueryPlan(50_000L, 1_000L);
-    /*if (tableSizeInfo == null) {
-      LOGGER.info("Could not determine table size info for stream {}" + airbyteStream);
-      return new SubQueryPlan(50_000L, 3L);
-    }
-
-    final long numRowsAlreadySynced = initialLoadStatus.getNumRowsSynced();
-    final long num*/
+    return 20_000L;
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
@@ -161,6 +155,4 @@ public class MySqlInitialLoadHandler {
             syncCheckpointDuration, syncCheckpointRecords),
         recordIterator, pair);
   }
-
-  public record SubQueryPlan(Long limitSize, Long numQueries) { }
 }

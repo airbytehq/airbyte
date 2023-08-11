@@ -69,7 +69,6 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
       return toUnsafeStream(statement.executeQuery(), recordTransform, streamingConfig)
           .onClose(() -> {
             try {
-              LOGGER.info("Closing stream for statement: {}", statement);
               connection.setAutoCommit(true);
               connection.close();
               if (isStreamFailed) {
