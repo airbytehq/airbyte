@@ -7,11 +7,6 @@ data:
       enabled: false
     cloud:
       enabled: false
-  registries:
-    oss:
-      enabled: false
-    cloud:
-      enabled: false
   connectorSubtype: api
   connectorType: source
   definitionId: 2bb7cf88-4f8c-468d-bde0-a5377827069d
