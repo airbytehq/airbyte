@@ -73,7 +73,8 @@ public class StagingConsumerFactory {
                                        final boolean purgeStagingData,
                                        final TypeAndDedupeOperationValve typerDeduperValve,
                                        final TyperDeduper typerDeduper,
-                                       final ParsedCatalog parsedCatalog) {
+                                       final ParsedCatalog parsedCatalog,
+                                       final String defaultNamespace) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -84,7 +85,8 @@ public class StagingConsumerFactory {
             SerialFlush.function(database, stagingOperations, writeConfigs, catalog, typerDeduperValve, typerDeduper)),
         GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper),
         catalog,
-        stagingOperations::isValidData);
+        stagingOperations::isValidData,
+        defaultNamespace);
   }
 
   public SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
@@ -94,9 +96,10 @@ public class StagingConsumerFactory {
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog,
                                                       final boolean purgeStagingData,
-                                                      TypeAndDedupeOperationValve typerDeduperValve,
+                                                      final TypeAndDedupeOperationValve typerDeduperValve,
                                                       final TyperDeduper typerDeduper,
-                                                      final ParsedCatalog parsedCatalog) {
+                                                      final ParsedCatalog parsedCatalog,
+                                                      final String defaultNamespace) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper);
@@ -107,7 +110,8 @@ public class StagingConsumerFactory {
         () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
         flusher,
         catalog,
-        new BufferManager());
+        new BufferManager(),
+        defaultNamespace);
   }
 
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {

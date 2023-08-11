@@ -53,9 +53,17 @@ class SnowflakeInternalStagingSqlOperationsTest {
 
   @Test
   void copyIntoTmpTableFromStage() {
-    final String expectedQuery = "COPY INTO schemaName.tableName FROM '@" + STAGE_NAME + "/" + STAGE_PATH + "' "
-        + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF=('') ) "
-        + "files = ('filename1','filename2');";
+    final String expectedQuery =
+        """
+        COPY INTO schemaName.tableName FROM '@stageName/stagePath/2022/'
+        file_format = (
+          type = csv
+          compression = auto
+          field_delimiter = ','
+          skip_header = 0
+          FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+          NULL_IF=('')
+        ) files = ('filename1','filename2');""";
     final String actualCopyQuery =
         snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
     assertEquals(expectedQuery, actualCopyQuery);
