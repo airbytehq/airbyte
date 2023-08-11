@@ -29,14 +29,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
-from source_hubspot.errors import (
-    HubspotAccessDenied,
-    HubspotBadRequest,
-    HubspotInvalidAuth,
-    HubspotRateLimited,
-    HubspotTimeout,
-    InvalidStartDateConfigError,
-)
+from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
@@ -194,10 +187,10 @@ class API:
 
         if response.status_code == HTTPStatus.BAD_REQUEST:
             message = f"Request to {response.url} didn't succeed. Please verify your credentials and try again.\nError message from Hubspot API: {message}"
-            raise HubspotBadRequest(internal_message=message, failure_type=FailureType.config_error, response=response)
+            logger.warning(message)
         elif response.status_code == HTTPStatus.FORBIDDEN:
             message = f"The authenticated user does not have permissions to access the URL {response.url}. Verify your permissions to access this endpoint."
-            raise HubspotAccessDenied(internal_message=message, failure_type=FailureType.config_error, response=response)
+            logger.warning(message)
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             message = (
                 "The user cannot be authorized with provided credentials. Please verify that your credentails are valid and try again."
@@ -205,10 +198,9 @@ class API:
             raise HubspotInvalidAuth(internal_message=message, failure_type=FailureType.config_error, response=response)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
             retry_after = response.headers.get("Retry-After")
+            message = f"You have reached your Hubspot API limit. We will resume replication once after {retry_after} seconds.\nSee https://developers.hubspot.com/docs/api/usage-details"
             raise HubspotRateLimited(
-                internal_message=f"You have reached your Hubspot API limit. We will resume replication once after {retry_after} seconds."
-                " See https://developers.hubspot.com/docs/api/usage-details",
-                failure_type=FailureType.config_error,
+                message,
                 response=response,
             )
         elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
