@@ -86,14 +86,14 @@ spec:
     properties:
       api_key:
         type: string
-        title: api_key
+        title: API Key
         order: 0
-        description: Chargify API Key.
+        description: Maxio Advanced Billing/Chargify API Key.
         airbyte_secret: true
       domain:
         type: string
         order: 1
-        title: domain
+        title: Domain
         description: >-
           Chargify domain. Normally this domain follows the following format
           companyname.chargify.com
