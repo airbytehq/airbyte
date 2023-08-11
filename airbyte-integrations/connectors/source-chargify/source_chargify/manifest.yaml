@@ -89,6 +89,7 @@ spec:
         title: api_key
         order: 0
         description: Chargify API Key.
+        airbyte_secret: true
       domain:
         type: string
         order: 1
