@@ -212,7 +212,7 @@ class CsvParser(FileTypeParser):
                     raise ValueError(f"Could not get non nullable type from {prop_type}")
                 (prop_type,) = prop_type_distinct
 
-            if prop_type in TYPE_PYTHON_MAPPING and prop_type is not None:
+            if prop_type in TYPE_PYTHON_MAPPING:
                 _, python_type = TYPE_PYTHON_MAPPING[prop_type]
 
                 if python_type is None:
