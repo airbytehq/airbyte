@@ -14,11 +14,11 @@ acceptance_tests:
       timeout_seconds: 60
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+    - config_path: "integration_tests/invalid_config_custom_report.json"
+      status: "failed"
   discovery:
     tests:
     - config_path: "secrets/config_oauth.json"
-      backward_compatibility_tests_config:
-        disable_for_version: 0.2.1 # new fields added to schemas: `Campaigns`, 'Campaign_Groups', `Creatives`
       timeout_seconds: 60
   basic_read:
     tests:

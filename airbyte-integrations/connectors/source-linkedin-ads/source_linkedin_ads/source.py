@@ -85,21 +85,37 @@ class SourceLinkedinAds(AbstractSource):
         Passing config to the streams.
         """
         config["authenticator"] = self.get_authenticator(config)
-        return [
+        streams = [
             Accounts(config),
             AccountUsers(config),
-            AdCampaignAnalytics(config),
-            AdCreativeAnalytics(config),
-            AdImpressionDeviceAnalytics(config),
-            AdMemberCompanySizeAnalytics(config),
-            AdMemberCountryAnalytics(config),
-            AdMemberJobFunctionAnalytics(config),
-            AdMemberJobTitleAnalytics(config),
-            AdMemberIndustryAnalytics(config),
-            AdMemberSeniorityAnalytics(config),
-            AdMemberRegionAnalytics(config),
-            AdMemberCompanyAnalytics(config),
-            CampaignGroups(config),
-            Campaigns(config),
-            Creatives(config),
+            AdCampaignAnalytics(config=config),
+            AdCreativeAnalytics(config=config),
+            AdImpressionDeviceAnalytics(config=config),
+            AdMemberCompanySizeAnalytics(config=config),
+            AdMemberCountryAnalytics(config=config),
+            AdMemberJobFunctionAnalytics(config=config),
+            AdMemberJobTitleAnalytics(config=config),
+            AdMemberIndustryAnalytics(config=config),
+            AdMemberSeniorityAnalytics(config=config),
+            AdMemberRegionAnalytics(config=config),
+            AdMemberCompanyAnalytics(config=config),
+            CampaignGroups(config=config),
+            Campaigns(config=config),
+            Creatives(config=config),
         ]
+
+        return streams + self.get_custom_ad_analytics_reports(config)
+
+    def get_custom_ad_analytics_reports(self, config) -> List[Stream]:
+        streams = []
+
+        for ad_report in config.get("ad_analytics_reports", []):
+            stream = AdCampaignAnalytics(
+                name=f"Custom{ad_report.get('name')}",
+                pivot_by=ad_report.get("pivot_by"),
+                time_granularity=ad_report.get("time_granularity"),
+                config=config,
+            )
+            streams.append(stream)
+
+        return streams
