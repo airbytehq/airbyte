@@ -18,7 +18,13 @@ At launch, [Airbyte Destinations V2](/release_notes/upgrading_to_destinations_v2
 "Per-row error handling" is a new paradigm for Airbyte which provides greater flexibility for our users. as We have now separated `data-moving errors` from `data-quality errors`. Prior to Destinations V2, both types of errors were handled the same way: by failing the sync. Now, a failing sync meas that Airbyte could not _move_ all of your data, and you can query the `_airbyte_meta` column to see which rows failed for _content_ reasons, and why. This is a more flexible approach, as you can now decide how to handle rows with errors on a case-by-case basis.
 
 :::tip
-When using a V2 destination for most use cases, it is recommended that you include only rows which do not have an error, e.g `SELECT COUNT(*) FROM _table_ WHERE json_array_length(_airbyte_meta ->> errors) = 0` (postgres syntax).
+When using a V2 destination for most use cases, it is recommended that you include only rows which do not have an error, e.g:
+
+```sql
+-- postgres syntax
+SELECT COUNT(\*) FROM _table_ WHERE json_array_length(\_airbyte_meta ->> errors) = 0
+```
+
 :::
 
 The types of errors which will be stored in `_airbyte_meta.errors` include:
