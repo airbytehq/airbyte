@@ -23,7 +23,7 @@ class LegacyConfigTransformer:
 
     @classmethod
     def convert(cls, legacy_config: SourceS3Spec) -> Mapping[str, Any]:
-        format_config = LegacyConfigTransformer._create_format_config(legacy_config.format)
+        format_config = LegacyConfigTransformer._transform_file_format(legacy_config.format)
         transformed_config = {
             "bucket": legacy_config.provider.bucket,
             "streams": [
@@ -65,39 +65,18 @@ class LegacyConfigTransformer:
             raise e
 
     @classmethod
-    def _create_format_config(cls, file_format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat]) -> Mapping[str, Any]:
-        if isinstance(file_format, CsvFormat):
-            return cls._create_csv_format_config(file_format)
-        elif isinstance(file_format, ParquetFormat):
-            return cls._create_parquet_format_config(file_format)
-        elif isinstance(file_format, AvroFormat):
-            return cls._create_avro_format_config(file_format)
-        elif isinstance(file_format, JsonlFormat):
-            return cls._create_jsonl_format_config(file_format)
+    def _transform_file_format(cls, format_options: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat]) -> Mapping[str, Any]:
+        if isinstance(format_options, AvroFormat):
+            return {"filetype": "avro"}
+        elif isinstance(format_options, CsvFormat):
+            return {"filetype": "csv"}
+        elif isinstance(format_options, JsonlFormat):
+            return {"filetype": "jsonl"}
+        elif isinstance(format_options, ParquetFormat):
+            return {
+                "filetype": "parquet",
+                "decimal_as_float": True
+            }
         else:
-            raise ValueError(f"Unsupported file format: {file_format}")
-
-    @classmethod
-    def _create_csv_format_config(cls, csv_format: CsvFormat):
-        return {
-            "filetype": "csv",
-        }
-
-    @classmethod
-    def _create_parquet_format_config(cls, parquet_format: ParquetFormat):
-        return {
-            "filetype": "parquet",
-            "decimal_as_float": True
-        }
-
-    @classmethod
-    def _create_avro_format_config(cls, avro_format: AvroFormat):
-        return {
-            "filetype": "avro",
-        }
-
-    @classmethod
-    def _create_jsonl_format_config(cls, jsonl_format: JsonlFormat):
-        return {
-            "filetype": "jsonl",
-        }
+            # This should never happen because it would fail schema validation
+            raise ValueError(f"Format filetype {format_options} is not a supported file type")
