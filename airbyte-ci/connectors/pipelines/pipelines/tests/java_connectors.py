@@ -27,7 +27,11 @@ class IntegrationTest(GradleTask):
 
     @property
     def title(self) -> str:
-        return f"./gradlew :airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
+        return (
+            "Integration Tests "
+            "(./gradlew :airbyte-integrations:connectors:"
+            f"{self.context.connector.technical_name}:{self.gradle_task_name})"
+        )
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"

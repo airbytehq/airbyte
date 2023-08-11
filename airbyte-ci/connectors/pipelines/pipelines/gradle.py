@@ -8,10 +8,11 @@ from abc import ABC
 from typing import ClassVar, List, Tuple
 
 from dagger import CacheVolume, Container, Directory, QueryError
+
 from pipelines import consts
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
-
+from pipelines.contexts import PipelineContext
 
 class GradleTask(Step, ABC):
     """
@@ -25,6 +26,13 @@ class GradleTask(Step, ABC):
     DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
+
+    def __init__(
+            self, context: PipelineContext,
+            with_java_cdk_snapshot: bool = True
+    ) -> None:
+        super().__init__(context)
+        self.with_java_cdk_snapshot = with_java_cdk_snapshot
 
     @property
     def connector_java_build_cache(self) -> CacheVolume:
@@ -71,15 +79,23 @@ class GradleTask(Step, ABC):
         return command
 
     async def _run(self) -> StepResult:
+        includes = self.build_include
+        if self.with_java_cdk_snapshot:
+            includes + ["./airbyte-cdk/java/airbyte-cdk/**"]
+
         connector_under_test = (
-            environments.with_gradle(self.context, self.build_include, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
+            environments.with_gradle(self.context, includes, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_mounted_directory("buildSrc", await self._get_patched_build_src_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             .with_(environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets"))
-            .with_exec(self._get_gradle_command())
         )
+        if self.with_java_cdk_snapshot:
+            connector_under_test = connector_under_test.with_exec(
+                ["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishToMavenLocal"]
+            )
+        connector_under_test = connector_under_test.with_exec(self._get_gradle_command())
 
         results = await self.get_step_result(connector_under_test)
 

@@ -249,7 +249,7 @@ def checkCDKJarExists(requiredSnapshotVersion) {
 
     def cdkJar = file("${System.properties['user.home']}/.m2/repository/io/airbyte/airbyte-cdk/${cdkTargetVersion}/airbyte-cdk-${cdkTargetVersion}.jar")
     if (!cdkJar.exists()) {
-        throw new GradleException("CDK JAR does not exist at ${cdkJar.path}.\nPlease run './gradlew :airbyte-cdk:java:airbyte-cdk:build'.")
+        println("WARNING: CDK JAR does not exist at ${cdkJar.path}.\nPlease run './gradlew :airbyte-cdk:java:airbyte-cdk:build'.")
     }
     if (checkFileChanges) {
         def latestJavaFileTimestamp = getLatestFileModifiedTimeFromFiles(file("${rootDir}/airbyte-cdk/java/airbyte-cdk/src").listFiles().findAll { it.isFile() })
