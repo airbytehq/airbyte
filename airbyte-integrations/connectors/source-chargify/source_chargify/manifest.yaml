@@ -1,4 +1,4 @@
-version: 0.50.2
+version: 0.29.0
 type: DeclarativeSource
 
 definitions:
@@ -7,6 +7,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
+        - "*"
         - "{{ parameters.field_path }}"
 
   paginator:
@@ -23,7 +24,7 @@ definitions:
       type: PageIncrement
       page_size: 200
       start_from_page: 1
-      
+
   requester:
     type: HttpRequester
     url_base: "https://{{ config['domain'] }}/"
@@ -31,8 +32,8 @@ definitions:
     http_method: "GET"
     authenticator:
       type: BasicHttpAuthenticator
-      password: 'x'
-      username: '{{ config[''api_key''] }}'
+      password: "x"
+      username: "{{ config['api_key'] }}"
 
   retriever:
     type: SimpleRetriever
