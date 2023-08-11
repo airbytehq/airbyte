@@ -2,15 +2,15 @@
 
 ## Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes                                                                 |
-| :---------------------------- | :------------------- | :-------------------------------------------------------------------- |
-| Full Refresh Sync             | Yes                  |                                                                       |
-| Incremental - Append Sync     | Yes                  |                                                                       |
-| Incremental - Deduped History | Yes                  |                                                                       |
-| Namespaces                    | Yes                  |                                                                       |
-| Basic Normalization           | Yes                  | Doesn't support for nested json yet                                   |
-| SSH Tunnel Connection         | Yes                  |                                                                       |
-| Encryption                    | Yes                  | Support Native Network Encryption (NNE) as well as TLS using SSL cert |
+| Feature                        | Supported?\(Yes/No\) | Notes                                                                 |
+| :----------------------------- | :------------------- | :-------------------------------------------------------------------- |
+| Full Refresh Sync              | Yes                  |                                                                       |
+| Incremental - Append Sync      | Yes                  |                                                                       |
+| Incremental - Append + Deduped | Yes                  |                                                                       |
+| Namespaces                     | Yes                  |                                                                       |
+| Basic Normalization            | Yes                  | Doesn't support for nested json yet                                   |
+| SSH Tunnel Connection          | Yes                  |                                                                       |
+| Encryption                     | Yes                  | Support Native Network Encryption (NNE) as well as TLS using SSL cert |
 
 ## Output Schema
 
