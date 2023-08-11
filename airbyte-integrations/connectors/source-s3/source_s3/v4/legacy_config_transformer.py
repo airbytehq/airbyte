@@ -62,7 +62,7 @@ class LegacyConfigTransformer:
             parsed_datetime = datetime.strptime(datetime_str, SECONDS_FORMAT)
             return parsed_datetime.strftime(MICROS_FORMAT)
         except ValueError as e:
-            raise e
+            raise ValueError("Timestamp could not be parsed when transforming legacy connector config") from e
 
     @classmethod
     def _transform_file_format(cls, format_options: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat]) -> Mapping[str, Any]:
