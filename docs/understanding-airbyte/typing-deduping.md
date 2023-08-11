@@ -1,17 +1,32 @@
 # Typing and Deduping
 
-This page refers to new functionality currently available in **early access**. Typing and deduping will become the new default method of transforming datasets within data warehouse and database destinations after they've been replicated. This functionality is going live with [Destinations V2](https://github.com/airbytehq/airbyte/issues/26028), which is now in early access for BigQuery.
+This page refers to new functionality currently available in **early access**. Typing and deduping will become the new default method of transforming datasets within data warehouse and database destinations after they've been replicated. This functionality is going live with [Destinations V2](/release_notes/upgrading_to_destinations_v2/), which is now in early access for BigQuery.
 
 You will eventually be required to upgrade your connections to use the new destination versions. We are building tools for you to copy your connector’s configuration to a new version to make testing new destinations easier. These will be available in the next few weeks.
 
 ## What is Destinations V2?
 
-At launch, Airbyte Destinations V2 will provide:
+At launch, [Airbyte Destinations V2](/release_notes/upgrading_to_destinations_v2) will provide:
 
 - One-to-one table mapping: Data in one stream will always be mapped to one table in your data warehouse. No more sub-tables.
 - Improved per-row error handling with `_airbyte_meta`: Airbyte will now populate typing errors in the `_airbyte_meta` column instead of failing your sync. You can query these results to audit misformatted or unexpected data.
 - Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your desired schema with raw data tables.
 - Incremental delivery for large syncs: Data will be incrementally delivered to your final tables when possible. No more waiting hours to see the first rows in your destination table.
+
+## `_airbyte_meta` Errors
+
+"Per-row error handling" is a new paradigm for Airbyte which provides greater flexibility for our users. as We have now separated `data-moving errors` from `data-quality errors`. Prior to Destinations V2, both types of errors were handled the same way: by failing the sync. Now, a failing sync meas that Airbyte could not _move_ all of your data, and you can query the `_airbyte_meta` column to see which rows failed for _content_ reasons, and why. This is a more flexible approach, as you can now decide how to handle rows with errors on a case-by-case basis.
+
+:::tip
+When using a V2 destination for most use cases, it is recommended that you include only rows which do not have an error, e.g `SELECT COUNT(*) FROM _table_ WHERE json_array_length(_airbyte_meta ->> errors) = 0` (postgres syntax).
+:::
+
+The types of errors which will be stored in `_airbyte_meta.errors` include:
+
+- **Typing errors**: the source declared that the type of the column `id` should be an integer, but a string value was returned
+- **Size errors**: the source returned content which cannot be stored within this this row or column (e.g. [a Redshift Super column has a 16mb limit](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html))
+
+That said, depending on your use-case, it may still be valuable to consider rows with errors, especially in aggregate. For example, you may have a table `user_reviews`, and you might ask how many new reviews you received today. Regardless of if your datawarehouse had trouble storing the full contents in the `message` column or not, `SELECT COUNT(*) from user_reviews WHERE DATE(created_at) = DATE(NOW())` is still valid.
 
 ## Destinations V2 Example
 
