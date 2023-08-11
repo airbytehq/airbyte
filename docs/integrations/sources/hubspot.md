@@ -204,7 +204,8 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.3.1  | 2023-08-08 | [29211](https://github.com/airbytehq/airbyte/pull/29211)  | Handle 400 and 403 errors without interruption of the sync                                |
+| 1.3.2   | 2023-08-10 | [29326](https://github.com/airbytehq/airbyte/pull/29326) | Add primary keys to streams `ContactLists` and `PropertyHistory` |
+| 1.3.1   | 2023-08-08 | [29211](https://github.com/airbytehq/airbyte/pull/29211)  | Handle 400 and 403 errors without interruption of the sync                                |
 | 1.3.0   | 2023-08-01 | [28909](https://github.com/airbytehq/airbyte/pull/28909) | Add handling of source connection errors                                                                                                                                               |
 | 1.2.0   | 2023-07-27 | [27091](https://github.com/airbytehq/airbyte/pull/27091) | Add new stream `ContactsMergedAudit`                                                                                                                                               |
 | 1.1.2   | 2023-07-27 | [28558](https://github.com/airbytehq/airbyte/pull/28558) | Improve error messages during connector setup                                                                                                                                      |
