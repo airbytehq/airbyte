@@ -195,7 +195,11 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
     static def createTask(Project project, String taskName, String dockerFile) {
         // airbyte-ci only supports actual connectors, so exclude all the base modules
-        if (project.name.startsWith('source-') || project.name.startsWith('destination-')) {
+        var isRealConnector =
+          (project.name.startsWith('source-') || project.name.startsWith('destination-')) &&
+          !project.name.equals('destination-harness') &&
+          !project.name.equals('source-harness')
+        if (isRealConnector) {
             project.task(taskName, type: Exec) {
                 inputs.dir('build/distributions')
                 outputs.upToDateWhen { true }
