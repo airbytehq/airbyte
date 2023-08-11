@@ -12,9 +12,9 @@ import requests
 
 SCOPES_MAPPING = {
     "read_customers": [
-        "Customers", 
-        "MetafieldCustomers", 
-        "CustomerSavedSearch", 
+        "Customers",
+        "MetafieldCustomers",
+        "CustomerSavedSearch",
         "CustomerAddress",
     ],
     "read_orders": [
@@ -28,7 +28,7 @@ SCOPES_MAPPING = {
         "MetafieldOrders",
     ],
     "read_draft_orders": [
-        "DraftOrders", 
+        "DraftOrders",
         "MetafieldDraftOrders",
     ],
     "read_products": [
@@ -47,28 +47,28 @@ SCOPES_MAPPING = {
         "MetafieldSmartCollections",
     ],
     "read_content": [
-        "Pages", 
+        "Pages",
         "MetafieldPages",
     ],
     "read_price_rules": ["PriceRules"],
     "read_discounts": ["DiscountCodes"],
     "read_locations": [
-        "Locations", 
+        "Locations",
         "MetafieldLocations",
     ],
     "read_inventory": [
-        "InventoryItems", 
+        "InventoryItems",
         "InventoryLevels",
     ],
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
     "read_shopify_payments_payouts": [
-        "BalanceTransactions", 
+        "BalanceTransactions",
         "Disputes",
     ],
     "read_online_store_pages": [
         "Articles",
-        "MetafieldArticles", 
-        "Blogs", 
+        "MetafieldArticles",
+        "Blogs",
         "MetafieldBlogs",
     ],
 }
