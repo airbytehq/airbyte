@@ -18,6 +18,14 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - accounts
+      - account_users
+      - campaign_groups
+      - campaigns
+      - creatives
+      - ad_campaign_analytics
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   tags:
     - language:python
