@@ -40,6 +40,12 @@ class ConnectorRunner:
         connector_image_tarball_path = self._get_connector_image_tarball_path()
         self._connector_under_test_container = self._get_connector_container(connector_image_tarball_path)
 
+    async def load_container(self):
+        """This is to pre-load the container following instantiation of the class.
+        This is useful to make sure that when using the connector runner fixture the costly _import is already done.
+        """
+        await self._connector_under_test_container.with_exec(["spec"])
+
     async def call_spec(self, raise_container_error=False) -> List[AirbyteMessage]:
         return await self._run(["spec"], raise_container_error)
 

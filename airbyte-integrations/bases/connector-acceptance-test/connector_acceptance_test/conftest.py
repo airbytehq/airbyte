@@ -161,29 +161,34 @@ async def dagger_client(anyio_backend):
         yield client
 
 
-@pytest.fixture(name="docker_runner")
-def docker_runner_fixture(image_tag, connector_config_path, custom_environment_variables, dagger_client) -> ConnectorRunner:
-    return ConnectorRunner(
+@pytest.fixture(name="docker_runner", autouse=True)
+async def docker_runner_fixture(image_tag, connector_config_path, custom_environment_variables, dagger_client) -> ConnectorRunner:
+    runner = ConnectorRunner(
         image_tag,
         dagger_client,
         connector_configuration_path=connector_config_path,
         custom_environment_variables=custom_environment_variables,
     )
+    await runner.load_container()
+    return runner
 
 
 @pytest.fixture(name="previous_connector_image_name")
 def previous_connector_image_name_fixture(image_tag, inputs) -> str:
     """Fixture with previous connector image name to use for backward compatibility tests"""
-    return f"{image_tag.split(':')[0]}:{inputs.backward_compatibility_tests_config.previous_connector_version}"
+    if getattr(inputs, "backward_compatibility_tests_config", None) is not None:
+        return f"{image_tag.split(':')[0]}:{inputs.backward_compatibility_tests_config.previous_connector_version}"
 
 
-@pytest.fixture(name="previous_connector_docker_runner")
-def previous_connector_docker_runner_fixture(previous_connector_image_name, dagger_client) -> ConnectorRunner:
+@pytest.fixture(name="previous_connector_docker_runner", autouse=True)
+async def previous_connector_docker_runner_fixture(previous_connector_image_name, dagger_client) -> ConnectorRunner:
     """Fixture to create a connector runner with the previous connector docker image.
     Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
     Raise not found error if the previous connector image is not latest and expected to be published.
     """
-    return ConnectorRunner(previous_connector_image_name, dagger_client)
+    runner = ConnectorRunner(previous_connector_image_name, dagger_client)
+    await runner.load_container()
+    return runner
 
 
 @pytest.fixture(name="empty_streams")
