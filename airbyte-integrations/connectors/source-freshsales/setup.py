@@ -10,6 +10,7 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
     "pytest",
     "pytest-mock",
 ]
