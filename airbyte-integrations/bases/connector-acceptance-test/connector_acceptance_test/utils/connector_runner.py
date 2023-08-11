@@ -16,6 +16,7 @@ import pytest
 import yaml
 from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
 from airbyte_protocol.models import Type as AirbyteMessageType
+from anyio import Path as AnyioPath
 from connector_acceptance_test.utils import SecretDict
 from pydantic import ValidationError
 
@@ -24,16 +25,17 @@ class ConnectorRunner:
     IN_CONTAINER_CONFIG_PATH = "/data/config.json"
     IN_CONTAINER_CATALOG_PATH = "/data/catalog.json"
     IN_CONTAINER_STATE_PATH = "/data/state.json"
+    IN_CONTAINER_OUTPUT_PATH = "/output.txt"
 
     def __init__(
         self,
-        image_name: str,
+        image_tag: str,
         dagger_client: dagger.Client,
         connector_configuration_path: Optional[Path] = None,
         custom_environment_variables: Optional[Mapping] = {},
     ):
         self._check_connector_under_test()
-        self.image_name = image_name
+        self.image_tag = image_tag
         self.dagger_client = dagger_client
         self._connector_configuration_path = connector_configuration_path
         self._custom_environment_variables = custom_environment_variables
@@ -102,13 +104,13 @@ class ConnectorRunner:
         return " ".join(entrypoint)
 
     def _get_connector_image_tarball_path(self) -> Optional[Path]:
-        if "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH" not in os.environ and not self.image_name.endswith(":dev"):
+        if "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH" not in os.environ and not self.image_tag.endswith(":dev"):
             return None
         if "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH" in os.environ:
             connector_under_test_image_tar_path = Path(os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"])
-        elif self.image_name.endswith(":dev"):
+        elif self.image_tag.endswith(":dev"):
             connector_under_test_image_tar_path = Path("/tmp/connector_under_test_image.tar")
-            self._export_local_connector_image_to_tarball(self.image_name, connector_under_test_image_tar_path)
+            self._export_local_connector_image_to_tarball(self.image_tag, connector_under_test_image_tar_path)
         assert connector_under_test_image_tar_path.exists(), "Connector image tarball does not exist"
         return connector_under_test_image_tar_path
 
@@ -134,7 +136,7 @@ class ConnectorRunner:
             container = self._get_connector_container_from_tarball(connector_image_tarball_path)
         else:
             # Try to pull the image from DockerHub
-            container = self.dagger_client.container().from_(self.image_name)
+            container = self.dagger_client.container().from_(self.image_tag)
         # Client might pass a cachebuster env var to force recreation of the container
         # We pass this env var to the container to ensure the cache is busted
         if cachebuster_value := os.environ.get("CACHEBUSTER"):
@@ -180,17 +182,35 @@ class ConnectorRunner:
         for key, value in self._custom_environment_variables.items():
             container = container.with_env_variable(key, str(value))
         try:
-            container = container.with_exec(airbyte_command)
-            output = await container.stdout()
+            output = await self._read_output_from_stdout(airbyte_command, container)
         except dagger.QueryError as e:
-            if raise_container_error:
+            output_too_big = bool([error for error in e.errors if error.message.startswith("file size")])
+            if output_too_big:
+                output = await self._read_output_from_file(airbyte_command, container)
+            elif raise_container_error:
                 raise e
             else:
                 if isinstance(e, dagger.ExecError):
                     output = e.stdout + e.stderr
                 else:
-                    pytest.fail(f"Failed to run command {airbyte_command} in container {self.image_name} with error: {e}")
+                    pytest.fail(f"Failed to run command {airbyte_command} in container {self.image_tag} with error: {e}")
         return self.parse_airbyte_messages_from_command_output(output)
+
+    async def _read_output_from_stdout(self, airbyte_command: list, container: dagger.Container) -> str:
+        return await container.with_exec(airbyte_command).stdout()
+
+    async def _read_output_from_file(self, airbyte_command: list, container: dagger.Container) -> str:
+        local_output_file_path = f"/tmp/{str(uuid.uuid4())}"
+        entrypoint = await container.entrypoint()
+        airbyte_command = entrypoint + airbyte_command
+        container = container.with_exec(
+            ["sh", "-c", " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"],
+            skip_entrypoint=True,
+        )
+        await container.file(self.IN_CONTAINER_OUTPUT_PATH).export(local_output_file_path)
+        output = await AnyioPath(local_output_file_path).read_text()
+        await AnyioPath(local_output_file_path).unlink()
+        return output
 
     def parse_airbyte_messages_from_command_output(self, command_output: str) -> List[AirbyteMessage]:
         airbyte_messages = []
