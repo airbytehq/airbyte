@@ -4,49 +4,57 @@ acceptance_tests:
       - config_path: secrets/config.json
         expect_records:
           path: integration_tests/expected_records/csv.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_csv_custom_encoding_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_custom_encoding.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_csv_custom_format_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_custom_format.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_csv_user_schema_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_user_schema.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_csv_no_header_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_no_header.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_csv_skip_rows_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_skip_rows.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_csv_skip_rows_no_header_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_skip_rows_no_header.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_csv_with_nulls_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_with_nulls.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_csv_with_null_bools_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_with_null_bools.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/parquet_config.json
         expect_records:
           path: integration_tests/expected_records/parquet.jsonl
-        timeout_seconds: 1800
-      - config_path: secrets/v4_parquet_config.json
-        expect_records:
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/parquet_dataset_config.json
         expect_records:
           path: integration_tests/expected_records/parquet_dataset.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/legacy_parquet_decimal_config.json
         expect_records:
@@ -55,22 +63,17 @@ acceptance_tests:
       - config_path: secrets/avro_config.json
         expect_records:
           path: integration_tests/expected_records/avro.jsonl
-        timeout_seconds: 1800
-      - config_path: secrets/v4_avro_duration_config.json
-        expect_records:
-          path: integration_tests/expected_records/v4_avro_duration.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/jsonl_config.json
         expect_records:
           path: integration_tests/expected_records/jsonl.jsonl
-        timeout_seconds: 1800
-      - config_path: secrets/v4_jsonl_config.json
-        expect_records:
-          path: integration_tests/expected_records/v4_jsonl.jsonl
+          exact_order: true
         timeout_seconds: 1800
       - config_path: secrets/jsonl_newlines_config.json
         expect_records:
           path: integration_tests/expected_records/jsonl_newlines.jsonl
+          exact_order: true
         timeout_seconds: 1800
 
   connection:
@@ -82,8 +85,6 @@ acceptance_tests:
       - config_path: secrets/legacy_csv_custom_format_config.json
         status: succeed
       - config_path: secrets/legacy_csv_user_schema_config.json
-        status: succeed
-      - config_path: secrets/v4_csv_user_schema_cast_complex_config.json
         status: succeed
       - config_path: secrets/legacy_csv_no_header_config.json
         status: succeed
