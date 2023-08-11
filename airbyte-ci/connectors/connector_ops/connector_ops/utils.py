@@ -120,8 +120,8 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
 
     dependencies_block = get_gradle_dependencies_block(build_file)
 
-    project_dependencies: List[Tuple[str, Path]] = []
-    test_dependencies: List[Tuple[str, Path]] = []
+    project_dependencies: List[Path] = []
+    test_dependencies: List[Path] = []
 
     # Find all matches for test dependencies and regular dependencies
     matches = re.findall(
@@ -139,6 +139,9 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
                 test_dependencies.append(path)
             else:
                 project_dependencies.append(path)
+
+    # TODO: Debug why this isn't working or isn't sufficient:
+    project_dependencies.append(Path("airbyte-cdk", "java", "airbyte-cdk"))
     return project_dependencies, test_dependencies
 
 
