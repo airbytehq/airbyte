@@ -56,19 +56,11 @@ Each destination version is managed separately, so if you have multiple destinat
 
 Versions are tied to the destination. When you update the destination, **all connections tied to that destination will be sending data in the Destinations V2 format**. For upgrade paths that will minimize disruption to existing dashboards, see:
 
-- [Upgrading to Destinations V2](#upgrading-to-destinations-v2)
-  - [What is Destinations V2?](#what-is-destinations-v2)
-  - [Deprecating Legacy Normalization](#deprecating-legacy-normalization)
-    - [Breakdown of Breaking Changes](#breakdown-of-breaking-changes)
-  - [Quick Start to Upgrading](#quick-start-to-upgrading)
-  - [Advanced Upgrade Paths](#advanced-upgrade-paths)
-    - [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing)
-      - [Steps to Follow for All Sync Modes](#steps-to-follow-for-all-sync-modes)
-      - [Additional Steps for Incremental Sync Modes](#additional-steps-for-incremental-sync-modes)
-    - [Testing Destinations V2 for a Single Connection](#testing-destinations-v2-for-a-single-connection)
-    - [Upgrading as a User of Raw Tables](#upgrading-as-a-user-of-raw-tables)
-    - [Upgrade Paths for Connections using CDC](#upgrade-paths-for-connections-using-cdc)
-  - [Destinations V2 Compatible Versions](#destinations-v2-compatible-versions)
+- [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing)
+- [Testing Destinations V2 on a Single Connection](#testing-destinations-v2-for-a-single-connection)
+- [Upgrading Connections One by One Using CDC](#upgrade-paths-for-connections-using-cdc)
+- [Upgrading as a User of Raw Tables](#upgrading-as-a-user-of-raw-tables)
+- [Rolling back to Legacy Normalization](#oss-only-rolling-back-to-legacy-normalization)
 
 ## Advanced Upgrade Paths
 
