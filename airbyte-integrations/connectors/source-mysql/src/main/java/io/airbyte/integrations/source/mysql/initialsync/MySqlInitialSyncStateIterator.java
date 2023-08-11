@@ -74,7 +74,6 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
           pkStatus = new PrimaryKeyLoadStatus()
               .withVersion(MYSQL_STATUS_VERSION)
               .withStateType(StateType.PRIMARY_KEY)
-              .withNumRowsSynced(0L)//TODO : impl)
               .withPkName(pkFieldName)
               .withPkVal(lastPk)
               .withIncrementalState(streamStateForIncrementalRun);

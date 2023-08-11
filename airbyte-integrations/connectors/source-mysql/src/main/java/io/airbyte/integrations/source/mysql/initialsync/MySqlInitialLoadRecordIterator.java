@@ -1,14 +1,16 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.stream.AirbyteStreamUtils;
+import com.mysql.cj.MysqlType;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadHandler.SubQueryPlan;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
+import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
@@ -20,7 +22,7 @@ import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlInitialLoadRecordIterator<JsonNode> extends AbstractIterator<JsonNode>
+public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     implements AutoCloseableIterator<JsonNode> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadRecordIterator.class);
@@ -32,6 +34,11 @@ public class MySqlInitialLoadRecordIterator<JsonNode> extends AbstractIterator<J
   private final List<String> columnNames;
   private final AirbyteStreamNameNamespacePair pair;
   private final JdbcDatabase database;
+  private final long chunkSize;
+  private final PrimaryKeyInfo pkInfo;
+  private int numSubqueries = 0;
+
+  private AutoCloseableIterator<JsonNode> currentIterator;
 
   MySqlInitialLoadRecordIterator(
       final JdbcDatabase database,
@@ -39,51 +46,84 @@ public class MySqlInitialLoadRecordIterator<JsonNode> extends AbstractIterator<J
       final String quoteString,
       final MySqlInitialLoadStateManager initialLoadStateManager,
       final List<String> columnNames,
-      final String schemaName,
-      final String tableName) {
+      final AirbyteStreamNameNamespacePair pair,
+      final long chunkSize) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
     this.initialLoadStateManager = initialLoadStateManager;
     this.columnNames = columnNames;
-    this.pair = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
+    this.pair = pair;
+    this.chunkSize = chunkSize;
+    this.pkInfo = initialLoadStateManager.getPrimaryKeyInfo(pair);
   }
 
   @CheckForNull
   @Override
   protected JsonNode computeNext() {
-    final Stream<JsonNode> stream = database.unsafeQuery(
-        connection -> createPkQueryStatement(connection, columnNames, schemaName, tableName, pair, pkInfo,
-            subQueriesPlan, isFinalSubquery), sourceOperations::rowToJson);
-    return;
+    if (currentIterator == null || !currentIterator.hasNext()) {
+      try {
+        LOGGER.info("Subquery number : {}", numSubqueries);
+        final Stream<JsonNode> stream = database.unsafeQuery(
+            connection -> getPkPreparedStatement(connection), sourceOperations::rowToJson);
+
+        if (currentIterator != null) {
+          currentIterator.close();
+        }
+        currentIterator = AutoCloseableIterators.fromStream(stream, pair);
+        numSubqueries++;
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    if (!currentIterator.hasNext()) {
+      return endOfData();
+    }
+    return currentIterator.next();
   }
 
-  private PreparedStatement createPkQueryStatement(
-      final Connection connection,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName,
-      final AirbyteStreamNameNamespacePair airbyteStream,
-      final PrimaryKeyInfo pkInfo,
-      final SubQueryPlan subQueryPlan,
-      final boolean isFinalSubquery) {
+  private PreparedStatement getPkPreparedStatement(final Connection connection) {
     try {
+      final String tableName = pair.getName();
+      final String schemaName = pair.getNamespace();
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
 
-      final PreparedStatement preparedStatement =
-          getPkPreparedStatement(connection, wrappedColumnNames, fullTableName, airbyteStream, pkInfo, subQueryPlan, isFinalSubquery);
-      LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
-      return preparedStatement;
+      final PrimaryKeyLoadStatus pkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
+
+      if (pkLoadStatus == null) {
+        LOGGER.info("pkLoadStatus is null");
+        final String quotedCursorField = enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
+        final String sql = String.format("SELECT %s FROM %s ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
+            quotedCursorField, chunkSize);
+        final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        return preparedStatement;
+
+      } else {
+        LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
+        final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
+        // Since a pk is unique, we can issue a > query instead of a >=, as there cannot be two records with the same pk.
+        final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
+            quotedCursorField, quotedCursorField, chunkSize);
+        final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        final MysqlType cursorFieldType = pkInfo.fieldType();
+        sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());
+
+        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        return preparedStatement;
+      }
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
+
   @Override
   public void close() throws Exception {
-
+    if (currentIterator != null) {
+      currentIterator.close();
+    }
   }
 }
