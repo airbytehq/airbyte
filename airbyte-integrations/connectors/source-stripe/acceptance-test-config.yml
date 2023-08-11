@@ -61,6 +61,8 @@ acceptance_tests:
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: hosted_invoice_url
               bypass_reason: "URL changes upon each request for privacy/security"
+            - name: subscription_details
+              bypass_reason: "Bypassed to resolve https://github.com/airbytehq/oncall/issues/2703 swiftly"
           charges:
             - name: receipt_url
               bypass_reason: "URL changes upon each request for privacy/security"
