@@ -169,3 +169,19 @@ class PurchaseOrders(FirstResonanceIonStream):
 
 class Suppliers(FirstResonanceIonStream):
     """Suppliers Stream"""
+
+
+class PurchaseOrderLines(FirstResonanceIonStream):
+    """Purchase Order Lines Stream"""
+
+
+class Parts(FirstResonanceIonStream):
+    """Parts Stream"""
+
+
+class PartSubtypes(FirstResonanceIonStream):
+    """Part Subtypes Stream"""
+
+
+class PurchaseOrderFees(FirstResonanceIonStream):
+    """Purchase Order Fees Stream"""

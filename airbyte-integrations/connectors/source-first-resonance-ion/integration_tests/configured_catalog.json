@@ -41,6 +41,111 @@
         ]
       },
       "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "purchase_order_lines",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "purchase_order_lines",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "parts",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "part_subtypes",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "purchase_order_fees",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh"
     }
   ]
 }

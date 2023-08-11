@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "LastSessionId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "LatestRevisionScheme": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "SubstituteMbom": {
+      "type": "string"
+    },
+    "_AbomItemsCount": {
+      "type": "integer"
+    },
+    "_AttributesCount": {
+      "type": "integer"
+    },
+    "_InputsCount": {
+      "type": "integer"
+    },
+    "_MbomItemSubstitutesCount": {
+      "type": "null"
+    },
+    "_MbomItemsCount": {
+      "type": "null"
+    },
+    "_MbomsCount": {
+      "type": "integer"
+    },
+    "_PartKitItemsCount": {
+      "type": "integer"
+    },
+    "_PartProceduresCount": {
+      "type": "integer"
+    },
+    "_PartSubtypesCount": {
+      "type": "integer"
+    },
+    "_PartsInventoryCount": {
+      "type": "integer"
+    },
+    "_PlanItemsCount": {
+      "type": "integer"
+    },
+    "_ProceduresCount": {
+      "type": "integer"
+    },
+    "_PurchaseOrderLinesCount": {
+      "type": "integer"
+    },
+    "_RequirementsCount": {
+      "type": "integer"
+    },
+    "_RunsCount": {
+      "type": "integer"
+    },
+    "_created": {
+      "type": "string"
+    },
+    "_etag": {
+      "type": "string"
+    },
+    "_updated": {
+      "type": "string"
+    },
+    "cost": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "createdById": {
+      "type": "integer"
+    },
+    "description": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "entityId": {
+      "type": "integer"
+    },
+    "exportControlled": {
+      "type": "boolean"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "isLatestRevision": {
+      "type": "boolean"
+    },
+    "latestRevision": {
+      "type": "string"
+    },
+    "leadTime": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "maintenanceIntervalSeconds": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "partNumber": {
+      "type": "string"
+    },
+    "partType": {
+      "type": "string"
+    },
+    "prettyStr": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "integer"
+    },
+    "revisedFromId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "revision": {
+      "type": "string"
+    },
+    "revisionScheme": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "sourcingStrategy": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "supplierPartNumber": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "thumbnailId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "trackingType": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "unitOfMeasureId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "updatedById": {
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}

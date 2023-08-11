@@ -11,7 +11,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 from source_first_resonance_ion.config import ENDPOINTS, EndpointDetails, InputConfig
-from source_first_resonance_ion.streams import PurchaseOrders, Suppliers
+from source_first_resonance_ion.streams import PartSubtypes, Parts, PurchaseOrderFees, PurchaseOrderLines, PurchaseOrders, Suppliers
 
 
 # Source
@@ -56,4 +56,12 @@ class SourceFirstResonanceIon(AbstractSource):
         )
 
         streamArgs = {"authenticator": auth, "region": config["region"], "environment": config["environment"]}
-        return [PurchaseOrders(**streamArgs), Suppliers(**streamArgs)]
+        return [
+            PurchaseOrders(**streamArgs),
+            Suppliers(**streamArgs),
+            PurchaseOrderLines(**streamArgs),
+            PurchaseOrderLines(**streamArgs),
+            Parts(**streamArgs),
+            PartSubtypes(**streamArgs),
+            PurchaseOrderFees(**streamArgs),
+        ]

@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "LastSessionId": {
+      "type": "string"
+    },
+    "_created": {
+      "type": "string"
+    },
+    "_etag": {
+      "type": "string"
+    },
+    "_updated": {
+      "type": "string"
+    },
+    "createdById": {
+      "type": "integer"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "prettyStr": {
+      "type": "string"
+    },
+    "purchaseOrderId": {
+      "type": "integer"
+    },
+    "type": {
+      "type": "string"
+    },
+    "updatedById": {
+      "type": "integer"
+    },
+    "value": {
+      "type": "number"
+    }
+  },
+  "type": "object"
+}

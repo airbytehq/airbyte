@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "LastSessionId": {
+      "type": "string"
+    },
+    "_AttributesCount": {
+      "type": "integer"
+    },
+    "_CommentsCount": {
+      "type": "integer"
+    },
+    "_IssuesCount": {
+      "type": "integer"
+    },
+    "_LabelsCount": {
+      "type": "integer"
+    },
+    "_PartInventoriesCount": {
+      "type": "integer"
+    },
+    "_ReceiptItemsCount": {
+      "type": "integer"
+    },
+    "_ReceiptsCount": {
+      "type": "integer"
+    },
+    "_ReceivedPartInventoriesCount": {
+      "type": "integer"
+    },
+    "_RequirementsCount": {
+      "type": "integer"
+    },
+    "_created": {
+      "type": "string"
+    },
+    "_etag": {
+      "type": "string"
+    },
+    "_updated": {
+      "type": "string"
+    },
+    "cost": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "createdById": {
+      "type": "integer"
+    },
+    "description": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "editable": {
+      "type": "string"
+    },
+    "entityId": {
+      "type": "integer"
+    },
+    "estimatedArrivalDate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "estimatedCost": {
+      "type": "number"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "inventoryQuantity": {
+      "type": "number"
+    },
+    "isOpen": {
+      "type": "boolean"
+    },
+    "needDate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "paid": {
+      "type": "boolean"
+    },
+    "partId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "position": {
+      "type": "integer"
+    },
+    "prettyStr": {
+      "type": "string"
+    },
+    "purchaseOrderId": {
+      "type": "integer"
+    },
+    "quantity": {
+      "type": "number"
+    },
+    "receivedQuantity": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string"
+    },
+    "updatedById": {
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}
