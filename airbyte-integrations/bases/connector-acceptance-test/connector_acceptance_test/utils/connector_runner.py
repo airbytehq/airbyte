@@ -109,20 +109,22 @@ class ConnectorRunner:
         if "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH" in os.environ:
             connector_under_test_image_tar_path = Path(os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"])
         elif self.image_tag.endswith(":dev"):
-            connector_under_test_image_tar_path = Path("/tmp/connector_under_test_image.tar")
-            self._export_local_connector_image_to_tarball(self.image_tag, connector_under_test_image_tar_path)
+            connector_under_test_image_tar_path = self._export_local_connector_image_to_tarball(self.image_tag)
         assert connector_under_test_image_tar_path.exists(), "Connector image tarball does not exist"
         return connector_under_test_image_tar_path
 
-    def _export_local_connector_image_to_tarball(self, local_image_name: str, tarball_path: Path):
+    def _export_local_connector_image_to_tarball(self, local_image_name: str) -> Optional[Path]:
+        tarball_path = Path("/tmp/connector_under_test_image.tar")
+
         docker_client = docker.from_env()
         try:
             image = docker_client.images.get(local_image_name)
+            with open(tarball_path, "wb") as f:
+                for chunk in image.save(named=True):
+                    f.write(chunk)
+
         except docker.errors.ImageNotFound:
             pytest.fail(f"Image {local_image_name} not found, please make sure to build or pull it before running the tests")
-        with open(tarball_path, "wb") as f:
-            for chunk in image.save(named=True):
-                f.write(chunk)
         return tarball_path
 
     def _get_connector_container_from_tarball(self, tarball_path: Path) -> dagger.Container:

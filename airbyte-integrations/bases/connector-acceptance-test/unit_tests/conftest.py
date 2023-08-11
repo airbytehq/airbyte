@@ -3,8 +3,10 @@
 #
 
 import json
+import sys
 from contextlib import contextmanager
 
+import dagger
 import pytest
 
 
@@ -25,6 +27,12 @@ def does_not_raise():
     yield
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def anyio_backend():
     return "asyncio"
+
+
+@pytest.fixture(scope="module")
+async def dagger_client():
+    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
+        yield client

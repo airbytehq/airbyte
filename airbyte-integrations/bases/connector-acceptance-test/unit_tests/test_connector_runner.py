@@ -4,6 +4,7 @@
 
 
 import json
+import os
 
 import pytest
 from airbyte_protocol.models import (
@@ -16,8 +17,40 @@ from airbyte_protocol.models import (
 from airbyte_protocol.models import Type as AirbyteMessageType
 from connector_acceptance_test.utils import connector_runner
 
+pytestmark = pytest.mark.anyio
+
 
 class TestContainerRunner:
+    @pytest.fixture
+    def dev_image_name(self):
+        return "airbyte/source-faker:dev"
+
+    @pytest.fixture
+    def released_image_name(self):
+        return "airbyte/source-faker:latest"
+
+    @pytest.fixture()
+    async def local_tar_image(self, dagger_client, tmpdir, released_image_name):
+        local_image_tar_path = str(tmpdir / "local_image.tar")
+        await dagger_client.container().from_(released_image_name).export(local_image_tar_path)
+        os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"] = local_image_tar_path
+        yield local_image_tar_path
+        os.environ.pop("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH")
+
+    async def test_load_container_from_tar(self, dagger_client, dev_image_name, local_tar_image):
+        runner = connector_runner.ConnectorRunner(dev_image_name, dagger_client)
+        await runner.load_container()
+        assert await runner._connector_under_test_container.with_exec(["spec"])
+
+    async def test_load_container_from_released_connector(self, dagger_client, released_image_name):
+        runner = connector_runner.ConnectorRunner(released_image_name, dagger_client)
+        await runner.load_container()
+        assert await runner._connector_under_test_container.with_exec(["spec"])
+
+    async def test_get_container_env_variable_value(self, dagger_client, dev_image_name, local_tar_image):
+        runner = connector_runner.ConnectorRunner(dev_image_name, dagger_client, custom_environment_variables={"FOO": "BAR"})
+        assert await runner.get_container_env_variable_value("FOO") == "BAR"
+
     def test_parse_airbyte_messages_from_command_output(self, mocker, tmp_path):
         old_configuration_path = tmp_path / "config.json"
         new_configuration = {"field_a": "new_value_a"}

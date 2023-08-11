@@ -26,6 +26,8 @@ from connector_acceptance_test.tests import test_core
 
 from .conftest import does_not_raise
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.mark.parametrize(
     "schema, cursors, should_fail",
