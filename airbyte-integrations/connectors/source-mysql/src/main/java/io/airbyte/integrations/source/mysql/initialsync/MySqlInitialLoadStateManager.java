@@ -23,10 +23,6 @@ public interface MySqlInitialLoadStateManager {
   // Returns the previous state emitted, represented as a {@link PrimaryKeyLoadStatus} associated with the stream.
   PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair);
 
-  // Determines whether the end of the initial load has been reached for this pair.
-  boolean endOfInitialLoad(final AirbyteStreamNameNamespacePair pair);
-
-
   // Returns the current {@PrimaryKeyInfo}, associated with the stream. This includes the data type & the column name associated with the stream.
   PrimaryKeyInfo getPrimaryKeyInfo(final AirbyteStreamNameNamespacePair pair);
 }
