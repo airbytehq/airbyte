@@ -719,8 +719,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * A stream with no columns is weird, but we shouldn't treat it specially in any way.
-   * It should create a final table as usual, and populate it with the relevant metadata columns.
+   * A stream with no columns is weird, but we shouldn't treat it specially in any way. It should
+   * create a final table as usual, and populate it with the relevant metadata columns.
    */
   @Test
   public void noColumns() throws Exception {
@@ -729,13 +729,12 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         List.of(Jsons.deserialize(
             """
-                {
-                  "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {}
-                }
-                """
-        )));
+            {
+              "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {}
+            }
+            """)));
     final StreamConfig stream = new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
