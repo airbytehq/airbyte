@@ -61,6 +61,7 @@ acceptance_tests:
         path: integration_tests/expected_records/jsonl_newlines.jsonl
         exact_order: true
       timeout_seconds: 1800
+
   connection:
     tests:
     - config_path: secrets/config.json
