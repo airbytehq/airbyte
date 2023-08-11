@@ -89,6 +89,9 @@
     },
     "description": {
       "type": ["null", "string"]
+    },
+    "destination_payment": {
+      "type": ["null", "string"]
     }
   },
   "type": ["null", "object"]
