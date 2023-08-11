@@ -6,7 +6,7 @@ acceptance_tests:
     tests:
       - spec_path: "source_chargify/spec.yaml"
         backward_compatibility_tests_config:
-            disable_for_version: "0.1.0"
+          disable_for_version: "0.1.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -22,21 +22,25 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-# TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-#        expect_records:
-#          path: "integration_tests/expected_records.jsonl"
-#          extra_fields: no
-#          exact_order: no
-#          extra_records: yes
-  incremental: 
+        empty_streams:
+          - name: "customers"
+            bypass_reason: "need integration account creds to add records"
+          - name: "subscriptions"
+            bypass_reason: "need integration account creds to add records"
+  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
+  #        expect_records:
+  #          path: "integration_tests/expected_records.jsonl"
+  #          extra_fields: no
+  #          exact_order: no
+  #          extra_records: yes
+  incremental:
     bypass_reason: "This connector does not implement incremental sync"
-# TODO uncomment this block this block if your connector implements incremental sync: 
-#    tests:
-#      - config_path: "secrets/config.json"
-#        configured_catalog_path: "integration_tests/configured_catalog.json"
-#        future_state:
-#          future_state_path: "integration_tests/abnormal_state.json"
+  # TODO uncomment this block this block if your connector implements incremental sync:
+  #    tests:
+  #      - config_path: "secrets/config.json"
+  #        configured_catalog_path: "integration_tests/configured_catalog.json"
+  #        future_state:
+  #          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
