@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f8b49e5f-ebdf-4ab4-9026-8b8eaa71515a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-yahoo-finance-price-no-code
+  githubIssueLabel: source-yahoo-finance-price-no-code
+  icon: yahoo-finance-price-no-code.svg
+  license: MIT
+  name: Yahoo Finance Price No Code
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yahoo-finance-price-no-code
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

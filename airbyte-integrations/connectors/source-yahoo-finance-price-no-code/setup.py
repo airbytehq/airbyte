@@ -16,8 +16,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_yahoo_finance_price",
-    description="Source implementation for Yahoo Finance Price.",
+    name="source_yahoo_finance_price_no_code",
+    description="Source implementation for Yahoo Finance Price No Code.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
