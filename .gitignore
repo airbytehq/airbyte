@@ -110,6 +110,7 @@ scan-journal.log
 **/bin/**/*.json
 **/bin/**/*.jsonl
 **/bin/**/*.yaml
+**/bin/**/*Java*
 # bin  # << Don't full ignore 'bin'. The CI bot will delete files in your PR if so.
 #           E.g. auto-commit: https://github.com/airbytehq/airbyte/commit/71437260b04b2e6fb30920a6af9cb96c362a1915
 #           Reverted by:      https://github.com/airbytehq/airbyte/commit/ca11c68721b8dc28518472918d58442c20dd376e
