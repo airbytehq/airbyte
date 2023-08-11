@@ -12,9 +12,9 @@ import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -46,12 +46,13 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final boolean use1s1t;
   private final TyperDeduper typerDeduper;
 
+
   public BigQueryRecordConsumer(final BigQuery bigquery,
-                                final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
-                                final Consumer<AirbyteMessage> outputRecordCollector,
-                                final String defaultDatasetId,
-                                TyperDeduper typerDeduper,
-                                final ParsedCatalog catalog) {
+      final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final String defaultDatasetId,
+      TyperDeduper typerDeduper,
+      final ParsedCatalog catalog) {
     this.bigquery = bigquery;
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
@@ -67,8 +68,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   @Override
   protected void startTracked() throws Exception {
     // todo (cgardens) - move contents of #write into this method.
-
-    typerDeduper.prepareFinalTables();
+    typerDeduper.prepareTables();
     if (use1s1t) {
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {

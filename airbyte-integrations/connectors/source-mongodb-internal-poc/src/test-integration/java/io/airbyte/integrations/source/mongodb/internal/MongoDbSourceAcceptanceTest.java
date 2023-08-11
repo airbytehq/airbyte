@@ -5,12 +5,10 @@
 package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
-import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.SUPPORTED_SYNC_MODES;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
@@ -20,7 +18,6 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -31,8 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
@@ -102,26 +97,23 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     final List<Field> fields = List.of(
-            Field.of(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING),
-            Field.of("id", JsonSchemaType.STRING),
-            Field.of("name", JsonSchemaType.STRING),
-            Field.of("test", JsonSchemaType.STRING),
-            Field.of("test_array", JsonSchemaType.ARRAY),
-            Field.of("empty_test", JsonSchemaType.STRING),
-            Field.of("double_test", JsonSchemaType.NUMBER),
-            Field.of("int_test", JsonSchemaType.NUMBER),
-            Field.of("object_test", JsonSchemaType.OBJECT)
-    );
+        Field.of(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING),
+        Field.of("id", JsonSchemaType.STRING),
+        Field.of("name", JsonSchemaType.STRING),
+        Field.of("test", JsonSchemaType.STRING),
+        Field.of("test_array", JsonSchemaType.ARRAY),
+        Field.of("empty_test", JsonSchemaType.STRING),
+        Field.of("double_test", JsonSchemaType.NUMBER),
+        Field.of("int_test", JsonSchemaType.NUMBER),
+        Field.of("object_test", JsonSchemaType.OBJECT));
     final List<AirbyteStream> airbyteStreams = List.of(
-            MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields),
-            MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields));
+        MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields),
+        MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields));
 
     return new ConfiguredAirbyteCatalog().withStreams(
-            List.of(
-              convertToConfiguredAirbyteStream(airbyteStreams.get(0), SyncMode.INCREMENTAL),
-              convertToConfiguredAirbyteStream(airbyteStreams.get(1), SyncMode.FULL_REFRESH)
-            )
-        );
+        List.of(
+            convertToConfiguredAirbyteStream(airbyteStreams.get(0), SyncMode.INCREMENTAL),
+            convertToConfiguredAirbyteStream(airbyteStreams.get(1), SyncMode.FULL_REFRESH)));
   }
 
   @Override
@@ -131,9 +123,10 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private ConfiguredAirbyteStream convertToConfiguredAirbyteStream(final AirbyteStream airbyteStream, final SyncMode syncMode) {
     return new ConfiguredAirbyteStream()
-            .withSyncMode(syncMode)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withCursorField(List.of(DEFAULT_CURSOR_FIELD))
-            .withStream(airbyteStream);
+        .withSyncMode(syncMode)
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withCursorField(List.of(DEFAULT_CURSOR_FIELD))
+        .withStream(airbyteStream);
   }
+
 }
