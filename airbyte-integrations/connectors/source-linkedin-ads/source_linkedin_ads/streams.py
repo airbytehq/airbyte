@@ -10,7 +10,9 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
+from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
@@ -274,6 +276,7 @@ class Campaigns(LinkedInAdsStreamSlicing):
     """
 
     endpoint = "adCampaigns"
+    use_cache = True
 
     def path(
         self,
@@ -361,6 +364,9 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     primary_key = ["pivotValue", "end_date"]
     cursor_field = "end_date"
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
+
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
         """Define the base parameters for analytics streams"""
@@ -436,3 +442,39 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     def get_primary_key_from_slice(self, stream_slice) -> str:
         creative_id = stream_slice.get(self.primary_slice_key).split(":")[-1]
         return creative_id
+
+
+class AdImpressionDeviceAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:IMPRESSION_DEVICE_TYPE)"
+
+
+class AdMemberCompanySizeAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_COMPANY_SIZE)"
+
+
+class AdMemberIndustryAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_INDUSTRY)"
+
+
+class AdMemberSeniorityAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_SENIORITY)"
+
+
+class AdMemberJobTitleAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_JOB_TITLE)"
+
+
+class AdMemberJobFunctionAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_JOB_FUNCTION)"
+
+
+class AdMemberCountryAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_COUNTRY_V2)"
+
+
+class AdMemberRegionAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_REGION_V2)"
+
+
+class AdMemberCompanyAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_COMPANY)"

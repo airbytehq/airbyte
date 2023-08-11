@@ -12,9 +12,8 @@ class AvroFormat(BaseModel):
 
     filetype: Literal["avro"] = "avro"
 
-    # This option is not recommended, but necessary for backwards compatibility
     double_as_string: bool = Field(
         title="Convert Double Fields to Strings",
-        description="Whether to convert double fields to strings. There is a loss of precision when converting decimals to floats, so this is recommended.",
-        default=True,
+        description="Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.",
+        default=False,
     )
