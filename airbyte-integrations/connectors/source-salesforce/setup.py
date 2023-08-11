@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "vcrpy==4.1.1", "pandas"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6", "requests_mock", "connector-acceptance-test", "pytest-timeout"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock~=3.6", "requests_mock", "pytest-timeout"]
 
 setup(
     name="source_salesforce",

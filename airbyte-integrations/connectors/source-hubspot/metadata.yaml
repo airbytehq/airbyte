@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 1.3.3
+  dockerImageTag: 1.4.0
   dockerRepository: airbyte/source-hubspot
   githubIssueLabel: source-hubspot
   icon: hubspot.svg
@@ -14,7 +14,7 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 1.3.3
+      dockerImageTag: 1.4.0
     oss:
       enabled: true
   releaseStage: generally_available
