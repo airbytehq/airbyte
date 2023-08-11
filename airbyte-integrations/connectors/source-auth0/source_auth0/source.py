@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import logging
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -44,11 +43,12 @@ class Auth0Stream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         body = response.json()
-        if "total" in body and "start" in body and "limit" in body and "length" in body:
+
+        if "total" in body and "start" in body and "limit" in body:
             try:
                 start = int(body["start"])
                 limit = int(body["limit"])
-                length = int(body["length"])
+                length = len(body[self.resource_name])
                 total = int(body["total"])
                 current = start // limit
                 if length < limit or (start + length) == total:
