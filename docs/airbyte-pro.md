@@ -52,7 +52,7 @@ _Example values_
 
 #### Deploying Airbyte Pro with Okta
 
-Your Okta app is now set up and you're ready to deploy Airbyte with SSO! Take note of the following values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
+Your Okta app is now set up and you're ready to deploy Airbyte with SSO! Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
 
 - Okta domain ([how to find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
 - App integration name
