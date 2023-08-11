@@ -174,7 +174,7 @@ class TestAccountUsers:
     stream: AccountUsers = AccountUsers(TEST_CONFIG)
 
     def test_state_checkpoint_interval(self):
-        assert self.stream.state_checkpoint_interval == 500
+        assert self.stream.state_checkpoint_interval == 100
 
     def test_get_updated_state(self):
         state = self.stream.get_updated_state(
