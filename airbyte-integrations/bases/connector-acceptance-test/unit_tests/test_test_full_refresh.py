@@ -19,6 +19,8 @@ from airbyte_protocol.models import (
 from connector_acceptance_test.config import ConnectionTestConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
 
+pytestmark = pytest.mark.anyio
+
 
 class ReadTestConfigWithIgnoreFields(ConnectionTestConfig):
     ignored_fields: Dict[str, List[IgnoredFieldsConfiguration]] = {
