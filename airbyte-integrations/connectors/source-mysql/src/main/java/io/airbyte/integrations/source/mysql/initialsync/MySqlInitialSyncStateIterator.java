@@ -34,6 +34,7 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   private final JsonNode streamStateForIncrementalRun;
   private final MySqlInitialLoadStateManager stateManager;
   private long recordCount = 0L;
+  private long stateLogCount = 0L;
   private Instant lastCheckpoint = Instant.now();
   private final Duration syncCheckpointDuration;
   private final Long syncCheckpointRecords;
@@ -66,8 +67,9 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
             .withPkName(pkFieldName)
             .withPkVal(lastPk)
             .withIncrementalState(streamStateForIncrementalRun);
-        if (recordCount % STATE_LOGGING_FREQUENCY == 0) {
+        if (stateLogCount % STATE_LOGGING_FREQUENCY == 0) {
           LOGGER.info("Emitting initial sync pk state for stream {}, state is {}", pair, pkStatus);
+          stateLogCount++;
         }
         recordCount = 0L;
         lastCheckpoint = Instant.now();
