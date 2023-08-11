@@ -878,7 +878,8 @@ class CheckoutSessions(SlicedEventIncrementalStripeStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         since_date = self.get_start_timestamp(stream_state)
-        for item in super().parse_response(response, **kwargs):
+        records = self.set_updated_timestamp(super().parse_response(response, **kwargs))
+        for item in records:
             # Filter out too old items as this is a semi-incremental sync
             expires_at = item.get(self.cursor_field)
             if expires_at and expires_at > since_date:
