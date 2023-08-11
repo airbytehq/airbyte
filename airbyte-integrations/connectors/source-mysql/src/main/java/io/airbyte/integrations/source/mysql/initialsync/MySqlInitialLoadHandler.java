@@ -42,6 +42,8 @@ public class MySqlInitialLoadHandler {
   private final MySqlInitialLoadStateManager initialLoadStateManager;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
+  private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
+  private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MySqlInitialLoadHandler(final JsonNode config,
@@ -86,7 +88,7 @@ public class MySqlInitialLoadHandler {
             .collect(Collectors.toList());
         final AutoCloseableIterator<JsonNode> queryStream =
             new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-                calculateChunkSize(tableSizeInfoMap.get(tableSizeInfoMap)));
+                calculateChunkSize(tableSizeInfoMap.get(tableSizeInfoMap), pair));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -99,10 +101,17 @@ public class MySqlInitialLoadHandler {
   }
 
   // Calculates the number of rows to fetch per query.
-  private static long calculateChunkSize(final TableSizeInfo tableSizeInfo) {
-    // TODO : Implement this method based on the sub query plan size, table size info and number of rows already synced?
-    // TODO : For testing purposes. this needs to be higher than the intermediate emission frequency
-    return 20_000L;
+  private static long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
+    // If table size info could not be calculated, a default chunk size will be provided.
+    if (tableSizeInfo == null || tableSizeInfo.tableSize() == 0 || tableSizeInfo.avgRowLength() == 0) {
+      LOGGER.info("Chunk size could not be determined for pair: {}, defaulting to {} rows", pair, DEFAULT_CHUNK_SIZE);
+      return DEFAULT_CHUNK_SIZE;
+    }
+    final long tableSize = tableSizeInfo.tableSize();
+    final long avgRowLength = tableSizeInfo.avgRowLength();
+    final long chunkSize = QUERY_TARGET_SIZE_GB / avgRowLength;
+    LOGGER.info("Chunk size could not be determined for pair: {}, is {}", pair, chunkSize);
+    return chunkSize;
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
