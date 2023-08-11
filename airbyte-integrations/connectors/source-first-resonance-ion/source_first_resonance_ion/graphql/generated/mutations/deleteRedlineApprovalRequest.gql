@@ -1,0 +1,5 @@
+mutation deleteRedlineApprovalRequest($etag: String!, $id: ID!){
+    deleteRedlineApprovalRequest(etag: $etag, id: $id){
+        id
+    }
+}

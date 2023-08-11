@@ -1,0 +1,43 @@
+query datagridColumns($filters: DatagridColumnsInputFilters, $distinctOn: [DatagridColumnSortEnum], $sort: [DatagridColumnSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    datagridColumns(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                allowedIonType
+                header
+                id
+                index
+                options
+                runStepId
+                stepId
+                type
+                unit
+                createdById
+                updatedById
+                signoffRoleId
+                readOnly
+                settable
+                parent
+                editable
+                batchAdoptedSiblings
+                allBatchedSiblings
+                batched
+                batchSiblings
+                prettyStr
+                _ValuesCount
+            }
+            cursor
+        }
+    }
+}

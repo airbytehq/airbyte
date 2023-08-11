@@ -1,0 +1,29 @@
+query stepFieldValidations($filters: StepFieldValidationsInputFilters, $distinctOn: [StepFieldValidationSortEnum], $sort: [StepFieldValidationSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    stepFieldValidations(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                position
+                value
+                id
+                fieldId
+                createdById
+                updatedById
+                functionId
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

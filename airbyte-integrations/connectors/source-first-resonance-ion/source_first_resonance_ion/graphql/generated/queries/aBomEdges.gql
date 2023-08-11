@@ -1,0 +1,27 @@
+query aBomEdges($filters: ABomEdgesInputFilters, $distinctOn: [ABomEdgeSortEnum], $sort: [ABomEdgeSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    aBomEdges(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                childAbomItemId
+                parentAbomItemId
+                createdById
+                updatedById
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

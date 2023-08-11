@@ -1,0 +1,6 @@
+mutation deleteAsset($input: DeleteFileAttachmentInput!){
+    deleteAsset(input: $input){
+        fileAttachmentId
+        entityId
+    }
+}

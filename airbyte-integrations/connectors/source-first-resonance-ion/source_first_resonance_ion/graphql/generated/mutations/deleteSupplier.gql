@@ -1,0 +1,5 @@
+mutation deleteSupplier($etag: String!, $id: ID!){
+    deleteSupplier(etag: $etag, id: $id){
+        id
+    }
+}

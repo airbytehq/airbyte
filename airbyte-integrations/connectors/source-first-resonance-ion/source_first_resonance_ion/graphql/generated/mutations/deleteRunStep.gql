@@ -1,0 +1,5 @@
+mutation deleteRunStep($etag: String!, $id: ID!){
+    deleteRunStep(etag: $etag, id: $id){
+        id
+    }
+}

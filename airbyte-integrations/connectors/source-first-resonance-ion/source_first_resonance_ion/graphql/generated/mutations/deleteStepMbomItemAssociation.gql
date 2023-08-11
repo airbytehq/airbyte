@@ -1,0 +1,5 @@
+mutation deleteStepMbomItemAssociation($etag: String!, $id: ID!){
+    deleteStepMbomItemAssociation(etag: $etag, id: $id){
+        id
+    }
+}

@@ -1,0 +1,47 @@
+query locations($filters: LocationsInputFilters, $distinctOn: [LocationSortEnum], $sort: [LocationSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    locations(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                address
+                available
+                archived
+                contactId
+                description
+                imageId
+                latitude
+                locationSubtypeId
+                longitude
+                name
+                parentId
+                supervisorId
+                type
+                createdById
+                updatedById
+                entityId
+                prettyStr
+                _AllChildrenCount
+                _AllParentsCount
+                _ExpectedPartKitsCount
+                _PartInventoriesCount
+                _PartKitsCount
+                _RunStepsCount
+                _StepsCount
+                _AttributesCount
+            }
+            cursor
+        }
+    }
+}

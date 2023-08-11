@@ -1,0 +1,5 @@
+mutation deleteLabel($etag: String!, $id: ID!){
+    deleteLabel(etag: $etag, id: $id){
+        id
+    }
+}

@@ -1,0 +1,5 @@
+mutation deletePurchaseOrderLine($etag: String!, $id: ID!){
+    deletePurchaseOrderLine(etag: $etag, id: $id){
+        id
+    }
+}

@@ -1,0 +1,5 @@
+mutation deletePlanItem($etag: String!, $id: ID!){
+    deletePlanItem(etag: $etag, id: $id){
+        id
+    }
+}

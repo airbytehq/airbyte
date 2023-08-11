@@ -1,0 +1,31 @@
+query issueDispositionTypes($filters: IssueDispositionTypesInputFilters, $distinctOn: [IssueDispositionTypeSortEnum], $sort: [IssueDispositionTypeSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    issueDispositionTypes(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                title
+                active
+                description
+                createdById
+                updatedById
+                prettyStr
+                _IssuesCount
+                _IssueDispositionTypeRolesCount
+                _RolesCount
+            }
+            cursor
+        }
+    }
+}

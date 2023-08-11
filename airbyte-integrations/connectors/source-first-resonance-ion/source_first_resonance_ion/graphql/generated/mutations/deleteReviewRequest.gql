@@ -1,0 +1,5 @@
+mutation deleteReviewRequest($etag: String!, $id: ID!){
+    deleteReviewRequest(etag: $etag, id: $id){
+        id
+    }
+}

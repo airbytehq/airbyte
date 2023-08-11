@@ -1,0 +1,29 @@
+query webhookEvents($filters: WebhookEventsInputFilters, $distinctOn: [WebhookEventSortEnum], $sort: [WebhookEventSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    webhookEvents(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                id
+                subscriptionId
+                responseReceivedAt
+                responseStatusCode
+                status
+                numberOfRetries
+                responseData
+                requestData
+                _created
+                _updated
+                prettyStr
+                _etag
+            }
+            cursor
+        }
+    }
+}

@@ -1,0 +1,26 @@
+query permissionGroups($filters: PermissionGroupsInputFilters, $distinctOn: [PermissionGroupSortEnum], $sort: [PermissionGroupSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    permissionGroups(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                id
+                name
+                family
+                prettyStr
+                _created
+                _updated
+                _etag
+                _PermissionsCount
+                _RolesCount
+            }
+            cursor
+        }
+    }
+}

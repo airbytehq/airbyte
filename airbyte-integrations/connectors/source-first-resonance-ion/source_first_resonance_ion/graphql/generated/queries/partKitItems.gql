@@ -1,0 +1,37 @@
+query partKitItems($includeOnOrder: Boolean!, $filters: PartKitItemsInputFilters, $distinctOn: [PartKitItemSortEnum], $sort: [PartKitItemSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    partKitItems(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                originMbomItemId
+                partId
+                partKitId
+                quantity
+                createdById
+                updatedById
+                entityId
+                fulfilled
+                quantityFulfilled
+                quantityUnfulfilled
+                prettyStr
+                firstInventoryDisplay(includeOnOrder: $includeOnOrder)
+                _LabelsCount
+                _CommentsCount
+                _AttributesCount
+            }
+            cursor
+        }
+    }
+}

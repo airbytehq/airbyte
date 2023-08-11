@@ -1,0 +1,5 @@
+mutation deleteBarcodePattern($etag: String!, $id: ID!){
+    deleteBarcodePattern(etag: $etag, id: $id){
+        id
+    }
+}

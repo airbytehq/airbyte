@@ -1,0 +1,36 @@
+query issueApprovals($filters: IssueApprovalsInputFilters, $distinctOn: [IssueApprovalSortEnum], $sort: [IssueApprovalSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    issueApprovals(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                depth
+                id
+                status
+                comment
+                content
+                resolved
+                issueId
+                issueApprovalGateType
+                roleId
+                reviewerId
+                createdById
+                updatedById
+                entityId
+                parentId
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

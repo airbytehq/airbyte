@@ -1,0 +1,5 @@
+mutation deleteWebhookHeader($etag: String!, $id: ID!){
+    deleteWebhookHeader(etag: $etag, id: $id){
+        id
+    }
+}

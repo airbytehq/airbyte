@@ -1,0 +1,29 @@
+query redlineApprovalRequests($filters: RedlineApprovalRequestsInputFilters, $distinctOn: [RedlineApprovalRequestSortEnum], $sort: [RedlineApprovalRequestSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    redlineApprovalRequests(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                status
+                redlineId
+                reviewerId
+                createdById
+                updatedById
+                entityId
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

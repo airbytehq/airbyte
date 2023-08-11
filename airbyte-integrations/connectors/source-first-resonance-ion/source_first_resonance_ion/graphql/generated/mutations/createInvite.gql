@@ -1,0 +1,67 @@
+mutation createInvite($filters: UserInputFilters, $filters1: UserInputFilters, $filters2: InviteEventFilter, $input: CreateInviteInput!){
+    createInvite(input: $input){
+        invite{
+            _created
+            _updated
+            _etag
+            LastSessionId
+            id
+            resendCount
+            email
+            name
+            message
+            status
+            createdById
+            updatedById
+            prettyStr
+            createdBy(filters: $filters){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            updatedBy(filters: $filters1){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            timeline(filters: $filters2){
+                eventType
+                timestamp
+            }
+        }
+    }
+}

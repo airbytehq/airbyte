@@ -1,0 +1,37 @@
+query users($filters: UserInputFilters, $distinctOn: [UserSortEnum], $sort: [UserSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    users(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            cursor
+        }
+    }
+}

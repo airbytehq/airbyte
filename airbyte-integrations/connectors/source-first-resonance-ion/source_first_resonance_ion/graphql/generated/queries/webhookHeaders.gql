@@ -1,0 +1,28 @@
+query webhookHeaders($filters: WebhookHeadersInputFilters, $distinctOn: [WebhookHeaderSortEnum], $sort: [WebhookHeaderSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    webhookHeaders(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                key
+                value
+                createdById
+                updatedById
+                prettyStr
+                _WebhookReceiversCount
+            }
+            cursor
+        }
+    }
+}

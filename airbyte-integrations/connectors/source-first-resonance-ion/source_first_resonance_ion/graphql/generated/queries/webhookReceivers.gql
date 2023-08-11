@@ -1,0 +1,34 @@
+query webhookReceivers($filters: WebhookReceiversInputFilters, $distinctOn: [WebhookReceiverSortEnum], $sort: [WebhookReceiverSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    webhookReceivers(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                name
+                description
+                webhookUri
+                sharedSecret
+                contentType
+                expectedResponseCode
+                createdById
+                updatedById
+                active
+                prettyStr
+                _SubscriptionsCount
+                _HeadersCount
+            }
+            cursor
+        }
+    }
+}

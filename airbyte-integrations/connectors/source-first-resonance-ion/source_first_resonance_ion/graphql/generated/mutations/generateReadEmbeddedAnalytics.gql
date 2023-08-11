@@ -1,0 +1,7 @@
+mutation generateReadEmbeddedAnalytics{
+    generateReadEmbeddedAnalytics{
+        embeddedAnalytics{
+            url
+        }
+    }
+}

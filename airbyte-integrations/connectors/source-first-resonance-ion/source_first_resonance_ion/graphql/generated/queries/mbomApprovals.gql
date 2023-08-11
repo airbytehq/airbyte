@@ -1,0 +1,36 @@
+query mbomApprovals($filters: MBomApprovalsInputFilters, $distinctOn: [MBomApprovalSortEnum], $sort: [MBomApprovalSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    mbomApprovals(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                depth
+                id
+                status
+                comment
+                content
+                resolved
+                mbomId
+                gateType
+                roleId
+                reviewerId
+                createdById
+                updatedById
+                entityId
+                parentId
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

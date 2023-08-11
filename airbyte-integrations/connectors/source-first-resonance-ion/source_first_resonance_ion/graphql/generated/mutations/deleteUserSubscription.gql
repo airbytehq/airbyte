@@ -1,0 +1,5 @@
+mutation deleteUserSubscription($etag: String!, $id: ID!){
+    deleteUserSubscription(etag: $etag, id: $id){
+        id
+    }
+}

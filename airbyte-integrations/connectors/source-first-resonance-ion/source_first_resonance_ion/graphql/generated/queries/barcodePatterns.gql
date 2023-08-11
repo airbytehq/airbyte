@@ -1,0 +1,27 @@
+query barcodePatterns($filters: BarcodePatternsInputFilters, $distinctOn: [BarcodePatternSortEnum], $sort: [BarcodePatternSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    barcodePatterns(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                expression
+                entityType
+                createdById
+                updatedById
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

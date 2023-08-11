@@ -1,0 +1,42 @@
+query fields($filters: FieldsInputFilters, $distinctOn: [StepFieldSortEnum], $sort: [StepFieldSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    fields(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                allowNotApplicable
+                allowedIonType
+                display
+                helpText
+                name
+                options
+                peerReviewRequired
+                position
+                required
+                type
+                unit
+                id
+                stepId
+                partSubtypeId
+                partId
+                signoffRoleId
+                createdById
+                updatedById
+                editable
+                prettyStr
+                _ValidationsCount
+            }
+            cursor
+        }
+    }
+}

@@ -1,0 +1,5 @@
+mutation removeInputFromPlan($etag: String!, $id: ID!){
+    removeInputFromPlan(etag: $etag, id: $id){
+        id
+    }
+}

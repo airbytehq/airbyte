@@ -1,0 +1,5 @@
+mutation deleteMbomItem($etag: String!, $id: ID!){
+    deleteMbomItem(etag: $etag, id: $id){
+        id
+    }
+}

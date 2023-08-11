@@ -1,0 +1,6 @@
+mutation deleteIssueRelation($etag: String!, $originIssueId: ID!, $relatedIssueId: ID!){
+    deleteIssueRelation(etag: $etag, originIssueId: $originIssueId, relatedIssueId: $relatedIssueId){
+        originIssueId
+        relatedIssueId
+    }
+}

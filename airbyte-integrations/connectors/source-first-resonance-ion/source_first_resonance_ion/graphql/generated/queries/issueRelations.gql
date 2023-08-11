@@ -1,0 +1,26 @@
+query issueRelations($filters: IssueRelationsInputFilters, $distinctOn: [IssueRelationSortEnum], $sort: [IssueRelationSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    issueRelations(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                originIssueId
+                relatedIssueId
+                createdById
+                updatedById
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

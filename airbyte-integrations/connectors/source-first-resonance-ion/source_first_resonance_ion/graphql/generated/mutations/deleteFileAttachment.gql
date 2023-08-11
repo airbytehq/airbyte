@@ -1,0 +1,6 @@
+mutation deleteFileAttachment($input: DeleteFileAttachmentInput!){
+    deleteFileAttachment(input: $input){
+        fileAttachmentId
+        entityId
+    }
+}

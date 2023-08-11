@@ -1,0 +1,29 @@
+query mbomItemReferenceDesignators($filters: MBomItemReferenceDesignatorsInputFilters, $distinctOn: [MBomItemReferenceDesignatorSortEnum], $sort: [MBomItemReferenceDesignatorSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    mbomItemReferenceDesignators(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                mbomItemId
+                value
+                createdById
+                updatedById
+                prettyStr
+                _AbomItemReferenceDesignatorsCount
+                _StepAssociationsCount
+            }
+            cursor
+        }
+    }
+}

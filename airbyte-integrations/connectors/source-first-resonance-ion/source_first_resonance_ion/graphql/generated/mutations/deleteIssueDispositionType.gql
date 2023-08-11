@@ -1,0 +1,5 @@
+mutation deleteIssueDispositionType($etag: String!, $id: ID!){
+    deleteIssueDispositionType(etag: $etag, id: $id){
+        id
+    }
+}

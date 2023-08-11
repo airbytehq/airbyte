@@ -1,0 +1,5 @@
+query globalUniqueSerialNumber($name: String, $lastGeneratedValue: Boolean, $unsafePredictNextValue: Boolean){
+    globalUniqueSerialNumber(name: $name, lastGeneratedValue: $lastGeneratedValue, unsafePredictNextValue: $unsafePredictNextValue){
+        serialNumber
+    }
+}

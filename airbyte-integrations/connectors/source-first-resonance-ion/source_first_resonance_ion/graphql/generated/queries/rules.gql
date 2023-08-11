@@ -1,0 +1,36 @@
+query rules($filters: RulesInputFilters, $distinctOn: [RuleSortEnum], $sort: [RuleSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    rules(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                title
+                version
+                enabled
+                status
+                target
+                eventType
+                ruleType
+                code
+                codeHash
+                context
+                errorState
+                createdById
+                updatedById
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

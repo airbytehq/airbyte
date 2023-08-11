@@ -1,0 +1,5 @@
+mutation deleteReceipt($etag: String!, $id: ID!){
+    deleteReceipt(etag: $etag, id: $id){
+        id
+    }
+}

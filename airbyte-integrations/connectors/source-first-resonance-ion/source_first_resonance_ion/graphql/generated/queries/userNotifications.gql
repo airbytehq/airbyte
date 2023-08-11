@@ -1,0 +1,36 @@
+query userNotifications($filters: UserNotificationsInputFilters, $distinctOn: [UserNotificationSortEnum], $sort: [UserNotificationSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    userNotifications(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                description
+                entityId
+                externalLink
+                id
+                linkText
+                path
+                payload
+                read
+                title
+                type
+                userId
+                createdById
+                updatedById
+                linkUrl
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

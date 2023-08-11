@@ -1,0 +1,5 @@
+mutation deleteRule($etag: String!, $id: ID!){
+    deleteRule(etag: $etag, id: $id){
+        id
+    }
+}

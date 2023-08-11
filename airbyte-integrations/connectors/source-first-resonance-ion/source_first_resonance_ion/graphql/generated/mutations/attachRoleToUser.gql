@@ -1,0 +1,6 @@
+mutation attachRoleToUser($input: RoleToUserInput!){
+    attachRoleToUser(input: $input){
+        userId
+        roleId
+    }
+}

@@ -1,0 +1,34 @@
+query receipts($filters: ReceiptsInputFilters, $distinctOn: [ReceiptSortEnum], $sort: [ReceiptSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    receipts(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                receivedAt
+                receivedById
+                createdById
+                updatedById
+                entityId
+                prettyStr
+                _CommentsCount
+                _LabelsCount
+                _PartInventoriesCount
+                _PurchaseOrderLinesCount
+                _ReceiptItemsCount
+                _AttributesCount
+            }
+            cursor
+        }
+    }
+}

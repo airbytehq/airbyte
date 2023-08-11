@@ -1,0 +1,5 @@
+mutation deleteStepApprovalRequest($etag: String!, $id: ID!){
+    deleteStepApprovalRequest(etag: $etag, id: $id){
+        id
+    }
+}

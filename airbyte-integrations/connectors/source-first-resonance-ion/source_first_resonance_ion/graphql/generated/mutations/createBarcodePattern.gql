@@ -1,0 +1,64 @@
+mutation createBarcodePattern($filters: UserInputFilters, $filters1: UserInputFilters, $filters2: BarcodePatternEventFilter, $input: CreateBarcodePatternInput!){
+    createBarcodePattern(input: $input){
+        barcodePattern{
+            _created
+            _updated
+            _etag
+            LastSessionId
+            id
+            expression
+            entityType
+            createdById
+            updatedById
+            prettyStr
+            createdBy(filters: $filters){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            updatedBy(filters: $filters1){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            timeline(filters: $filters2){
+                eventType
+                timestamp
+            }
+        }
+    }
+}

@@ -1,0 +1,5 @@
+mutation deletePartSubtype($etag: String!, $id: ID!){
+    deletePartSubtype(etag: $etag, id: $id){
+        id
+    }
+}

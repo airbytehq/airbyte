@@ -1,0 +1,6 @@
+mutation addLabelToItem($input: LabelToItemInput!){
+    addLabelToItem(input: $input){
+        labelId
+        entityId
+    }
+}

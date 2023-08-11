@@ -1,0 +1,5 @@
+mutation deleteLocation($etag: String!, $id: ID!){
+    deleteLocation(etag: $etag, id: $id){
+        id
+    }
+}

@@ -1,0 +1,5 @@
+mutation deleteIntegration($etag: String!, $id: ID!){
+    deleteIntegration(etag: $etag, id: $id){
+        id
+    }
+}

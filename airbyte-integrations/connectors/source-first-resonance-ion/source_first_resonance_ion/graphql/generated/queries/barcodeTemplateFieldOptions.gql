@@ -1,0 +1,6 @@
+query barcodeTemplateFieldOptions($templateEntityType: Barcodeentitytypeenum!){
+    barcodeTemplateFieldOptions(templateEntityType: $templateEntityType){
+        options
+        templateEntityType
+    }
+}

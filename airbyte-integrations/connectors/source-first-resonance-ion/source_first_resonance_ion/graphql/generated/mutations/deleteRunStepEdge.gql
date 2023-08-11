@@ -1,0 +1,5 @@
+mutation deleteRunStepEdge($etag: String!, $id: ID!){
+    deleteRunStepEdge(etag: $etag, id: $id){
+        id
+    }
+}

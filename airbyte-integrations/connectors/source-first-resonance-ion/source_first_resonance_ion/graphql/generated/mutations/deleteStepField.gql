@@ -1,0 +1,5 @@
+mutation deleteStepField($etag: String!, $id: ID!){
+    deleteStepField(etag: $etag, id: $id){
+        id
+    }
+}

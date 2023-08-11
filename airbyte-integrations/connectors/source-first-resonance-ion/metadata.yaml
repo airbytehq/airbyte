@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 73646ed6-0b40-45f1-8cd4-4fce78305c71
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-first-resonance-ion
+  githubIssueLabel: source-first-resonance-ion
+  icon: first-resonance-ion.svg
+  license: MIT
+  name: First Resonance Ion
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/first-resonance-ion
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

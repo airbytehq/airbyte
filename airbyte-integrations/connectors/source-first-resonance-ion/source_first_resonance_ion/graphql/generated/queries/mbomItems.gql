@@ -1,0 +1,37 @@
+query mbomItems($filters: MBomItemsInputFilters, $distinctOn: [MBomItemSortEnum], $sort: [MBomItemSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    mbomItems(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                _deleted
+                madeOnAssembly
+                mbomId
+                partId
+                quantity
+                createdById
+                updatedById
+                prettyStr
+                parentId
+                _ParentCount
+                _AbomItemsCount
+                _PartKitItemsCount
+                _ReferenceDesignatorsCount
+                _StepAssociationsCount
+                _SubstitutesCount
+            }
+            cursor
+        }
+    }
+}

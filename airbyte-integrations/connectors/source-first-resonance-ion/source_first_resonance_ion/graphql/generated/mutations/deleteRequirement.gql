@@ -1,0 +1,5 @@
+mutation deleteRequirement($etag: String!, $id: ID!){
+    deleteRequirement(etag: $etag, id: $id){
+        id
+    }
+}

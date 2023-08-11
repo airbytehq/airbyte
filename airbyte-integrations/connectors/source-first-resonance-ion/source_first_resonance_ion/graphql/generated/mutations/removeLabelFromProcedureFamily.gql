@@ -1,0 +1,6 @@
+mutation removeLabelFromProcedureFamily($input: LabelToProcedureFamilyInput!){
+    removeLabelFromProcedureFamily(input: $input){
+        labelId
+        familyId
+    }
+}

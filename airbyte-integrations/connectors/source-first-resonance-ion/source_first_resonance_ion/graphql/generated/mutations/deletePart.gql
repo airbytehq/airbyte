@@ -1,0 +1,5 @@
+mutation deletePart($etag: String!, $id: ID!){
+    deletePart(etag: $etag, id: $id){
+        id
+    }
+}

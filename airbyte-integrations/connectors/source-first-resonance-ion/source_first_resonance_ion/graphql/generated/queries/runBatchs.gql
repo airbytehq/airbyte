@@ -1,0 +1,26 @@
+query runBatchs($filters: RunBatchesInputFilters, $distinctOn: [RunBatchSortEnum], $sort: [RunBatchSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    runBatchs(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                title
+                createdById
+                updatedById
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

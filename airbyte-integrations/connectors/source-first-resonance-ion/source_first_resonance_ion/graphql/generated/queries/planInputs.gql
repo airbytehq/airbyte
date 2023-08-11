@@ -1,0 +1,33 @@
+query planInputs($filters: PlanInputsInputFilters, $distinctOn: [PlanInputSortEnum], $sort: [PlanInputSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    planInputs(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                planId
+                partId
+                dueDate
+                quantity
+                completedQuantity
+                createdById
+                updatedById
+                entityId
+                percentComplete
+                prettyStr
+                _PlanItemsCount
+            }
+            cursor
+        }
+    }
+}

@@ -1,0 +1,5 @@
+mutation deleteWebhookReceiver($etag: String!, $id: ID!){
+    deleteWebhookReceiver(etag: $etag, id: $id){
+        id
+    }
+}

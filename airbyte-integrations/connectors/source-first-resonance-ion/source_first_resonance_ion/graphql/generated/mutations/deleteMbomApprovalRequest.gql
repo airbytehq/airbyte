@@ -1,0 +1,5 @@
+mutation deleteMbomApprovalRequest($etag: String!, $id: ID!){
+    deleteMbomApprovalRequest(etag: $etag, id: $id){
+        id
+    }
+}

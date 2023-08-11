@@ -1,0 +1,6 @@
+mutation addUserToTeam($input: TeamToUserInput!){
+    addUserToTeam(input: $input){
+        userId
+        teamId
+    }
+}

@@ -1,0 +1,37 @@
+query suppliers($filters: SuppliersInputFilters, $distinctOn: [SupplierSortEnum], $sort: [SupplierSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    suppliers(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                name
+                description
+                phoneNumber
+                address
+                email
+                contactName
+                createdById
+                updatedById
+                entityId
+                prettyStr
+                _LabelsCount
+                _CommentsCount
+                _PurchaseOrdersCount
+                _PlanItemsCount
+                _AttributesCount
+            }
+            cursor
+        }
+    }
+}

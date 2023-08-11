@@ -1,0 +1,6 @@
+mutation addLabelToProcedureFamily($input: LabelToProcedureFamilyInput!){
+    addLabelToProcedureFamily(input: $input){
+        labelId
+        familyId
+    }
+}

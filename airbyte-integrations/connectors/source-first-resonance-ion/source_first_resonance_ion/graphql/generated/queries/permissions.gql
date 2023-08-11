@@ -1,0 +1,30 @@
+query permissions($filters: PermissionsInputFilters, $distinctOn: [PermissionSortEnum], $sort: [PermissionSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    permissions(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                id
+                action
+                resource
+                resourceTypeName
+                field
+                fieldTypeName
+                isConnection
+                prettyStr
+                _created
+                _updated
+                _etag
+                _PermissionGroupsCount
+                _PermissionPermissionGroupsCount
+            }
+            cursor
+        }
+    }
+}

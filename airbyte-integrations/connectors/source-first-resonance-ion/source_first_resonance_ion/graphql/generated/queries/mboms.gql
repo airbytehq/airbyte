@@ -1,0 +1,40 @@
+query mboms($filters: MBomsInputFilters, $distinctOn: [MBomSortEnum], $sort: [MBomSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    mboms(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                version
+                id
+                partId
+                status
+                createdById
+                updatedById
+                entityId
+                isLatestVersion
+                isLatestReleasedVersion
+                prettyStr
+                editable
+                labels
+                comments
+                _LabelsCount
+                _CommentsCount
+                _ApprovalsCount
+                _MbomItemsCount
+                _ApprovalRequestsCount
+                _AttributesCount
+            }
+            cursor
+        }
+    }
+}

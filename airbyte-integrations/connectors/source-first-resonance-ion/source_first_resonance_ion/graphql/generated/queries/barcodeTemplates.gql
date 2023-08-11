@@ -1,0 +1,34 @@
+query barcodeTemplates($filters: BarcodeTemplatesInputFilters, $distinctOn: [BarcodeTemplateSortEnum], $sort: [BarcodeTemplateSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    barcodeTemplates(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                heightInches
+                widthInches
+                dpi
+                template
+                name
+                format
+                entityType
+                deactivated
+                createdById
+                updatedById
+                prettyStr
+                _BarcodeLabelsCount
+            }
+            cursor
+        }
+    }
+}

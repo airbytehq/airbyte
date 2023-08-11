@@ -1,0 +1,5 @@
+mutation deleteContact($etag: String!, $id: ID!){
+    deleteContact(etag: $etag, id: $id){
+        id
+    }
+}

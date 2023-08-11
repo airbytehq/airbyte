@@ -1,0 +1,5 @@
+mutation deleteWebhookSubscription($etag: String!, $id: ID!){
+    deleteWebhookSubscription(etag: $etag, id: $id){
+        id
+    }
+}

@@ -1,0 +1,5 @@
+mutation deleteLocationSubtype($etag: String!, $id: ID!){
+    deleteLocationSubtype(etag: $etag, id: $id){
+        id
+    }
+}

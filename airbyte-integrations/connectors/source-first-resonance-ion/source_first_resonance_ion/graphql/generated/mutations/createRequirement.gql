@@ -1,0 +1,66 @@
+mutation createRequirement($filters: UserInputFilters, $filters1: UserInputFilters, $filters2: RequirementEventFilter, $input: CreateRequirementInput!){
+    createRequirement(input: $input){
+        requirement{
+            _created
+            _updated
+            _etag
+            LastSessionId
+            id
+            referenceName
+            title
+            content
+            requirementType
+            createdById
+            updatedById
+            prettyStr
+            createdBy(filters: $filters){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            updatedBy(filters: $filters1){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            timeline(filters: $filters2){
+                eventType
+                timestamp
+            }
+        }
+    }
+}

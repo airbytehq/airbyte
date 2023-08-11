@@ -1,0 +1,5 @@
+mutation deleteProcedure($etag: String!, $id: ID!){
+    deleteProcedure(etag: $etag, id: $id){
+        id
+    }
+}

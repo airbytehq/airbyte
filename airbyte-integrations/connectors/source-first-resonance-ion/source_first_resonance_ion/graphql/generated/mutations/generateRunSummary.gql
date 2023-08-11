@@ -1,0 +1,5 @@
+mutation generateRunSummary($input: GenerateRunSummaryInput!){
+    generateRunSummary(input: $input){
+        message
+    }
+}

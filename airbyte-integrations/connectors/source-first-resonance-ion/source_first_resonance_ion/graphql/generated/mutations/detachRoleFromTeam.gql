@@ -1,0 +1,6 @@
+mutation detachRoleFromTeam($input: TeamToRoleInput!){
+    detachRoleFromTeam(input: $input){
+        teamId
+        roleId
+    }
+}

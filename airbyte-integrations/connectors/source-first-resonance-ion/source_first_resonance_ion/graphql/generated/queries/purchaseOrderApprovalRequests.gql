@@ -1,0 +1,29 @@
+query purchaseOrderApprovalRequests($filters: PurchaseOrderApprovalRequestsInputFilters, $distinctOn: [PurchaseOrderApprovalRequestSortEnum], $sort: [PurchaseOrderApprovalRequestSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    purchaseOrderApprovalRequests(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                status
+                purchaseOrderId
+                reviewerId
+                createdById
+                updatedById
+                entityId
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

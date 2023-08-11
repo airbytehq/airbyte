@@ -1,0 +1,33 @@
+query mrpJobs($filters: MRPJobsInputFilters, $distinctOn: [MRPJobSortEnum], $sort: [MRPJobSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    mrpJobs(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                startTime
+                endTime
+                status
+                failedReason
+                createdById
+                updatedById
+                entityId
+                isLatest
+                prettyStr
+                _CommentsCount
+                _PlanItemsCount
+            }
+            cursor
+        }
+    }
+}

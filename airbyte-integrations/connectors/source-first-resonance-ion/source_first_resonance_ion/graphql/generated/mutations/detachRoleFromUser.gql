@@ -1,0 +1,6 @@
+mutation detachRoleFromUser($input: RoleToUserInput!){
+    detachRoleFromUser(input: $input){
+        userId
+        roleId
+    }
+}

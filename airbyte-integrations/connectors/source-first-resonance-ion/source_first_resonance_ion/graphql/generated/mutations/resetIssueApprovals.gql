@@ -1,0 +1,5 @@
+mutation resetIssueApprovals($input: ResetIssueApprovalsInput!){
+    resetIssueApprovals(input: $input){
+        issueId
+    }
+}

@@ -1,0 +1,6 @@
+mutation deletePlanItemAllocation($childPlanItemId: ID!, $etag: String!, $parentPlanItemId: ID!){
+    deletePlanItemAllocation(childPlanItemId: $childPlanItemId, etag: $etag, parentPlanItemId: $parentPlanItemId){
+        childPlanItemId
+        parentPlanItemId
+    }
+}

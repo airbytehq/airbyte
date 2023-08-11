@@ -1,0 +1,6 @@
+mutation addRequirementToItem($input: RequirementToItemInput!){
+    addRequirementToItem(input: $input){
+        requirementId
+        entityId
+    }
+}

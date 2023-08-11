@@ -1,0 +1,5 @@
+mutation deleteComment($etag: String!, $id: ID!){
+    deleteComment(etag: $etag, id: $id){
+        id
+    }
+}

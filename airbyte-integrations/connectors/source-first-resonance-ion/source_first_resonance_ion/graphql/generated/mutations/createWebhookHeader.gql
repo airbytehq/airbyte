@@ -1,0 +1,84 @@
+mutation createWebhookHeader($filters: WebhookReceiversInputFilters, $filters1: UserInputFilters, $filters2: UserInputFilters, $filters3: WebhookHeaderEventFilter, $input: CreateWebhookHeaderInput!){
+    createWebhookHeader(input: $input){
+        webhookHeader{
+            _created
+            _updated
+            _etag
+            LastSessionId
+            id
+            key
+            value
+            createdById
+            updatedById
+            prettyStr
+            webhookReceivers(filters: $filters){
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                name
+                description
+                webhookUri
+                sharedSecret
+                contentType
+                expectedResponseCode
+                createdById
+                updatedById
+                active
+                prettyStr
+                _SubscriptionsCount
+                _HeadersCount
+            }
+            createdBy(filters: $filters1){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            updatedBy(filters: $filters2){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            _WebhookReceiversCount
+            timeline(filters: $filters3){
+                eventType
+                timestamp
+            }
+        }
+    }
+}

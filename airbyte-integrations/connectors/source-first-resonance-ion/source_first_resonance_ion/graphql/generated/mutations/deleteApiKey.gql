@@ -1,0 +1,15 @@
+mutation deleteApiKey($input: APIKeyInput!){
+    deleteApiKey(input: $input){
+        apikey{
+            id
+            _created
+            _updated
+            _etag
+            clientId
+            clientSecret
+            enabled
+            createdById
+            updatedById
+        }
+    }
+}

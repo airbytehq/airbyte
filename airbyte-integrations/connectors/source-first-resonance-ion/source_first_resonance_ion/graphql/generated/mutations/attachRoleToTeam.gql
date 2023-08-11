@@ -1,0 +1,6 @@
+mutation attachRoleToTeam($input: TeamToRoleInput!){
+    attachRoleToTeam(input: $input){
+        teamId
+        roleId
+    }
+}

@@ -1,0 +1,6 @@
+mutation removeLabelFromItem($input: LabelToItemInput!){
+    removeLabelFromItem(input: $input){
+        labelId
+        entityId
+    }
+}

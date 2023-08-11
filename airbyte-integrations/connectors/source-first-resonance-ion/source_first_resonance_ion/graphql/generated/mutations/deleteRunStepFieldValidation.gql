@@ -1,0 +1,5 @@
+mutation deleteRunStepFieldValidation($etag: String!, $id: ID!){
+    deleteRunStepFieldValidation(etag: $etag, id: $id){
+        id
+    }
+}

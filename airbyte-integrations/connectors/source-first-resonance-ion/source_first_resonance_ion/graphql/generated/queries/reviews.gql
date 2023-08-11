@@ -1,0 +1,34 @@
+query reviews($filters: ReviewsInputFilters, $distinctOn: [ReviewSortEnum], $sort: [ReviewSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    reviews(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                depth
+                id
+                status
+                procedureId
+                content
+                resolved
+                stepId
+                reviewerId
+                createdById
+                updatedById
+                entityId
+                parentId
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

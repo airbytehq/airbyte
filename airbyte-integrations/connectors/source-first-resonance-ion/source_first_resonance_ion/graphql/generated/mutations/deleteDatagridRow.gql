@@ -1,0 +1,5 @@
+mutation deleteDatagridRow($etag: String!, $id: ID!){
+    deleteDatagridRow(etag: $etag, id: $id){
+        id
+    }
+}

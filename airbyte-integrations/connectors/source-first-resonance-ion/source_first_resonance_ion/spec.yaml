@@ -1,0 +1,60 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: First Resonance Ion Spec
+  type: object
+  required:
+    - clientId
+    - clientSecret
+    - environment
+    - region
+  properties:
+    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+    clientId:
+      type: string
+      title: Client Id
+      description: >-
+        The generated API client id from your First Resonance instance. 
+        You can create your by following the instructions <a href="https://manual.firstresonance.io/api/api-keys">here</a>
+      pattern: "^[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$"
+      # Tried to match the text examples @brentshulman-silkline saw here:
+      # https://docs.airbyte.com/connector-development/connector-specification-reference#pattern-descriptors
+      pattern_descriptor: "of a valid GUID"
+      group: "auth"
+      order: 0
+    clientSecret:
+      type: string
+      title: Client Secret
+      description: >-
+        The generated API client secret from your First Resonance instance. 
+        You can create your by following the instructions <a href="https://manual.firstresonance.io/api/api-keys">here</a>
+      pattern: "^[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$"
+      # Tried to match the text examples @brentshulman-silkline saw here:
+      # https://docs.airbyte.com/connector-development/connector-specification-reference#pattern-descriptors
+      pattern_descriptor: "of a valid GUID"
+      group: auth
+      airbyte_secret: true
+      order: 1
+    environment:
+      type: string
+      title: Environment
+      description: >-
+        The hosting environment for for your First Resonance instance. 
+        Please see <a href="https://manual.firstresonance.io/api/access-tokens#step-2-get-an-access-token">here</a> if you would like to confirm your hosting.
+      group: hosting
+      enum: ["staging", "production"]
+      order: 1
+    region:
+      type: string
+      title: Environment
+      description: >-
+        The hosting region for for your First Resonance instance. 
+        Please see <a href="https://manual.firstresonance.io/api/access-tokens#step-2-get-an-access-token">here</a> if you would like to confirm your hosting.
+      group: hosting
+      enum: ["standard", "us", "aus"]
+      order: 0
+  groups:
+    - id: "auth"
+      title: "Authentication"
+    - id: "hosting"
+      title: "Hosting"

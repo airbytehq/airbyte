@@ -1,0 +1,5 @@
+mutation deletePlanReservation($etag: String!, $id: ID!){
+    deletePlanReservation(etag: $etag, id: $id){
+        id
+    }
+}

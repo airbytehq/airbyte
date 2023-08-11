@@ -1,0 +1,44 @@
+mutation deleteOrganizationPartInventoryAttributes($input: DeleteAttributeSettingsInput!){
+    deleteOrganizationPartInventoryAttributes(input: $input){
+        organization{
+            id
+            name
+            avatar
+            domain
+            orgSchema
+            _created
+            _etag
+            _updated
+            settings{
+                numReviewersRequired
+                datetimeFormat
+            }
+            LastSessionId
+            authField
+            settingsStructured
+            users{
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            _AnalyticsCredentialsCount
+        }
+    }
+}

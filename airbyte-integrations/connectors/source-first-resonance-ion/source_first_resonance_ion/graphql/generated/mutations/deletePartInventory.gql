@@ -1,0 +1,5 @@
+mutation deletePartInventory($etag: String!, $id: ID!){
+    deletePartInventory(etag: $etag, id: $id){
+        id
+    }
+}

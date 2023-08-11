@@ -1,0 +1,73 @@
+mutation updateRule($filters: UserInputFilters, $filters1: UserInputFilters, $filters2: RuleEventFilter, $input: UpdateRuleInput!){
+    updateRule(input: $input){
+        rule{
+            _created
+            _updated
+            _etag
+            LastSessionId
+            id
+            title
+            version
+            enabled
+            status
+            target
+            eventType
+            ruleType
+            code
+            codeHash
+            context
+            errorState
+            createdById
+            updatedById
+            prettyStr
+            createdBy(filters: $filters){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            updatedBy(filters: $filters1){
+                _created
+                _etag
+                LastSessionId
+                avatar
+                deactivated
+                email
+                enforceMfa
+                id
+                ionBot
+                name
+                notificationEmailsEnabled
+                organizationId
+                _updated
+                updatedById
+                entityId
+                isAdmin
+                prettyStr
+                _AnalyticsCredentialCount
+                _TeamsCount
+                _UserRolesCount
+            }
+            timeline(filters: $filters2){
+                eventType
+                timestamp
+            }
+        }
+    }
+}

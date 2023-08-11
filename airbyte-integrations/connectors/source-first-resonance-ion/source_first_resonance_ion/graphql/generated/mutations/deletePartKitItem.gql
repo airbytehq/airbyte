@@ -1,0 +1,5 @@
+mutation deletePartKitItem($etag: String!, $id: ID!){
+    deletePartKitItem(etag: $etag, id: $id){
+        id
+    }
+}

@@ -1,0 +1,29 @@
+query stepApprovalRequests($filters: StepApprovalRequestsInputFilters, $distinctOn: [StepApprovalRequestSortEnum], $sort: [StepApprovalRequestSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    stepApprovalRequests(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                status
+                stepId
+                reviewerId
+                createdById
+                updatedById
+                entityId
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

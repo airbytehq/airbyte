@@ -1,0 +1,6 @@
+mutation deletePartProcedure($etag: String!, $partId: ID!, $procedureId: ID!){
+    deletePartProcedure(etag: $etag, partId: $partId, procedureId: $procedureId){
+        partId
+        procedureId
+    }
+}

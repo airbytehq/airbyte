@@ -1,0 +1,24 @@
+query apiKeys($filters: APIKeyInputFilters, $before: String, $after: String, $first: Int, $last: Int){
+    apiKeys(filters: $filters, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+        }
+        edges{
+            node{
+                id
+                _created
+                _updated
+                _etag
+                clientId
+                clientSecret
+                enabled
+                createdById
+                updatedById
+            }
+            cursor
+        }
+    }
+}

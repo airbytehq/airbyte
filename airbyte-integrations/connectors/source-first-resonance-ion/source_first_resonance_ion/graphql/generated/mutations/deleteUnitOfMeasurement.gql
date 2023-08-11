@@ -1,0 +1,5 @@
+mutation deleteUnitOfMeasurement($etag: String!, $id: ID!){
+    deleteUnitOfMeasurement(etag: $etag, id: $id){
+        id
+    }
+}

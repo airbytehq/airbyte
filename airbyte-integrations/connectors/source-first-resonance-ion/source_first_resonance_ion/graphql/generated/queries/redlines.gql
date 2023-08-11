@@ -1,0 +1,35 @@
+query redlines($filters: RedlinesInputFilters, $distinctOn: [RedlineSortEnum], $sort: [RedlineSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    redlines(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                stepId
+                initialState
+                finalState
+                issueId
+                createdById
+                updatedById
+                diff
+                batched
+                active
+                prettyStr
+                approved
+                _ApprovalsCount
+                _ApprovalRequestsCount
+            }
+            cursor
+        }
+    }
+}

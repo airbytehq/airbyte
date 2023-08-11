@@ -1,0 +1,28 @@
+query partSubtypes($filters: PartSubtypesInputFilters, $distinctOn: [PartSubtypeSortEnum], $sort: [PartSubtypeSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    partSubtypes(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                name
+                description
+                createdById
+                updatedById
+                prettyStr
+                _PartsCount
+            }
+            cursor
+        }
+    }
+}

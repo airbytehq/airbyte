@@ -1,0 +1,5 @@
+query prismaticIntegration{
+    prismaticIntegration{
+        token
+    }
+}

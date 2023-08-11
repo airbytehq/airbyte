@@ -1,0 +1,5 @@
+mutation deletePurchaseOrderApprovalRequest($etag: String!, $id: ID!){
+    deletePurchaseOrderApprovalRequest(etag: $etag, id: $id){
+        id
+    }
+}

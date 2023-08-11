@@ -1,0 +1,7 @@
+mutation dispatchNotification($input: DispatchNotificationInput!){
+    dispatchNotification(input: $input){
+        response{
+            messageId
+        }
+    }
+}

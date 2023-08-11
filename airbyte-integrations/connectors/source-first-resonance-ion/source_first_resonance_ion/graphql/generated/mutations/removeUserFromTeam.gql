@@ -1,0 +1,6 @@
+mutation removeUserFromTeam($input: TeamToUserInput!){
+    removeUserFromTeam(input: $input){
+        userId
+        teamId
+    }
+}

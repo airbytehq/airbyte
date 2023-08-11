@@ -1,0 +1,5 @@
+mutation deleteAbomItem($etag: String!, $id: ID!){
+    deleteAbomItem(etag: $etag, id: $id){
+        id
+    }
+}

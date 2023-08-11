@@ -1,0 +1,5 @@
+mutation deleteCurrency($etag: String!, $id: ID!){
+    deleteCurrency(etag: $etag, id: $id){
+        id
+    }
+}

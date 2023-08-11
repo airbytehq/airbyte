@@ -1,0 +1,37 @@
+query abomItems($filters: ABomItemsInputFilters, $distinctOn: [ABomItemSortEnum], $sort: [ABomItemSortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    abomItems(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _etag
+                LastSessionId
+                id
+                partInventoryId
+                partId
+                originMbomItemId
+                updatedById
+                _updated
+                expectedQuantityPer
+                expectedFixedQuantity
+                quantity
+                createdById
+                expectedQuantity
+                acceptablePartIds
+                prettyStr
+                _AllChildrenCount
+                _AllParentsCount
+                _ParentEdgesCount
+                _ChildEdgesCount
+            }
+            cursor
+        }
+    }
+}

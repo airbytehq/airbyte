@@ -1,0 +1,26 @@
+query currencies($filters: CurrenciesInputFilters, $distinctOn: [CurrencySortEnum], $sort: [CurrencySortEnum], $before: String, $after: String, $first: Int, $last: Int){
+    currencies(filters: $filters, distinctOn: $distinctOn, sort: $sort, before: $before, after: $after, first: $first, last: $last){
+        pageInfo{
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+            count
+            totalCount
+        }
+        edges{
+            node{
+                _created
+                _updated
+                _etag
+                LastSessionId
+                id
+                type
+                createdById
+                updatedById
+                prettyStr
+            }
+            cursor
+        }
+    }
+}

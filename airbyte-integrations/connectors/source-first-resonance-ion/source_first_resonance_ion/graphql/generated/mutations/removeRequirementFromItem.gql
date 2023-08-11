@@ -1,0 +1,6 @@
+mutation removeRequirementFromItem($input: RequirementToItemInput!){
+    removeRequirementFromItem(input: $input){
+        requirementId
+        entityId
+    }
+}
