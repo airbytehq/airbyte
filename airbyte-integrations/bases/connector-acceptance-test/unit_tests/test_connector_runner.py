@@ -18,38 +18,39 @@ from connector_acceptance_test.utils import connector_runner
 
 
 class TestContainerRunner:
-    def test_run_call_persist_configuration(self, mocker, tmp_path):
+    def test_parse_airbyte_messages_from_command_output(self, mocker, tmp_path):
         old_configuration_path = tmp_path / "config.json"
         new_configuration = {"field_a": "new_value_a"}
+        mock_logging = mocker.MagicMock()
+        mocker.patch.object(connector_runner, "logging", mock_logging)
         mocker.patch.object(connector_runner, "docker")
-        records_reads = [
-            AirbyteMessage(
-                type=AirbyteMessageType.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"foo": "bar"}, emitted_at=1.0)
-            ).json(exclude_unset=False),
-            AirbyteMessage(
-                type=AirbyteMessageType.CONTROL,
-                control=AirbyteControlMessage(
-                    type=OrchestratorType.CONNECTOR_CONFIG,
-                    emitted_at=1.0,
-                    connectorConfig=AirbyteControlConnectorConfigMessage(config=new_configuration),
-                ),
-            ).json(exclude_unset=False),
-        ]
-        mocker.patch.object(connector_runner.ConnectorRunner, "read", mocker.Mock(return_value=records_reads))
+        raw_command_output = "\n".join(
+            [
+                AirbyteMessage(
+                    type=AirbyteMessageType.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"foo": "bar"}, emitted_at=1.0)
+                ).json(exclude_unset=False),
+                AirbyteMessage(
+                    type=AirbyteMessageType.CONTROL,
+                    control=AirbyteControlMessage(
+                        type=OrchestratorType.CONNECTOR_CONFIG,
+                        emitted_at=1.0,
+                        connectorConfig=AirbyteControlConnectorConfigMessage(config=new_configuration),
+                    ),
+                ).json(exclude_unset=False),
+                "invalid message",
+            ]
+        )
+
         mocker.patch.object(connector_runner.ConnectorRunner, "_persist_new_configuration")
         runner = connector_runner.ConnectorRunner(
-            "source-test:dev", connector_configuration_path=old_configuration_path, custom_environment_variables={"foo": "bar"}
+            "source-test:dev",
+            mocker.Mock(),
+            connector_configuration_path=old_configuration_path,
+            custom_environment_variables={"foo": "bar"},
         )
-        list(runner.run("dummy_cmd"))
+        runner.parse_airbyte_messages_from_command_output(raw_command_output)
         runner._persist_new_configuration.assert_called_once_with(new_configuration, 1)
-        runner._client.containers.run.assert_called_once_with(
-            image=runner._image,
-            command="dummy_cmd",
-            volumes={str(tmp_path) + "/run_1/input": {"bind": "/data"}, str(tmp_path) + "/run_1/output": {"bind": "/local", "mode": "rw"}},
-            network_mode="host",
-            detach=True,
-            environment={"foo": "bar"},
-        )
+        mock_logging.warning.assert_called_once()
 
     @pytest.mark.parametrize(
         "pass_configuration_path, old_configuration, new_configuration, new_configuration_emitted_at, expect_new_configuration",
@@ -92,7 +93,7 @@ class TestContainerRunner:
         else:
             old_configuration_path = None
         mocker.patch.object(connector_runner, "docker")
-        runner = connector_runner.ConnectorRunner("source-test:dev", old_configuration_path)
+        runner = connector_runner.ConnectorRunner("source-test:dev", mocker.MagicMock(), old_configuration_path)
         new_configuration_path = runner._persist_new_configuration(new_configuration, new_configuration_emitted_at)
         if not expect_new_configuration:
             assert new_configuration_path is None

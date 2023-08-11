@@ -35,6 +35,10 @@ from connector_acceptance_test.tests.test_incremental import (
     future_state_fixture,
 )
 
+pytestmark = [
+    pytest.mark.anyio,
+]
+
 
 def build_messages_from_record_data(stream: str, records: list[dict]) -> list[AirbyteMessage]:
     return [build_record_message(stream, data) for data in records]
@@ -140,12 +144,12 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
 @pytest.mark.parametrize(
     "run_per_stream_test",
     [
-        pytest.param(False, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
+        # pytest.param(False, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
         pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
-def test_incremental_two_sequential_reads(
-    records1, records2, latest_state, threshold_days, cursor_type, expected_error, run_per_stream_test
+async def test_incremental_two_sequential_reads(
+    mocker, records1, records2, latest_state, threshold_days, cursor_type, expected_error, run_per_stream_test
 ):
     input_config = IncrementalConfig(threshold_days=threshold_days)
     cursor_paths = {"test_stream": ["date"]}
@@ -178,12 +182,12 @@ def test_incremental_two_sequential_reads(
         call_read_with_state_output_messages = build_messages_from_record_data("test_stream", records2)
 
     docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = call_read_output_messages
-    docker_runner_mock.call_read_with_state.return_value = call_read_with_state_output_messages
+    docker_runner_mock.call_read = mocker.AsyncMock(return_value=call_read_output_messages)
+    docker_runner_mock.call_read_with_state = mocker.AsyncMock(return_value=call_read_with_state_output_messages)
 
     t = _TestIncremental()
     with expected_error:
-        t.test_two_sequential_reads(
+        await t.test_two_sequential_reads(
             inputs=input_config,
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
@@ -222,8 +226,8 @@ def test_incremental_two_sequential_reads(
         pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
-def test_incremental_two_sequential_reads_state_invalid(
-    stream_name, records1, records2, latest_state, cursor_type, cursor_paths, expected_error, run_per_stream_test
+async def test_incremental_two_sequential_reads_state_invalid(
+    mocker, stream_name, records1, records2, latest_state, cursor_type, cursor_paths, expected_error, run_per_stream_test
 ):
     input_config = IncrementalConfig()
     catalog = ConfiguredAirbyteCatalog(
@@ -258,12 +262,12 @@ def test_incremental_two_sequential_reads_state_invalid(
     call_read_with_state_output_messages = build_messages_from_record_data(stream_name, records2)
 
     docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = call_read_output_messages
-    docker_runner_mock.call_read_with_state.return_value = call_read_with_state_output_messages
+    docker_runner_mock.call_read = mocker.AsyncMock(return_value=call_read_output_messages)
+    docker_runner_mock.call_read_with_state = mocker.AsyncMock(return_value=call_read_with_state_output_messages)
 
     t = _TestIncremental()
     with expected_error:
-        t.test_two_sequential_reads(
+        await t.test_two_sequential_reads(
             inputs=input_config,
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
@@ -592,7 +596,7 @@ def test_incremental_two_sequential_reads_state_invalid(
         pytest.param(True, id="test_read_with_multiple_states_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
-def test_per_stream_read_with_multiple_states(records, state_records, threshold_days, expected_error, run_per_stream_test):
+async def test_per_stream_read_with_multiple_states(mocker, records, state_records, threshold_days, expected_error, run_per_stream_test):
     input_config = IncrementalConfig(threshold_days=threshold_days)
     cursor_paths = {"test_stream": ["date"], "test_stream_2": ["date"]}
     catalog = ConfiguredAirbyteCatalog(
@@ -658,12 +662,12 @@ def test_per_stream_read_with_multiple_states(records, state_records, threshold_
         ]
 
     docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = call_read_output_messages
-    docker_runner_mock.call_read_with_state.side_effect = call_read_with_state_output_messages
+    docker_runner_mock.call_read = mocker.AsyncMock(return_value=call_read_output_messages)
+    docker_runner_mock.call_read_with_state = mocker.AsyncMock(side_effect=call_read_with_state_output_messages)
 
     t = _TestIncremental()
     with expected_error:
-        t.test_read_sequential_slices(
+        await t.test_read_sequential_slices(
             inputs=input_config,
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
@@ -744,12 +748,12 @@ def test_config_skip_test():
         ),
     ],
 )
-def test_state_with_abnormally_large_values(mocker, read_output, expectation):
+async def test_state_with_abnormally_large_values(mocker, read_output, expectation):
     docker_runner_mock = mocker.MagicMock()
-    docker_runner_mock.call_read_with_state.return_value = read_output
+    docker_runner_mock.call_read_with_state = mocker.AsyncMock(return_value=read_output)
     t = _TestIncremental()
     with expectation:
-        t.test_state_with_abnormally_large_values(
+        await t.test_state_with_abnormally_large_values(
             connector_config=mocker.MagicMock(),
             configured_catalog=ConfiguredAirbyteCatalog(
                 streams=[

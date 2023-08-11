@@ -23,3 +23,8 @@ def postgres_source_spec_schema():
 @contextmanager
 def does_not_raise():
     yield
+
+
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
