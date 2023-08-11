@@ -88,7 +88,7 @@ public class MySqlInitialLoadHandler {
             .collect(Collectors.toList());
         final AutoCloseableIterator<JsonNode> queryStream =
             new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-                calculateChunkSize(tableSizeInfoMap.get(tableSizeInfoMap), pair));
+                calculateChunkSize(tableSizeInfoMap.get(pair), pair));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
