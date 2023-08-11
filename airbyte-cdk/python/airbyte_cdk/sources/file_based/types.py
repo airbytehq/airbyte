@@ -96,6 +96,15 @@ class FieldType(ABC):
     def is_type_conform(self, value: Any) -> bool:
         ...
 
+    @abstractmethod
+    def get_type(self) -> str:
+        """
+        Return the non-null type of the object
+        Maybe there should be another method to return the null type?
+        Note: we know every primitive type should be nullable
+        """
+        ...
+
 
 class PrimitiveFieldType(BaseModel, FieldType):
     type: Union[str, List[str]] = Field(..., hidden=True)
@@ -132,8 +141,8 @@ class ArrayFieldType(BaseModel, FieldType):
 
 
 class StreamSchema(BaseModel):
-    type: str
-    properties: Mapping[str, Union[PrimitiveFieldType, ArrayFieldType, ObjectFieldType]]
+    type: str # Fixme should be hidden
+    properties: Mapping[str, Union[PrimitiveFieldType, ArrayFieldType, ObjectFieldType]] # Fixme should be hidden / abstract the Union type
 
 
     def value_is_conform(self, record: Mapping[str, Any]) -> bool:

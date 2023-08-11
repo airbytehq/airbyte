@@ -161,8 +161,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             return {"type": "object", "properties": {**extra_fields, **schema["properties"]}}
 
     def _get_raw_json_schema(self) -> JsonSchema:
-        if self.config.input_schema:
-            return self.config.get_input_schema().dict()  # type: ignore
+        config_input_schema = self.config.get_input_schema()
+        if config_input_schema:
+            return config_input_schema.dict()
         elif self.config.schemaless:
             return schemaless_schema
         else:

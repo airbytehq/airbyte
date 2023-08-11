@@ -12,7 +12,6 @@ from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, Fi
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
-from airbyte_cdk.sources.file_based.types import StreamSchema
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
