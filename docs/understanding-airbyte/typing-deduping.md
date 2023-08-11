@@ -22,7 +22,7 @@ When using a V2 destination for most use cases, it is recommended that you inclu
 
 ```sql
 -- postgres syntax
-SELECT COUNT(*) FROM _table_ WHERE json_array_length(\_airbyte_meta ->> errors) = 0
+SELECT COUNT(*) FROM _table_ WHERE json_array_length(_airbyte_meta ->> errors) = 0
 ```
 
 :::
