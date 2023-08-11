@@ -31,6 +31,8 @@ class ClockifyStream(HttpStream, ABC):
         self.page = self.page + 1
         if next_page:
             return {"page": self.page}
+        else:
+            self.page = 1
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {
