@@ -19,6 +19,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -135,7 +136,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
     final var config = getConfig();
     SshTunnel.sshWrap(
@@ -148,7 +149,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,

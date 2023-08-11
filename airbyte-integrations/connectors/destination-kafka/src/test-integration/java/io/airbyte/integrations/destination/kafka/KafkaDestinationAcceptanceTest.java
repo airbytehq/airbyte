@@ -19,6 +19,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -166,13 +167,13 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"));
     KAFKA.start();
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     KAFKA.close();
   }
 
