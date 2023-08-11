@@ -117,6 +117,14 @@ acceptance_tests:
       future_state:
         future_state_path: integration_tests/abnormal_state.json
       timeout_seconds: 1800
+    - config_path: secrets/config.json
+      configured_catalog_path: integration_tests/configured_catalogs/csv.json
+      cursor_paths:
+        test:
+        - _ab_source_file_last_modified
+      future_state:
+        future_state_path: integration_tests/v4_abnormal_state.json  # verify that the v3 connector can handle v4-style state messages
+      timeout_seconds: 1800
     - config_path: secrets/parquet_config.json
       configured_catalog_path: integration_tests/configured_catalogs/parquet.json
       cursor_paths:
