@@ -9,11 +9,13 @@ from logging import Logger
 from typing import List, Mapping, Optional
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import IgnoredFieldsConfiguration
 from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, full_refresh_only_catalog, make_hashable
 from connector_acceptance_test.utils.json_schema_helper import CatalogField
+
+# from airbyte_pr import ConfiguredAirbyteCatalog, Type
 
 
 def primary_keys_by_stream(configured_catalog: ConfiguredAirbyteCatalog) -> Mapping[str, List[CatalogField]]:
@@ -82,7 +84,7 @@ class TestFullRefresh(BaseTest):
                 detailed_logger.log_json_list(missing_records)
                 pytest.fail(msg)
 
-    def test_sequential_reads(
+    async def test_sequential_reads(
         self,
         connector_config: SecretDict,
         configured_catalog: ConfiguredAirbyteCatalog,
@@ -91,13 +93,17 @@ class TestFullRefresh(BaseTest):
         detailed_logger: Logger,
     ):
         configured_catalog = full_refresh_only_catalog(configured_catalog)
-        output_1 = docker_runner.call_read(connector_config, configured_catalog)
+        output_1 = await docker_runner.call_read(
+            connector_config,
+            configured_catalog,
+            enable_caching=False,
+        )
         records_1 = [message.record for message in output_1 if message.type == Type.RECORD]
 
         # sleep for 1 second to ensure that the emitted_at timestamp is different
         time.sleep(1)
 
-        output_2 = docker_runner.call_read(connector_config, configured_catalog)
+        output_2 = await docker_runner.call_read(connector_config, configured_catalog, enable_caching=False)
         records_2 = [message.record for message in output_2 if message.type == Type.RECORD]
 
         self.assert_emitted_at_increase_on_subsequent_runs(records_1, records_2)
