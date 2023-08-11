@@ -69,7 +69,7 @@ class AbstractFileBasedStream(Stream):
         self,
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
@@ -79,7 +79,7 @@ class AbstractFileBasedStream(Stream):
         """
         if stream_slice is None:
             raise ValueError("stream_slice must be set")
-        return self.read_records_from_slice(stream_slice)
+        return self.read_records_from_slice(StreamSlice(remote_files=stream_slice["files"]))
 
     @abstractmethod
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:

@@ -78,7 +78,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             raise MissingSchemaError(FileBasedSourceError.MISSING_SCHEMA, stream=self.name)
         # The stream only supports a single file type, so we can use the same parser for all files
         parser = self.get_parser(self.config.file_type)
-        for file in stream_slice["files"]:
+        for file in stream_slice.get_files():
             # only serialize the datetime once
             file_datetime_string = file.last_modified.strftime(self.DATE_TIME_FORMAT)
             n_skipped = line_no = 0

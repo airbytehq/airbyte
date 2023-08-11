@@ -10,8 +10,17 @@ from enum import Enum
 from functools import total_ordering
 from typing import Any, Mapping, MutableMapping, List, Union, Optional, Tuple, Type
 
-StreamSlice = Mapping[str, Any]
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+
 StreamState = MutableMapping[str, Any]
+
+class StreamSlice:
+
+    def __init__(self, remote_files: List[RemoteFile]):
+        self._remotes_files = remote_files
+    def get_files(self) -> List[RemoteFile]:
+        return self._remotes_files
+
 
 from pydantic import BaseModel, Field
 
