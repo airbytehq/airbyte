@@ -28,3 +28,33 @@ def test_invalid_link_error_message(mocker, invalid_config):
         source.check(logger=None, config=invalid_config)
     expected_message = 'Config error: The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync.'
     assert e.value.args[0] == expected_message
+
+
+def test_discover_404_error(mocker, invalid_config):
+    source = SourceGoogleSheets()
+    resp = requests.Response()
+    resp.status = 404
+    resp.reason = "Requested entity was not found"
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", side_effect=errors.HttpError(resp=resp, content=b''))
+
+    with pytest.raises(AirbyteTracedException) as e:
+        source.discover(logger=mocker.MagicMock(), config=invalid_config)
+    expected_message = ("Requested spreadsheet with id invalid_spreadsheet_id was not found. Requested entity was not found. "
+                        "See docs for more details here: https://cloud.google.com/service-infrastructure/docs/service-control/reference/rpc/google.api/servicecontrol.v1#code")
+    assert e.value.args[0] == expected_message
+
+
+def test_discover_403_error(mocker, invalid_config):
+    source = SourceGoogleSheets()
+    resp = requests.Response()
+    resp.status = 403
+    resp.reason = "The caller does not have right permissions"
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", side_effect=errors.HttpError(resp=resp, content=b''))
+
+    with pytest.raises(AirbyteTracedException) as e:
+        source.discover(logger=mocker.MagicMock(), config=invalid_config)
+    expected_message = ("Forbidden when requesting spreadsheet with id invalid_spreadsheet_id. The caller does not have right permissions. "
+                        "See docs for more details here: https://cloud.google.com/service-infrastructure/docs/service-control/reference/rpc/google.api/servicecontrol.v1#code")
+    assert e.value.args[0] == expected_message
