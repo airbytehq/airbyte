@@ -56,7 +56,7 @@ These iterations are more conveniently achieved by remaining in the current dire
 10. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
 11. Open a PR on our GitHub repository
 12. Run the unit test on the CI by running `/legacy-test connector=bases/connector-acceptance-test` in a GitHub comment
-13. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test auto-bump-version=false` in a GitHub comment
+13. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test` in a GitHub comment
 14. Merge your PR
 
 ## Migrating `acceptance-test-config.yml` to latest configuration format
