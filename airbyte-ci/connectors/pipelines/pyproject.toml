@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "0.4.7"
+version = "0.5.0"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -30,6 +30,7 @@ pytest-mock = "^3.10.0"
 
 
 [tool.poetry.group.dev.dependencies]
+freezegun = "^1.2.2"
 pytest-cov = "^4.1.0"
 
 [tool.poetry.scripts]

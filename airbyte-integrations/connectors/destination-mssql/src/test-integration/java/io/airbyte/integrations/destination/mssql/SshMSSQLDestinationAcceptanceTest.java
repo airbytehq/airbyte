@@ -18,6 +18,7 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -114,7 +115,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     startTestContainers();
 
     SshTunnel.sshWrap(
@@ -126,7 +127,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
             ctx.fetch(String.format("CREATE DATABASE %s;", database));
             ctx.fetch(String.format("USE %s;", database));
             ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName));
-
+            TEST_SCHEMAS.add(schemaName);
             return null;
           });
         });
@@ -146,7 +147,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     bastion.stopAndCloseContainers(db);
   }
 
