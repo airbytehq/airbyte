@@ -23,7 +23,6 @@ class LegacyConfigTransformer:
 
     @classmethod
     def convert(cls, legacy_config: SourceS3Spec) -> Mapping[str, Any]:
-        format_config = LegacyConfigTransformer._transform_file_format(legacy_config.format)
         transformed_config = {
             "bucket": legacy_config.provider.bucket,
             "streams": [
@@ -32,7 +31,7 @@ class LegacyConfigTransformer:
                     "file_type": legacy_config.format.filetype,
                     "globs": cls._create_globs(legacy_config.path_pattern, legacy_config.provider.path_prefix),
                     "validation_policy": "Emit Record",
-                    "format": format_config,
+                    "format": LegacyConfigTransformer._transform_file_format(legacy_config.format)
                 }
             ],
         }
@@ -60,16 +59,32 @@ class LegacyConfigTransformer:
     def _transform_seconds_to_micros(cls, datetime_str: str) -> str:
         try:
             parsed_datetime = datetime.strptime(datetime_str, SECONDS_FORMAT)
-            return datetime.strftime(parsed_datetime, MICROS_FORMAT)
+            return parsed_datetime.strftime(MICROS_FORMAT)
         except ValueError as e:
-            raise e
+            raise ValueError("Timestamp could not be parsed when transforming legacy connector config") from e
 
     @classmethod
     def _transform_file_format(cls, format_options: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat]) -> Mapping[str, Any]:
         if isinstance(format_options, AvroFormat):
             return {"filetype": "avro"}
         elif isinstance(format_options, CsvFormat):
-            return {"filetype": "csv"}
+            csv_options = {
+                "filetype": "csv",
+                "delimiter": format_options.delimiter,
+                "quote_char": format_options.quote_char,
+                "double_quote": format_options.double_quote,
+                "null_values": ["", "null", "NULL", "N/A", "NA", "NaN", "None"],
+                "true_values": ["y", "yes", "t", "true", "on", "1"],
+                "false_values": ["n", "no", "f", "false", "off", "0"],
+                "inference_type": "Primitive Types Only" if format_options.infer_datatypes else "None",
+                "strings_can_be_null": True,
+            }
+
+            if format_options.escape_char:
+                csv_options["escape_char"] = format_options.escape_char
+            if format_options.encoding:
+                csv_options["encoding"] = format_options.encoding
+            return csv_options
         elif isinstance(format_options, JsonlFormat):
             return {"filetype": "jsonl"}
         elif isinstance(format_options, ParquetFormat):

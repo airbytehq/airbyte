@@ -17,6 +17,12 @@ class QuotingBehavior(Enum):
     QUOTE_NONE = "Quote None"
 
 
+class InferenceType(Enum):
+    NONE = "None"
+    PRIMITIVE_TYPES_ONLY = "Primitive Types Only"
+    PRIMITIVE_AND_COMPLEX_TYPES = "Primitive and Complex Types"
+
+
 DEFAULT_TRUE_VALUES = ["y", "yes", "t", "true", "on", "1"]
 DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
@@ -80,6 +86,11 @@ class CsvFormat(BaseModel):
         title="False Values",
         default=DEFAULT_FALSE_VALUES,
         description="A set of case-sensitive strings that should be interpreted as false values.",
+    )
+    inference_type: InferenceType = Field(
+        title="Inference Type",
+        default=InferenceType.NONE,
+        description="How to infer the types of the columns. If none, inference default to strings.",
     )
 
     @validator("delimiter")

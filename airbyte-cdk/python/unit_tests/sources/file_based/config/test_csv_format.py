@@ -15,7 +15,7 @@ from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
         pytest.param(0, False, None, id="test_no_skip_rows_before_header_and_no_autogenerate_column_names"),
     ]
 )
-def test_csv_format(skip_rows_before_header, autogenerate_column_names, expected_error):
+def test_csv_format_skip_rows_and_autogenerate_column_names(skip_rows_before_header, autogenerate_column_names, expected_error) -> None:
     if expected_error:
         with pytest.raises(expected_error):
             CsvFormat(skip_rows_before_header=skip_rows_before_header, autogenerate_column_names=autogenerate_column_names)

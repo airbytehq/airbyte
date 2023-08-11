@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 
 class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy):
+    _WITHOUT_SCHEMA = None
+
     def __init__(self, stream_reader: AbstractFileBasedStreamReader):
         self.stream_reader = stream_reader
 
@@ -82,7 +84,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         parser = stream.get_parser(stream.config.file_type)
 
         try:
-            record = next(iter(parser.parse_records(stream.config, file, self.stream_reader, logger)))
+            record = next(iter(parser.parse_records(stream.config, file, self.stream_reader, logger, self._WITHOUT_SCHEMA)))
         except StopIteration:
             # The file is empty. We've verified that we can open it, so will
             # consider the connection check successful even though it means
