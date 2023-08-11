@@ -1,70 +1,42 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypedDict
+from typing import Any, Dict, Iterable, List, Mapping, Optional, TypeVar, TypedDict
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from source_first_resonance_ion.config import ENDPOINTS, Environment, Region
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
-"""
-
-
-class FirstResonancePageInfo(TypedDict):
-    hasNextPage: bool
-    hasPreviousPage: bool
-    startCursor: str
-    endCursor: str
-    count: int
-    totalCount: int
-
-
-class Edge(TypedDict):
-    node: dict[str, Any]
-    cursor: str
-
-
-class Edges(TypedDict):
-    edges: List[Edge]
-
-
-from typing import Generic, TypeVar
-from typing import Protocol, TypeVar
-
-T = TypeVar("T", bound=str)
-
-
-class QueryResult(TypedDict):
-    pageInfo: FirstResonancePageInfo
-    edges: List[Edge]
-
-
-KeyType = TypeVar("KeyType", bound=str)
-
-
-class FirstResonanceResponseData(Dict[KeyType, QueryResult]):
-    pass
-
-
-class FirstResonanceResponse(TypedDict):
-    data: FirstResonanceResponseData[str]
-
-
-# Basic full refresh stream
 class FirstResonanceIonStream(HttpStream, ABC):
+    class FirstResonancePageInfo(TypedDict):
+        hasNextPage: bool
+        hasPreviousPage: bool
+        startCursor: str
+        endCursor: str
+        count: int
+        totalCount: int
+
+    class Edge(TypedDict):
+        node: dict[str, Any]
+        cursor: str
+
+    class Edges(TypedDict):
+        edges: List[FirstResonanceIonStream.Edge]
+
+    class QueryResult(TypedDict):
+        pageInfo: FirstResonanceIonStream.FirstResonancePageInfo
+        edges: List[FirstResonanceIonStream.Edge]
+
+    KeyType = TypeVar("KeyType", bound=str)
+
+    class FirstResonanceResponseData(Dict[KeyType, QueryResult]):
+        pass
+
+    class FirstResonanceResponse(TypedDict):
+        data: FirstResonanceIonStream.FirstResonanceResponseData[str]
+
     class NextPageToken(TypedDict):
         endCursor: str
 
@@ -97,7 +69,7 @@ class FirstResonanceIonStream(HttpStream, ABC):
         return "graphql"
 
     def next_page_token(self, response: requests.Response) -> Optional[NextPageToken]:
-        responseData: FirstResonanceResponse = response.json()
+        responseData: FirstResonanceIonStream.FirstResonanceResponse = response.json()
         pageInfo = responseData["data"][self.query_name]["pageInfo"]
         hasNextPage = pageInfo["hasNextPage"]
 
@@ -149,7 +121,7 @@ class FirstResonanceIonStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] | None = None,
         next_page_token: Mapping[str, Any] | None = None,
     ) -> Iterable[Mapping[str, Any]]:
-        responseJson: FirstResonanceResponse = response.json()
+        responseJson: FirstResonanceIonStream.FirstResonanceResponse = response.json()
         records = responseJson["data"][self.query_name]["edges"]
         for record in records:
             yield record["node"]
@@ -185,3 +157,18 @@ class PartSubtypes(FirstResonanceIonStream):
 
 class PurchaseOrderFees(FirstResonanceIonStream):
     """Purchase Order Fees Stream"""
+
+
+class CheckConnection(FirstResonanceIonStream):
+    """Purchase Order Fees Stream"""
+
+    @property
+    def query(self) -> str:
+        query = """{
+            me { id name email }
+        }"""
+        return query
+
+    @property
+    def query_name(self) -> str:
+        return "me"
