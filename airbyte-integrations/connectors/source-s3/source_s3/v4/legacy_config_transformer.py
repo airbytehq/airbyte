@@ -31,7 +31,7 @@ class LegacyConfigTransformer:
                     "file_type": legacy_config.format.filetype,
                     "globs": cls._create_globs(legacy_config.path_pattern, legacy_config.provider.path_prefix),
                     "validation_policy": "Emit Record",
-                    "format": LegacyConfigTransformer._transform_file_format(legacy_config.format)
+                    "format": LegacyConfigTransformer._transform_file_format(legacy_config.format),
                 }
             ],
         }
@@ -85,13 +85,11 @@ class LegacyConfigTransformer:
             if format_options.encoding:
                 csv_options["encoding"] = format_options.encoding
             return csv_options
+
         elif isinstance(format_options, JsonlFormat):
             return {"filetype": "jsonl"}
         elif isinstance(format_options, ParquetFormat):
-            return {
-                "filetype": "parquet",
-                "decimal_as_float": True
-            }
+            return {"filetype": "parquet", "decimal_as_float": True}
         else:
             # This should never happen because it would fail schema validation
             raise ValueError(f"Format filetype {format_options} is not a supported file type")
