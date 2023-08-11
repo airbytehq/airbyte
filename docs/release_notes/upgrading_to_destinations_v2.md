@@ -1,3 +1,7 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator} from './destinations_v2.js'
+
 # Upgrading to Destinations V2
 
 ## What is Destinations V2?
@@ -39,7 +43,7 @@ The quickest path to upgrading is to click upgrade on any out-of-date connection
 ![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
 
 After upgrading the out-of-date destination to a [Destinations V2 compatible version](#destinations-v2-effective-versions), the following will occur at the next sync **for each connection** sending data to the updated destination:
-1. Existing raw tables replicated to this destination will be copied to a new `airbyte` schema. 
+1. Existing raw tables replicated to this destination will be copied to a new `airbyte` schema.
 2. The new raw tables will be updated to the new Destinations V2 format.
 3. The new raw tables will be updated with any new data since the last sync, like normal.
 4. The new raw tables will be typed and de-duplicated according to the Destinations V2 format.
@@ -80,47 +84,21 @@ These steps allow you to dual-write for connections incrementally syncing data w
 
 1. Copy the raw data you've already replicated to the new schema being used by your newly created connection. You need to do this for every stream in the connection with an incremental sync mode. Sample SQL you can run in your data warehouse:
 
-```mysql
-BEGIN
-DECLARE gcp_project STRING;
-DECLARE target_dataset STRING;
-DECLARE target_table STRING;
-DECLARE source_dataset STRING;
-DECLARE source_table STRING;
-DECLARE old_table STRING;
-DECLARE new_table STRING;
-
-SET gcp_project = '';
-SET target_dataset = 'airbyte_internal';
-SET target_table = ''; 
-SET source_dataset = '';
-SET source_table = '';
-SET old_table = CONCAT(gcp_project, '.', source_dataset, '.', source_table);
-SET new_table = CONCAT(gcp_project, '.', target_dataset, '.', target_table);
-
-EXECUTE IMMEDIATE FORMAT('''
-CREATE OR REPLACE TABLE `%s` (_airbyte_raw_id STRING, _airbyte_data JSON, _airbyte_extracted_at TIMESTAMP, _airbyte_loaded_at TIMESTAMP)
-PARTITION BY DATE(_airbyte_extracted_at)
-CLUSTER BY _airbyte_extracted_at
-AS (
-    SELECT
-        _airbyte_ab_id AS _airbyte_raw_id,
-        PARSE_JSON(_airbyte_data) AS _airbyte_data,
-        _airbyte_emitted_at AS _airbyte_extracted_at,
-        CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
-    FROM `%s`
-) 
-''', new_table, old_table);
-
-END;
-```
+<Tabs>
+  <TabItem value="bigquery" label="BigQuery" default>
+    <BigQueryMigrationGenerator />
+  </TabItem>
+  <TabItem value="snowflake" label="Snowflake">
+    <SnowflakeMigrationGenerator />
+  </TabItem>
+</Tabs>
 
 2. Navigate to the existing connection you are duplicating, and navigate to the `Settings` tab. Open the `Advanced` settings to see the connection state (which manages incremental syncs). Copy the state to your clipboard.
 
 ![img.png](assets/airbyte_connection_update_state.png)
 
 3. Go to your newly created connection, replace the state with the copied contents in the previous step, then click `Update State`. This will ensure historical data is not replicated again.
-4. Enabling the connection will now provide a parallel copy of all streams in the updated format. 
+4. Enabling the connection will now provide a parallel copy of all streams in the updated format.
 5. You can move your dashboards to rely on the new tables, then pause the out-of-date connection.
 
 ### Testing Destinations V2 for a Single Connection
@@ -135,7 +113,7 @@ When you are done testing, you can disable or delete this testing connection, an
 
 If you have written downstream transformations directly from the output of raw tables, or use the "Raw JSON" normalization setting, you should know that:
 * Multiple column names are being updated (from `airbyte_ab_id` to `airbyte_raw_id`, and `airbyte_emitted_at` to `airbyte_extracted_at`).
-* The location of raw tables will from now on default to an `airbyte` schema in your destination. 
+* The location of raw tables will from now on default to an `airbyte` schema in your destination.
 * When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will never alter your existing raw data. Although existing downstream dashboards will go stale, they will never be broken.
 * You can dual write by following the [steps above](#upgrading-connections-one-by-one-with-dual-writing) and copying your raw data to the schema of your newly created connection.
 
