@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unit_tests.sources.file_based.helpers import LowHistoryLimitCursor
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 
 single_csv_input_state_is_earlier_scenario = (
@@ -14,7 +15,7 @@ single_csv_input_state_is_earlier_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -101,7 +102,7 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -185,7 +186,7 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -271,7 +272,7 @@ single_csv_no_input_state_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -345,7 +346,7 @@ multi_csv_same_timestamp_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -436,7 +437,7 @@ single_csv_input_state_is_later_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -522,7 +523,7 @@ multi_csv_different_timestamps_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -621,7 +622,7 @@ multi_csv_per_timestamp_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -734,7 +735,7 @@ multi_csv_skip_file_if_already_in_history = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -856,7 +857,7 @@ multi_csv_include_missing_files_within_history_range = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -970,7 +971,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -1004,7 +1005,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
         }
     )
     .set_file_type("csv")
-    .set_max_history_size(3)
+    .set_cursor_cls(LowHistoryLimitCursor)
     .set_expected_catalog(
         {
             "streams": [
@@ -1108,7 +1109,7 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "days_to_sync_if_history_is_full": 3,
                 }
             ]
@@ -1151,7 +1152,7 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
         }
     )
     .set_file_type("csv")
-    .set_max_history_size(3)
+    .set_cursor_cls(LowHistoryLimitCursor)
     .set_expected_catalog(
         {
             "streams": [
@@ -1226,7 +1227,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "days_to_sync_if_history_is_full": 3,
                 }
             ]
@@ -1268,7 +1269,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
             },
         }
     )
-    .set_max_history_size(3)
+    .set_cursor_cls(LowHistoryLimitCursor)
     .set_file_type("csv")
     .set_expected_catalog(
         {
@@ -1343,7 +1344,7 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "days_to_sync_if_history_is_full": 3,
                 }
             ]
@@ -1386,7 +1387,7 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
         }
     )
     .set_file_type("csv")
-    .set_max_history_size(3)
+    .set_cursor_cls(LowHistoryLimitCursor)
     .set_expected_catalog(
         {
             "streams": [
@@ -1466,7 +1467,7 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "days_to_sync_if_history_is_full": 3,
                 }
             ]
@@ -1509,7 +1510,7 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
         }
     )
     .set_file_type("csv")
-    .set_max_history_size(3)
+    .set_cursor_cls(LowHistoryLimitCursor)
     .set_expected_catalog(
         {
             "streams": [

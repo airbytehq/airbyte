@@ -14,14 +14,15 @@ data:
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 3.17.1 # p0-stripe-object-nodes-23-08-02
     oss:
       enabled: true
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   tags:
     - language:python
-  _ab_internal:
-    _sl: 300
-    _ql: 300
+  ab_internal:
+    sl: 300
+    ql: 300
   supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -10,7 +10,9 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
+from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
@@ -35,11 +37,19 @@ class LinkedinAdsStream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
         self.config = config
+        self.date_time_fields = self._get_date_time_items_from_schema()
+
+    def _get_date_time_items_from_schema(self):
+        """
+        Get all properties from schema with format: 'date-time'
+        """
+        schema = self.get_json_schema()
+        return [k for k, v in schema["properties"].items() if v.get("format") == "date-time"]
 
     @property
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""
-        return ",".join(map(str, self.config.get("account_ids")))
+        return ",".join(map(str, self.config.get("account_ids", [])))
 
     def path(
         self,
@@ -83,7 +93,17 @@ class LinkedinAdsStream(HttpStream, ABC):
         """
         We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
         """
-        yield from transform_data(response.json().get("elements"))
+        for record in transform_data(response.json().get("elements")):
+            yield self._date_time_to_rfc3339(record)
+
+    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """
+        Transform 'date-time' items to RFC3339 format
+        """
+        for item in record:
+            if item in self.date_time_fields and record[item]:
+                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+        return record
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 429:
@@ -256,6 +276,7 @@ class Campaigns(LinkedInAdsStreamSlicing):
     """
 
     endpoint = "adCampaigns"
+    use_cache = True
 
     def path(
         self,
@@ -343,6 +364,9 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     primary_key = ["pivotValue", "end_date"]
     cursor_field = "end_date"
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
+
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
         """Define the base parameters for analytics streams"""
@@ -418,3 +442,39 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     def get_primary_key_from_slice(self, stream_slice) -> str:
         creative_id = stream_slice.get(self.primary_slice_key).split(":")[-1]
         return creative_id
+
+
+class AdImpressionDeviceAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:IMPRESSION_DEVICE_TYPE)"
+
+
+class AdMemberCompanySizeAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_COMPANY_SIZE)"
+
+
+class AdMemberIndustryAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_INDUSTRY)"
+
+
+class AdMemberSeniorityAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_SENIORITY)"
+
+
+class AdMemberJobTitleAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_JOB_TITLE)"
+
+
+class AdMemberJobFunctionAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_JOB_FUNCTION)"
+
+
+class AdMemberCountryAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_COUNTRY_V2)"
+
+
+class AdMemberRegionAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_REGION_V2)"
+
+
+class AdMemberCompanyAnalytics(AdCampaignAnalytics):
+    pivot_by = "(value:MEMBER_COMPANY)"

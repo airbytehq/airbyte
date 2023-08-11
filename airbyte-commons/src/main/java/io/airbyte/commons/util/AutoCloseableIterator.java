@@ -12,4 +12,4 @@ import java.util.Iterator;
  *
  * @param <T> type
  */
-public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {}
+public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable, AirbyteStreamAware {}
