@@ -24,6 +24,11 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          # migrated to the 2023-07 api version, 
+          # schemas for orders, transactions, fulfillment_orders, order_refunds have changed.
+          # see PR: https://github.com/airbytehq/airbyte/issues/28127 for more.
+          disable_for_version: "0.6.2"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
