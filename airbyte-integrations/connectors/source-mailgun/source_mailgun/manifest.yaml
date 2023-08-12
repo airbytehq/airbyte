@@ -93,3 +93,4 @@ check:
   stream_names:
     - "domains"
     - "events"
+
