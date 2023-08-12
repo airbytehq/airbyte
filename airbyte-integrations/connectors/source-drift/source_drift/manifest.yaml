@@ -20,7 +20,7 @@ definitions:
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: NoPagination
+      type: "NoPagination"
     requester:
       $ref: "#/definitions/requester"
 
@@ -29,10 +29,22 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
+  base_paginator:
+    type: "DefaultPaginator"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ last_records['next'] }}"
+    page_token_option:
+      type: "RequestPath"
+      field_name: "page_token"
+      inject_into: "request_parameter"
+
   accounts_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
       record_selector:
         type: RecordSelector
         extractor:
@@ -46,6 +58,10 @@ definitions:
 
   conversations_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
     name: "conversations"
     primary_key: "id"
     $parameters:
@@ -58,10 +74,51 @@ definitions:
     $parameters:
       path: "/users"
 
+  contacts_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "contacts"
+      primary_key: "id"
+      path: "/contacts"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          email: "{{ config['email'] }}"
+
+  messages_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/conversations_stream"
+        parent_key: "id"
+        partition_field: "parent_id"
+
+  messages_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "messages"
+      primary_key: "id"
+      path: "/conversations/{{ stream_partition.parent_id }}/messages"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "messages"]
+      partition_router:
+        $ref: "#/definitions/messages_partition_router"
+
+
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/conversations_stream"
   - "#/definitions/users_stream"
+  - "#/definitions/contacts_stream"
+  - "#/definitions/messages_stream"
 
 check:
   type: CheckStream
@@ -69,3 +126,5 @@ check:
     - "accounts"
     - "conversations"
     - "users"
+    - "contacts"
+    - "messages"

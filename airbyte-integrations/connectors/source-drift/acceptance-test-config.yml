@@ -19,6 +19,10 @@ acceptance_tests:
         empty_streams:
           - name: users
             bypass_reason: "Sandbox account can't seed this stream"
+          - name: contacts
+            bypass_reason: "Sandbox account can't seed this stream"
+          - name: accounts
+            bypass_reason: "Sandbox account can't seed this stream"
 #        expect_records:
 #          path: "integration_tests/expected_records.jsonl"
 #          extra_fields: no
