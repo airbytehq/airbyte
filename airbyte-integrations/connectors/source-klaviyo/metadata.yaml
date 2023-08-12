@@ -12,8 +12,13 @@ data:
   icon: klaviyo.svg
   license: MIT
   name: Klaviyo
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: "02-08-2023"
-  releaseStage: alpha
+  releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
     - language:lowcode
