@@ -26,7 +26,12 @@ public class PostgresCdcCtidUtils {
   public static CtidStreams streamsToSyncViaCtid(final CdcStateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog,
       final boolean savedOffsetAfterReplicationSlotLSN) {
     if (!savedOffsetAfterReplicationSlotLSN) {
-      return new CtidStreams(fullCatalog.getStreams(), new HashMap<>());
+      return new CtidStreams(
+          fullCatalog.getStreams()
+              .stream()
+              .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
+              .collect(Collectors.toList()),
+          new HashMap<>());
     }
 
     final AirbyteStateMessage airbyteStateMessage = stateManager.getRawStateMessage();
