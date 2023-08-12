@@ -76,4 +76,15 @@ public interface SqlGenerator<DialectTableDefinition> {
    */
   String overwriteFinalTable(StreamId stream, String finalSuffix);
 
+  /**
+   * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a soft
+   * reset.
+   *
+   * @param streamId the stream to migrate
+   * @param namespace
+   * @param tableName
+   * @return a string containing the necessary sql to migrate
+   */
+  String migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
+
 }
