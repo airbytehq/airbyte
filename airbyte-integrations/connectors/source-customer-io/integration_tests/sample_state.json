@@ -1,0 +1,7 @@
+{
+  "type": "STREAM",
+  "stream": {
+    "stream_state": { "cursor": "2021-09-08T07:04:28Z" },
+    "stream_descriptor": { "name": "example" }
+  }
+}

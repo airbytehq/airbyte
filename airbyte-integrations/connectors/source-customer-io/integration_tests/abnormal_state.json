@@ -1,0 +1,23 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "3021-09-08T07:04:28Z" },
+      "stream_descriptor": { "name": "campaigns" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "3021-09-08T07:04:28Z" },
+      "stream_descriptor": { "name": "campaigns_actions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "3021-09-08T07:04:28Z" },
+      "stream_descriptor": { "name": "newsletters" }
+    }
+  }
+]
