@@ -29,7 +29,7 @@ SELECT COUNT(*) FROM _table_ WHERE json_array_length(_airbyte_meta ->> errors) =
 
 The types of errors which will be stored in `_airbyte_meta.errors` include:
 
-- **Typing errors**: the source declared that the type of the column `id` should be an integer, but a string value was returned
+- **Typing errors**: the source declared that the type of the column `id` should be an integer, but a string value was returned.
 - **Size errors**: the source returned content which cannot be stored within this this row or column (e.g. [a Redshift Super column has a 16mb limit](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)).
 
 That said, depending on your use-case, it may still be valuable to consider rows with errors, especially in aggregate. For example, you may have a table `user_reviews`, and you might ask how many new reviews you received today. Regardless of if your datawarehouse had trouble storing the full contents in the `message` column or not, `SELECT COUNT(*) from user_reviews WHERE DATE(created_at) = DATE(NOW())` is still valid.
