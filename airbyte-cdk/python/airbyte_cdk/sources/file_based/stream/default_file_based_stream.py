@@ -101,7 +101,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(
                         level=Level.WARN,
-                        message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy} n_skipped={n_skipped}",
+                        message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy.value} n_skipped={n_skipped}",
                     ),
                 )
                 break
@@ -162,12 +162,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
-            return self.config.input_schema  # type: ignore
+            return self.config.get_input_schema()  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
         else:
             files = self.list_files()
             total_n_files = len(files)
+
+            if total_n_files == 0:
+                raise SchemaInferenceError(FileBasedSourceError.EMPTY_STREAM, stream=self.name)
+
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
             if total_n_files > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.
