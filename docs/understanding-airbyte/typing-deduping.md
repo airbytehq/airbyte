@@ -76,7 +76,7 @@ You also now see the following changes in Airbyte-provided columns:
 
 ## Participating in Early Access
 
-You can start using Destinations V2 for BigQuery in early access by following the below instructions:
+You can start using Destinations V2 for BigQuery or Snowflake in early access by following the below instructions:
 
 1. **Upgrade your Destination**: If you are using Airbyte Open Source, update your destination version to the latest version. If you are a Cloud customer, this step will already be completed on your behalf.
 2. **Enabling Destinations V2**: Create a new destination, and enable the Destinations V2 option under `Advanced` settings. You will need your data warehouse credentials for this step. For this early release, we ask that you enable Destinations V2 on a new destination using new connections. When Destinations V2 is fully available, there will be additional migration paths for upgrading your destination without resetting any of your existing connections.
