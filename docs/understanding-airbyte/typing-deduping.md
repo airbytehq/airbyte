@@ -81,7 +81,7 @@ You can start using Destinations V2 for BigQuery in early access by following th
 1. **Upgrade your BigQuery Destination**: If you are using Airbyte Open Source, update your BigQuery destination version to the latest version. If you are a Cloud customer, this step will already be completed on your behalf.
 2. **Enabling Destinations V2**: Create a new BigQuery destination, and enable the Destinations V2 option under `Advanced` settings. You will need your BigQuery credentials for this step. For this early release, we ask that you enable Destinations V2 on a new BigQuery destination using new connections. When Destinations V2 is fully available, there will be additional migration paths for upgrading your destination without resetting any of your existing connections.
    1. If your previous BigQuery destination is using “GCS Staging”, you can reuse the same staging bucket.
-   2. Do not enable Destinations V2 on your previous / existing BigQuery destination during early release. It will cause your existing connections to fail.
+   2. Do not enable Destinations V2 on your previous / existing destinations during early release. It will cause your existing connections to fail.
 3. **Create a New Connection**: Create connections using the new BigQuery destination. These will automatically use Destinations V2.
    1. If your new destination has the same default namespace, you may want to add a stream prefix to avoid collisions in the final tables.
    2. Do not modify the ‘Transformation’ settings. These will be ignored.
