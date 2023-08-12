@@ -9,16 +9,17 @@ data:
       enabled: true
   connectorSubtype: api
   connectorType: source
-  definitionId: c6845678-4653-4c25-87e2-de7647ee2010
-  dockerImageTag: 2.0.0
+  definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-onesignal
   githubIssueLabel: source-onesignal
   icon: onesignal.svg
   license: MIT
   name: Onesignal
-  releaseDate: TODO
+  releaseDate: 2023-08-12
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
   tags:
     - language:lowcode
+  supportLevel: certified
 metadataSpecVersion: "1.0"

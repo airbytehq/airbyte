@@ -9,25 +9,13 @@ Test-specific documentation can be found [here](https://docs.airbyte.com/connect
 3. Build the connector docker image ( e.g.: `docker build . -t airbyte/source-pokeapi:dev`)
 4. Use one of the following ways to run tests (**from your connector project directory**)
 
-### Using python
-_Note: these will assume that docker image for connector is already built_
+### Using `airbyte-ci`
+_Note: Install instructions for airbyte-ci are [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) _
 
-**Running the whole suite**
+**This runs connector acceptance and other tests that run in our CI**
 ```bash
-python -m pytest integration_tests -p integration_tests.acceptance
+airbyte-ci connectors --name=<connector-name> test
 ```
-
-**Running a specific test**
-```bash
-python -m pytest integration_tests -p integration_tests.acceptance -k "<TEST_NAME>"
-```
-
-
-### Using Gradle
-```bash
-./gradlew :airbyte-integrations:connectors:source-<name>:connectorAcceptanceTest
-```
-_Note: this way will also build docker image for the connector_
 
 ### Using Bash
 ```bash
@@ -48,31 +36,28 @@ To do so, from the root of the `airbyte` repo, run `./airbyte-cdk/python/bin/run
 * When running local acceptance tests on connector:
   * When running `connectorAcceptanceTest` `gradle` task
   * When running or `./acceptance-test-docker.sh` in a connector project
-* When running `/test` command on a GitHub pull request.
-* When running ` integration-test` GitHub action. This is the same action that creates and uploads the test report JSON files that power the badges in the [connector registry summary report](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html).
+* In the CI on each push to a connector PR.
 
 ## Developing on the acceptance tests
 You may want to iterate on the acceptance test project itself: adding new tests, fixing a bug etc.
 These iterations are more conveniently achieved by remaining in the current directory.
 
-1. Create a `virtualenv`: `python -m venv .venv`
-2. Activate the `virtualenv`: `source ./.venv/bin/activate`
-3. Install requirements: `pip install -e .`
-4. Run the unit tests on the acceptance tests themselves: `python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
-5. Make the changes you want:
+1. `poetry install`
+3. Run the unit tests on the acceptance tests themselves: `poetry run python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
+4. Make the changes you want:
     * Global pytest fixtures are defined in `./connector_acceptance_test/conftest.py`
     * Existing test modules are defined in `./connector_acceptance_test/tests`
     * `acceptance-test-config.yaml` structure is defined in `./connector_acceptance_test/config.py`
-6. Unit test your changes by adding tests to `./unit_tests`
-7. Run the unit tests on the acceptance tests again: `python -m pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `python -m pytest unit_tests -m "not slow"`.
-8. Manually test the changes you made by running acceptance tests on a specific connector. e.g. `python -m pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
-9. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
-10. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
-11. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
-12. Open a PR on our GitHub repository
-13. Run the unit test on the CI by running `/legacy-test connector=bases/connector-acceptance-test` in a GitHub comment
-14. Publish the new acceptance test version if your PR is approved by running `/publish connector=bases/connector-acceptance-test auto-bump-version=false` in a GitHub comment
-15. Merge your PR
+5. Unit test your changes by adding tests to `./unit_tests`
+6. Run the unit tests on the acceptance tests again: `python -m pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `python -m pytest unit_tests -m "not slow"`.
+7. Manually test the changes you made by running acceptance tests on a specific connector. e.g. `python -m pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
+8. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
+9. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
+10. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
+11. Open a PR on our GitHub repository
+12. Run the unit test on the CI by running `/legacy-test connector=bases/connector-acceptance-test` in a GitHub comment
+13. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test` in a GitHub comment
+14. Merge your PR
 
 ## Migrating `acceptance-test-config.yml` to latest configuration format
 We introduced changes in the structure of `acceptance-test-config.yml` files in version 0.2.12.

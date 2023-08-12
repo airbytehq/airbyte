@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk", "pendulum"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "requests_mock"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock", "requests_mock"]
 
 setup(
     name="source_zendesk_chat",
