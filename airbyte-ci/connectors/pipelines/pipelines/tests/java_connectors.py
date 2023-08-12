@@ -7,16 +7,20 @@
 from typing import List, Optional
 
 import anyio
+from dagger import File, QueryError
+
 from pipelines.actions import environments, secrets
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
-from pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImage
+from pipelines.builds.java_connectors import (
+    BuildConnectorDistributionTar,
+    BuildConnectorImage,
+)
 from pipelines.builds.normalization import BuildOrPullNormalization
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
 from pipelines.tests.common import AcceptanceTests
 from pipelines.utils import export_container_to_tarball
-from dagger import File, QueryError
 
 
 class IntegrationTest(GradleTask):
@@ -27,6 +31,8 @@ class IntegrationTest(GradleTask):
 
     @property
     def title(self) -> str:
+        # TODO: Why are we printing the CLI command here?
+        #       Is this because it isn't showing in reports? Can we add to reports another way?
         return (
             "Integration Tests "
             "(./gradlew :airbyte-integrations:connectors:"
@@ -56,6 +62,13 @@ class IntegrationTest(GradleTask):
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
 
+class UnitTest(GradleTask):
+    """A step to run unit tests for Java connectors."""
+
+    title = "Java Connector Unit Tests"
+    gradle_task_name = "test"
+
+
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """Run all tests for a Java connectors.
 
@@ -72,6 +85,10 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """
     context.connector_secrets = await secrets.get_connector_secrets(context)
     step_results = []
+
+    unit_tests_results = await UnitTest(context).run()
+    step_results.append(unit_tests_results)
+
     build_distribution_tar_results = await BuildConnectorDistributionTar(context).run()
     step_results.append(build_distribution_tar_results)
     if build_distribution_tar_results.status is StepStatus.FAILURE:
