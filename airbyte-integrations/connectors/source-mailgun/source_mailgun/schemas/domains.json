@@ -33,28 +33,28 @@
     "wildcard": {
       "type": ["null", "boolean"]
     },
-    "state":{
+    "state": {
       "type": ["null", "string"]
     },
-    "skip_verification":{
+    "skip_verification": {
       "type": ["null", "boolean"]
     },
-    "type":{
+    "type": {
       "type": ["null", "string"]
     },
-    "id":{
+    "id": {
       "type": ["null", "string"]
     },
-    "created_at":{
+    "created_at": {
       "type": ["null", "string"]
     },
-    "require_tls":{
+    "require_tls": {
       "type": ["null", "boolean"]
     },
-    "is_disabled":{
+    "is_disabled": {
       "type": ["null", "boolean"]
     },
-    "smtp_login":{
+    "smtp_login": {
       "type": ["null", "string"]
     },
     "web_prefix": {

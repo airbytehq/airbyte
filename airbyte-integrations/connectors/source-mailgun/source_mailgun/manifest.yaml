@@ -35,6 +35,16 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
+  base_paginator:
+    type: "DefaultPaginator"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ last_records['paging', 'next'] }}"
+    page_token_option:
+      type: "RequestPath"
+      field_name: "from"
+      inject_into: "url_base"
+
   incremental_sync_base:
     type: DatetimeBasedCursor
     cursor_field: "{{ parameters.incremental_cursor }}"
@@ -51,18 +61,26 @@ definitions:
 
   domains_stream:
     $ref: "#/definitions/base_stream"
-    name: "domains"
-    primary_key: "id"
     $parameters:
+      name: "domains"
+      primary_key: "id"
       path: "/domains"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
 
   events_stream:
     $ref: "#/definitions/base_stream"
-    name: "events"
-    primary_key: "id"
     $parameters:
+      name: "events"
+      primary_key: "id"
       path: "/events"
       incremental_cursor: "timestamp"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"  
 
@@ -75,4 +93,3 @@ check:
   stream_names:
     - "domains"
     - "events"
-    
