@@ -7,6 +7,7 @@ import logging
 from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -30,20 +31,10 @@ class JsonlParser(FileTypeParser):
         it with the previously-inferred schema.
         """
         inferred_schema: Dict[str, Any] = {}
-        read_bytes = 0
 
-        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
-            for line in fp:
-                if read_bytes < self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE:
-                    line_schema = self.infer_schema_for_record(json.loads(line))
-                    inferred_schema = merge_schemas(inferred_schema, line_schema)
-                    read_bytes += len(line)
-
-        if read_bytes > self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE:
-            logger.warning(
-                f"Exceeded the maximum number of bytes per file for schema inference ({self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE}). "
-                f"Inferring schema from an incomplete set of records."
-            )
+        for entry in self._parse_jsonl_entries(file, stream_reader, logger, read_limit=True):
+            line_schema = self._infer_schema_for_record(entry)
+            inferred_schema = merge_schemas(inferred_schema, line_schema)
 
         return inferred_schema
 
@@ -54,12 +45,20 @@ class JsonlParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
-            for line in fp:
-                yield json.loads(line)
+        """
+        This code supports parsing json objects over multiple lines even though this does not align with the JSONL format. This is for
+        backward compatibility reasons i.e. the previous source-s3 parser did support this. The drawback is:
+        * performance as the way we support json over multiple lines is very brute forced
+        * given that we don't have `newlines_in_values` config to scope the possible inputs, we might parse the whole file before knowing if
+          the input is improperly formatted or if the json is over multiple lines
+
+        The goal is to run the V4 of source-s3 in production, track the warning log emitted when there are multiline json objects and
+        deprecate this feature if it's not a valid use case.
+        """
+        yield from self._parse_jsonl_entries(file, stream_reader, logger)
 
     @classmethod
-    def infer_schema_for_record(cls, record: Dict[str, Any]) -> Dict[str, Any]:
+    def _infer_schema_for_record(cls, record: Dict[str, Any]) -> Dict[str, Any]:
         record_schema = {}
         for key, value in record.items():
             if value is None:
@@ -72,3 +71,43 @@ class JsonlParser(FileTypeParser):
     @property
     def file_read_mode(self) -> FileReadMode:
         return FileReadMode.READ
+
+    def _parse_jsonl_entries(
+        self,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
+        read_limit: bool = False,
+    ) -> Iterable[Dict[str, Any]]:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
+            read_bytes = 0
+
+            had_json_parsing_error = False
+            has_warned_for_multiline_json_object = False
+            yielded_at_least_once = False
+
+            accumulator = b""
+            for line in fp:
+                read_bytes += len(line)
+                accumulator += line
+                try:
+                    record = json.loads(accumulator)
+                    if had_json_parsing_error and not has_warned_for_multiline_json_object:
+                        logger.warning(f"File at {file.uri} is using multiline JSON. Performance could be greatly reduced")
+                        has_warned_for_multiline_json_object = True
+
+                    yield record
+                    yielded_at_least_once = True
+                    accumulator = b""
+                except json.JSONDecodeError:
+                    had_json_parsing_error = True
+
+                if read_limit and yielded_at_least_once and read_bytes >= self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE:
+                    logger.warning(
+                        f"Exceeded the maximum number of bytes per file for schema inference ({self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE}). "
+                        f"Inferring schema from an incomplete set of records."
+                    )
+                    break
+
+            if had_json_parsing_error and not yielded_at_least_once:
+                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD)
