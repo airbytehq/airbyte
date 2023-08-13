@@ -1001,6 +1001,7 @@ def with_crane(
 
 def mounted_connector_secrets(context: PipelineContext, secret_directory_path="secrets") -> Callable:
     def mounted_connector_secrets_inner(container: Container):
+        container = container.with_exec(["mkdir", secret_directory_path], skip_entrypoint=True)
         for secret_file_name, secret in context.connector_secrets.items():
             container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
         return container

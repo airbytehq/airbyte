@@ -9,11 +9,15 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
 ]
 
+<<<<<<< HEAD
 TEST_REQUIREMENTS = [
     "pytest~=6.2",
     "pytest-mock~=3.6.1",
     "connector-acceptance-test",
 ]
+=======
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock~=3.6.1", "responses~=0.21.0"]
+>>>>>>> 1219e66fb966f03620db5a2157148e8a5b28abdb
 
 setup(
     name="source_fastbill",

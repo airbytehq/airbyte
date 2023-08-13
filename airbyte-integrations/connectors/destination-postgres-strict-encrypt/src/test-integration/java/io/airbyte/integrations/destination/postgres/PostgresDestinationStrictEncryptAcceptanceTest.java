@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -140,7 +141,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"));
     db.start();
@@ -148,7 +149,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db.stop();
     db.close();
   }
