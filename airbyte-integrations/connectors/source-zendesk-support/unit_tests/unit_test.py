@@ -46,6 +46,7 @@ from source_zendesk_support.streams import (
     TicketMetrics,
     Tickets,
     TicketSkips,
+    Topics,
     Users,
     UserSettingsStream,
 )
@@ -142,18 +143,18 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 27, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 28, [], None),
         (
                 '{"error": "Not sufficient permissions"}',
                 403,
-                24,
+                25,
                 ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
                 None
         ),
         (
                 '',
                 404,
-                24,
+                25,
                 ["Skipping stream ticket_forms: Check permissions, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}."],
                 'Not Found'
         ),
@@ -254,6 +255,7 @@ class TestAllStreams:
             (TicketSkips),
             (TicketMetricEvents),
             (Tickets),
+            (Topics),
             (Users),
             (Brands),
             (CustomRoles),
@@ -280,6 +282,7 @@ class TestAllStreams:
             "TicketSkips",
             "TicketMetricEvents",
             "Tickets",
+            "Topics",
             "Users",
             "Brands",
             "CustomRoles",
@@ -318,6 +321,7 @@ class TestAllStreams:
             (TicketMetricEvents, "incremental/ticket_metric_events"),
             (Tickets, "incremental/tickets/cursor.json"),
             (Users, "incremental/users/cursor.json"),
+            (Topics, "community/topics"),
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
             (Schedules, "business_hours/schedules.json"),
@@ -343,6 +347,7 @@ class TestAllStreams:
             "TicketSkips",
             "TicketMetricEvents",
             "Tickets",
+            "Topics",
             "Users",
             "Brands",
             "CustomRoles",
@@ -368,6 +373,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings),
             (TicketFields),
             (TicketMetrics),
+            (Topics)
         ],
         ids=[
             "Macros",
@@ -377,6 +383,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "Topics"
         ],
     )
     def test_parse_response(self, requests_mock, stream_cls):
@@ -398,6 +405,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings),
             (TicketFields),
             (TicketMetrics),
+            (Topics)
         ],
         ids=[
             "Macros",
@@ -407,6 +415,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "Topics"
         ],
     )
     def test_url_base(self, stream_cls):
@@ -429,6 +438,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketMetrics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
         ids=[
             "Macros",
@@ -438,6 +448,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "Topics"
         ],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):

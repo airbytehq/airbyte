@@ -25,6 +25,7 @@ import io.airbyte.integrations.destination.oracle.OracleNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
@@ -141,7 +142,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     db = new OracleContainer()
         .withUsername("test")
@@ -162,7 +163,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db.stop();
     db.close();
   }
