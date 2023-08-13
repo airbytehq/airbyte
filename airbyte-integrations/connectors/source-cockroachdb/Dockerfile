@@ -24,5 +24,5 @@ ENV APPLICATION source-cockroachdb
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.1.23
+LABEL io.airbyte.version=0.1.22
 LABEL io.airbyte.name=airbyte/source-cockroachdb
