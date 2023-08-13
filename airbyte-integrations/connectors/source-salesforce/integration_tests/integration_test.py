@@ -71,7 +71,7 @@ def get_stream_state():
 
 
 def test_update_for_deleted_record(stream):
-    headers = stream.authenticator.get_auth_header()
+    headers = stream.authenticator.token()
     stream_state = get_stream_state()
     time.sleep(1)
     response = create_note(stream, headers)
@@ -134,7 +134,7 @@ def test_update_for_deleted_record(stream):
 
 
 def test_deleted_record(stream):
-    headers = stream.authenticator.get_auth_header()
+    headers = stream.authenticator.token()
     response = create_note(stream, headers)
     assert response.status_code == 201, "Note was note created"
 
