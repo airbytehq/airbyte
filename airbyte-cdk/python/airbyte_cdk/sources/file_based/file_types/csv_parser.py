@@ -45,7 +45,7 @@ class CsvParser(FileTypeParser):
             quotechar=config_format.quote_char,
             escapechar=config_format.escape_char,
             doublequote=config_format.double_quote,
-            quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
+            quoting=csv.QUOTE_MINIMAL,
         )
         with stream_reader.open_file(file, self.file_read_mode, config_format.encoding, logger) as fp:
             # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
@@ -76,7 +76,7 @@ class CsvParser(FileTypeParser):
             quotechar=config_format.quote_char,
             escapechar=config_format.escape_char,
             doublequote=config_format.double_quote,
-            quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
+            quoting=csv.QUOTE_MINIMAL,
         )
         with stream_reader.open_file(file, self.file_read_mode, config_format.encoding, logger) as fp:
             # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual

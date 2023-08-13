@@ -48,11 +48,6 @@ class CsvFormat(BaseModel):
     double_quote: bool = Field(
         title="Double Quote", default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data."
     )
-    quoting_behavior: QuotingBehavior = Field(
-        title="Quoting Behavior",
-        default=QuotingBehavior.QUOTE_SPECIAL_CHARACTERS,
-        description="The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
-    )
     null_values: Set[str] = Field(
         title="Null Values",
         default=[],

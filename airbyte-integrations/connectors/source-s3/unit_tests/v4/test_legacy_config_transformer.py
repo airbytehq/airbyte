@@ -29,7 +29,6 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                     "quote_char": "|",
                     "escape_char": "!",
                     "double_quote": True,
-                    "quoting_behavior": "Quote All"
                 },
                 "path_pattern": "**/*.csv",
                 "schema": '{"col1": "string", "col2": "integer"}'

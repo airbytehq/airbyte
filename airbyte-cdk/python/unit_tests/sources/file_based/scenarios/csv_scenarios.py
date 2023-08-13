@@ -162,17 +162,6 @@ single_csv_scenario = (
                                                     "default": True,
                                                     "type": "boolean"
                                                 },
-                                                "quoting_behavior": {
-                                                    "title": "Quoting Behavior",
-                                                    "description": "The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
-                                                    "default": "Quote Special Characters",
-                                                    "enum": [
-                                                        "Quote All",
-                                                        "Quote Special Characters",
-                                                        "Quote Non-numeric",
-                                                        "Quote None"
-                                                    ]
-                                                },
                                                 "null_values": {
                                                     "title": "Null Values",
                                                     "description": "A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
@@ -834,7 +823,6 @@ csv_custom_format_scenario = (
                         "quote_char": "|",
                         "escape_char": "!",
                         "double_quote": True,
-                        "quoting_behavior": "Quote Special Characters",
                     },
                 }
             ]
@@ -955,7 +943,6 @@ multi_stream_custom_format = (
                         "escape_char": "@",
                         "double_quote": True,
                         "newlines_in_values": False,
-                        "quoting_behavior": "Quote All",
                     },
                 },
             ]
@@ -1722,7 +1709,6 @@ csv_newline_in_values_quoted_value_scenario = (
                     "validation_policy": "Emit Record",
                     "format": {
                         "filetype": "csv",
-                        "quoting_behavior": "Quote All"
                     }
                 }
             ],
@@ -1870,7 +1856,6 @@ csv_escape_char_is_set_scenario = (
                         "quote_char": '"',
                         "delimiter": ",",
                         "escape_char": "\\",
-                        "quoting_behavior": "Quote All",
                     }
                 }
             ],
@@ -1943,7 +1928,6 @@ csv_double_quote_is_set_scenario = (
                         "double_quotes": True,
                         "quote_char": '"',
                         "delimiter": ",",
-                        "quoting_behavior": "Quote All",
                     }
                 }
             ],
