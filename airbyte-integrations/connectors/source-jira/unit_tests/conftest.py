@@ -266,7 +266,7 @@ def mock_projects_responses(config, projects_response):
     Projects.use_cache = False
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
         json=projects_response,
     )
 

@@ -808,7 +808,7 @@ class Projects(JiraStream):
 
     def request_params(self, **kwargs):
         params = super().request_params(**kwargs)
-        params["expand"] = "description"
+        params["expand"] = "description,lead"
         return params
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:

@@ -22,7 +22,7 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
 
   public RootLevelFlatteningSheetGenerator(final JsonNode jsonSchema) {
     this.recordHeaders = MoreIterators.toList(jsonSchema.get("properties").fieldNames())
-        .stream().sorted().collect(Collectors.toList());;
+        .stream().sorted().collect(Collectors.toList());
   }
 
   @Override

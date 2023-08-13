@@ -2,8 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
+from pathlib import Path
 
 from setuptools import find_packages, setup
+
+
+def local_dependency(name: str) -> str:
+    """Returns a path to a local package."""
+    if os.environ.get("DAGGER_BUILD"):
+        return f"{name} @ file:///local_dependencies/{name}"
+    else:
+        return f"{name} @ file://{Path.cwd().parent / name}"
+
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
@@ -23,7 +34,10 @@ MAIN_REQUIREMENTS = [
     "pyxlsb==1.0.9",
 ]
 
-TEST_REQUIREMENTS = ["boto3==1.21.21", "pytest==7.1.2", "pytest-docker==1.0.0", "pytest-mock~=3.8.2"]
+if not os.environ.get("DOCKER_BUILD"):
+    MAIN_REQUIREMENTS.append(local_dependency("source-file"))
+
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "boto3==1.21.21", "pytest==7.1.2", "pytest-docker==1.0.0", "pytest-mock~=3.8.2"]
 
 setup(
     name="source_file_secure",

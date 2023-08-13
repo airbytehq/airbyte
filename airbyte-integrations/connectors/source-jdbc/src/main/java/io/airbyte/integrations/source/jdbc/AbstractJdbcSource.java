@@ -110,7 +110,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records matters
+    // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records
+    // matters
     // as intermediate state messages are emitted (if the connector emits intermediate state).
     if (syncMode.equals(SyncMode.INCREMENTAL) && getStateEmissionFrequency() > 0) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
@@ -476,6 +477,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
 
     return catalog.getStreams().stream()
+        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());

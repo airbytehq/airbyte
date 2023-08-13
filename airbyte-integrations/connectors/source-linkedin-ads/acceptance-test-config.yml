@@ -6,6 +6,7 @@ acceptance_tests:
   spec:
     tests:
     - spec_path: "source_linkedin_ads/spec.json"
+      config_path: "secrets/config_oauth.json"
   connection:
     tests:
     - config_path: "secrets/config_oauth.json"
@@ -17,18 +18,19 @@ acceptance_tests:
     tests:
     - config_path: "secrets/config_oauth.json"
       backward_compatibility_tests_config:
-        disable_for_version: 0.1.16 # migration to May 2023 Api Version; schema changes; stream removed
+        disable_for_version: 0.2.1 # new fields added to schemas: `Campaigns`, 'Campaign_Groups', `Creatives`
       timeout_seconds: 60
   basic_read:
     tests:
     - config_path: "secrets/config_oauth.json"
       expect_records:
         path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_columns: false
+      fail_on_extra_columns: true
+      timeout_seconds: 3600
   incremental:
     tests:
     - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/incremental_catalog.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
         missing_streams:

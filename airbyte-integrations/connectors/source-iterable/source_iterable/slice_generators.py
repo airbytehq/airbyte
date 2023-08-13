@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import dataclasses
 import math
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, Tuple
@@ -14,6 +14,9 @@ from pendulum.datetime import DateTime, Period
 class StreamSlice:
     start_date: DateTime
     end_date: DateTime
+
+    def __iter__(self):
+        return ((field.name, getattr(self, field.name)) for field in dataclasses.fields(self))
 
 
 class SliceGenerator:

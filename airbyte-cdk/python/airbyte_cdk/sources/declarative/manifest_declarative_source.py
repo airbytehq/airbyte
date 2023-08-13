@@ -26,6 +26,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.core import Stream
 from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validate
@@ -61,12 +62,17 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._debug = debug
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._constructor = component_factory if component_factory else ModelToComponentFactory(emit_connector_builder_messages)
+        self._message_repository = self._constructor.get_message_repository()
 
         self._validate_source()
 
     @property
     def resolved_manifest(self) -> Mapping[str, Any]:
         return self._source_config
+
+    @property
+    def message_repository(self) -> Union[None, MessageRepository]:
+        return self._message_repository
 
     @property
     def connection_checker(self) -> ConnectionChecker:

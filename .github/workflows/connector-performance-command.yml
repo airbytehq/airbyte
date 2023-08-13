@@ -76,9 +76,9 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, 
-            `bottleneck_stream1`, `bottleneck_stream_randomseed. For destinations only: you can also use `stream-numbers=N` 
-            to simulate N number of parallel streams. Additionally, `sync-mode=incremental` is supported for destinations. 
+            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`,
+            `bottleneck_stream1`, `bottleneck_stream_randomseed. For destinations only: you can also use `stream-numbers=N`
+            to simulate N number of parallel streams. Additionally, `sync-mode=incremental` is supported for destinations.
             For example: `dataset=1m stream-numbers=2 sync-mode=incremental`
             > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
       - name: Search for valid connector name format
@@ -92,7 +92,7 @@ jobs:
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
-        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' && 
+        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' &&
               github.event.inputs.connector != 'connectors/source-mysql' &&
               github.event.inputs.connector != 'connectors/destination-snowflake' }}"
         run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
@@ -109,11 +109,13 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Install CI scripts
-        # all CI python packages have the prefix "ci_"
         run: |
-          pip install --quiet -e ./tools/ci_*
+          pip install pipx
+          pipx ensurepath
+          pipx install airbyte-ci/connectors/ci_credentials
+          pipx install airbyte-ci/connectors/connector_ops
       - name: Source or Destination harness
         id: which-harness
         run: |
@@ -139,7 +141,7 @@ jobs:
           echo "Building... ${{github.event.inputs.connector}}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
           connector_name=$(echo ${{ github.event.inputs.connector }} | cut -d / -f 2)
-          echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check" 
+          echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check"
           ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
@@ -174,7 +176,7 @@ jobs:
           kubectl logs --follow $POD
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
-          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$PREFIX"}; line=${line%"$SUFFIX"}; echo $line >> $GITHUB_OUTPUT ; done 
+          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$PREFIX"}; line=${line%"$SUFFIX"}; echo $line >> $GITHUB_OUTPUT ; done
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v2
@@ -182,7 +184,7 @@ jobs:
           reactions: '+1'
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            ## Performance test Result: 
+            ## Performance test Result:
             ```
             ${{ steps.run-harness.outputs.RUN_RESULT }}
             ```

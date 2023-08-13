@@ -15,7 +15,7 @@ class SmartSheetAPIWrapper:
     def __init__(self, config: Mapping[str, Any]):
         self._spreadsheet_id = config["spreadsheet_id"]
         self._config = config
-        self._metadata = config["metadata_fields"]
+        self._metadata = config.get("metadata_fields", [])
         self.api_client = smartsheet.Smartsheet(self.get_access_token(config))
         self.api_client.errors_as_exceptions(True)
         # each call to `Sheets` makes a new instance, so we save it here to make no more new objects

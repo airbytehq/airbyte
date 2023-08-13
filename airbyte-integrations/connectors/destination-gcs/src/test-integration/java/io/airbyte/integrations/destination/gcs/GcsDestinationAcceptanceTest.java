@@ -29,6 +29,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -160,7 +161,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * <li>Construct the GCS client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random GCS bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);
@@ -184,7 +185,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * Remove all the S3 output from the tests.
    */
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final List<KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
         .listObjects(config.getBucketName(), config.getBucketPath())

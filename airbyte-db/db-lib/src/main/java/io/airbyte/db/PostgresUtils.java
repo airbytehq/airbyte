@@ -17,9 +17,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresUtils {
 
   public static PgLsn getLsn(final JdbcDatabase database) throws SQLException {
-    // pg version 10+.
+    // pg version >= 10. For versions < 10 use query select * from pg_current_xlog_location()
     final List<JsonNode> jsonNodes = database
-        .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("SELECT pg_current_wal_lsn()"),
+        .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("select * from pg_current_wal_lsn()"),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
 
     Preconditions.checkState(jsonNodes.size() == 1);
