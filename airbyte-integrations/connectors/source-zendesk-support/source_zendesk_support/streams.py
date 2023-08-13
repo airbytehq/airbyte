@@ -259,7 +259,7 @@ class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
         new_value = str((latest_record or {}).get(self.cursor_field, ""))
         return {self.cursor_field: max(new_value, old_value)}
 
-    def check_stream_state(self, stream_state: Mapping[str, Any] = None):
+    def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
         """
         Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
@@ -330,7 +330,7 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
     sideload_param: str = None
 
     @staticmethod
-    def check_start_time_param(requested_start_time: int, value: int = 1):
+    def check_start_time_param(requested_start_time: int, value: int = 1) -> int:
         """
         Requesting tickets in the future is not allowed, hits 400 - bad request.
         We get current UNIX timestamp minus `value` from now(), default = 1 (minute).
@@ -523,17 +523,17 @@ class Tickets(SourceZendeskIncrementalExportStream):
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        old_value = (current_stream_state or {}).get(self.cursor_field, 0)
-        new_value = (latest_record or {}).get(self.cursor_field, 0)
+        old_value = (current_stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
+        new_value = (latest_record or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
         return {self.cursor_field: max(new_value, old_value)}
 
-    def check_stream_state(self, stream_state: Mapping[str, Any] = None):
+    def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
         """
         Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
         return stream_state.get(self.cursor_field) if stream_state else pendulum.parse(self._start_date).int_timestamp
 
-    def check_start_time_param(self, requested_start_time: int, value: int = 1):
+    def check_start_time_param(self, requested_start_time: int, value: int = 1) -> int:
         """
         The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
         Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
