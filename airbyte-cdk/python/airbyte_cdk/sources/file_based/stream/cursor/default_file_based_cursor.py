@@ -5,6 +5,7 @@
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Iterable, MutableMapping, Optional
+from zoneinfo import ZoneInfo
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -73,7 +74,9 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         if file.uri in self._file_to_datetime_history:
             # If the file's uri is in the history, we should sync the file if it has been modified since it was synced
-            updated_at_from_history = datetime.strptime(self._file_to_datetime_history[file.uri], self.DATE_TIME_FORMAT)
+            updated_at_from_history = datetime.strptime(self._file_to_datetime_history[file.uri], self.DATE_TIME_FORMAT).replace(
+                tz=ZoneInfo("UTC")
+            )
             if file.last_modified < updated_at_from_history:
                 logger.warning(
                     f"The file {file.uri}'s last modified date is older than the last time it was synced. This is unexpected. Skipping the file."
