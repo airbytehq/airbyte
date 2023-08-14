@@ -139,7 +139,7 @@ def never_fail_exec(command: List[str]) -> Callable:
     return never_fail_exec_inner
 
 
-async def start_context_dockerd_service(context: ConnectorContext) -> Container:
+async def start_context_dockerd_service(dagger_client: Client, service_name: str) -> Container:
     """
     This is to get a long running dockerd service to be shared across all steps in a connector pipeline.
     Underlying issue:
@@ -147,8 +147,7 @@ async def start_context_dockerd_service(context: ConnectorContext) -> Container:
     GitHub Issue:
         https://github.com/airbytehq/airbyte/issues/27233
     """
-    service_name = f"{context.connector.technical_name}-{context.git_revision}-docker-host"
-    dockerd_service = environments.with_dockerd_service(context.dagger_client, service_name)
+    dockerd_service = environments.with_dockerd_service(dagger_client, service_name)
     main_logger.warn(f"Hack: starting the context dockerd service: {service_name}")
     asyncio.ensure_future(dockerd_service.sync())
     # Wait for the docker service to be ready

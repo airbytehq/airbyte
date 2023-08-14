@@ -469,69 +469,27 @@ def with_dockerd_service(dagger_client: Client, name: str) -> Container:
     )
 
 
-def with_bound_global_docker_host(
-    context: ConnectorContext,
-    container: Container,
-) -> Container:
-    """Bind a container to a docker host. It will use the dockerd service as a docker host.
+def docker_host_binding(context: ConnectorContext) -> Callable:
+    """Bind a container to a docker host. It will use the context dockerd service as a docker host.
 
     Args:
         context (ConnectorContext): The current connector context.
-        container (Container): The container to bind to the docker host.
-    Returns:
-        Container: The container bound to the docker host.
-    """
-    dockerd = context.dockerd_service
-    docker_hostname = "global-docker-host"
-    return (
-        container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
-        .with_service_binding(docker_hostname, dockerd)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
-    )
-
-
-def with_bound_custom_docker_host(
-    context: ConnectorContext,
-    container: Container,
-    custom_docker_host_name: str,
-) -> Container:
-    """Bind a container to a docker host. It will use the dockerd service as a docker host.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-        container (Container): The container to bind to the docker host.
-    Returns:
-        Container: The container bound to the docker host.
-    """
-    dockerd = with_dockerd_service(context.dagger_client, custom_docker_host_name)
-    return (
-        container.with_env_variable("DOCKER_HOST", f"tcp://{custom_docker_host_name}:2375")
-        .with_service_binding(custom_docker_host_name, dockerd)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
-    )
-
-
-def bound_docker_host(context: ConnectorContext, custom_docker_host_name: Optional[str] = None) -> Callable:
-    """Bind a container to a docker host. It will use the dockerd service as a docker host.
-    If a custom docker host name is provided, a a custom docker host will be used, not the global one.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-        custom_docker_host_name (Optional[str], optional): A custom host name that will lead to creation of a new dockerd service. Defaults to None.
 
     Returns:
-        Container: _description_
+        Callable: A function that will bind the container to a docker host.
     """
 
-    def bound_docker_host_inner(container: Container) -> Container:
-        if custom_docker_host_name:
-            return with_bound_custom_docker_host(context, container, custom_docker_host_name)
-        return with_bound_global_docker_host(context, container)
+    def docker_host_binding_inner(container: Container) -> Container:
+        return (
+            container.with_env_variable("DOCKER_HOST", f"tcp://{context.dockerd_service_name}:2375")
+            .with_service_binding(context.dockerd_service_name, context.dockerd_service)
+            .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+        )
 
-    return bound_docker_host_inner
+    return docker_host_binding_inner
 
 
-def with_docker_cli(context: PipelineContext, docker_host_binding: Callable) -> Container:
+def with_docker_cli(context: PipelineContext) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
@@ -544,11 +502,11 @@ def with_docker_cli(context: PipelineContext, docker_host_binding: Callable) -> 
         context.dagger_client.container()
         .from_(consts.DOCKER_CLI_IMAGE)
         .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-        .with_(docker_host_binding)
+        .with_(docker_host_binding(context))
     )
 
 
-async def load_image_to_docker_host(context: PipelineContext, tar_file: File, image_tag: str, docker_host_binding: Callable):
+async def load_image_to_docker_host(context: PipelineContext, tar_file: File, image_tag: str):
     """Load a docker image tar archive to the docker host.
 
     Args:
@@ -559,7 +517,7 @@ async def load_image_to_docker_host(context: PipelineContext, tar_file: File, im
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context, docker_host_binding).with_mounted_file(tar_name, tar_file)
+    docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
     docker_cli = await docker_cli.with_exec(["docker", "load", "--input", tar_name])
     image_load_output = await docker_cli.stdout()
     # Not tagged images only have a sha256 id the load output shares.

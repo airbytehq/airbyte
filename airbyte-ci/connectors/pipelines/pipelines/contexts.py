@@ -445,7 +445,8 @@ class ConnectorContext(PipelineContext):
 
     async def __aenter__(self):
         await super().__aenter__()
-        self.dockerd_service = await hacks.start_context_dockerd_service(self)
+        self.dockerd_service_name = f"{self.connector.technical_name}-{self.git_revision}-docker-host"
+        self.dockerd_service = await hacks.start_context_dockerd_service(self.dagger_client, self.dockerd_service_name)
         return self
 
     async def __aexit__(

@@ -5,13 +5,12 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Callable, ClassVar, List, Optional, Tuple
+from typing import ClassVar, List, Tuple
 
 from dagger import CacheVolume, Container, Directory, QueryError
 from pipelines import consts
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
-from pipelines.utils import slugify
 
 
 class GradleTask(Step, ABC):
@@ -137,11 +136,6 @@ class GradleTask(Step, ABC):
         return gradle_container
 
     @property
-    def custom_docker_host_binding(self) -> Optional[Callable]:
-        docker_host_name = slugify(f"{self.context.connector.technical_name}-gradle-docker-host")
-        return environments.bound_docker_host(self.context, docker_host_name)
-
-    @property
     def gradle_container(
         self,
     ) -> Container:
@@ -175,5 +169,5 @@ class GradleTask(Step, ABC):
             .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
-            .with_(self.custom_docker_host_binding)
+            .with_(environments.docker_host_binding(self.context))
         )
