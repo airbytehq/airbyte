@@ -412,6 +412,18 @@ class CsvReaderTest(unittest.TestCase):
         assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
 
     def test_given_too_many_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header",
+                    "a value",
+                    "too many values,value,value,value",
+                ]
+            )
+            .build()
+        )
+
         data_generator = self._read_data()
         next(data_generator)
         assert f"{self._CONFIG_NAME}_config_dialect" in csv.list_dialects()
