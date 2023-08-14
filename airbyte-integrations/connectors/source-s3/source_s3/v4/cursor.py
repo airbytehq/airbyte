@@ -61,16 +61,13 @@ class Cursor(DefaultFileBasedCursor):
         converted_history = {}
 
         timestamp = datetime.strptime(legacy_state["_ab_source_file_last_modified"], Cursor.LEGACY_DATE_TIME_FORMAT)
-        timestamp = timestamp.replace(tzinfo=ZoneInfo("UTC"))
         for date_str, filenames in legacy_state.get("history", {}).items():
-            datetime_obj = datetime.strptime(date_str, Cursor.DATE_FORMAT).replace(tzinfo=ZoneInfo("UTC"))
+            datetime_obj = datetime.strptime(date_str, Cursor.DATE_FORMAT)
             datetime_obj = Cursor._get_adjusted_date_timestamp(timestamp, datetime_obj)
 
             for filename in filenames:
                 if filename in converted_history:
-                    if datetime_obj > datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT).replace(
-                        tzinfo=ZoneInfo("UTC")
-                    ):
+                    if datetime_obj > datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT):
                         converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
                 else:
                     converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
@@ -78,7 +75,7 @@ class Cursor(DefaultFileBasedCursor):
         if converted_history:
             filename, _ = max(converted_history.items(), key=lambda x: (x[1], x[0]))
             cursor = f"{timestamp}_{filename}"
-            v3_min_sync_dt = timestamp - timedelta(hours=1)
+            v3_min_sync_dt = timestamp.replace(tzinfo=ZoneInfo("UTC")) - timedelta(hours=1)
         else:
             cursor = None
             # FIXME: Set a default v3_min_
