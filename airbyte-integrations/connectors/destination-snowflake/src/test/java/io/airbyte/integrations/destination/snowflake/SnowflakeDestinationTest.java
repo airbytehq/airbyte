@@ -89,14 +89,6 @@ public class SnowflakeDestinationTest {
     assertEquals(isMatch, matcher.find());
   }
 
-  @Test
-  @DisplayName("When not given S3 credentials should use INSERT")
-  public void useInsertStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
-  }
-
   @ParameterizedTest
   @MethodSource("destinationTypeToConfig")
   public void testS3ConfigType(final String configFileName, final DestinationType expectedDestinationType) throws Exception {
@@ -116,44 +108,5 @@ public class SnowflakeDestinationTest {
         .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
     assertEquals(AsyncStreamConsumer.class, consumer.getClass());
   }
-
-  static class TestEnableAsyncArgumentsProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-      final var mapper = new ObjectMapper();
-      final var standard = mapper.createObjectNode();
-      final var internalStagingSpace = mapper.createObjectNode();
-      final var internalStagingSpaceCapital = mapper.createObjectNode();
-      final var internalStagingDash = mapper.createObjectNode();
-      final var internalStagingUnderscore = mapper.createObjectNode();
-      final var noLoadingMethod = mapper.createObjectNode();
-      standard.put("loading_method", mapper.createObjectNode().put("method", "standard"));
-      internalStagingSpace.put("loading_method", mapper.createObjectNode().put("method", "internal staging"));
-      internalStagingSpaceCapital.put("loading_method", mapper.createObjectNode().put("method", "INTERNAL STAGING"));
-      internalStagingDash.put("loading_method", mapper.createObjectNode().put("method", "internal-staging"));
-      internalStagingUnderscore.put("loading_method", mapper.createObjectNode().put("method", "internal_staging"));
-      noLoadingMethod.put("loading_method", "standard");
-
-      return Stream.of(
-              Arguments.of(standard, false),
-              Arguments.of(internalStagingSpace, true),
-              Arguments.of(internalStagingSpaceCapital, true),
-              Arguments.of(internalStagingDash, true),
-              Arguments.of(internalStagingUnderscore, true),
-              Arguments.of(mapper.createObjectNode(), false),
-              Arguments.of(noLoadingMethod, false)
-      );
-    }
-  }
-
-
-  @ParameterizedTest
-  @ArgumentsSource(TestEnableAsyncArgumentsProvider.class)
-  public void testEnableAsync(final JsonNode config, boolean expected) {
-    final var actual = SnowflakeDestination.useAsyncSnowflake(config);
-    Assertions.assertEquals(expected, actual);
-  }
-
 
 }

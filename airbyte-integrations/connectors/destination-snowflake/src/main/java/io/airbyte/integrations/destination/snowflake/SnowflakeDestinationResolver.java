@@ -17,15 +17,6 @@ public class SnowflakeDestinationResolver {
       return DestinationType.INTERNAL_STAGING;
   }
 
-  public static int getNumberOfFileBuffers(final JsonNode config) {
-    int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
-    if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-      numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-    }
-    // Only allows for values 10 <= numOfFileBuffers <= 50
-    return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
-  }
-
   public static Map<DestinationType, Destination> getTypeToDestination(final String airbyteEnvironment) {
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination(airbyteEnvironment);
 
