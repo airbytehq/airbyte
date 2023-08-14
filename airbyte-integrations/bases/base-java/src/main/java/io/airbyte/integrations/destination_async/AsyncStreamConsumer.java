@@ -45,7 +45,6 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   private final BufferEnqueue bufferEnqueue;
   private final FlushWorkers flushWorkers;
   private final Set<StreamDescriptor> streamNames;
-  private final String defaultNamespace;
   private final FlushFailure flushFailure;
   private final String defaultNamespace;
 
