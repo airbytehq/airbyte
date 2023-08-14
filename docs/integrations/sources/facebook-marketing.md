@@ -114,6 +114,7 @@ The Facebook Marketing source connector supports the following sync modes:
 - [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 - [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 - [CustomConversions](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)
+- [CustomAudiences](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)
 - [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 - [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
@@ -174,6 +175,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.4   | 2023-08-08 | [29412](https://github.com/airbytehq/airbyte/pull/29412) | Add new custom_audience stream                                                                                                                                                                                                                                                                    |
 | 1.1.3   | 2023-08-08 | [29208](https://github.com/airbytehq/airbyte/pull/29208) | Add account type validation during check                                                                                                                                                                                                                                                          |
 | 1.1.2   | 2023-08-03 | [29042](https://github.com/airbytehq/airbyte/pull/29042) | Fix broken `advancedAuth` references for `spec`                                                                                                                                                                                                                                                   |
 | 1.1.1   | 2023-07-26 | [27996](https://github.com/airbytehq/airbyte/pull/27996) | Remove reference to authSpecification                                                                                                                                                                                                                                                             |
