@@ -183,7 +183,7 @@ class Issues(SentryIncremental):
 
     def _get_filter_date(self, stream_state: Optional[Mapping[str, Any]]) -> str:
         """Retrieve the filter date from the stream state or use the start_date."""
-        return stream_state.get(self.cursor_field) if stream_state else self.start_date
+        return stream_state.get(self.cursor_field) or self.start_date if stream_state else self.start_date
 
     def _build_query_params(self, filter_date: str) -> Dict[str, str]:
         """Generate query parameters for the request."""
