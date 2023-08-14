@@ -111,15 +111,18 @@ public class MongoDbSource extends BaseConnector implements Source {
     final var emittedAt = Instant.now();
 
     final var states = convertState(state);
+    final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 
-    try (final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config)) {
+    try {
       final var database = mongoClient.getDatabase(databaseName);
       // TODO treat INCREMENTAL and FULL_REFRESH differently?
       return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(
-          convertCatalogToIterators(catalog, states, database, emittedAt),
-          AirbyteTraceMessageUtility::emitStreamStatusTrace),
-          ()-> {}
-      );
+              convertCatalogToIterators(catalog, states, database, emittedAt),
+              AirbyteTraceMessageUtility::emitStreamStatusTrace),
+          mongoClient::close);
+    } catch (final Exception e) {
+          mongoClient.close();
+          throw e;
     }
   }
 
