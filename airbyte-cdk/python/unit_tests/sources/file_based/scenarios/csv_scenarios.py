@@ -119,15 +119,6 @@ single_csv_scenario = (
                                             "type": "object",
                                             "properties": {
                                                 "filetype": {"title": "Filetype", "default": "csv", "enum": ["csv"], "type": "string"},
-                                                "inference_type": {
-                                                    "default": "None",
-                                                    "description": "How to infer the types of the columns. If none, inference default to strings.",
-                                                    "title": "Inference Type",
-                                                    "enum": [
-                                                        "None",
-                                                        "Primitive Types Only",
-                                                    ],
-                                                },
                                                 "delimiter": {
                                                     "title": "Delimiter",
                                                     "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
@@ -210,6 +201,13 @@ single_csv_scenario = (
                                                     "type": "array",
                                                     "items": {"type": "string"},
                                                     "uniqueItems": True,
+                                                },
+                                                "inference_type": {
+                                                    "title": "Inference Type",
+                                                    "description": "How to infer the types of the columns. If none, inference default to strings.",
+                                                    "default": "None",
+                                                    "airbyte_hidden": True,
+                                                    "enum": ["None", "Primitive Types Only"],
                                                 },
                                             },
                                         },

@@ -14,6 +14,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -51,7 +52,7 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     this.redpandaNameTransformer = new RedpandaNameTransformer();
     this.adminClient = AdminClient.create(Map.of(
         AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, redpandaContainer.getBootstrapServers(),
@@ -61,7 +62,7 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws ExecutionException, InterruptedException {
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws ExecutionException, InterruptedException {
     var topics = adminClient.listTopics().listings().get().stream()
         .filter(tl -> !tl.isInternal())
         .map(TopicListing::name)

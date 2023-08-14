@@ -95,6 +95,7 @@ class CsvFormat(BaseModel):
         title="Inference Type",
         default=InferenceType.NONE,
         description="How to infer the types of the columns. If none, inference default to strings.",
+        airbyte_hidden=True,
     )
 
     @validator("delimiter")
