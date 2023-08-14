@@ -147,7 +147,7 @@ async def start_context_dockerd_service(context: ConnectorContext) -> Container:
     GitHub Issue:
         https://github.com/airbytehq/airbyte/issues/27233
     """
-    dockerd_service = await environments.with_dockerd_service(context)
+    dockerd_service = environments.with_dockerd_service(context)
     main_logger.warn(f"Hack: starting the context dockerd service: {context.dockerd_service_name}")
     asyncio.ensure_future(dockerd_service.sync())
     # Wait for the docker service to be ready

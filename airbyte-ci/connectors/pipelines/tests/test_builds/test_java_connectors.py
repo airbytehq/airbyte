@@ -37,7 +37,7 @@ class TestBuildConnectorDistributionTar:
         )
         context.dagger_client = dagger_client
         context.dockerd_service_name = "test-docker-host"
-        context.dockerd_service = await environments.with_dockerd_service(context)
+        context.dockerd_service = environments.with_dockerd_service(context)
         return context
 
     @pytest.fixture

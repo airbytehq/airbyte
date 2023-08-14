@@ -16,7 +16,7 @@ class BuildConnectorDistributionTar(GradleTask):
     gradle_task_name = "distTar"
 
     async def _prepare_container_for_build(self) -> Container:
-        gradle_container = await self.get_gradle_container()
+        gradle_container = self.get_gradle_container()
         return (
             gradle_container
             # We exclude the Dockerfile to avoid running airbyteDocker task

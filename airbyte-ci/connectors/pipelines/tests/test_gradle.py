@@ -33,7 +33,7 @@ class TestGradleTask:
         )
         context.dagger_client = dagger_client
         context.dockerd_service_name = "test-docker-host"
-        context.dockerd_service = await environments.with_dockerd_service(context)
+        context.dockerd_service = environments.with_dockerd_service(context)
         return context
 
     async def test_build_include(self, test_context):
@@ -45,7 +45,6 @@ class TestGradleTask:
         step = self.DummyStep(test_context)
         container = await step.get_gradle_container()
         assert await container.env_variable("TESTCONTAINERS_RYUK_DISABLED") == "true"
-        assert await container.env_variable("TESTCONTAINERS_HOST_OVERRIDE") == test_context.dockerd_service_name
         assert await container.env_variable("DOCKER_HOST") == "tcp://test-docker-host:2375"
         assert (await container.with_exec(["pwd"]).stdout()).strip() == "/airbyte"
         container = container.with_mounted_directory(

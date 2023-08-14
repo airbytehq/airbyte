@@ -108,7 +108,7 @@ class IntegrationTests(PytestStep):
         connector_under_test = (
             connector_under_test
             # We bind the docker host to the container to be able to run docker commands in integration tests.
-            .with_(await environments.docker_host_binding(self.context)).with_(environments.mounted_connector_secrets(self.context))
+            .with_(environments.docker_host_binding(self.context)).with_(environments.mounted_connector_secrets(self.context))
         )
         return await self._run_tests_in_directory(connector_under_test, "integration_tests")
 
