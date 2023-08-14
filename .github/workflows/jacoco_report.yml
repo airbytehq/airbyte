@@ -19,10 +19,9 @@ jobs:
           java-version: "17"
 
       - name: Publish CDK to MavenLocal
-        # TODO: Make this step conditional on the CDK being updated
-        #       There's no harm either way, but we can save time by skipping.
+        # Note: This is a no-op if the CDK is not using a snapshot version.
         run: |
-          ./gradlew :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal
+          ./gradlew :airbyte-cdk:java:airbyte-cdk:publishLocalCdkSnapshot
 
       - name: Run Coverage
         run: |

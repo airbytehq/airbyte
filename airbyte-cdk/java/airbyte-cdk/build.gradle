@@ -54,6 +54,17 @@ publishToMavenLocal {
         println "Finished CDK publishToMavenLocal."
     }
 }
+
+// This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
+task publishLocalCdkSnapshot {}
+
+if (version.endsWith("-SNAPSHOT")) {
+    logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
+    publishLocalCdkSnapshot.dependsOn publishToMavenLocal
+} else {
+    logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
+}
+
 // MavenLocal debugging steps:
 // 1. Confirm local publish status by running:
 //    ls -la ~/.m2/repository/io/airbyte/airbyte-cdk*

@@ -28,7 +28,7 @@ class BuildConnectorDistributionTar(GradleTask):
             )
             # Pre-build the CDK and publish to MavenLocal
             # TODO: Make the CDK build+publish conditional once this is stable.
-            .with_exec(["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishToMavenLocal"])
+            .with_exec(["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishLocalCdkSnapshot"])
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_exec(self._get_gradle_command())
             .with_workdir(f"{self.context.connector.code_directory}/build/distributions")

@@ -14,6 +14,7 @@ from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
 from pipelines.contexts import PipelineContext
 
+
 class GradleTask(Step, ABC):
     """
     A step to run a Gradle task.
@@ -93,7 +94,7 @@ class GradleTask(Step, ABC):
         )
         if self.with_java_cdk_snapshot:
             connector_under_test = connector_under_test.with_exec(
-                ["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishToMavenLocal"]
+                ["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishLocalCdkSnapshot"]
             )
         connector_under_test = connector_under_test.with_exec(self._get_gradle_command())
 
