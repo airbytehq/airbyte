@@ -1,4 +1,5 @@
 # SFTP Bulk
+
 This page contains the setup guide and reference information for the SFTP Bulk source connector.
 
 This connector provides the following features not found in the standard SFTP source connector:
@@ -9,11 +10,12 @@ This connector provides the following features not found in the standard SFTP so
 
 ## Prerequisites
 
-* Access to a remote server that supports SFTP
-* Host address
-* Valid username and password associated with the host server
+- Access to a remote server that supports SFTP
+- Host address
+- Valid username and password associated with the host server
 
 ## Setup guide
+
 ### Step 1: Set up SFTP authentication
 
 To set up the SFTP connector, you will need to select at least _one_ of the following authentication methods:
@@ -24,9 +26,9 @@ To set up the SFTP connector, you will need to select at least _one_ of the foll
 To set up key pair authentication, you may use the following steps as a guide:
 
 1. Open your terminal or command prompt and use the `ssh-keygen` command to generate a new key pair.
-:::note
-If your operating system does not support the `ssh-keygen` command, you can use a third-party tool like [PuTTYgen](https://www.puttygen.com/) to generate the key pair instead.
-:::
+   :::note
+   If your operating system does not support the `ssh-keygen` command, you can use a third-party tool like [PuTTYgen](https://www.puttygen.com/) to generate the key pair instead.
+   :::
 
 2. You will be prompted for a location to save the keys, and a passphrase to secure the private key. You can press enter to accept the default location and opt out of a passphrase if desired. Your two keys will be generated in the designated location as two separate files. The private key will usually be saved as `id_rsa`, while the public key will be saved with the `.pub` extension (`id_rsa.pub`).
 
@@ -47,17 +49,17 @@ Depending on factors such as your operating system and the specific SSH implemen
 ssh <username>@<server_ip_address>
 ```
 
-For more information on SSH key pair authentication, please refer to the 
+For more information on SSH key pair authentication, please refer to the
 [official documentation](https://www.ssh.com/academy/ssh/keygen).
 
 ### Step 2: Set up the SFTP connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **SFTP** from the list of available sources. 
-<!-- env:cloud -->
-**For Airbyte Cloud users**: If you do not see the **SFTP Bulk** source listed, please make sure the **Alpha** checkbox at the top of the page is checked.
-<!-- /env:cloud -->
+3. Find and select **SFTP** from the list of available sources.
+   <!-- env:cloud -->
+   **For Airbyte Cloud users**: If you do not see the **SFTP Bulk** source listed, please make sure the **Alpha** checkbox at the top of the page is checked.
+   <!-- /env:cloud -->
 4. Enter a **Source name** of your choosing.
 5. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If your remote server is using a different port, please enter it here.
 6. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
@@ -101,14 +103,13 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                       | Support  | Notes                                                                                 |
-|:------------------------------|:--------:|:--------------------------------------------------------------------------------------|
-| Full Refresh - Overwrite      |    ✅    |                                                                                      |
-| Full Refresh - Append Sync    |    ✅    |                                                                                      |
-| Incremental - Append          |    ✅    |                                                                                      |
-| Incremental - Deduped History |    ❌    |                                                                                      |
-| Namespaces                    |    ❌    |                                                                                      |
-
+| Feature                        | Support | Notes |
+| :----------------------------- | :-----: | :---- |
+| Full Refresh - Overwrite       |   ✅    |       |
+| Full Refresh - Append Sync     |   ✅    |       |
+| Incremental - Append           |   ✅    |       |
+| Incremental - Append + Deduped |   ❌    |       |
+| Namespaces                     |   ❌    |       |
 
 ## Supported streams
 
@@ -117,8 +118,8 @@ More formats \(e.g. Apache Avro\) will be supported in the future.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject         |
-|:--------|:-----------|:-------------|:----------------|
+| Version | Date       | Pull Request                                              | Subject                       |
+| :------ | :--------- | :-------------------------------------------------------- | :---------------------------- |
 | 0.1.2   | 2023-04-19 | [#19224](https://github.com/airbytehq/airbyte/pull/19224) | Support custom CSV separators |
-| 0.1.1   | 2023-03-17 | [#24180](https://github.com/airbytehq/airbyte/pull/24180) | Fix field order |
-| 0.1.0   | 2021-24-05 |              | Initial version |
+| 0.1.1   | 2023-03-17 | [#24180](https://github.com/airbytehq/airbyte/pull/24180) | Fix field order               |
+| 0.1.0   | 2021-24-05 |                                                           | Initial version               |
