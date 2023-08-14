@@ -219,17 +219,6 @@ class Orders(IncrementalNettbutikk24Stream):
         return "orders/{limit}/{offset}/{since}".format_map(self.uri_params)
 
 
-'''
-class Customers(IncrementalNettbutikk24Stream):
-    primary_key = "id"
-
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        self.update_uri_params(next_page_token, stream_state)
-        return "orders/{limit}/{offset}".format_map(self.uri_params)
-'''
-
 
 class SourceNettbutikk24(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
