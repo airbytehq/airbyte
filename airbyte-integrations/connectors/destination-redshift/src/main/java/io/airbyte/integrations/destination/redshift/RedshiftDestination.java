@@ -70,7 +70,6 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   public static void main(final String[] args) throws Exception {
-    LOGGER.info("====== Davin's Local");
     final Destination destination = new RedshiftDestination();
     LOGGER.info("starting destination: {}", RedshiftDestination.class);
     new IntegrationRunner(destination).run(args);
