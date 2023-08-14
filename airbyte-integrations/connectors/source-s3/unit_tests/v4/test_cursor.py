@@ -218,6 +218,69 @@ def test_v4_migration_do_not_sync_files_last_earlier_than_one_hour_of_cursor_on_
     assert files_to_sync == expected_files_to_sync
 
 
+def test_v3_migration_with_empty_state():
+    legacy_state = {}
+    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
+    cursor.set_initial_state(legacy_state)
+
+    all_files = [
+        RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
+        RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+    ]
+    logger = Mock()
+
+    files_to_sync = list(cursor.get_files_to_sync(all_files, logger))
+
+    expected_files_to_sync = [
+        RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
+        RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+    ]
+
+    assert files_to_sync == expected_files_to_sync
+
+
+@pytest.mark.parametrize(
+    "input_state, expected",
+    [
+        pytest.param({}, False, id="empty_state_is_not_legacy_state"),
+        pytest.param(
+            {"history": {"2023-08-01": ["file1.txt"]}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
+            True,
+            id="legacy_state_with_history_and_last_modified_cursor_is_legacy_state",
+        ),
+        pytest.param(
+            {"history": {"2023-08-01T00:00:00Z": ["file1.txt"]}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
+            False,
+            id="legacy_state_with_invalid_history_date_format_is_not_legacy",
+        ),
+        pytest.param(
+            {"history": {"2023-08-01": ["file1.txt"]}, "_ab_source_file_last_modified": "2023-08-01"},
+            False,
+            id="legacy_state_with_invalid_last_modified_datetime_format_is_not_legacy",
+        ),
+        pytest.param(
+            {"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, False, id="legacy_state_without_history_is_not_legacy_state"
+        ),
+        pytest.param({"history": {"2023-08-01": ["file1.txt"]}}, False, id="legacy_state_without_last_modified_cursor_is_not_legacy_state"),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            False,
+            id="v4_state_format_is_not_legacy",
+        ),
+    ],
+)
+def test_is_legacy_state(input_state, expected):
+    is_legacy_state = Cursor._is_legacy_state(input_state)
+    assert is_legacy_state is expected
+
+
 @pytest.mark.parametrize(
     "cursor_datetime, file_datetime, expected_adjusted_datetime",
     [

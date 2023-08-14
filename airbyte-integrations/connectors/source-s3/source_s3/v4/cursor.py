@@ -19,7 +19,7 @@ class Cursor(DefaultFileBasedCursor):
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
             value = self._convert_legacy_state(value)
-            self._v3_min_sync_dt = value.get("v3_min_sync_dt", False)
+        self._v3_min_sync_dt = value.get("v3_min_sync_dt", datetime.min).replace(tzinfo=ZoneInfo("UTC"))
         super().set_initial_state(value)
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
@@ -32,10 +32,17 @@ class Cursor(DefaultFileBasedCursor):
     def _is_legacy_state(value: StreamState) -> bool:
         if not value:
             return False
-        item = list(value.get("history", {}).keys())[0]
         try:
+            # Verify datetime format in history
+            item = list(value.get("history", {}).keys())[0]
             datetime.strptime(item, Cursor.DATE_FORMAT)
-        except ValueError:
+
+            # verify the format of the last_modified cursor
+            last_modified_at_cursor = value.get(Cursor.CURSOR_FIELD)
+            if not last_modified_at_cursor:
+                return False
+            datetime.strptime(last_modified_at_cursor, Cursor.LEGACY_DATE_TIME_FORMAT)
+        except (IndexError, ValueError):
             return False
         return True
 
@@ -60,7 +67,7 @@ class Cursor(DefaultFileBasedCursor):
         """
         converted_history = {}
 
-        timestamp = datetime.strptime(legacy_state["_ab_source_file_last_modified"], Cursor.LEGACY_DATE_TIME_FORMAT)
+        timestamp = datetime.strptime(legacy_state[Cursor.CURSOR_FIELD], Cursor.LEGACY_DATE_TIME_FORMAT)
         for date_str, filenames in legacy_state.get("history", {}).items():
             datetime_obj = datetime.strptime(date_str, Cursor.DATE_FORMAT)
             datetime_obj = Cursor._get_adjusted_date_timestamp(timestamp, datetime_obj)
@@ -75,11 +82,11 @@ class Cursor(DefaultFileBasedCursor):
         if converted_history:
             filename, _ = max(converted_history.items(), key=lambda x: (x[1], x[0]))
             cursor = f"{timestamp}_{filename}"
-            v3_min_sync_dt = timestamp.replace(tzinfo=ZoneInfo("UTC")) - timedelta(hours=1)
+            v3_min_sync_dt = timestamp - timedelta(hours=1)
         else:
-            cursor = None
-            # FIXME: Set a default v3_min_
-        return {"history": converted_history, "_ab_source_file_last_modified": cursor, "v3_min_sync_dt": v3_min_sync_dt}
+            # If there is no history, _is_legacy_state should return False, so we should never get here
+            raise ValueError("No history found in state message. This is likely due to a bug in the connector. Please contact support.")
+        return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_min_sync_dt": v3_min_sync_dt}
 
     @staticmethod
     def _get_adjusted_date_timestamp(cursor_datetime: datetime, file_datetime: datetime) -> datetime:
