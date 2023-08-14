@@ -116,13 +116,13 @@ After specifying your own configuration, run the following command:
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
-### (Alpha) Airbyte Pro deployment
+### (Alpha) Airbyte Enterprise deployment
 
-[Airbyte Pro](/airbyte-pro) is in early alpha stages, so this section will likely evolve. That said, if you have an Airbyte Pro license key and wish to install Airbyte Pro via helm, follow these steps:
+[Airbyte Enterprise](/airbyte-enterprise) is in early alpha stages, so this section will likely evolve. That said, if you have an Airbyte Enterprise license key and wish to install Airbyte Enterprise via helm, follow these steps:
 
 1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 
-2. Add your Airbyte Pro license key and [auth configuration details](/airbyte-pro#single-sign-on-sso) to a file called `airbyte.yml` in the root directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
+2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the root directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
 
 ```text
 cp airbyte.sample.yml airbyte.yml
@@ -142,7 +142,7 @@ For now, auth configurations aren't easy to modify once initially installed, so 
 helm repo update
 ```
 
-4. Install Airbyte Pro on helm using the following command:
+4. Install Airbyte Enterprise on helm using the following command:
 
 ```text
 RELEASE_NAME=<your release name>./tools/bin/install_airbyte_pro_on_helm.sh
