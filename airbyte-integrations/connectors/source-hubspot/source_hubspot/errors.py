@@ -21,11 +21,11 @@ class HubspotError(AirbyteTracedException):
         self,
         internal_message: str = None,
         message: str = None,
-        failure_type: FailureType = FailureType.system_error,
+        failure_type: FailureType = FailureType.config_error,
         exception: BaseException = None,
         response: requests.Response = None,
     ):
-        super().__init__(internal_message, message, failure_type, exception)
+        super().__init__(internal_message, message, FailureType.config_error, exception)
         self.response = response
 
 
