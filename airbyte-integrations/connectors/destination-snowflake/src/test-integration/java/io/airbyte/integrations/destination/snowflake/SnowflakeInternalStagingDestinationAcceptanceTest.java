@@ -48,6 +48,18 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
     assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
   }
 
+  @Test
+  public void testCheckWithNoActiveWarehouseConnection() throws Exception {
+    // Config to user(creds) that has no warehouse assigned
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
+
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
+  }
+
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalizationWithKeyPairAuth(final String messagesFilename, final String catalogFilename) throws Exception {
