@@ -7,6 +7,7 @@ import tarfile
 import dagger
 import pytest
 from pipelines import bases
+from pipelines.actions import environments
 from pipelines.builds import java_connectors
 from pipelines.contexts import ConnectorContext
 
@@ -35,6 +36,8 @@ class TestBuildConnectorDistributionTar:
             report_output_prefix="test",
         )
         context.dagger_client = dagger_client
+        context.dockerd_service_name = "test-docker-host"
+        context.dockerd_service = environments.with_dockerd_service(dagger_client, context.dockerd_service_name)
         return context
 
     @pytest.fixture
