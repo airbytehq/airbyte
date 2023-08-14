@@ -160,6 +160,15 @@ class Orders(IncrementalNettbutikk24Stream):
         self.update_uri_params(next_page_token, stream_state)
         return "orders/{limit}/{offset}/{since}".format_map(self.uri_params)
 
+class Customers(IncrementalNettbutikk24Stream):
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        self.update_uri_params(next_page_token, stream_state)
+        return "orders/{limit}/{offset}".format_map(self.uri_params)
+
 class SourceNettbutikk24(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
@@ -176,4 +185,4 @@ class SourceNettbutikk24(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Orders(config=config, flat = True), Products(config=config, flat = False), Products_Flatted(config=config, flat = True)]
+        return [Orders(config=config, flat = True), Products(config=config, flat = False), Products_Flatted(config=config, flat = True), Customers(config=config, flat = False)]
