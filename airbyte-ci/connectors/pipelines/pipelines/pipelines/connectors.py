@@ -11,7 +11,6 @@ import anyio
 import dagger
 from connector_ops.utils import ConnectorLanguage
 from dagger import Config
-from pipelines import hacks
 from pipelines.bases import NoOpStep, Report, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext, ContextState
 from pipelines.utils import create_and_open_file
@@ -83,19 +82,15 @@ async def run_connectors_pipelines(
     default_connectors_semaphore = anyio.Semaphore(concurrency)
     dagger_logs_output = sys.stderr if not dagger_logs_path else create_and_open_file(dagger_logs_path)
     async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:
-        async with anyio.create_task_group() as tg_main:
-            global_dockerd_service = await hacks.start_global_dockerd_service(dagger_client, tg_main)
-            async with anyio.create_task_group() as tg_connectors:
-                for context in contexts:
-                    context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")
-                    context.dockerd_service = global_dockerd_service
-                    tg_connectors.start_soon(
-                        connector_pipeline,
-                        context,
-                        CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING.get(context.connector.language, default_connectors_semaphore),
-                        *args,
-                    )
-            hacks.stop_global_dockerd_service(tg_main)
+        async with anyio.create_task_group() as tg_connectors:
+            for context in contexts:
+                context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")
+                tg_connectors.start_soon(
+                    connector_pipeline,
+                    context,
+                    CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING.get(context.connector.language, default_connectors_semaphore),
+                    *args,
+                )
         await run_report_complete_pipeline(dagger_client, contexts)
 
     return contexts

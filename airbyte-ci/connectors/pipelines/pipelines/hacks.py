@@ -6,12 +6,11 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
+import asyncio
 from typing import TYPE_CHECKING, Callable, List
 
 import anyio
 import requests
-import yaml
 from connector_ops.utils import ConnectorLanguage
 from dagger import DaggerError
 from pipelines import main_logger
@@ -63,35 +62,6 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
     return connector_dir.with_new_file("build.gradle", contents="\n".join(patched_gradle_file))
 
 
-async def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Directory:
-    """
-    Patch the acceptance-test-config.yml file of the connector under test to use the connector image with git revision tag and not dev.
-
-
-    Underlying issue:
-        acceptance-test-config.yml targets the connector image with the dev tag by default
-        in order to make sure the correct connector image is used when running the acceptance tests we tag the connector under test image with the git revision.
-        we patch the acceptance-test-config.yml file to use the connector image with the git revision tag.
-
-    Hack:
-        This function is called by patch_connector_dir, which is called every time the connector source directory is read by the pipeline.
-
-    Args:
-        context (ConnectorContext): The initialized connector context.
-        connector_dir (Directory): The directory containing the acceptance-test-config.yml file to patch.
-    """
-    if "acceptance-test-config.yml" not in await connector_dir.entries():
-        return connector_dir
-
-    context.logger.info("Patching acceptance-test-config.yml to use connector image with git revision tag and not dev.")
-
-    patched_cat_config = deepcopy(context.connector.acceptance_test_config)
-    patched_cat_config["connector_image"] = context.connector.acceptance_test_config["connector_image"].replace(
-        ":dev", f":{context.git_revision}"
-    )
-    return connector_dir.with_new_file("acceptance-test-config.yml", contents=yaml.safe_dump(patched_cat_config))
-
-
 async def patch_connector_dir(context: ConnectorContext, connector_dir: Directory) -> Directory:
     """Patch a connector directory: patch cat config, gradle file and dockerfile.
 
@@ -102,7 +72,6 @@ async def patch_connector_dir(context: ConnectorContext, connector_dir: Director
         Directory: The directory containing the patched connector.
     """
     patched_connector_dir = await _patch_gradle_file(context, connector_dir)
-    patched_connector_dir = await _patch_cat_config(context, patched_connector_dir)
     return patched_connector_dir.with_timestamps(1)
 
 
@@ -165,29 +134,23 @@ def never_fail_exec(command: List[str]) -> Callable:
     """
 
     def never_fail_exec_inner(container: Container):
-        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"])
+        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
 
     return never_fail_exec_inner
 
 
-async def start_global_dockerd_service(dagger_client: Client, task_group: anyio.TaskGroup) -> Container:
+async def start_context_dockerd_service(context: ConnectorContext) -> Container:
     """
-    This is to get a long running dockerd service to be shared across all the connectors pipelines.
+    This is to get a long running dockerd service to be shared across all steps in a connector pipeline.
     Underlying issue:
         Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state
     GitHub Issue:
         https://github.com/airbytehq/airbyte/issues/27233
     """
-    dockerd_service = environments.with_dockerd_service(dagger_client, "global-docker-host")
-    main_logger.warn("Hack: starting the global dockerd service")
-    task_group.start_soon(dockerd_service.sync)
+    service_name = f"{context.connector.technical_name}-{context.git_revision}-docker-host"
+    dockerd_service = environments.with_dockerd_service(context.dagger_client, service_name)
+    main_logger.warn(f"Hack: starting the context dockerd service: {service_name}")
+    asyncio.ensure_future(dockerd_service.sync())
     # Wait for the docker service to be ready
     await anyio.sleep(10)
     return dockerd_service
-
-
-def stop_global_dockerd_service(task_group: anyio) -> None:
-    """
-    When the connectors pipelines are done, we can stop the dockerd service by cancelling the task group in which its running.
-    """
-    task_group.cancel_scope.cancel()

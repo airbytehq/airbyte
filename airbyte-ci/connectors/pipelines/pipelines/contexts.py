@@ -306,7 +306,7 @@ class PipelineContext:
 class ConnectorContext(PipelineContext):
     """The connector context is used to store configuration for a specific connector pipeline run."""
 
-    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
+    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:dev"
 
     def __init__(
         self,
@@ -442,6 +442,11 @@ class ConnectorContext(PipelineContext):
         """
         vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
         return await hacks.patch_connector_dir(self, vanilla_connector_dir)
+
+    async def __aenter__(self):
+        await super().__aenter__()
+        self.dockerd_service = await hacks.start_context_dockerd_service(self)
+        return self
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]

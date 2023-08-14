@@ -7,7 +7,7 @@ from typing import Any, List, Text, Union
 
 import pendulum
 import pytest
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
@@ -217,7 +217,7 @@ def test_get_expected_schema_structure(schema, pathes):
         (["option1"], 2, {"a_key": "a_value"}),
         (["option2"], 1, ["value1", "value2"]),
         (["nonexistent_key"], 0, None),
-        (["option1", "option2"], 3, ["value1", "value2"])
+        (["option1", "option2"], 3, ["value1", "value2"]),
     ],
 )
 def test_find_and_get_nodes(keys: List[Text], num_paths: int, last_value: Any):
