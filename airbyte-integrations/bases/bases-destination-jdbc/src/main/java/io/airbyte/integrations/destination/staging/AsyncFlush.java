@@ -51,7 +51,7 @@ class AsyncFlush implements DestinationFlushFunction {
                     final ConfiguredAirbyteCatalog catalog,
                     final TypeAndDedupeOperationValve typerDeduperValve,
                     final TyperDeduper typerDeduper,
-                    // The size chosen is currently for improving the performance of low memory connectors. With 1 Gi of
+                    // In general, this size is chosen to improve the performance of lower memory connectors. With 1 Gi of
                     // resource the connector will usually at most fill up around 150 MB in a single queue. By lowering
                     // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
                     // freed earlier similar to a sliding window effect
