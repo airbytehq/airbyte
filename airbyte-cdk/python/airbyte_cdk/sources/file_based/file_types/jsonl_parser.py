@@ -4,14 +4,14 @@
 
 import json
 import logging
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, merge_schemas
+from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, SchemaType, merge_schemas
 
 
 class JsonlParser(FileTypeParser):
@@ -25,12 +25,12 @@ class JsonlParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Dict[str, Any]:
+    ) -> SchemaType:
         """
         Infers the schema for the file by inferring the schema for each line, and merging
         it with the previously-inferred schema.
         """
-        inferred_schema: Dict[str, Any] = {}
+        inferred_schema: Mapping[str, Any] = {}
 
         for entry in self._parse_jsonl_entries(file, stream_reader, logger, read_limit=True):
             line_schema = self._infer_schema_for_record(entry)
@@ -44,6 +44,7 @@ class JsonlParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         """
         This code supports parsing json objects over multiple lines even though this does not align with the JSONL format. This is for
