@@ -354,7 +354,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 }
                 """)));
 
-    final String sql = generator.updateTable(incrementalDedupStream, "");
+    final String sql = generator.updateTable(incrementalDedupStream, "", true);
     assertThrows(
         Exception.class,
         () -> destinationHandler.execute(sql));
@@ -384,7 +384,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalDedupStream, "_foo");
+    final String sql = generator.updateTable(incrementalDedupStream, "_foo", true);
     destinationHandler.execute(sql);
 
     verifyRecords(
@@ -402,7 +402,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/timestampformats_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalAppendStream, "");
+    final String sql = generator.updateTable(incrementalAppendStream, "", true);
     destinationHandler.execute(sql);
 
     DIFFER.diffFinalTableRecords(
@@ -418,7 +418,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalDedupStream, "");
+    final String sql = generator.updateTable(incrementalDedupStream, "", true);
     destinationHandler.execute(sql);
 
     verifyRecords(
@@ -436,7 +436,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalAppendStream, "");
+    final String sql = generator.updateTable(incrementalAppendStream, "", true);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -493,7 +493,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", true);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -527,7 +527,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.updateTable(cdcIncrementalAppendStream, "");
+    final String sql = generator.updateTable(cdcIncrementalAppendStream, "", true);
     // Execute T+D twice
     destinationHandler.execute(sql);
     destinationHandler.execute(sql);
@@ -552,7 +552,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "",
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_final.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", true);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -584,7 +584,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", true);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -621,7 +621,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "",
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", true);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -708,7 +708,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     final String createTable = generator.createTable(stream, "");
     destinationHandler.execute(createTable);
-    final String updateTable = generator.updateTable(stream, "");
+    final String updateTable = generator.updateTable(stream, "", true);
     destinationHandler.execute(updateTable);
 
     verifyRecords(

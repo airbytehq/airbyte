@@ -102,7 +102,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
     final String suffix = getFinalTableSuffix(streamConfig.id());
-    final String sql = sqlGenerator.updateTable(streamConfig, suffix);
+    final String sql = sqlGenerator.updateTable(streamConfig, suffix, true);
     destinationHandler.execute(sql);
   }
 

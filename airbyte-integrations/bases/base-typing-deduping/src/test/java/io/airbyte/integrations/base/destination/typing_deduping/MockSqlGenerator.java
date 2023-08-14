@@ -35,7 +35,7 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String updateTable(StreamConfig stream, String finalSuffix) {
+  public String updateTable(StreamConfig stream, String finalSuffix, final boolean verifyPrimaryKeys) {
     return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix);
   }
 

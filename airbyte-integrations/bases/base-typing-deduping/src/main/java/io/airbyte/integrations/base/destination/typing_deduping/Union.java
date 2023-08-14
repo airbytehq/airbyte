@@ -24,10 +24,11 @@ import java.util.List;
  */
 public record Union(List<AirbyteType> options) implements AirbyteType {
 
+  public static final String UNION = "UNION";
+
   /**
-   * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level
-   * schema looks like this, we still want to be able to extract the object properties (i.e. treat it
-   * as though the string option didn't exist).
+   * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level schema looks like this, we still want to be able to
+   * extract the object properties (i.e. treat it as though the string option didn't exist).
    *
    * @throws IllegalArgumentException if we cannot extract columns from this schema
    */
@@ -60,6 +61,11 @@ public record Union(List<AirbyteType> options) implements AirbyteType {
     });
 
     return options.stream().min(comparator).orElse(AirbyteProtocolType.UNKNOWN);
+  }
+
+  @Override
+  public String getTypeName() {
+    return UNION;
   }
 
 }

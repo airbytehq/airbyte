@@ -52,6 +52,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
     } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
+    
   }
 
   /**

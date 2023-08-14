@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeQueryBuilder;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
 
-public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition> {
+public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition>, TypeAndDedupeQueryBuilder {
 
   public static final String QUOTE = "\"";
 
@@ -123,44 +124,41 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, true);
-  }
-
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    String validatePrimaryKeys = "";
-    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
-    }
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
-    String dedupFinalTable = "";
-    String cdcDeletes = "";
-    String dedupRawTable = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
-      // If we're in dedup mode, then we must have a cursor
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
-      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
-    }
-    final String commitRawTable = commitRawTable(stream.id());
-
-    return new StringSubstitutor(Map.of(
-        "validate_primary_keys", validatePrimaryKeys,
-        "insert_new_records", insertNewRecords,
-        "dedup_final_table", dedupFinalTable,
-        "cdc_deletes", cdcDeletes,
-        "dedupe_raw_table", dedupRawTable,
-        "commit_raw_table", commitRawTable)).replace(
-        """
-        BEGIN TRANSACTION;
-        ${validate_primary_keys}
-        ${insert_new_records}
-        ${dedup_final_table}
-        ${dedupe_raw_table}
-        ${cdc_deletes}
-        ${commit_raw_table}
-        COMMIT;
-        """);
+  public String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
+    return updateTableQuery(stream, finalSuffix, verifyPrimaryKeys);
+//    String validatePrimaryKeys = "";
+//    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+//      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
+//    }
+//    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
+//    String dedupFinalTable = "";
+//    String cdcDeletes = "";
+//    String dedupRawTable = "";
+//    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+//      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
+//      // If we're in dedup mode, then we must have a cursor
+//      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
+//      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
+//    }
+//    final String commitRawTable = commitRawTable(stream.id());
+//
+//    return new StringSubstitutor(Map.of(
+//        "validate_primary_keys", validatePrimaryKeys,
+//        "insert_new_records", insertNewRecords,
+//        "dedup_final_table", dedupFinalTable,
+//        "cdc_deletes", cdcDeletes,
+//        "dedupe_raw_table", dedupRawTable,
+//        "commit_raw_table", commitRawTable)).replace(
+//        """
+//        BEGIN TRANSACTION;
+//        ${validate_primary_keys}
+//        ${insert_new_records}
+//        ${dedup_final_table}
+//        ${dedupe_raw_table}
+//        ${cdc_deletes}
+//        ${commit_raw_table}
+//        COMMIT;
+//        """);
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
@@ -237,9 +235,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String validatePrimaryKeys(final StreamId id,
-                             final List<ColumnId> primaryKeys,
-                             final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  @Override
+  public String validatePrimaryKeys(final StreamId id,
+                                    final List<ColumnId> primaryKeys,
+                                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String pkNullChecks = primaryKeys.stream().map(
         pk -> {
           final String jsonExtract = extractAndCast(pk, streamColumns.get(pk));
@@ -248,8 +247,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "pk_null_checks", pkNullChecks)).replace(
-            // Wrap this inside a script block so that we can use the scripting language
+        "pk_null_checks", pkNullChecks
+    )).replace(
+        // Wrap this inside a script block so that we can use the scripting language
         """
         EXECUTE IMMEDIATE $$
         BEGIN
@@ -271,17 +271,19 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  @Override
+  public String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
-            col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
-        .collect(joining("\n"));
+                                                col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
+                                            .collect(joining("\n"));
     final String columnErrors = streamColumns.entrySet().stream().map(
-        col -> new StringSubstitutor(Map.of(
-            "raw_col_name", col.getKey().originalName(),
-            "col_type", toDialectType(col.getValue()),
-            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
-            // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
-            """
+                                                 col -> new StringSubstitutor(Map.of(
+                                                     "raw_col_name", col.getKey().originalName(),
+                                                     "col_type", toDialectType(col.getValue()),
+                                                     "json_extract", extractAndCast(col.getKey(), col.getValue())
+                                                 )).replace(
+                                                     // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
+                                                     """
                 CASE
                   WHEN (TYPEOF("_airbyte_data":"${raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
                     AND (${json_extract} IS NULL)
@@ -339,16 +341,18 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id,
-                         final String finalSuffix,
-                         final List<ColumnId> primaryKey,
-                         final ColumnId cursor) {
+  @Override
+  public String dedupFinalTable(final StreamId id,
+                                final String finalSuffix,
+                                final List<ColumnId> primaryKey,
+                                final ColumnId cursor) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
 
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
-        "cursor_name", cursor.name(QUOTE))
+        "cursor_name", cursor.name(QUOTE)
+    )
     ).replace(
         """
         DELETE FROM ${final_table_id}
@@ -364,15 +368,16 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String cdcDeletes(final StreamConfig stream,
-                    final String finalSuffix,
-                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  @Override
+  public String cdcDeletes(final StreamConfig stream,
+                           final String finalSuffix,
+                           final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
 
-    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP){
+    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
 
-    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
 
@@ -401,30 +406,33 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix) {
+  @Override
+  public String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix)
+    )).replace(
         // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
         // would be painful,
         // and it only matters in a few edge cases.
         """
-        DELETE FROM ${raw_table_id}
-        WHERE "_airbyte_raw_id" NOT IN (
-          SELECT "_airbyte_raw_id" FROM ${final_table_id}
+            DELETE FROM ${raw_table_id}
+            WHERE "_airbyte_raw_id" NOT IN (
+              SELECT "_airbyte_raw_id" FROM ${final_table_id}
         );
         """);
   }
 
   @VisibleForTesting
-  String commitRawTable(final StreamId id) {
+  @Override
+  public String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE))).replace(
         """
-        UPDATE ${raw_table_id}
-        SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
-        WHERE "_airbyte_loaded_at" IS NULL
-        ;""");
+            UPDATE ${raw_table_id}
+            SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
+            WHERE "_airbyte_loaded_at" IS NULL
+            ;""");
   }
 
   @Override
@@ -441,20 +449,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         );
   }
 
-  @Override
-  public String softReset(final StreamConfig stream) {
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
-    final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
-    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
-    return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
-  }
-
-  private String clearLoadedAt(final StreamId streamId) {
+  public String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
         .replace("""
-            UPDATE ${raw_table_id} SET "_airbyte_loaded_at" = NULL;
-            """);
+                     UPDATE ${raw_table_id} SET "_airbyte_loaded_at" = NULL;
+                     """);
   }
 
   @Override

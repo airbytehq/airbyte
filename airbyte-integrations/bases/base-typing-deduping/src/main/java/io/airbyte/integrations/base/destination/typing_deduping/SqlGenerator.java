@@ -39,13 +39,18 @@ public interface SqlGenerator<DialectTableDefinition> {
   boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
 
   /**
-   * SQL Statement which will rebuild the final table using the raw table data. Should not cause data
-   * downtime. Typically this will resemble "create tmp_table; update raw_table set loaded_at=null;
-   * (t+d into tmp table); (overwrite final table from tmp table);"
+   * SQL Statement which will rebuild the final table using the raw table data. Should not cause data downtime. Typically, this will resemble "create
+   * tmp_table; update raw_table set loaded_at=null; (t+d into tmp table); (overwrite final table from tmp table);"
    *
    * @param stream the stream to rebuild
    */
-  String softReset(final StreamConfig stream);
+  default String softReset(final StreamConfig stream) {
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    final String clearLoadedAt = clearLoadedAt(stream.id());
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
+    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
+    return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+  }
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -62,11 +67,11 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Implementing classes are recommended to break this into smaller methods, which can be tested in
    * isolation. However, this interface only requires a single mega-method.
    *
-   * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the
-   *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
-   *        sync to a temp table and then swap it into the final table at the end.
+   * @param finalSuffix       the suffix of the final table to write to. If empty string, writes to the final table directly. Useful for full refresh
+   *                          overwrite syncs, where we write the entire sync to a temp table and then swap it into the final table at the end.
+   * @param verifyPrimaryKeys
    */
-  String updateTable(final StreamConfig stream, String finalSuffix);
+  String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
@@ -86,5 +91,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @return a string containing the necessary sql to migrate
    */
   String migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
+
+  String clearLoadedAt(final StreamId streamId);
 
 }

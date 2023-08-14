@@ -2,8 +2,7 @@ package io.airbyte.integrations.destination.jdbc;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 /**
  * A record representing the {@link java.sql.ResultSet} returned by calling {@link DatabaseMetaData#getTypeInfo()}
@@ -35,31 +34,32 @@ public record TypeInfoRecordSet(
     int numPrecRadix
 ) {
 
-  static List<TypeInfoRecordSet> getTypeInfoList(final DatabaseMetaData databaseMetaData) throws Exception {
+  public static LinkedHashMap<String, TypeInfoRecordSet> getTypeInfoList(final DatabaseMetaData databaseMetaData) throws Exception {
     final ResultSet rs = databaseMetaData.getTypeInfo();
-    List<TypeInfoRecordSet> types = new ArrayList<>();
+    LinkedHashMap<String, TypeInfoRecordSet> types = new LinkedHashMap<>();
     while (rs.next()) {
-      types.add(
-          new TypeInfoRecordSet(
-              rs.getString("TYPE_NAME"),
-              rs.getInt("DATA_TYPE"),
-              rs.getInt("PRECISION"),
-              rs.getString("LITERAL_PREFIX"),
-              rs.getString("LITERAL_SUFFIX"),
-              rs.getString("CREATE_PARAMS"),
-              rs.getShort("NULLABLE"),
-              rs.getBoolean("CASE_SENSITIVE"),
-              rs.getShort("SEARCHABLE"),
-              rs.getBoolean("UNSIGNED_ATTRIBUTE"),
-              rs.getBoolean("FIXED_PREC_SCALE"),
-              rs.getBoolean("AUTO_INCREMENT"),
-              rs.getString("LOCAL_TYPE_NAME"),
-              rs.getShort("MINIMUM_SCALE"),
-              rs.getShort("MAXIMUM_SCALE"),
-              rs.getInt("SQL_DATA_TYPE"),
-              rs.getInt("SQL_DATETIME_SUB"),
-              rs.getInt("NUM_PREC_RADIX")
-          )
+      final var typeName = rs.getString("TYPE_NAME");
+      types.put(typeName,
+                new TypeInfoRecordSet(
+                    typeName,
+                    rs.getInt("DATA_TYPE"),
+                    rs.getInt("PRECISION"),
+                    rs.getString("LITERAL_PREFIX"),
+                    rs.getString("LITERAL_SUFFIX"),
+                    rs.getString("CREATE_PARAMS"),
+                    rs.getShort("NULLABLE"),
+                    rs.getBoolean("CASE_SENSITIVE"),
+                    rs.getShort("SEARCHABLE"),
+                    rs.getBoolean("UNSIGNED_ATTRIBUTE"),
+                    rs.getBoolean("FIXED_PREC_SCALE"),
+                    rs.getBoolean("AUTO_INCREMENT"),
+                    rs.getString("LOCAL_TYPE_NAME"),
+                    rs.getShort("MINIMUM_SCALE"),
+                    rs.getShort("MAXIMUM_SCALE"),
+                    rs.getInt("SQL_DATA_TYPE"),
+                    rs.getInt("SQL_DATETIME_SUB"),
+                    rs.getInt("NUM_PREC_RADIX")
+                )
       );
     }
     return types;

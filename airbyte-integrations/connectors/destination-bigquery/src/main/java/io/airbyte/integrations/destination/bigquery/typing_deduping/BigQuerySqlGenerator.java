@@ -24,6 +24,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeQueryBuilder;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
@@ -42,7 +43,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
+public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition>, TypeAndDedupeQueryBuilder {
 
   public static final String QUOTE = "`";
   private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
@@ -167,13 +168,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   // TODO maybe make this a BiMap and elevate this method and its inverse (toDestinationSQLType?) to the SQLGenerator?
   public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
-      case STRING -> StandardSQLTypeName.STRING;
+      case STRING, TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case NUMBER -> StandardSQLTypeName.NUMERIC;
       case INTEGER -> StandardSQLTypeName.INT64;
       case BOOLEAN -> StandardSQLTypeName.BOOL;
       case TIMESTAMP_WITH_TIMEZONE -> StandardSQLTypeName.TIMESTAMP;
       case TIMESTAMP_WITHOUT_TIMEZONE -> StandardSQLTypeName.DATETIME;
-      case TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case TIME_WITHOUT_TIMEZONE -> StandardSQLTypeName.TIME;
       case DATE -> StandardSQLTypeName.DATE;
       case UNKNOWN -> StandardSQLTypeName.JSON;
@@ -323,78 +323,69 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             .allMatch(column -> containsIgnoreCase(columnNames, column));
   }
 
-  @Override
-  public String softReset(final StreamConfig stream) {
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
-    final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
-    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
-    return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
-  }
-
-  private String clearLoadedAt(final StreamId streamId) {
+  public String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
-            .replace("""
-            UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
-            """);
+        .replace("""
+                     UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
+                     """);
   }
+
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, true);
-  }
-  private String updateTable(final StreamConfig stream, final String finalSuffix, boolean verifyPrimaryKeys) {
-    String pkVarDeclaration = "";
-    String validatePrimaryKeys = "";
-    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      pkVarDeclaration = "DECLARE missing_pk_count INT64;";
-      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
-    }
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
-    String dedupFinalTable = "";
-    String cdcDeletes = "";
-    String dedupRawTable = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
-      // If we're in dedup mode, then we must have a cursor
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
-      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
-    }
-    final String commitRawTable = commitRawTable(stream.id());
-
-    return new StringSubstitutor(Map.of(
-        "pk_var_declaration", pkVarDeclaration,
-        "validate_primary_keys", validatePrimaryKeys,
-        "insert_new_records", insertNewRecords,
-        "dedup_final_table", dedupFinalTable,
-        "cdc_deletes", cdcDeletes,
-        "dedupe_raw_table", dedupRawTable,
-        "commit_raw_table", commitRawTable)).replace(
-            """
-            ${pk_var_declaration}
-
-            BEGIN TRANSACTION;
-
-            ${validate_primary_keys}
-
-            ${insert_new_records}
-
-            ${dedup_final_table}
-
-            ${dedupe_raw_table}
-
-            ${cdc_deletes}
-
-            ${commit_raw_table}
-
-            COMMIT TRANSACTION;
-            """);
+  public String updateTable(final StreamConfig stream, final String finalSuffix, boolean verifyPrimaryKeys) {
+    return updateTableQuery(stream, finalSuffix, verifyPrimaryKeys);
+//    String pkVarDeclaration = "";
+//    String validatePrimaryKeys = "";
+//    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+//      pkVarDeclaration = "DECLARE missing_pk_count INT64;";
+//      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
+//    }
+//    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
+//    String dedupFinalTable = "";
+//    String cdcDeletes = "";
+//    String dedupRawTable = "";
+//    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+//      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
+//      // If we're in dedup mode, then we must have a cursor
+//      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
+//      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
+//    }
+//    final String commitRawTable = commitRawTable(stream.id());
+//
+//    return new StringSubstitutor(Map.of(
+//        "pk_var_declaration", pkVarDeclaration,
+//        "validate_primary_keys", validatePrimaryKeys,
+//        "insert_new_records", insertNewRecords,
+//        "dedup_final_table", dedupFinalTable,
+//        "cdc_deletes", cdcDeletes,
+//        "dedupe_raw_table", dedupRawTable,
+//        "commit_raw_table", commitRawTable)).replace(
+//            """
+//            ${pk_var_declaration}
+//
+//            BEGIN TRANSACTION;
+//
+//            ${validate_primary_keys}
+//
+//            ${insert_new_records}
+//
+//            ${dedup_final_table}
+//
+//            ${dedupe_raw_table}
+//
+//            ${cdc_deletes}
+//
+//            ${commit_raw_table}
+//
+//            COMMIT TRANSACTION;
+//            """);
   }
 
   @VisibleForTesting
-  String validatePrimaryKeys(final StreamId id,
-                             final List<ColumnId> primaryKeys,
-                             final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  @Override
+  public String validatePrimaryKeys(final StreamId id,
+                                    final List<ColumnId> primaryKeys,
+                                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String pkNullChecks = primaryKeys.stream().map(
         pk -> {
           final String jsonExtract = extractAndCast(pk, streamColumns.get(pk));
@@ -403,8 +394,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "pk_null_checks", pkNullChecks)).replace(
-            """
+        "pk_null_checks", pkNullChecks
+    )).replace(
+        """
             SET missing_pk_count = (
               SELECT COUNT(1)
               FROM ${raw_table_id}
@@ -420,17 +412,19 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  @Override
+  public String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
-        col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
-        .collect(joining("\n"));
+                                                col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
+                                            .collect(joining("\n"));
     final String columnErrors = streamColumns.entrySet().stream().map(
-        col -> new StringSubstitutor(Map.of(
-            "raw_col_name", col.getKey().originalName(),
-            "col_type", toDialectType(col.getValue()).name(),
-            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
-                """
-                CASE
+                                                 col -> new StringSubstitutor(Map.of(
+                                                     "raw_col_name", col.getKey().originalName(),
+                                                     "col_type", toDialectType(col.getValue()).name(),
+                                                     "json_extract", extractAndCast(col.getKey(), col.getValue())
+                                                 )).replace(
+                                                     """
+                                                         CASE
                   WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
                     AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"')) != 'null')
                     AND (${json_extract} IS NULL)
@@ -487,17 +481,19 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id,
-                         final String finalSuffix,
-                         final List<ColumnId> primaryKey,
-                         final ColumnId cursor) {
+  @Override
+  public String dedupFinalTable(final StreamId id,
+                                final String finalSuffix,
+                                final List<ColumnId> primaryKey,
+                                final ColumnId cursor) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
 
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
-        "cursor_name", cursor.name(QUOTE))
-        ).replace(
+        "cursor_name", cursor.name(QUOTE)
+    )
+    ).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE
@@ -513,15 +509,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String cdcDeletes(final StreamConfig stream,
-      final String finalSuffix,
-      final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  @Override
+  public String cdcDeletes(final StreamConfig stream,
+                           final String finalSuffix,
+                           final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
 
-    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP){
+    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
 
-    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
 
@@ -551,14 +548,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix) {
+  @Override
+  public String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
-            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
-            // would be painful,
-            // and it only matters in a few edge cases.
-            """
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix)
+    )).replace(
+        // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
+        // would be painful,
+        // and it only matters in a few edge cases.
+        """
             DELETE FROM
               ${raw_table_id}
             WHERE
@@ -569,10 +568,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String commitRawTable(final StreamId id) {
+  @Override
+  public String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE))).replace(
-            """
+        """
             UPDATE ${raw_table_id}
             SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
             WHERE `_airbyte_loaded_at` IS NULL
