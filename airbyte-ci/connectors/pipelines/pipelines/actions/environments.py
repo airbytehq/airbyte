@@ -484,6 +484,7 @@ def docker_host_binding(context: ConnectorContext) -> Callable:
             container.with_env_variable("DOCKER_HOST", f"tcp://{context.dockerd_service_name}:2375")
             .with_service_binding(context.dockerd_service_name, context.dockerd_service)
             .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+            .with_unix_socket("/var/run/docker.sock", context.dagger_client.host().unix_socket("/var/run/docker.sock"))
         )
 
     return docker_host_binding_inner
