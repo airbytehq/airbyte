@@ -305,8 +305,6 @@ public abstract class CdcSourceTest {
     assertEquals(expectedRecords, actualData);
   }
 
-  // @Disabled("FIXME: This test is failing on multiple connectors, including `source-postgres`. It is
-  // not clear why.")
   @Test
   @DisplayName("On the first sync, produce returns records that exist in the database.")
   void testExistingData() throws Exception {
