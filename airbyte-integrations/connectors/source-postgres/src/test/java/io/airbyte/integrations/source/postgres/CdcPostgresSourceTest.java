@@ -906,7 +906,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception Exception happening in the test.
    */
-  @Disabled("This test is disabled as it is flaky.")
+  // @Disabled("This test is disabled as it is flaky.")
   @Test
   protected void verifyCheckpointStatesBySeconds() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
