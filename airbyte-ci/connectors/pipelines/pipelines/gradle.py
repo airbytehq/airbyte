@@ -169,5 +169,6 @@ class GradleTask(Step, ABC):
             .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
+            .with_env_variable("TESTCONTAINERS_HOST_OVERRIDE", self.context.dockerd_service_name)
             .with_(environments.docker_host_binding(self.context))
         )
