@@ -26,7 +26,7 @@ class TestBuildConnectorDistributionTar:
         assert java_connectors.BuildConnectorDistributionTar.title == "Build connector tar"
 
     @staticmethod
-    def get_context_for_connector(dagger_client: dagger.Client, connector: bases.ConnectorWithModifiedFiles) -> ConnectorContext:
+    async def get_context_for_connector(dagger_client: dagger.Client, connector: bases.ConnectorWithModifiedFiles) -> ConnectorContext:
         context = ConnectorContext(
             pipeline_name="test",
             connector=connector,
@@ -37,7 +37,7 @@ class TestBuildConnectorDistributionTar:
         )
         context.dagger_client = dagger_client
         context.dockerd_service_name = "test-docker-host"
-        context.dockerd_service = environments.with_dockerd_service(dagger_client, context.dockerd_service_name)
+        context.dockerd_service = await environments.with_dockerd_service(context)
         return context
 
     @pytest.fixture
@@ -49,7 +49,7 @@ class TestBuildConnectorDistributionTar:
         return bases.ConnectorWithModifiedFiles(random.choice(self.STABLE_DESTINATION_CONNECTORS), frozenset())
 
     async def test__prepare_container_for_build(self, dagger_client, stable_source_connector):
-        context = self.get_context_for_connector(dagger_client, stable_source_connector)
+        context = await self.get_context_for_connector(dagger_client, stable_source_connector)
         step = java_connectors.BuildConnectorDistributionTar(context)
         container = await step._prepare_container_for_build()
         container_code_directory_content = await container.directory(str(context.connector.code_directory)).entries()
@@ -60,7 +60,7 @@ class TestBuildConnectorDistributionTar:
     async def test__get_container_with_built_tar_failure(self, mocker, dagger_client, stable_source_connector):
         mocker.patch.object(java_connectors.BuildConnectorDistributionTar, "_get_gradle_command", side_effect="exit 1")
 
-        context = self.get_context_for_connector(dagger_client, stable_source_connector)
+        context = await self.get_context_for_connector(dagger_client, stable_source_connector)
         step = java_connectors.BuildConnectorDistributionTar(context)
         # Awaiting this coroutine should not evaluate the exit 1 command
         # Awaiting the container returned by this coroutine should evaluate the exit 1 command and raise an ExecError
@@ -70,7 +70,7 @@ class TestBuildConnectorDistributionTar:
 
     @pytest.mark.slow
     async def test__get_container_with_built_tar_success(self, dagger_client, stable_source_connector):
-        context = self.get_context_for_connector(dagger_client, stable_source_connector)
+        context = await self.get_context_for_connector(dagger_client, stable_source_connector)
         step = java_connectors.BuildConnectorDistributionTar(context)
         with_built_tar = await step._get_container_with_built_tar()
         current_workdir = await with_built_tar.workdir()
@@ -83,14 +83,14 @@ class TestBuildConnectorDistributionTar:
 
     async def test__run_failure(self, mocker, dagger_client, stable_source_connector):
         mocker.patch.object(java_connectors.BuildConnectorDistributionTar, "_get_gradle_command", side_effect="exit 1")
-        context = self.get_context_for_connector(dagger_client, stable_source_connector)
+        context = await self.get_context_for_connector(dagger_client, stable_source_connector)
         step = java_connectors.BuildConnectorDistributionTar(context)
         result = await step._run()
         assert result.status == bases.StepStatus.FAILURE
         assert isinstance(result.output_artifact, dagger.Container)
 
     async def test__run_failure_multiple_tars(self, mocker, dagger_client, stable_source_connector):
-        context = self.get_context_for_connector(dagger_client, stable_source_connector)
+        context = await self.get_context_for_connector(dagger_client, stable_source_connector)
         container_with_multiple_tars = dagger_client.container().from_("bash").with_exec(["-c", "touch a.tar && touch b.tar"])
         mocker.patch.object(
             java_connectors.BuildConnectorDistributionTar, "_get_container_with_built_tar", return_value=container_with_multiple_tars
@@ -116,7 +116,7 @@ class TestBuildConnectorDistributionTar:
         else:
             connector = stable_destination_connector
 
-        context = self.get_context_for_connector(dagger_client, connector)
+        context = await self.get_context_for_connector(dagger_client, connector)
         step = java_connectors.BuildConnectorDistributionTar(context)
         result = await step._run()
         assert result.status == bases.StepStatus.SUCCESS

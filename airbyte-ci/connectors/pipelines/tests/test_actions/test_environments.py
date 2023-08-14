@@ -19,7 +19,7 @@ def python_connector() -> Connector:
 
 
 @pytest.fixture
-def context(dagger_client):
+async def context(dagger_client):
     context = PipelineContext(
         pipeline_name="test",
         is_local=True,
@@ -28,7 +28,7 @@ def context(dagger_client):
     )
     context.dagger_client = dagger_client
     context.dockerd_service_name = "test-docker-host"
-    context.dockerd_service = environments.with_dockerd_service(dagger_client, "test-docker-host")
+    context.dockerd_service = await environments.with_dockerd_service(context)
     return context
 
 

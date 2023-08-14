@@ -20,7 +20,7 @@ class TestGradleTask:
             return bases.StepResult(self, bases.StepStatus.SUCCESS)
 
     @pytest.fixture
-    def test_context(self, tmpdir, dagger_client):
+    async def test_context(self, tmpdir, dagger_client):
         context = contexts.ConnectorContext(
             pipeline_name="test",
             is_local=True,
@@ -32,7 +32,7 @@ class TestGradleTask:
             ),
         )
         context.dagger_client = dagger_client
-        context.dockerd_service = environments.with_dockerd_service(dagger_client, "test-docker-host")
+        context.dockerd_service = await environments.with_dockerd_service(context)
         context.dockerd_service_name = "test-docker-host"
         return context
 

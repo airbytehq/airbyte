@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
@@ -443,7 +443,7 @@ async def with_connector_ops(context: PipelineContext) -> Container:
     return await with_installed_pipx_package(context, python_base_environment, CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH)
 
 
-def with_dockerd_service(dagger_client: Client, name: str) -> Container:
+async def with_dockerd_service(context: ConnectorContext) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     Args:
@@ -453,23 +453,28 @@ def with_dockerd_service(dagger_client: Client, name: str) -> Container:
         Container: The container running dockerd as a service
     """
     return (
-        dagger_client.container()
+        context.dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
-        .with_env_variable("DOCKERD_SERVICE_NAME", name)
+        .with_env_variable("DOCKERD_SERVICE_NAME", context.dockerd_service_name)
         .with_mounted_cache(
             "/tmp",
-            dagger_client.cache_volume("shared-tmp"),
+            context.dagger_client.cache_volume("shared-tmp"),
+        )
+        .with_mounted_directory(
+            str(context.connector.code_directory),
+            await context.get_connector_dir(),
         )
         .with_mounted_cache(
             "/var/lib/docker",
-            dagger_client.cache_volume(f"{dagger_client.__hash__()}-{name}"),
+            context.dagger_client.cache_volume(context.dockerd_service_name),
         )
         .with_exposed_port(2375)
+        .with_unix_socket("/var/run/docker.sock", context.dagger_client.host().unix_socket("/var/run/docker.sock"))
         .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
 
 
-def docker_host_binding(context: ConnectorContext) -> Callable:
+async def docker_host_binding(context: ConnectorContext) -> Callable:
     """Bind a container to a docker host. It will use the context dockerd service as a docker host.
 
     Args:
@@ -478,11 +483,16 @@ def docker_host_binding(context: ConnectorContext) -> Callable:
     Returns:
         Callable: A function that will bind the container to a docker host.
     """
+    connector_dir = await context.get_connector_dir()
 
     def docker_host_binding_inner(container: Container) -> Container:
         return (
             container.with_env_variable("DOCKER_HOST", f"tcp://{context.dockerd_service_name}:2375")
             .with_service_binding(context.dockerd_service_name, context.dockerd_service)
+            .with_mounted_directory(
+                str(context.connector.code_directory),
+                connector_dir,
+            )
             .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
             .with_unix_socket("/var/run/docker.sock", context.dagger_client.host().unix_socket("/var/run/docker.sock"))
         )
@@ -490,7 +500,7 @@ def docker_host_binding(context: ConnectorContext) -> Callable:
     return docker_host_binding_inner
 
 
-def with_docker_cli(context: PipelineContext) -> Container:
+async def with_docker_cli(context: PipelineContext) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
@@ -503,7 +513,7 @@ def with_docker_cli(context: PipelineContext) -> Container:
         context.dagger_client.container()
         .from_(consts.DOCKER_CLI_IMAGE)
         .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-        .with_(docker_host_binding(context))
+        .with_(await docker_host_binding(context))
     )
 
 
@@ -514,11 +524,10 @@ async def load_image_to_docker_host(context: PipelineContext, tar_file: File, im
         context (PipelineContext): The current pipeline context.
         tar_file (File): The file object holding the docker image tar archive.
         image_tag (str): The tag to create on the image if it has no tag.
-        docker_host_binding (Callable): A callable that will bind the container to a docker host.
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
+    docker_cli = (await with_docker_cli(context)).with_mounted_file(tar_name, tar_file)
     docker_cli = await docker_cli.with_exec(["docker", "load", "--input", tar_name])
     image_load_output = await docker_cli.stdout()
     # Not tagged images only have a sha256 id the load output shares.

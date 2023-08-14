@@ -91,8 +91,9 @@ class GradleTask(Step, ABC):
         return command
 
     async def _run(self) -> StepResult:
+        gradle_container = await self.get_gradle_container()
         connector_under_test = (
-            self.gradle_container.with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
+            gradle_container.with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_mounted_directory("buildSrc", await self._get_patched_build_src_dir())
             .with_(environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets"))
             .with_exec(self._get_gradle_command())
@@ -135,8 +136,7 @@ class GradleTask(Step, ABC):
             return await with_cache
         return gradle_container
 
-    @property
-    def gradle_container(
+    async def get_gradle_container(
         self,
     ) -> Container:
         """Create a container with Gradle installed and optionally bound to a docker host.
@@ -170,5 +170,5 @@ class GradleTask(Step, ABC):
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             .with_env_variable("TESTCONTAINERS_HOST_OVERRIDE", self.context.dockerd_service_name)
-            .with_(environments.docker_host_binding(self.context))
+            .with_(await environments.docker_host_binding(self.context))
         )
