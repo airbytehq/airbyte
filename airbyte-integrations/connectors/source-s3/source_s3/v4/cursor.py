@@ -19,7 +19,7 @@ class Cursor(DefaultFileBasedCursor):
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
             value = self._convert_legacy_state(value)
-        self._v3_min_sync_dt = value.get("v3_min_sync_dt", False)
+            self._v3_min_sync_dt = value.get("v3_min_sync_dt", False)
         super().set_initial_state(value)
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
@@ -62,19 +62,15 @@ class Cursor(DefaultFileBasedCursor):
 
         timestamp = datetime.strptime(legacy_state["_ab_source_file_last_modified"], Cursor.LEGACY_DATE_TIME_FORMAT)
         timestamp = timestamp.replace(tzinfo=ZoneInfo("UTC"))
-        timestamp_date = timestamp.date()
         for date_str, filenames in legacy_state.get("history", {}).items():
-            datetime_obj = datetime.strptime(date_str, Cursor.DATE_FORMAT)
-            date_obj = datetime_obj.date()
-
-            if date_obj == timestamp_date:
-                datetime_obj = datetime_obj.replace(hour=timestamp.hour, minute=timestamp.minute, second=timestamp.second)
-            else:
-                datetime_obj = datetime_obj.replace(hour=23, minute=59, second=59, microsecond=999999)
+            datetime_obj = datetime.strptime(date_str, Cursor.DATE_FORMAT).replace(tzinfo=ZoneInfo("UTC"))
+            datetime_obj = Cursor._get_adjusted_date_timestamp(timestamp, datetime_obj)
 
             for filename in filenames:
                 if filename in converted_history:
-                    if datetime_obj > datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT):
+                    if datetime_obj > datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT).replace(
+                        tzinfo=ZoneInfo("UTC")
+                    ):
                         converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
                 else:
                     converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
@@ -87,3 +83,19 @@ class Cursor(DefaultFileBasedCursor):
             cursor = None
             # FIXME: Set a default v3_min_
         return {"history": converted_history, "_ab_source_file_last_modified": cursor, "v3_min_sync_dt": v3_min_sync_dt}
+
+    @staticmethod
+    def _get_adjusted_date_timestamp(cursor_datetime: datetime, file_datetime: datetime) -> datetime:
+        if file_datetime > cursor_datetime:
+            return file_datetime
+        else:
+            # Extract the dates so they can be compared
+            cursor_date = cursor_datetime.date()
+            date_obj = file_datetime.date()
+
+            # If same day, update the time to the cursor time
+            if date_obj == cursor_date:
+                return file_datetime.replace(hour=cursor_datetime.hour, minute=cursor_datetime.minute, second=cursor_datetime.second)
+            # If previous, update the time to end of day
+            else:
+                return file_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)

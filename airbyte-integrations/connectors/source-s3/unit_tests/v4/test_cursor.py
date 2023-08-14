@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from datetime import datetime, timezone
 from typing import Any, MutableMapping
 from unittest.mock import Mock
 
@@ -216,3 +216,49 @@ def test_v4_migration_do_not_sync_files_last_earlier_than_one_hour_of_cursor_on_
     ]
 
     assert files_to_sync == expected_files_to_sync
+
+
+@pytest.mark.parametrize(
+    "cursor_datetime, file_datetime, expected_adjusted_datetime",
+    [
+        pytest.param(
+            datetime(2021, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),
+            id="cursor_datetime_equals_file_datetime_at_start_of_day",
+        ),
+        pytest.param(
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            id="cursor_datetime_equals_file_datetime_not_at_start_of_day",
+        ),
+        pytest.param(
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 0, 1, 2, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            id="cursor_datetime_same_day_but_later",
+        ),
+        pytest.param(
+            datetime(2021, 1, 2, 0, 1, 2, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 23, 59, 59, 999999, tzinfo=timezone.utc),
+            id="set_time_to_end_of_day_if_file_date_is_ealier_than_cursor_date",
+        ),
+        pytest.param(
+            datetime(2021, 1, 1, 0, 1, 2, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            id="file_datetime_is_unchanged_if_same_day_but_later_than_cursor_datetime",
+        ),
+        pytest.param(
+            datetime(2021, 1, 1, 10, 11, 12, tzinfo=timezone.utc),
+            datetime(2021, 1, 2, 0, 1, 2, tzinfo=timezone.utc),
+            datetime(2021, 1, 2, 0, 1, 2, tzinfo=timezone.utc),
+            id="file_datetime_is_unchanged_if_later_than_cursor_datetime",
+        ),
+    ],
+)
+def test_get_adjusted_date_timestamp(cursor_datetime, file_datetime, expected_adjusted_datetime):
+    adjusted_datetime = Cursor._get_adjusted_date_timestamp(cursor_datetime, file_datetime)
+    assert adjusted_datetime == expected_adjusted_datetime
