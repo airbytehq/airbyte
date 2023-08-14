@@ -8,7 +8,7 @@ from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenari
 
 single_csv_scenario = (
     TestScenarioBuilder()
-    .set_name("single_csv_stream")
+    .set_name("single_csv_scenario")
     .set_config(
         {
             "streams": [
@@ -133,6 +133,15 @@ single_csv_scenario = (
                                                     ],
                                                     "type": "string"
                                                 },
+                                                "inference_type": {
+                                                    "default": "None",
+                                                    "description": "How to infer the types of the columns. If none, inference default to strings.",
+                                                    "title": "Inference Type",
+                                                    "enum": [
+                                                        "None",
+                                                        "Primitive Types Only",
+                                                    ]
+                                                },
                                                 "delimiter": {
                                                     "title": "Delimiter",
                                                     "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
@@ -234,7 +243,7 @@ single_csv_scenario = (
                                                         "type": "string"
                                                     },
                                                     "uniqueItems": True
-                                                }
+                                                },
                                             }
                                         },
                                         {
@@ -551,7 +560,6 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
             },
         ]
     )
-    .set_expected_logs({"discover": [{"level": "WARN", "message": "Refusing to infer schema for all 2 files; using 1 files."}]})
     .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
 ).build()
 
@@ -1851,6 +1859,7 @@ csv_newline_in_values_not_quoted_scenario = (
             "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a.csv line_no=2 n_skipped=0",
         }
     ]})
+    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
 
 csv_escape_char_is_set_scenario = (
