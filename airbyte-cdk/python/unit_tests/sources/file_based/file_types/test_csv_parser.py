@@ -30,7 +30,7 @@ PROPERTY_TYPES = {
     "col7": "array",
     "col8": "array",
     "col9": "array",
-    "col10": ["null", "string"],
+    "col10": "string",
 }
 
 logger = logging.getLogger()
@@ -47,10 +47,10 @@ logger = logging.getLogger()
                 "col4": "1.1",
                 "col5": "asdf",
                 "col6": '{"a": "b"}',
-                "col7": '[1, 2]',
+                "col7": "[1, 2]",
                 "col8": '["1", "2"]',
                 "col9": '[{"a": "b"}, {"a": "c"}]',
-                "col10": 'asdf',
+                "col10": "asdf",
             },
             DEFAULT_TRUE_VALUES,
             DEFAULT_FALSE_VALUES,
@@ -64,28 +64,84 @@ logger = logging.getLogger()
                 "col7": [1, 2],
                 "col8": ["1", "2"],
                 "col9": [{"a": "b"}, {"a": "c"}],
-                "col10": 'asdf',
-            }, id="cast-all-cols"),
+                "col10": "asdf",
+            },
+            id="cast-all-cols",
+        ),
         pytest.param({"col1": "1"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col1": "1"}, id="cannot-cast-to-null"),
         pytest.param({"col2": "1"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col2": True}, id="cast-1-to-bool"),
         pytest.param({"col2": "0"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col2": False}, id="cast-0-to-bool"),
         pytest.param({"col2": "yes"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col2": True}, id="cast-yes-to-bool"),
-        pytest.param({"col2": "this_is_a_true_value"}, ["this_is_a_true_value"], DEFAULT_FALSE_VALUES, {"col2": True}, id="cast-custom-true-value-to-bool"),
-        pytest.param({"col2": "this_is_a_false_value"}, DEFAULT_TRUE_VALUES, ["this_is_a_false_value"], {"col2": False}, id="cast-custom-false-value-to-bool"),
+        pytest.param(
+            {"col2": "this_is_a_true_value"},
+            ["this_is_a_true_value"],
+            DEFAULT_FALSE_VALUES,
+            {"col2": True},
+            id="cast-custom-true-value-to-bool",
+        ),
+        pytest.param(
+            {"col2": "this_is_a_false_value"},
+            DEFAULT_TRUE_VALUES,
+            ["this_is_a_false_value"],
+            {"col2": False},
+            id="cast-custom-false-value-to-bool",
+        ),
         pytest.param({"col2": "no"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col2": False}, id="cast-no-to-bool"),
         pytest.param({"col2": "10"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col2": "10"}, id="cannot-cast-to-bool"),
         pytest.param({"col3": "1.1"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col3": "1.1"}, id="cannot-cast-to-int"),
         pytest.param({"col4": "asdf"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col4": "asdf"}, id="cannot-cast-to-float"),
         pytest.param({"col6": "{'a': 'b'}"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col6": "{'a': 'b'}"}, id="cannot-cast-to-dict"),
-        pytest.param({"col7": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col7": "['a', 'b']"}, id="cannot-cast-to-list-of-ints"),
-        pytest.param({"col8": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col8": "['a', 'b']"}, id="cannot-cast-to-list-of-strings"),
-        pytest.param({"col9": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col9": "['a', 'b']"}, id="cannot-cast-to-list-of-objects"),
+        pytest.param(
+            {"col7": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col7": "['a', 'b']"}, id="cannot-cast-to-list-of-ints"
+        ),
+        pytest.param(
+            {"col8": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col8": "['a', 'b']"}, id="cannot-cast-to-list-of-strings"
+        ),
+        pytest.param(
+            {"col9": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col9": "['a', 'b']"}, id="cannot-cast-to-list-of-objects"
+        ),
         pytest.param({"col11": "x"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col11": "x"}, id="item-not-in-props-doesn't-error"),
-    ]
+    ],
 )
 def test_cast_to_python_type(row: Dict[str, str], true_values: Set[str], false_values: Set[str], expected_output: Dict[str, Any]) -> None:
     csv_format = CsvFormat(true_values=true_values, false_values=false_values)
     assert CsvParser._cast_types(row, PROPERTY_TYPES, csv_format, logger) == expected_output
+
+
+@pytest.mark.parametrize(
+    "row, strings_can_be_null, expected_output",
+    [
+        pytest.param(
+            {"id": "1", "name": "bob", "age": 10, "is_cool": False},
+            False,
+            {"id": "1", "name": "bob", "age": 10, "is_cool": False},
+            id="test-no-values-are-null",
+        ),
+        pytest.param(
+            {"id": "1", "name": "bob", "age": "null", "is_cool": "null"},
+            False,
+            {"id": "1", "name": "bob", "age": None, "is_cool": None},
+            id="test-non-string-values-are-none-if-in-null-values",
+        ),
+        pytest.param(
+            {"id": "1", "name": "null", "age": 10, "is_cool": False},
+            False,
+            {"id": "1", "name": "null", "age": 10, "is_cool": False},
+            id="test-string-values-are-not-none-if-strings-cannot-be-null",
+        ),
+        pytest.param(
+            {"id": "1", "name": "null", "age": 10, "is_cool": False},
+            True,
+            {"id": "1", "name": None, "age": 10, "is_cool": False},
+            id="test-string-values-none-if-strings-can-be-null",
+        ),
+    ],
+)
+def test_to_nullable(row, strings_can_be_null, expected_output):
+    property_types = {"id": "string", "name": "string", "age": "integer", "is_cool": "boolean"}
+    null_values = {"null"}
+    nulled_row = CsvParser._to_nullable(row, property_types, null_values, strings_can_be_null)
+    assert nulled_row == expected_output
 
 
 _DEFAULT_TRUE_VALUES = {"1", "yes", "yeah", "right"}
@@ -176,11 +232,11 @@ class CsvFileBuilder:
         self._prefixed_rows: List[str] = []
         self._data: List[str] = []
 
-    def with_prefixed_rows(self, rows: List[str]) -> 'CsvFileBuilder':
+    def with_prefixed_rows(self, rows: List[str]) -> "CsvFileBuilder":
         self._prefixed_rows = rows
         return self
 
-    def with_data(self, data: List[str]) -> 'CsvFileBuilder':
+    def with_data(self, data: List[str]) -> "CsvFileBuilder":
         self._data = data
         return self
 
@@ -204,11 +260,18 @@ class CsvReaderTest(unittest.TestCase):
 
     def test_given_skip_rows_when_read_data_then_do_not_considered_prefixed_rows(self) -> None:
         self._config_format.skip_rows_before_header = 2
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_prefixed_rows(["first line", "second line"]).with_data([
-            "header",
-            "a value",
-            "another value",
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_prefixed_rows(["first line", "second line"])
+            .with_data(
+                [
+                    "header",
+                    "a value",
+                    "another value",
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
 
@@ -216,9 +279,7 @@ class CsvReaderTest(unittest.TestCase):
 
     def test_given_autogenerated_headers_when_read_data_then_generate_headers_with_format_fX(self) -> None:
         self._config_format.autogenerate_column_names = True
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            '0,1,2,3,4,5,6'
-        ]).build()
+        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data(["0,1,2,3,4,5,6"]).build()
 
         data_generator = self._read_data()
 
@@ -226,26 +287,38 @@ class CsvReaderTest(unittest.TestCase):
 
     def test_given_skip_rows_after_header_when_read_data_then_do_not_parse_skipped_rows(self) -> None:
         self._config_format.skip_rows_after_header = 1
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header1,header2",
-            "skipped row: important that the is no comma in this string to test if columns do not match in skipped rows",
-            "a value 1,a value 2",
-            "another value 1,another value 2"
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1,header2",
+                    "skipped row: important that the is no comma in this string to test if columns do not match in skipped rows",
+                    "a value 1,a value 2",
+                    "another value 1,another value 2",
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
 
         assert list(data_generator) == [
             {"header1": "a value 1", "header2": "a value 2"},
-            {"header1": "another value 1", "header2": "another value 2"}
+            {"header1": "another value 1", "header2": "another value 2"},
         ]
 
     def test_given_quote_delimiter_when_read_data_then_parse_properly(self) -> None:
         self._config_format.delimiter = "|"
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header1|header2",
-            "a value 1|a value 2",
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1|header2",
+                    "a value 1|a value 2",
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
 
@@ -253,10 +326,16 @@ class CsvReaderTest(unittest.TestCase):
 
     def test_given_quote_char_when_read_data_then_parse_properly(self) -> None:
         self._config_format.quote_char = "|"
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header1,header2",
-            "|a,value,1|,|a,value,2|",
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1,header2",
+                    "|a,value,1|,|a,value,2|",
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
 
@@ -264,10 +343,16 @@ class CsvReaderTest(unittest.TestCase):
 
     def test_given_escape_char_when_read_data_then_parse_properly(self) -> None:
         self._config_format.escape_char = "|"
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header1,header2",
-            '"a |"value|", 1",a value 2',
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1,header2",
+                    '"a |"value|", 1",a value 2',
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
 
@@ -275,10 +360,16 @@ class CsvReaderTest(unittest.TestCase):
 
     def test_given_double_quote_on_when_read_data_then_parse_properly(self) -> None:
         self._config_format.double_quote = True
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header1,header2",
-            '1,"Text with doublequote: ""This is a text."""',
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1,header2",
+                    '1,"Text with doublequote: ""This is a text."""',
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
 
@@ -286,21 +377,33 @@ class CsvReaderTest(unittest.TestCase):
 
     def test_given_double_quote_off_when_read_data_then_parse_properly(self) -> None:
         self._config_format.double_quote = False
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header1,header2",
-            '1,"Text with doublequote: ""This is a text."""',
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1,header2",
+                    '1,"Text with doublequote: ""This is a text."""',
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
 
         assert list(data_generator) == [{"header1": "1", "header2": 'Text with doublequote: "This is a text."""'}]
 
     def test_given_generator_closed_when_read_data_then_unregister_dialect(self) -> None:
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header",
-            "a value",
-            "another value",
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header",
+                    "a value",
+                    "another value",
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
         next(data_generator)
@@ -309,11 +412,17 @@ class CsvReaderTest(unittest.TestCase):
         assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
 
     def test_given_too_many_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header",
-            "a value",
-            "too many values,value,value,value",
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header",
+                    "a value",
+                    "too many values,value,value,value",
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
         next(data_generator)
@@ -324,11 +433,17 @@ class CsvReaderTest(unittest.TestCase):
         assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
 
     def test_given_too_few_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
-        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data([
-            "header1,header2,header3",
-            "value1,value2,value3",
-            "a value",
-        ]).build()
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1,header2,header3",
+                    "value1,value2,value3",
+                    "a value",
+                ]
+            )
+            .build()
+        )
 
         data_generator = self._read_data()
         next(data_generator)
@@ -357,28 +472,27 @@ def test_encoding_is_passed_to_stream_reader() -> None:
     mock_obj.__enter__ = Mock(return_value=io.StringIO("c1,c2\nv1,v2"))
     mock_obj.__exit__ = Mock(return_value=None)
     file = RemoteFile(uri="s3://bucket/key.csv", last_modified=datetime.now())
-    config = FileBasedStreamConfig(
-        name="test",
-        validation_policy="Emit Record",
-        file_type="csv",
-        format=CsvFormat(encoding=encoding)
-    )
+    config = FileBasedStreamConfig(name="test", validation_policy="Emit Record", file_type="csv", format=CsvFormat(encoding=encoding))
     list(parser.parse_records(config, file, stream_reader, logger, {"properties": {"c1": {"type": "string"}, "c2": {"type": "string"}}}))
-    stream_reader.open_file.assert_has_calls([
-        mock.call(file, FileReadMode.READ, encoding, logger),
-        mock.call().__enter__(),
-        mock.call().__exit__(None, None, None),
-    ])
+    stream_reader.open_file.assert_has_calls(
+        [
+            mock.call(file, FileReadMode.READ, encoding, logger),
+            mock.call().__enter__(),
+            mock.call().__exit__(None, None, None),
+        ]
+    )
 
     mock_obj.__enter__ = Mock(return_value=io.StringIO("c1,c2\nv1,v2"))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(parser.infer_schema(config, file, stream_reader, logger))
     stream_reader.open_file.assert_called_with(file, FileReadMode.READ, encoding, logger)
-    stream_reader.open_file.assert_has_calls([
-        mock.call(file, FileReadMode.READ, encoding, logger),
-        mock.call().__enter__(),
-        mock.call().__exit__(None, None, None),
-        mock.call(file, FileReadMode.READ, encoding, logger),
-        mock.call().__enter__(),
-        mock.call().__exit__(None, None, None),
-    ])
+    stream_reader.open_file.assert_has_calls(
+        [
+            mock.call(file, FileReadMode.READ, encoding, logger),
+            mock.call().__enter__(),
+            mock.call().__exit__(None, None, None),
+            mock.call(file, FileReadMode.READ, encoding, logger),
+            mock.call().__enter__(),
+            mock.call().__exit__(None, None, None),
+        ]
+    )
