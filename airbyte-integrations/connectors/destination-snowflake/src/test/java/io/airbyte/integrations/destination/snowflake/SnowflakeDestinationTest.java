@@ -40,8 +40,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class SnowflakeDestinationTest {
 
-  private static final ObjectMapper mapper = MoreMappers.initMapper();
-
   @BeforeEach
   public void setup() {
     DestinationConfig.initialize(Jsons.emptyObject());
