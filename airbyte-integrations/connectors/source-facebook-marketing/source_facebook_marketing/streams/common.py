@@ -27,6 +27,10 @@ class JobException(Exception):
     """Scheduled job failed"""
 
 
+class AccountTypeException(Exception):
+    """Wrong account type"""
+
+
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
