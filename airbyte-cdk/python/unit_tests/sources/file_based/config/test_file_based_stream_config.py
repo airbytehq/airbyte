@@ -5,7 +5,6 @@
 from typing import Any, Mapping, Type
 
 import pytest as pytest
-from airbyte_cdk.sources.file_based.config.csv_format import QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, FileBasedStreamConfig
 from pydantic import ValidationError
 
@@ -22,7 +21,7 @@ from pydantic import ValidationError
         pytest.param("invalid", {"filetype": "invalid", "double_quote": False}, {}, ValidationError, id="test_config_format_file_type_mismatch"),
     ]
 )
-def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_format: Mapping[str, QuotingBehavior], expected_error: Type[Exception]) -> None:
+def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_format: Mapping[str, Any], expected_error: Type[Exception]) -> None:
     stream_config = {
         "name": "stream1",
         "file_type": file_type,

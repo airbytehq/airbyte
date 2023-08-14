@@ -10,13 +10,6 @@ from pydantic import BaseModel, Field, root_validator, validator
 from typing_extensions import Literal
 
 
-class QuotingBehavior(Enum):
-    QUOTE_ALL = "Quote All"
-    QUOTE_SPECIAL_CHARACTERS = "Quote Special Characters"
-    QUOTE_NONNUMERIC = "Quote Non-numeric"
-    QUOTE_NONE = "Quote None"
-
-
 class InferenceType(Enum):
     NONE = "None"
     PRIMITIVE_TYPES_ONLY = "Primitive Types Only"

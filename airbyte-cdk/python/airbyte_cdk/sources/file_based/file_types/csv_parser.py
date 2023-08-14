@@ -11,7 +11,7 @@ from functools import partial
 from io import IOBase
 from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional, Set
 
-from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, InferenceType, QuotingBehavior
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, InferenceType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
@@ -20,13 +20,6 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING, SchemaType
 
 DIALECT_NAME = "_config_dialect"
-
-config_to_quoting: Mapping[QuotingBehavior, int] = {
-    QuotingBehavior.QUOTE_ALL: csv.QUOTE_ALL,
-    QuotingBehavior.QUOTE_SPECIAL_CHARACTERS: csv.QUOTE_MINIMAL,
-    QuotingBehavior.QUOTE_NONNUMERIC: csv.QUOTE_NONNUMERIC,
-    QuotingBehavior.QUOTE_NONE: csv.QUOTE_NONE,
-}
 
 
 class _CsvReader:
