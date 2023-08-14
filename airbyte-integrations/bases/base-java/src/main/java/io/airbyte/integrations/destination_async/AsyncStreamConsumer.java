@@ -47,6 +47,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   private final Set<StreamDescriptor> streamNames;
   private final String defaultNamespace;
   private final FlushFailure flushFailure;
+  private final String defaultNamespace;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -64,7 +65,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final ConfiguredAirbyteCatalog catalog,
                              final BufferManager bufferManager,
                              final String defaultNamespace) {
-    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, defaultNamespace, new FlushFailure());
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure(), defaultNamespace);
   }
 
   @VisibleForTesting
@@ -74,8 +75,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
                              final BufferManager bufferManager,
-                             final String defaultNamespace,
-                             final FlushFailure flushFailure) {
+                             final FlushFailure flushFailure,
+                             final String defaultNamespace) {
     hasStarted = false;
     hasClosed = false;
 
@@ -116,7 +117,6 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
             if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
               message.getRecord().setNamespace(defaultNamespace);
             }
-
             validateRecord(message);
           }
           bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);

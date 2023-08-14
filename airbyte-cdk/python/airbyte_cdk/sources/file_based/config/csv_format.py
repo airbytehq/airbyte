@@ -17,11 +17,19 @@ class QuotingBehavior(Enum):
     QUOTE_NONE = "Quote None"
 
 
+class InferenceType(Enum):
+    NONE = "None"
+    PRIMITIVE_TYPES_ONLY = "Primitive Types Only"
+
+
 DEFAULT_TRUE_VALUES = ["y", "yes", "t", "true", "on", "1"]
 DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
 
 class CsvFormat(BaseModel):
+    class Config:
+        title = "CSV Format"
+
     filetype: Literal["csv"] = "csv"
     delimiter: str = Field(
         title="Delimiter",
@@ -55,6 +63,11 @@ class CsvFormat(BaseModel):
         default=[],
         description="A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
     )
+    strings_can_be_null: bool = Field(
+        title="Strings Can Be Null",
+        default=True,
+        description="Whether strings can be interpreted as null values. If true, strings that match the null_values set will be interpreted as null. If false, strings that match the null_values set will be interpreted as the string itself.",
+    )
     skip_rows_before_header: int = Field(
         title="Skip Rows Before Header",
         default=0,
@@ -78,6 +91,12 @@ class CsvFormat(BaseModel):
         default=DEFAULT_FALSE_VALUES,
         description="A set of case-sensitive strings that should be interpreted as false values.",
     )
+    inference_type: InferenceType = Field(
+        title="Inference Type",
+        default=InferenceType.NONE,
+        description="How to infer the types of the columns. If none, inference default to strings.",
+        airbyte_hidden=True,
+    )
 
     @validator("delimiter")
     def validate_delimiter(cls, v: str) -> str:
@@ -95,7 +114,7 @@ class CsvFormat(BaseModel):
 
     @validator("escape_char")
     def validate_escape_char(cls, v: str) -> str:
-        if len(v) != 1:
+        if v is not None and len(v) != 1:
             raise ValueError("escape_char should only be one character")
         return v
 
