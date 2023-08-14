@@ -17,7 +17,7 @@ def local_dependency(name: str) -> str:
 
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk",
     "gcsfs==2022.7.1",
     "genson==1.2.2",
     "google-cloud-storage==2.5.0",
