@@ -28,16 +28,7 @@ class IntegrationTest(GradleTask):
 
     gradle_task_name = "integrationTest"
     DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
-
-    @property
-    def title(self) -> str:
-        # TODO: Why are we printing the CLI command here?
-        #       Is this because it isn't showing in reports? Can we add to reports another way?
-        return (
-            "Integration Tests "
-            "(./gradlew :airbyte-integrations:connectors:"
-            f"{self.context.connector.technical_name}:{self.gradle_task_name})"
-        )
+    title = "Java Connector Integration Tests"
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
