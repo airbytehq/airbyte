@@ -48,15 +48,7 @@ class SourceFirstResonanceIon(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
-        return True, None
-
     def streams(self, config: InputConfig) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        # TODO remove the authenticator if not required.
         endpoints = self._getEndpoints(config)
         auth = Oauth2Authenticator(
             client_id=config["clientId"],
