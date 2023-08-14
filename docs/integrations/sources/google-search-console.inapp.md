@@ -11,10 +11,10 @@
 4. To authenticate the connection:
 
    <!-- env:cloud -->
-   - **For Airbyte Cloud**: Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
+   - **For Airbyte Cloud**: Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account. More information on authentication methods can be found in our [full Google Search Console documentation](https://docs.airbyte.io/integrations/sources/google-search-console#setup-guide).
    <!-- /env:cloud -->
    <!-- env:oss -->
-   - **For Airbyte Open Source**: Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
+   - **For Airbyte Open Source**: Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`. More information on setting up a service account and generating the JSON key can be found in our [full Google Search Console documentation](https://docs.airbyte.io/integrations/sources/google-search-console#setup-guide).
    <!-- /env:oss -->
 
 5. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
