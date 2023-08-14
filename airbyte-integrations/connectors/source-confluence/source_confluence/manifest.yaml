@@ -77,12 +77,11 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          type: blogpost
           expand: >-
             ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
     $parameters:
       name: "blog_posts"
-      path: content
+      path: content?type=blogpost
       primary_key: id
 
   group_stream:
@@ -104,12 +103,11 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          type: page
           expand: >-
             ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
     $parameters:
       name: "pages"
-      path: "content"
+      path: "content?type=page"
       primary_key: id
 
   space_stream:
