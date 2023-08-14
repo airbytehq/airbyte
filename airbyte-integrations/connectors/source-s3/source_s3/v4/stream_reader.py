@@ -89,7 +89,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             ) from exc
 
     @contextmanager
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
             params = {"client": self.s3_client}
         except Exception as exc:
@@ -97,7 +97,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         logger.debug(f"try to open {file.uri}")
         try:
-            result = smart_open.open(f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value)
+            result = smart_open.open(f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding)
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."

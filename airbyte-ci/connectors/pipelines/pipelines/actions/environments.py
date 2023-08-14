@@ -24,7 +24,7 @@ from pipelines.consts import (
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
-from pipelines.utils import get_file_contents
+from pipelines.utils import check_path_in_workdir, get_file_contents
 
 if TYPE_CHECKING:
     from pipelines.contexts import ConnectorContext, PipelineContext
@@ -312,9 +312,13 @@ async def with_installed_python_package(
     for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
-    if await get_file_contents(container, "setup.py"):
+    has_setup_py, has_requirements_txt = await check_path_in_workdir(container, "setup.py"), await check_path_in_workdir(
+        container, "requirements.txt"
+    )
+
+    if has_setup_py:
         container = container.with_exec(install_connector_package_cmd)
-    if await get_file_contents(container, "requirements.txt"):
+    if has_requirements_txt:
         container = container.with_exec(install_requirements_cmd)
 
     if additional_dependency_groups:
@@ -955,7 +959,7 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
         base.with_workdir("/airbyte/integration_code")
         .with_directory("/usr/local", builder.directory("/install"))
         .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
-        .with_new_file("/etc/timezone", "Etc/UTC")
+        .with_new_file("/etc/timezone", contents="Etc/UTC")
         .with_exec(["apt-get", "install", "-y", "bash"])
         .with_file("main.py", (await context.get_connector_dir(include="main.py")).file("main.py"))
         .with_directory(snake_case_name, (await context.get_connector_dir(include=snake_case_name)).directory(snake_case_name))
@@ -997,6 +1001,7 @@ def with_crane(
 
 def mounted_connector_secrets(context: PipelineContext, secret_directory_path="secrets") -> Callable:
     def mounted_connector_secrets_inner(container: Container):
+        container = container.with_exec(["mkdir", secret_directory_path], skip_entrypoint=True)
         for secret_file_name, secret in context.connector_secrets.items():
             container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
         return container
