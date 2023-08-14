@@ -15,7 +15,7 @@ To authenticate the Google Search Console connector, you will need to use one of
 
 #### I: OAuth (Recommended for Airbyte Cloud)
 
-You can authenticate using your personal Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (Owner or Full User) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
+You can authenticate using your personal Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
 
 #### II: Google service account with JSON key file (Recommended for Airbyte Open Source)
 
@@ -51,7 +51,7 @@ To enable delegated domain-wide authority, follow the steps listed in the [Googl
 
 - `https://www.googleapis.com/auth/webmasters.readonly`
 
-For more information on domain-wide delegation, please refer to [this Google article](https://support.google.com/a/answer/162106?hl=en).
+For more information on this topic, please refer to [this Google article](https://support.google.com/a/answer/162106?hl=en).
 
 ### Step 2: Set up the Google Search Console connector in Airbyte
 

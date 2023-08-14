@@ -22,4 +22,4 @@
 7. (Optional) For **Data State**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data State](https://docs.airbyte.com/integrations/sources/google-search-console#data-state) section in our full documentation for more information on this parameter.
 8. Click **Set up source** and wait for the tests to complete.
 
-For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Google Search Console](https://docs.airbyte.com/integrations/sources/google-search-console/).
+For detailed information on supported sync modes, supported streams, and performance considerations, refer to the full documentation for [Google Search Console](https://docs.airbyte.com/integrations/sources/google-search-console/).
