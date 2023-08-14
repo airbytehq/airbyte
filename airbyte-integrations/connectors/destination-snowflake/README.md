@@ -102,3 +102,5 @@ create schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;
 grant ownership on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role INTEGRATION_TESTER_DESTINATION revoke current grants;
 grant all privileges on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role NO_ACTIVE_WAREHOUSE_ROLE;
 ```
+
+These tests are currently disabled (`testCheckWithNoProperStagingPermissionConnection`, `testCheckWithNoActiveWarehouseConnection`). Their test users keep breaking (i.e. becoming the schema owner) because our tests are tearing down `TEXT_SCHEMA` after every test.
