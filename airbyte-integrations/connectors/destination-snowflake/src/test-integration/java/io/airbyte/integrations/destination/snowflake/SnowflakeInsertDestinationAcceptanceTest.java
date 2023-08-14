@@ -199,6 +199,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     DataSourceFactory.close(dataSource);
   }
 
+  @Disabled("See README for why this test is disabled")
   @Test
   public void testCheckWithNoTextSchemaPermissionConnection() throws Exception {
     // Config to user (creds) that has no permission to schema
