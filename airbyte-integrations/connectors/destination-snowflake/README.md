@@ -101,4 +101,5 @@ drop schema if exists INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;
 create schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;
 grant ownership on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role accountadmin revoke current grants;
 grant all privileges on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role NO_ACTIVE_WAREHOUSE_ROLE;
+grant all privileges on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role INTEGRATION_TESTER_DESTINATION;
 ```
