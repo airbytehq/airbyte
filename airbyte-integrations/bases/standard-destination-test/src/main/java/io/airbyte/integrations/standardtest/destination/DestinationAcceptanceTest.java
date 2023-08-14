@@ -100,6 +100,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
+  private static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
+
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
 
@@ -210,7 +212,9 @@ public abstract class DestinationAcceptanceTest {
     if (config.get("schema") == null) {
       return null;
     }
-    return config.get("schema").asText();
+    final String schema = config.get("schema").asText();
+    TEST_SCHEMAS.add(schema);
+    return schema;
   }
 
   /**
@@ -319,9 +323,10 @@ public abstract class DestinationAcceptanceTest {
    * postgres database. This function will be called before EACH test.
    *
    * @param testEnv - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void setup(TestDestinationEnv testEnv) throws Exception;
+  protected abstract void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
 
   /**
    * Function that performs any clean up of external resources required for the test. e.g. delete a
@@ -329,9 +334,10 @@ public abstract class DestinationAcceptanceTest {
    * destination so that there is no contamination across tests.
    *
    * @param testEnv - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
+  protected abstract void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
 
   /**
    * @deprecated This method is moved to the AdvancedTestDataComparator. Please move your destination
@@ -354,7 +360,7 @@ public abstract class DestinationAcceptanceTest {
     testEnv = new TestDestinationEnv(localRoot);
     mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
 
-    setup(testEnv);
+    setup(testEnv, TEST_SCHEMAS);
 
     processFactory = new DockerProcessFactory(
         workspaceRoot,
@@ -366,7 +372,7 @@ public abstract class DestinationAcceptanceTest {
 
   @AfterEach
   void tearDownInternal() throws Exception {
-    tearDown(testEnv);
+    tearDown(testEnv, TEST_SCHEMAS);
   }
 
   /**
@@ -981,6 +987,7 @@ public abstract class DestinationAcceptanceTest {
     // A randomized namespace is required otherwise you can generate a "false success" with data from a
     // previous run.
     final String namespace = Strings.addRandomSuffix("airbyte_source_namespace", "_", 8);
+    TEST_SCHEMAS.add(namespace);
 
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -1014,10 +1021,12 @@ public abstract class DestinationAcceptanceTest {
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final var namespace1 = Strings.addRandomSuffix("sourcenamespace", "_", 8);
+    TEST_SCHEMAS.add(namespace1);
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
 
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
-    final var namespace2 = Strings.addRandomSuffix("diff_sourcenamespace", "_", 8);;
+    final var namespace2 = Strings.addRandomSuffix("diff_sourcenamespace", "_", 8);
+    TEST_SCHEMAS.add(namespace2);
     final var mapper = MoreMappers.initMapper();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final var clonedStream = mapper.readValue(mapper.writeValueAsString(stream),
