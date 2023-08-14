@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from datetime import datetime
-from typing import Any, List, Mapping, Union
+from typing import Any, List, Mapping, Optional, Union
 
 from source_s3.source import SourceS3Spec
 from source_s3.source_files_abstract.formats.avro_spec import AvroFormat
@@ -68,6 +69,9 @@ class LegacyConfigTransformer:
         if isinstance(format_options, AvroFormat):
             return {"filetype": "avro"}
         elif isinstance(format_options, CsvFormat):
+            additional_reader_options = cls.parse_config_options_str("additional_reader_options", format_options.additional_reader_options)
+            advanced_options = cls.parse_config_options_str("advanced_options", format_options.advanced_options)
+
             csv_options = {
                 "filetype": "csv",
                 "delimiter": format_options.delimiter,
@@ -77,13 +81,19 @@ class LegacyConfigTransformer:
                 "true_values": ["y", "yes", "t", "true", "on", "1"],
                 "false_values": ["n", "no", "f", "false", "off", "0"],
                 "inference_type": "Primitive Types Only" if format_options.infer_datatypes else "None",
-                "strings_can_be_null": True,
+                "strings_can_be_null": additional_reader_options.get("strings_can_be_null", False),
             }
 
             if format_options.escape_char:
                 csv_options["escape_char"] = format_options.escape_char
             if format_options.encoding:
                 csv_options["encoding"] = format_options.encoding
+            if "skip_rows" in advanced_options:
+                csv_options["skip_rows_before_header"] = advanced_options["skip_rows"]
+            if "skip_rows_after_names" in advanced_options:
+                csv_options["skip_rows_after_header"] = advanced_options["skip_rows_after_names"]
+            if "autogenerate_column_names" in advanced_options:
+                csv_options["autogenerate_column_names"] = advanced_options["autogenerate_column_names"]
             return csv_options
 
         elif isinstance(format_options, JsonlFormat):
@@ -93,3 +103,11 @@ class LegacyConfigTransformer:
         else:
             # This should never happen because it would fail schema validation
             raise ValueError(f"Format filetype {format_options} is not a supported file type")
+
+    @classmethod
+    def parse_config_options_str(cls, options_field: str, options_value: Optional[str]) -> Mapping[str, Any]:
+        options_str = options_value or "{}"
+        try:
+            return json.loads(options_str)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Malformed {options_field} config json: {error}. Please ensure that it is a valid JSON.")
