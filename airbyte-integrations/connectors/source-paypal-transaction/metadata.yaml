@@ -17,12 +17,12 @@ data:
   icon: paypal.svg
   license: MIT
   name: Paypal Transaction
-  releaseDate: TODO
+  releaseDate: 2021-06-10
   releaseStage: generally_available
   supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   tags:
-    - language:lowcode
+    - language:low-code
   ab_internal:
     sl: 200
     ql: 300
