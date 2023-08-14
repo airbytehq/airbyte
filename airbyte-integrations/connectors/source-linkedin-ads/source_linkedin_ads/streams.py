@@ -369,7 +369,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
 
     def __init__(self, name: str = None, pivot_by: str = None, time_granularity: str = None, **kwargs):
-        self._new_class_name = name
+        self.user_stream_name = name
         if pivot_by:
             self.pivot_by = pivot_by
         if time_granularity:
@@ -379,7 +379,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     @property
     def name(self) -> str:
         """We override stream name to let the user change it via configuration."""
-        name = self._new_class_name or self.__class__.__name__
+        name = self.user_stream_name or self.__class__.__name__
         return casing.camel_to_snake(name)
 
     @property

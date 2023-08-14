@@ -124,9 +124,8 @@ class SourceLinkedinAds(AbstractSource):
         return streams
 
     def _validate_ad_analytics_reports(self, config: Mapping[str, Any]) -> None:
-        if len(config.get("ad_analytics_reports", [])) and len(config.get("ad_analytics_reports")) != set(
-            x["name"] for x in config.get("ad_analytics_reports")
-        ):
+        report_names = [x["name"] for x in config.get("ad_analytics_reports", [])]
+        if len(report_names) != len(set(report_names)):
             report_names = [x["name"] for x in config.get("ad_analytics_reports")]
             message = f"Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {set(name for name in report_names if report_names.count(name) > 1)}"
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
