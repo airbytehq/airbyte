@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * In a typical sync, destinations should call the methods:
  * <ol>
- * <li>{@link #prepareFinalTables()} once at the start of the sync</li>
+ * <li>{@link #prepareTables()} once at the start of the sync</li>
  * <li>{@link #typeAndDedupe(String, String)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
@@ -35,15 +35,19 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
 
   private final SqlGenerator<DialectTableDefinition> sqlGenerator;
   private final DestinationHandler<DialectTableDefinition> destinationHandler;
+
+  private final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
 
   public DefaultTyperDeduper(SqlGenerator<DialectTableDefinition> sqlGenerator,
                              DestinationHandler<DialectTableDefinition> destinationHandler,
-                             ParsedCatalog parsedCatalog) {
+                             ParsedCatalog parsedCatalog,
+                             DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
+    this.v1V2Migrator = v1V2Migrator;
   }
 
   /**
@@ -52,7 +56,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
    * empty) we write to a temporary final table, and swap it into the true final table at the end of
    * the sync. This is to prevent user downtime during a sync.
    */
-  public void prepareFinalTables() throws Exception {
+  public void prepareTables() throws Exception {
     if (overwriteStreamsWithTmpTable != null) {
       throw new IllegalStateException("Tables were already prepared.");
     }
@@ -63,6 +67,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into an
     // _airbyte_tmp table.
     for (StreamConfig stream : parsedCatalog.streams()) {
+      // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
+      v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
       final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
       if (existingTable.isPresent()) {
         // The table already exists. Decide whether we're writing to it directly, or using a tmp table.

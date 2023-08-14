@@ -1,6 +1,7 @@
 import json
 from pydantic import BaseModel
 
+
 def _apply_default_pydantic_kwargs(kwargs: dict) -> dict:
     """A helper function to apply default kwargs to pydantic models.
 
@@ -11,11 +12,12 @@ def _apply_default_pydantic_kwargs(kwargs: dict) -> dict:
         dict: the kwargs with defaults applied
     """
     default_kwargs = {
-        "by_alias": True, # Ensure that the original field name from the jsonschema is used in the event it begins with an underscore (e.g. ab_internal)
-        "exclude_none": True, # Exclude fields that are None
+        "by_alias": True,  # Ensure that the original field name from the jsonschema is used in the event it begins with an underscore (e.g. ab_internal)
+        "exclude_none": True,  # Exclude fields that are None
     }
 
     return {**default_kwargs, **kwargs}
+
 
 def to_json_sanitized_dict(pydantic_model_obj: BaseModel, **kwargs) -> dict:
     """A helper function to convert a pydantic model to a sanitized dict.
@@ -31,6 +33,7 @@ def to_json_sanitized_dict(pydantic_model_obj: BaseModel, **kwargs) -> dict:
 
     return json.loads(to_json(pydantic_model_obj, **kwargs))
 
+
 def to_json(pydantic_model_obj: BaseModel, **kwargs) -> str:
     """A helper function to convert a pydantic model to a json string.
 
@@ -45,6 +48,7 @@ def to_json(pydantic_model_obj: BaseModel, **kwargs) -> str:
     kwargs = _apply_default_pydantic_kwargs(kwargs)
 
     return pydantic_model_obj.json(**kwargs)
+
 
 def to_dict(pydantic_model_obj: BaseModel, **kwargs) -> dict:
     """A helper function to convert a pydantic model to a dict.

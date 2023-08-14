@@ -26,10 +26,10 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataSqlOperations.class);
 
   @Override
-  public void insertRecordsInternal(JdbcDatabase database,
-                                    List<AirbyteRecordMessage> records,
-                                    String schemaName,
-                                    String tableName)
+  public void insertRecordsInternal(final JdbcDatabase database,
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -41,7 +41,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
     database.execute(con -> {
       try {
 
-        PreparedStatement pstmt = con.prepareStatement(insertQueryComponent);
+        final PreparedStatement pstmt = con.prepareStatement(insertQueryComponent);
 
         for (final AirbyteRecordMessage record : records) {
 
@@ -53,7 +53,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           LOGGER.info("emittedAt: " + emittedAt);
           pstmt.setString(1, uuid);
           pstmt.setObject (2, new JSONStruct("JSON",new Object[] {jsonData}));
-	  pstmt.setTimestamp(3, emittedAt);
+	      pstmt.setTimestamp(3, emittedAt);
           pstmt.addBatch();
 
         }
@@ -67,7 +67,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
         AirbyteTraceMessageUtility.emitSystemErrorTrace(se,
             "Connector failed while inserting records to staging table");
         throw new RuntimeException(se);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
             "Connector failed while inserting records to staging table");
         throw new RuntimeException(e);
@@ -88,7 +88,6 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
         throw new RuntimeException(e);
       }
     }
-
   }
 
   @Override
@@ -119,8 +118,8 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName)
       throws SQLException {
     try {
-      database.execute(dropTableIfExistsQuery(schemaName, tableName));
-    } catch (SQLException e) {
+      database.execute(dropTableIfExistsQueryInternal(schemaName, tableName));
+    } catch (final SQLException e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
           "Connector failed while dropping table " + schemaName + "." + tableName);
     }
@@ -143,7 +142,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
         appendedQueries.append(query);
       }
       database.execute(appendedQueries.toString());
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
           "Connector failed while executing queries : " + appendedQueries.toString());
     }

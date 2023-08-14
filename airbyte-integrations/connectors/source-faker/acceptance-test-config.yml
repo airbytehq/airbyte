@@ -14,7 +14,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
-          disable_for_version: "2.1.0" # We changed the cursor field of all streams to be "updated_at"
+          disable_for_version: "4.0.0" # We changed the '*_id' and products.year fields to be integers instead of number
   basic_read:
     tests:
       - config_path: secrets/config.json
