@@ -199,10 +199,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "batch_size": 65536,
                 "buffer_size": 100,
             },
-            {
-                "filetype": "parquet",
-                "decimal_as_float": True,
-            },
+            {"filetype": "parquet", "decimal_as_float": True},
             None,
             id="test_parquet_format",
         ),

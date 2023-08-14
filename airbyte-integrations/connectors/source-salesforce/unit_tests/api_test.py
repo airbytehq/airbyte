@@ -10,9 +10,12 @@ import re
 from datetime import datetime
 from unittest.mock import Mock
 
+import freezegun
+import pendulum
 import pytest
 import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
+from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
@@ -61,7 +64,7 @@ def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stre
     assert list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)) == rest_stream_records
 
 
-def test_stream_unsupported_by_bulk(stream_config, stream_api, caplog):
+def test_stream_unsupported_by_bulk(stream_config, stream_api):
     """
     Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.
     """
@@ -80,30 +83,26 @@ def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_ap
     assert not isinstance(stream, BulkSalesforceStream)
 
 
-@pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 3000])
-def test_bulk_sync_pagination(item_number, stream_config, stream_api):
+def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    test_ids = [i for i in range(1, item_number)]
-    pages = [test_ids[i : i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
-    if not pages:
-        pages = [[]]
-    with requests_mock.Mocker() as m:
-        creation_responses = []
+    job_id = "fake_job"
+    requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+    resp_text = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in range(5)]
+    result_uri = requests_mock.register_uri("GET", stream.path() + f"/{job_id}/results",
+                                            [{"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
+                                             {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
+                                             {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}}
+                                             ]
+                                            )
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
 
-        for page in range(len(pages)):
-            job_id = f"fake_job_{page}"
-            creation_responses.append({"json": {"id": job_id}})
-            m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
-            resp = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in pages[page]]
-            m.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join(resp))
-            m.register_uri("DELETE", stream.path() + f"/{job_id}")
-        m.register_uri("POST", stream.path(), creation_responses)
-
-        stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
-        loaded_ids = [int(record["ID"]) for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)]
-        assert not set(test_ids).symmetric_difference(set(loaded_ids))
-        post_request_count = len([r for r in m.request_history if r.method == "POST"])
-        assert post_request_count == len(pages)
+    stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
+    loaded_ids = [int(record["ID"]) for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)]
+    assert loaded_ids == [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
+    assert result_uri.call_count == 3
+    assert result_uri.request_history[1].query == "locator=somelocator_1"
+    assert result_uri.request_history[2].query == "locator=somelocator_2"
 
 
 def _prepare_mock(m, stream):
@@ -210,46 +209,51 @@ def test_stream_start_datetime_format_should_not_changed(stream_config, stream_a
 
 
 def test_download_data_filter_null_bytes(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b"\x00")
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b"\x00")
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == []
 
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": "false"}]
 
 
 def test_read_with_chunks_should_return_only_object_data_type(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"IsDeleted","Age"\n"false",24\n')
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b'"IsDeleted","Age"\n"false",24\n')
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == [{"IsDeleted": "false", "Age": "24"}]
 
 
 def test_read_with_chunks_should_return_a_string_when_a_string_with_only_digits_is_provided(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"ZipCode"\n"01234"\n')
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b'"ZipCode"\n"01234"\n')
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == [{"ZipCode": "01234"}]
 
 
 def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"IsDeleted","Age","Name"\n"false",,"Airbyte"\n')
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b'"IsDeleted","Age","Name"\n"false",,"Airbyte"\n')
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == [{"IsDeleted": "false", "Age": None, "Name": "Airbyte"}]
 
 
@@ -259,12 +263,13 @@ def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stre
     ids=[f"charset: {x[1]}, chunk_size: {x[0]}" for x in encoding_symbols_parameters()],
 )
 def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type, content, expected_result):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", headers={"Content-Type": f"text/html; charset={content_type}"}, content=content)
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url, chunk_size=chunk_size)))
+        m.register_uri("GET", job_full_url_results, headers={"Content-Type": f"text/html; charset={content_type}"}, content=content)
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == expected_result
 
 
@@ -312,6 +317,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
+    stream_config.update({'start_date': '2021-10-01'})
     stream_1: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     stream_2: BulkIncrementalSalesforceStream = generate_stream("Asset", stream_config, stream_api)
     streams = [stream_1, stream_2]
@@ -335,7 +341,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
 
                 m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
 
-                resp = ["Field1,LastModifiedDate,Id"] + [f"test,2021-11-0{i},{i}" for i in range(1, 7)]  # 6 records per page
+                resp = ["Field1,LastModifiedDate,Id"] + [f"test,2021-10-0{i},{i}" for i in range(1, 7)]  # 6 records per page
 
                 if page == 1:
                     # Read the first page successfully
@@ -358,7 +364,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
         assert len(records) == 6  # stream page size: 6
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-11-05"  # state checkpoint interval is 5.
+        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00+00:00"  # state checkpoint interval is 5.
 
 
 def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
@@ -368,6 +374,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
+    stream_config.update({'start_date': '2021-11-01'})
 
     stream_1: IncrementalRestSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
     stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
@@ -426,7 +433,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
         assert len(records) == 5
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17"
+        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00+00:00"
 
 
 def test_pagination_rest(stream_config, stream_api):
@@ -474,7 +481,7 @@ def test_pagination_rest(stream_config, stream_api):
 
 def test_csv_reader_dialect_unix():
     stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, sf_api=None, pk=None)
-    url = "https://fake-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    url_results = "https://fake-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
 
     data = [
         {"Id": "1", "Name": '"first_name" "last_name"'},
@@ -490,8 +497,9 @@ def test_csv_reader_dialect_unix():
         text = csvfile.getvalue()
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", url + "/results", text=text)
-        result = [i for i in stream.read_with_chunks(*stream.download_data(url))]
+        m.register_uri("GET", url_results, text=text)
+        tmp_file, response_encoding, _ = stream.download_data(url=url_results)
+        result = [i for i in stream.read_with_chunks(tmp_file, response_encoding)]
         assert result == data
 
 
@@ -661,3 +669,116 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
     )
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert records == []
+
+
+@pytest.mark.parametrize(
+    "status_code,response_json,log_message",
+    [
+        (400, [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}], "Account is not supported by the Bulk API"),
+        (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "API limit reached"}], "API limit reached"),
+        (400, [{"errorCode": "API_ERROR", "message": "API does not support query"}], "The stream 'Account' is not queryable,"),
+        (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}], "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.")
+    ]
+)
+def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, stream_api, status_code, response_json, log_message, caplog):
+    """
+    """
+    stream = generate_stream("Account", stream_config, stream_api)
+    url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query"
+    requests_mock.register_uri(
+        "POST",
+        url,
+        status_code=status_code,
+        json=response_json,
+    )
+    query = "Select Id, Subject from Account"
+    with caplog.at_level(logging.ERROR):
+        assert stream.create_stream_job(query, url) is None, "this stream should be skipped"
+
+    # check logs
+    assert log_message in caplog.records[-1].message
+
+
+@pytest.mark.parametrize(
+    "status_code,response_json,error_message",
+    [
+        (400, [{"errorCode": "TXN_SECURITY_METERING_ERROR", "message": "We can't complete the action because enabled transaction security policies took too long to complete."}], 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'),
+    ]
+)
+def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_api, status_code, response_json, error_message):
+
+    stream = generate_stream("Account", stream_config, stream_api)
+    url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query/queryJobId"
+    requests_mock.register_uri(
+        "GET",
+        url,
+        status_code=status_code,
+        json=response_json,
+    )
+    with pytest.raises(AirbyteTracedException) as e:
+        stream.wait_for_job(url=url)
+    assert e.value.message == error_message
+
+
+@freezegun.freeze_time("2023-01-01")
+def test_bulk_stream_slices(stream_config_date_format, stream_api):
+    stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
+    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+    expected_slices = []
+    today = pendulum.today(tz="UTC")
+    start_date = pendulum.parse(stream.start_date, tz="UTC")
+    while start_date < today:
+        expected_slices.append({
+            'start_date': start_date.isoformat(timespec="milliseconds"),
+            'end_date': min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds")
+        })
+        start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
+    assert expected_slices == stream_slices
+
+
+@freezegun.freeze_time("2023-04-01")
+def test_bulk_stream_request_params_states(stream_config_date_format, stream_api, bulk_catalog, requests_mock):
+    """Check that request params ignore records cursor and use start date from slice ONLY"""
+    stream_config_date_format.update({"start_date": "2023-01-01"})
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api)
+
+    source = SourceSalesforce()
+    source.streams = Mock()
+    source.streams.return_value = [stream]
+
+    job_id_1 = "fake_job_1"
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_1}")
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}/results", text="Field1,LastModifiedDate,ID\ntest,2023-01-15,1")
+    requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_1}")
+
+    job_id_2 = "fake_job_2"
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_2}")
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2\ntest,2023-02-20,22")
+    requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_2}")
+
+    job_id_3 = "fake_job_3"
+    queries_history = requests_mock.register_uri("POST", stream.path(), [{"json": {"id": job_id_1}},
+                                                                         {"json": {"id": job_id_2}},
+                                                                         {"json": {"id": job_id_3}}])
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_3}")
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,3")
+    requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_3}")
+
+    logger = logging.getLogger("airbyte")
+    state = {"Account": {"LastModifiedDate": "2023-01-01T10:10:10.000Z"}}
+    bulk_catalog.streams.pop(1)
+    result = [i for i in source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state)]
+
+    actual_state_values = [item.state.data.get("Account").get(stream.cursor_field) for item in result if item.type == Type.STATE]
+    # assert request params
+    assert "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00" in queries_history.request_history[0].text
+    assert "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00" in queries_history.request_history[1].text
+    assert "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00" in queries_history.request_history[2].text
+
+    # assert states
+    # if connector meets record with cursor `2023-04-01` out of current slice range 2023-01-31 <> 2023-03-02, we ignore all other values and set state to slice end_date
+    expected_state_values = ["2023-01-15T00:00:00+00:00", "2023-03-02T10:10:10+00:00", "2023-04-01T00:00:00+00:00"]
+    assert actual_state_values == expected_state_values

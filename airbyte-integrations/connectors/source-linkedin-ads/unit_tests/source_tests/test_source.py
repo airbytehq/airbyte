@@ -9,6 +9,7 @@ import pytest
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from source_linkedin_ads.source import (
     Accounts,
     AccountUsers,
@@ -40,6 +41,29 @@ TEST_CONFIG: dict = {
         "access_token": "access_token",
         "authenticator": TokenAuthenticator(token="123"),
     },
+}
+
+TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
+  "start_date": "2021-01-01",
+  "account_ids": [],
+  "credentials": {
+    "auth_method": "oAuth2.0",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "ad_analytics_reports": [
+    {
+      "name": "ShareAdByMonth",
+      "pivot_by": "COMPANY",
+      "time_granularity": "MONTHLY"
+    },
+    {
+      "name": "ShareAdByMonth",
+      "pivot_by": "COMPANY",
+      "time_granularity": "MONTHLY"
+    }
+  ]
 }
 
 
@@ -124,7 +148,7 @@ class TestAllStreams:
         ],
     )
     def test_path(self, stream_cls, stream_slice, expected):
-        stream = stream_cls(TEST_CONFIG)
+        stream = stream_cls(config=TEST_CONFIG)
         result = stream.path(stream_slice=stream_slice)
         assert result == expected
 
@@ -174,7 +198,7 @@ class TestAccountUsers:
     stream: AccountUsers = AccountUsers(TEST_CONFIG)
 
     def test_state_checkpoint_interval(self):
-        assert self.stream.state_checkpoint_interval == 500
+        assert self.stream.state_checkpoint_interval == 100
 
     def test_get_updated_state(self):
         state = self.stream.get_updated_state(
@@ -249,7 +273,7 @@ class TestLinkedInAdsAnalyticsStream:
         ],
     )
     def test_base_analytics_params(self, stream_cls, expected):
-        stream = stream_cls(TEST_CONFIG)
+        stream = stream_cls(config=TEST_CONFIG)
         result = stream.base_analytics_params
         assert result == expected
 
@@ -290,7 +314,7 @@ class TestLinkedInAdsAnalyticsStream:
         ],
     )
     def test_request_params(self, stream_cls, slice, expected):
-        stream = stream_cls(TEST_CONFIG)
+        stream = stream_cls(config=TEST_CONFIG)
         result = stream.request_params(stream_state={}, stream_slice=slice)
         assert expected == result
 
@@ -326,3 +350,10 @@ def test_date_time_to_rfc3339(record, expected):
     stream = Accounts(TEST_CONFIG)
     result = stream._date_time_to_rfc3339(record)
     assert result == expected
+
+
+def test_duplicated_custom_ad_analytics_report():
+    with pytest.raises(AirbyteTracedException) as e:
+        SourceLinkedinAds().streams(TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS)
+    expected_message = "Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {'ShareAdByMonth'}"
+    assert e.value.message == expected_message

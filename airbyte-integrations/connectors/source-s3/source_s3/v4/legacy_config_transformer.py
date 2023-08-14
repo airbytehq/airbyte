@@ -32,7 +32,6 @@ class LegacyConfigTransformer:
                     "file_type": legacy_config.format.filetype,
                     "globs": cls._create_globs(legacy_config.path_pattern, legacy_config.provider.path_prefix),
                     "validation_policy": "Emit Record",
-                    "format": LegacyConfigTransformer._transform_file_format(legacy_config.format),
                 }
             ],
         }
@@ -47,6 +46,8 @@ class LegacyConfigTransformer:
             transformed_config["endpoint"] = legacy_config.provider.endpoint
         if legacy_config.user_schema and legacy_config.user_schema != "{}":
             transformed_config["streams"][0]["input_schema"] = legacy_config.user_schema
+        if legacy_config.format:
+            transformed_config["streams"][0]["format"] = cls._transform_file_format(legacy_config.format)
 
         return transformed_config
 

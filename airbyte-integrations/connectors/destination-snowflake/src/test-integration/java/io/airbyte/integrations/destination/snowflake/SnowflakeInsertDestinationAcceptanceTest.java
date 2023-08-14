@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
@@ -172,9 +173,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
+    TEST_SCHEMAS.add(schemaName);
 
     this.config = Jsons.clone(getStaticConfig());
     ((ObjectNode) config).put("schema", schemaName);
@@ -185,9 +187,15 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
-    database.execute(createSchemaQuery);
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+    String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
+    database.execute(dropSchemaQuery);
+
+    for (String schema : TEST_SCHEMAS) {
+      dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", schema);
+      database.execute(dropSchemaQuery);
+    }
+
     DataSourceFactory.close(dataSource);
   }
 

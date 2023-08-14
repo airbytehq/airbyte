@@ -131,12 +131,7 @@ class CsvParser(FileTypeParser):
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
         config_format = _extract_format(config)
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
-            lambda: _JsonTypeInferrer(
-                config_format.true_values,
-                config_format.false_values,
-                config_format.null_values,
-                config_format.inference_type == InferenceType.PRIMITIVE_AND_COMPLEX_TYPES,
-            )
+            lambda: _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
             if config_format.inference_type != InferenceType.NONE
             else _DisabledTypeInferrer()
         )
@@ -165,10 +160,15 @@ class CsvParser(FileTypeParser):
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         config_format = _extract_format(config)
-        cast_fn = CsvParser._get_cast_function(discovered_schema, config_format, logger)
+        if discovered_schema:
+            property_types = {col: prop["type"] for col, prop in discovered_schema["properties"].items()}  # type: ignore # discovered_schema["properties"] is known to be a mapping
+            deduped_property_types = CsvParser._pre_propcess_property_types(property_types)
+        else:
+            deduped_property_types = {}
+        cast_fn = CsvParser._get_cast_function(deduped_property_types, config_format, logger)
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         for row in data_generator:
-            yield CsvParser._to_nullable(cast_fn(row), config_format.null_values)
+            yield CsvParser._to_nullable(cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null)
         data_generator.close()
 
     @property
@@ -177,24 +177,62 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        schema: Optional[Mapping[str, SchemaType]], config_format: CsvFormat, logger: logging.Logger
+        deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
-        if schema:
-            property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
-            return partial(CsvParser._cast_types, property_types=property_types, config_format=config_format, logger=logger)
+        if deduped_property_types:
+            return partial(CsvParser._cast_types, deduped_property_types=deduped_property_types, config_format=config_format, logger=logger)
         else:
             # If no schema is provided, yield the rows as they are
             return _no_cast
 
     @staticmethod
-    def _to_nullable(row: Mapping[str, str], null_values: Set[str]) -> Dict[str, Optional[str]]:
-        nullable = row | {k: None if v in null_values else v for k, v in row.items()}
+    def _to_nullable(
+        row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
+    ) -> Dict[str, Optional[str]]:
+        nullable = row | {
+            k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
+            for k, v in row.items()
+        }
         return nullable
 
     @staticmethod
+    def _value_is_none(value: Any, deduped_property_type: Optional[str], null_values: Set[str], strings_can_be_null: bool) -> bool:
+        return value in null_values and (strings_can_be_null or deduped_property_type != "string")
+
+    @staticmethod
+    def _pre_propcess_property_types(property_types: Dict[str, Any]) -> Mapping[str, str]:
+        """
+        Transform the property types to be non-nullable and remove duplicate types if any.
+        Sample input:
+        {
+        "col1": ["string", "null"],
+        "col2": ["string", "string", "null"],
+        "col3": "integer"
+        }
+
+        Sample output:
+        {
+        "col1": "string",
+        "col2": "string",
+        "col3": "integer",
+        }
+        """
+        output = {}
+        for prop, prop_type in property_types.items():
+            if isinstance(prop_type, list):
+                prop_type_distinct = set(prop_type)
+                prop_type_distinct.remove("null")
+                if len(prop_type_distinct) != 1:
+                    raise ValueError(f"Could not get non nullable type from {prop_type}")
+                output[prop] = next(iter(prop_type_distinct))
+            else:
+                output[prop] = prop_type
+        return output
+
+    @staticmethod
     def _cast_types(
-        row: Dict[str, str], property_types: Dict[str, Any], config_format: CsvFormat, logger: logging.Logger
+        row: Dict[str, str], deduped_property_types: Dict[str, str], config_format: CsvFormat, logger: logging.Logger
     ) -> Dict[str, Any]:
         """
         Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
@@ -207,15 +245,8 @@ class CsvParser(FileTypeParser):
         result = {}
 
         for key, value in row.items():
-            prop_type = property_types.get(key)
+            prop_type = deduped_property_types.get(key)
             cast_value: Any = value
-
-            if isinstance(prop_type, list):
-                prop_type_distinct = set(prop_type)
-                prop_type_distinct.remove("null")
-                if len(prop_type_distinct) != 1:
-                    raise ValueError(f"Could not get non nullable type from {prop_type}")
-                (prop_type,) = prop_type_distinct
 
             if prop_type in TYPE_PYTHON_MAPPING and prop_type is not None:
                 _, python_type = TYPE_PYTHON_MAPPING[prop_type]
@@ -286,17 +317,12 @@ class _JsonTypeInferrer(_TypeInferrer):
     _BOOLEAN_TYPE = "boolean"
     _INTEGER_TYPE = "integer"
     _NUMBER_TYPE = "number"
-    _ARRAY_TYPE = "array"
-    _OBJECT_TYPE = "object"
     _STRING_TYPE = "string"
 
-    def __init__(
-        self, boolean_trues: Set[str], boolean_falses: Set[str], null_values: Set[str], allow_for_objects_and_arrays: bool
-    ) -> None:
+    def __init__(self, boolean_trues: Set[str], boolean_falses: Set[str], null_values: Set[str]) -> None:
         self._boolean_trues = boolean_trues
         self._boolean_falses = boolean_falses
         self._null_values = null_values
-        self._allow_for_objects_and_arrays = allow_for_objects_and_arrays
         self._values: Set[str] = set()
 
     def add_value(self, value: Any) -> None:
@@ -316,12 +342,6 @@ class _JsonTypeInferrer(_TypeInferrer):
             return self._INTEGER_TYPE
         elif self._NUMBER_TYPE in types:
             return self._NUMBER_TYPE
-        elif not self._allow_for_objects_and_arrays:
-            return self._STRING_TYPE
-        elif self._ARRAY_TYPE in types:
-            return self._ARRAY_TYPE
-        elif any(self._OBJECT_TYPE in _type for _type in types_by_value.values()):
-            return self._OBJECT_TYPE
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> Set[str]:
@@ -336,14 +356,6 @@ class _JsonTypeInferrer(_TypeInferrer):
             inferred_types.add(self._NUMBER_TYPE)
         elif self._is_number(value):
             inferred_types.add(self._NUMBER_TYPE)
-
-        # if it can be infered as a primitive, it can't be a complex type so we'll avoid json parsing
-        if not inferred_types:
-            if self._is_array(value):
-                inferred_types.add(self._ARRAY_TYPE)
-                inferred_types.add(self._OBJECT_TYPE)
-            elif self._is_object(value):
-                inferred_types.add(self._OBJECT_TYPE)
 
         inferred_types.add(self._STRING_TYPE)
         return inferred_types
@@ -371,22 +383,6 @@ class _JsonTypeInferrer(_TypeInferrer):
         except ValueError:
             return False
 
-    @staticmethod
-    def _is_array(value: str) -> bool:
-        try:
-            _value_to_list(value)
-            return True
-        except (ValueError, json.JSONDecodeError):
-            return False
-
-    @staticmethod
-    def _is_object(value: str) -> bool:
-        try:
-            _value_to_object(value)
-            return True
-        except (ValueError, json.JSONDecodeError):
-            return False
-
 
 def _value_to_bool(value: str, true_values: Set[str], false_values: Set[str]) -> bool:
     if value in true_values:
@@ -394,13 +390,6 @@ def _value_to_bool(value: str, true_values: Set[str], false_values: Set[str]) ->
     if value in false_values:
         return False
     raise ValueError(f"Value {value} is not a valid boolean value")
-
-
-def _value_to_object(value: str) -> Dict[Any, Any]:
-    parsed_value = json.loads(value)
-    if isinstance(parsed_value, dict):
-        return parsed_value
-    raise ValueError(f"Value {parsed_value} is not a valid dict value")
 
 
 def _value_to_list(value: str) -> List[Any]:

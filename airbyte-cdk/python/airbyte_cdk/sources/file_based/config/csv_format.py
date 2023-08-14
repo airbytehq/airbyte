@@ -20,7 +20,6 @@ class QuotingBehavior(Enum):
 class InferenceType(Enum):
     NONE = "None"
     PRIMITIVE_TYPES_ONLY = "Primitive Types Only"
-    PRIMITIVE_AND_COMPLEX_TYPES = "Primitive and Complex Types"
 
 
 DEFAULT_TRUE_VALUES = ["y", "yes", "t", "true", "on", "1"]
@@ -64,6 +63,11 @@ class CsvFormat(BaseModel):
         default=[],
         description="A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
     )
+    strings_can_be_null: bool = Field(
+        title="Strings Can Be Null",
+        default=True,
+        description="Whether strings can be interpreted as null values. If true, strings that match the null_values set will be interpreted as null. If false, strings that match the null_values set will be interpreted as the string itself.",
+    )
     skip_rows_before_header: int = Field(
         title="Skip Rows Before Header",
         default=0,
@@ -91,6 +95,7 @@ class CsvFormat(BaseModel):
         title="Inference Type",
         default=InferenceType.NONE,
         description="How to infer the types of the columns. If none, inference default to strings.",
+        airbyte_hidden=True,
     )
 
     @validator("delimiter")
