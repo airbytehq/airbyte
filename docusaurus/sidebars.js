@@ -37,11 +37,16 @@ const sourcePostgres = {
        id: 'integrations/sources/postgres',
    },
    items: [
-      {
+        {
+          type: "doc",
+          label: "Cloud SQL for Postgres",
+          id: "integrations/sources/postgres/cloud-sql-postgres",
+        },
+        {
         type: "doc",
         label: "Troubleshooting",
         id: "integrations/sources/postgres/postgres-troubleshooting",
-      }
+        }
    ],
 };
 
