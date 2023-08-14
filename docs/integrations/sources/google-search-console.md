@@ -5,7 +5,7 @@ This page contains the setup guide and reference information for the Google Sear
 ## Prerequisites
 
 - A verified property in Google Search Console
-- Enabled Google Search Console API
+- Google Search Console API enabled for your project
 
 ## Setup guide
 
@@ -13,11 +13,11 @@ This page contains the setup guide and reference information for the Google Sear
 
 To authenticate the Google Search Console connector, you will need to use one of the following methods:
 
-#### I: OAuth (Recommended for Airbyte Cloud users)
+#### I: OAuth (Recommended for Airbyte Cloud)
 
-You can authenticate using your personal Google Account with OAuth if you are the owner of the Google Search Console property or have been granted view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2:-set-up-the-google-search-console-connector-in-airbyte).
+You can authenticate using your personal Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (Owner or Full User) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
 
-#### II: Google service account with JSON key file (Recommended for Airbyte Open Source users)
+#### II: Google service account with JSON key file (Recommended for Airbyte Open Source)
 
 You can authenticate the connection using a JSON key file associated with a Google service account. This option is recommended for **Airbyte Open Source** users. Follow the steps below to create a service account and generate the JSON key file:
 
@@ -28,23 +28,23 @@ You can authenticate the connection using a JSON key file associated with a Goog
 5. Under **Service account permissions**, select the roles to grant to the service account, then click **Continue**. We recommend the **Viewer** role.
    - Optional: Under **Grant users access to this service account**, you may specify the users or groups that are allowed to use and manage the service account.
 6. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) and click on the email address of the service account you just created.
-8. In the **Keys** tab, click **+ Add key**, then click **Create new key**.
-9. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
+7. In the **Keys** tab, click **+ Add key**, then click **Create new key**.
+8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
 
 :::caution
 This file serves as the only copy of your JSON service key, and you will not be able to re-download it. Be sure to store it in a secure location.
 :::
 
 :::note
-You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to view the email address, public key fingerprints, and other information, or to generate additional public/private key pairs. For more details about service account credentials in the API Console, see [Service accounts](https://cloud.google.com/iam/docs/understanding-service-accounts) in the API Console help file.
+You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to manage your service account or generate additional JSON keys. For more details about service account credentials, see [Google's IAM documentation](https://cloud.google.com/iam/docs/understanding-service-accounts).
 :::
 
-#### Delegating domain-wide authority to the service account
+#### Note on delegating domain-wide authority to the service account
 
-Domain-wide delegation is a powerful feature that allows service accounts access to users' data across your organization's Google Workspace environment through 'impersonation'. This delegated authority is necessary in certain use cases, such as when a service account needs broad access across multiple users and services within a domain.
+Domain-wide delegation is a powerful feature that allows service accounts to access users' data across an organization's Google Workspace environment through 'impersonation'. This authority is necessary in certain use cases, such as when a service account needs broad access across multiple users and services within a domain.
 
 :::note
-Only the super admin of your Google Workspace domain can grant this authority to a service account.
+Only the super admin of your Google Workspace domain can enable domain-wide delegation of authority to a service account.
 :::
 
 To enable delegated domain-wide authority, follow the steps listed in the [Google documentation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority). Please make sure to grant the following OAuth scopes to the service account:

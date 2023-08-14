@@ -1,9 +1,10 @@
 ## Prerequisite
 
 - A verified property in Google Search Console
-- Enabled Google Search Console API
-​
+- Google Search Console API enabled for your project
+
 ## Setup guide
+
 1. For **Source name**, enter a name to help you identify this source.
 2. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
 3. For **Start Date**, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
