@@ -94,7 +94,7 @@ The Google Search Console Source connector supports the following [ sync modes](
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 :::note
 The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.
@@ -137,7 +137,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 ## Changelog
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
-|:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
 | `1.2.1`  | 2023-07-04 | [27952](https://github.com/airbytehq/airbyte/pull/27952)                                                      | Removed deprecated `searchType`, added `discover`(Discover results) and `googleNews`(Results from news.google.com, etc.) types |
 | `1.2.0`  | 2023-06-29 | [27831](https://github.com/airbytehq/airbyte/pull/27831)                                                      | Add new streams                                                                                                                |
 | `1.1.0`  | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738)                                                      | License Update: Elv2                                                                                                           |
