@@ -4,7 +4,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - group
+    - space
 
 definitions:
   schema_loader:
@@ -138,9 +138,12 @@ streams:
   - "#/definitions/space_stream"
 
 spec:
+  documentation_url: https://example.org
+  type: Spec
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
+    additionalProperties: true
     required:
       - email
       - api_token
@@ -163,6 +166,3 @@ spec:
         description: "Your Confluence domain name"
         type: string
         order: 2
-    additionalProperties: true
-  documentation_url: https://example.org
-  type: Spec
