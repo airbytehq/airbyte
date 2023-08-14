@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.1.1
+  dockerImageTag: 2.1.2
   dockerRepository: airbyte/source-salesforce
   githubIssueLabel: source-salesforce
   icon: salesforce.svg
@@ -13,7 +13,6 @@ data:
   name: Salesforce
   registries:
     cloud:
-      dockerImageTag: 2.0.9
       enabled: true
     oss:
       enabled: true
