@@ -30,6 +30,7 @@ from .streams import (
     AdsInsightsRegion,
     Campaigns,
     CustomConversions,
+    CustomAudiences,
     Images,
     Videos,
 )
