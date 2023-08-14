@@ -244,7 +244,7 @@ The Snowflake destination supports the following sync modes:
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Snowflake tutorials
 
@@ -271,6 +271,16 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.1           | 2023-08-04 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Update SqlGenerator                                                                                                                |
+| 1.3.0           | 2023-08-07 | [\#29174](https://github.com/airbytehq/airbyte/pull/29174) | Destinations v2: early access release                                                                                                               |
+| 1.2.10          | 2023-08-07 | [\#29188](https://github.com/airbytehq/airbyte/pull/29188) | Internal code refactoring                                                                                                                           |
+| 1.2.9           | 2023-08-04 | [\#28677](https://github.com/airbytehq/airbyte/pull/28677) | Destinations v2: internal code changes to prepare for early access release                                                                          |
+| 1.2.8           | 2023-08-03 | [\#29047](https://github.com/airbytehq/airbyte/pull/29047) | Avoid logging record if the format is invalid                                                                                                       |
+| 1.2.7           | 2023-08-02 | [\#28976](https://github.com/airbytehq/airbyte/pull/28976) | Fix composite PK handling in v1 mode                                                                                                                |
+| 1.2.6           | 2023-08-01 | [\#28618](https://github.com/airbytehq/airbyte/pull/28618) | Reduce logging noise                                                                                                                                |
+| 1.2.5           | 2023-07-24 | [\#28618](https://github.com/airbytehq/airbyte/pull/28618) | Add hooks in preparation for destinations v2 implementation                                                                                         |
+| 1.2.4           | 2023-07-21 | [\#28584](https://github.com/airbytehq/airbyte/pull/28584) | Install dependencies in preparation for destinations v2 work                                                                                        |
+| 1.2.3           | 2023-07-21 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Pull in async framework minor bug fix for race condition on state emission                                                                          |
 | 1.2.2           | 2023-07-14 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                                                |
 | 1.2.1           | 2023-07-14 | [\#28315](https://github.com/airbytehq/airbyte/pull/28315) | Pull in async framework minor bug fix to avoid Snowflake hanging on close                                                                           |
 | 1.2.0           | 2023-07-5  | [\#27935](https://github.com/airbytehq/airbyte/pull/27935) | Enable Faster Snowflake Syncs with Asynchronous writes                                                                                              |

@@ -7,6 +7,7 @@ from functools import cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError, UndefinedParserError
@@ -16,7 +17,6 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class AbstractFileBasedStream(Stream):
@@ -40,7 +40,7 @@ class AbstractFileBasedStream(Stream):
         config: FileBasedStreamConfig,
         catalog_schema: Optional[ConfiguredAirbyteCatalog],
         stream_reader: AbstractFileBasedStreamReader,
-        availability_strategy: AvailabilityStrategy,
+        availability_strategy: AbstractFileBasedAvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
         parsers: Dict[str, FileTypeParser],
         validation_policy: AbstractSchemaValidationPolicy,
@@ -136,7 +136,7 @@ class AbstractFileBasedStream(Stream):
             )
 
     @cached_property
-    def availability_strategy(self) -> AvailabilityStrategy:
+    def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._availability_strategy
 
     @property

@@ -29,10 +29,12 @@ from source_stripe.streams import (
     Payouts,
     Persons,
     Plans,
+    Prices,
     Products,
     PromotionCodes,
     Refunds,
     SetupIntents,
+    ShippingRates,
     SubscriptionItems,
     Subscriptions,
     SubscriptionSchedule,
@@ -157,7 +159,7 @@ def config_fixture():
 
 
 @pytest.mark.parametrize(
-    "stream, kwargs, expected",
+    "stream_cls, kwargs, expected",
     [
         (ApplicationFees, {}, "application_fees"),
         (ApplicationFeesRefunds, {"stream_slice": {"refund_id": "fr"}}, "application_fees/fr/refunds"),
@@ -175,6 +177,7 @@ def config_fixture():
         (Payouts, {}, "payouts"),
         (Persons, {"stream_slice": {"id": "A1"}}, "accounts/A1/persons"),
         (Plans, {}, "plans"),
+        (Prices, {}, "prices"),
         (Products, {}, "products"),
         (Subscriptions, {}, "subscriptions"),
         (SubscriptionItems, {}, "subscription_items"),
@@ -188,15 +191,19 @@ def config_fixture():
         (PromotionCodes, {}, "promotion_codes"),
         (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
         (SetupIntents, {}, "setup_intents"),
+        (ShippingRates, {}, "shipping_rates"),
     ],
 )
-def test_path(
-    stream,
+def test_path_and_headers(
+    stream_cls,
     kwargs,
     expected,
     config,
 ):
-    assert stream(**config).path(**kwargs) == expected
+    stream = stream_cls(**config)
+    assert stream.path(**kwargs) == expected
+    headers = stream.request_headers(**kwargs)
+    assert headers["Stripe-Version"] == "2022-11-15"
 
 
 @pytest.mark.parametrize(

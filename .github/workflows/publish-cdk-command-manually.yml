@@ -293,10 +293,11 @@ jobs:
       - name: Update CDK version
         run: |
           PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
-          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-atelier-server/Dockerfile
-          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-atelier-server/requirements.in
+          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/Dockerfile
+          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" airbyte-connector-builder-server-wrapped/Dockerfile
+          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/requirements.in
           echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
-          cd oss/airbyte-connector-atelier-server
+          cd oss/airbyte-connector-builder-server
           pip install pip-tools
           pip-compile --upgrade
       - name: Create Pull Request
@@ -307,7 +308,7 @@ jobs:
           commit-message: Updating CDK version following release
           title: Updating CDK version following release
           body: This is an automatically generated PR triggered by a CDK release
-          branch: automatic-cdk-release-${{needs.bump-version.outputs.new_cdk_version}}
+          branch: automatic-cdk-release
           base: master
           delete-branch: true
       - name: Post success to Slack channel dev-connectors-extensibility
