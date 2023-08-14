@@ -16,7 +16,7 @@ data:
   icon: lemlist.svg
   license: MIT
   name: Lemlist
-  releaseDate: TODO
+  releaseDate: "2021-10-14"
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/lemlist
