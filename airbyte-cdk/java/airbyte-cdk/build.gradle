@@ -56,11 +56,11 @@ publishToMavenLocal {
 }
 
 // This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
-task publishLocalCdkSnapshot {}
+task publishSnapshotIfNeeded {}
 
 if (version.endsWith("-SNAPSHOT")) {
     logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
-    publishLocalCdkSnapshot.dependsOn publishToMavenLocal
+    publishSnapshotIfNeeded.dependsOn publishToMavenLocal
 } else {
     logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
 }

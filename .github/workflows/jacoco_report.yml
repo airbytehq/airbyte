@@ -19,9 +19,8 @@ jobs:
           java-version: "17"
 
       - name: Publish CDK to MavenLocal
-        # Note: This is a no-op if the CDK is not using a snapshot version.
         run: |
-          ./gradlew :airbyte-cdk:java:airbyte-cdk:publishLocalCdkSnapshot
+          ./gradlew :airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded
 
       - name: Run Coverage
         run: |

@@ -94,7 +94,7 @@ class GradleTask(Step, ABC):
         )
         if self.with_java_cdk_snapshot:
             connector_under_test = connector_under_test.with_exec(
-                ["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishLocalCdkSnapshot"]
+                ["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"]
             )
         connector_under_test = connector_under_test.with_exec(self._get_gradle_command())
 
