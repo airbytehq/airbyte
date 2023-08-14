@@ -30,12 +30,12 @@ definitions:
       type: RequestOption
     pagination_strategy:
       type: OffsetIncrement
-      page_size: "{{ parameters.page_size }}"
+      page_size: 25
 
   base_retriever:
     type: SimpleRetriever
     paginator:
-        $ref: "#/definitions/offset_increment_paginator"
+      $ref: "#/definitions/offset_increment_paginator"
     record_selector:
       $ref: "#/definitions/selector"
 
@@ -69,7 +69,6 @@ definitions:
       name: "audit"
       path: "audit"
       primary_key: "author"
-      page_size: '1000'
 
   blogposts_stream:
     $ref: "#/definitions/base_stream"
@@ -85,7 +84,6 @@ definitions:
       name: "blog_posts"
       path: content
       primary_key: id
-      page_size: '25'
 
   group_stream:
     $ref: "#/definitions/base_stream"
@@ -98,7 +96,6 @@ definitions:
       name: "group"
       path: "group"
       primary_key: id
-      page_size: '50'
 
   pages_stream:
     $ref: "#/definitions/base_stream"
@@ -114,7 +111,6 @@ definitions:
       name: "pages"
       path: "content"
       primary_key: id
-      page_size: '25'
 
   space_stream:
     $ref: "#/definitions/base_stream"
@@ -128,7 +124,6 @@ definitions:
       name: "space"
       path: "space"
       primary_key: id
-      page_size: '50'
 
 streams:
   - "#/definitions/audit_stream"
