@@ -40,7 +40,7 @@ You can iterate on changes in the CDK local and test them in the connector witho
 
 When modifying the CDK and a connector in the same PR or branch, please use the following steps:
 
-1. Set the version of the SDK in `version.properties` to the next appropriate version number, along with a `-SNAPSHOT` suffix, as explained above.
+1. Set the version of the CDK in `version.properties` to the next appropriate version number, along with a `-SNAPSHOT` suffix, as explained above.
 1. In your connector project, modify the `build.gradle` to use the _new_ local CDK version with the `-SNAPSHOT` suffix, as explained above.
 1. Build and test your connector as usual. Gradle will automatically build the snapshot version of the CDK, and it will use this version when building and testing your connector.
 1. As you make additional changes to the CDK, Gradle will automatically rebuild and republish the CDK locally in order to incorporate the latest changes.
