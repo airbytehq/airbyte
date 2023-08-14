@@ -93,6 +93,15 @@ class Nettbutikk24Stream(HttpStream, ABC):
             }
         )
 
+class Customers(Nettbutikk24Stream):
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        self.update_uri_params(next_page_token, stream_state)
+        return "orders/{limit}/{offset}".format_map(self.uri_params)
+
 
 class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
     state_checkpoint_interval = 1
@@ -124,6 +133,7 @@ class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
         new_stream_state = min(int(pendulum.now().timestamp()), new_stream_state)
 
         return {self.cursor_field: new_stream_state}
+    
 
 
 class Products(IncrementalNettbutikk24Stream):
@@ -160,6 +170,7 @@ class Orders(IncrementalNettbutikk24Stream):
         self.update_uri_params(next_page_token, stream_state)
         return "orders/{limit}/{offset}/{since}".format_map(self.uri_params)
 
+'''
 class Customers(IncrementalNettbutikk24Stream):
     primary_key = "id"
 
@@ -168,6 +179,7 @@ class Customers(IncrementalNettbutikk24Stream):
     ) -> str:
         self.update_uri_params(next_page_token, stream_state)
         return "orders/{limit}/{offset}".format_map(self.uri_params)
+'''
 
 class SourceNettbutikk24(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
