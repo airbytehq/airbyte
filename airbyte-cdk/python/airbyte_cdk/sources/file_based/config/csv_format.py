@@ -20,7 +20,6 @@ class QuotingBehavior(Enum):
 class InferenceType(Enum):
     NONE = "None"
     PRIMITIVE_TYPES_ONLY = "Primitive Types Only"
-    PRIMITIVE_AND_COMPLEX_TYPES = "Primitive and Complex Types"
 
 
 DEFAULT_TRUE_VALUES = ["y", "yes", "t", "true", "on", "1"]
@@ -114,7 +113,7 @@ class CsvFormat(BaseModel):
 
     @validator("escape_char")
     def validate_escape_char(cls, v: str) -> str:
-        if len(v) != 1:
+        if v is not None and len(v) != 1:
             raise ValueError("escape_char should only be one character")
         return v
 

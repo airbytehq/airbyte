@@ -12,7 +12,7 @@ import mock
 import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
-from source_hubspot.errors import HubspotAccessDenied, HubspotRateLimited, InvalidStartDateConfigError
+from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream
@@ -179,11 +179,11 @@ def test_stream_forbidden(requests_mock, config, caplog):
         }
     )
 
-    with pytest.raises(HubspotAccessDenied):
-        records = list(SourceHubspot().read(logger, config, catalog, {}))
-        assert json["message"] in caplog.text
-        records = [r for r in records if r.type == Type.RECORD]
-        assert not records
+    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
+    records = [r for r in records if r.type == Type.RECORD]
+    assert not records
 
 
 def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list):
@@ -220,11 +220,11 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
         }
     )
 
-    with pytest.raises(HubspotAccessDenied):
-        records = list(SourceHubspot().read(logger, config, catalog, {}))
-        assert json["message"] in caplog.text
-        records = [r for r in records if r.type == Type.RECORD]
-        assert not records
+    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
+    records = [r for r in records if r.type == Type.RECORD]
+    assert not records
 
 
 class TestSplittingPropertiesFunctionality:
