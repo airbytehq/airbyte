@@ -67,10 +67,9 @@ class Cursor(DefaultFileBasedCursor):
         """
         converted_history = {}
 
-        timestamp = datetime.strptime(legacy_state[Cursor.CURSOR_FIELD], Cursor.LEGACY_DATE_TIME_FORMAT)
+        cursor_datetime = datetime.strptime(legacy_state[Cursor.CURSOR_FIELD], Cursor.LEGACY_DATE_TIME_FORMAT)
         for date_str, filenames in legacy_state.get("history", {}).items():
-            datetime_obj = datetime.strptime(date_str, Cursor.DATE_FORMAT)
-            datetime_obj = Cursor._get_adjusted_date_timestamp(timestamp, datetime_obj)
+            datetime_obj = Cursor._get_adjusted_date_timestamp(cursor_datetime, datetime.strptime(date_str, Cursor.DATE_FORMAT))
 
             for filename in filenames:
                 if filename in converted_history:
@@ -81,8 +80,8 @@ class Cursor(DefaultFileBasedCursor):
 
         if converted_history:
             filename, _ = max(converted_history.items(), key=lambda x: (x[1], x[0]))
-            cursor = f"{timestamp}_{filename}"
-            v3_min_sync_dt = timestamp - timedelta(hours=1)
+            cursor = f"{cursor_datetime}_{filename}"
+            v3_min_sync_dt = cursor_datetime - timedelta(hours=1)
         else:
             # If there is no history, _is_legacy_state should return False, so we should never get here
             raise ValueError("No history found in state message. This is likely due to a bug in the connector. Please contact support.")
