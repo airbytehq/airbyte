@@ -145,6 +145,12 @@ class SourceGoogleAds(AbstractSource):
             ):
                 message = f"Failed to access the customer '{exception.customer_id}'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
+            query_errors = [x for x in exception.failure.errors if x.error_code.query_error]
+            if query_errors:
+                message = f"Incorrect queries :{[x.message for x in query_errors]}"
+                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
             error_messages = ", ".join([error.message for error in exception.failure.errors])
             logger.error(traceback.format_exc())
             return False, f"Unable to connect to Google Ads API with the provided configuration - {error_messages}"
