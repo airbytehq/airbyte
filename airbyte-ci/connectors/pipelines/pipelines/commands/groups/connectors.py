@@ -11,7 +11,7 @@ from typing import List, Set, Tuple
 
 import anyio
 import click
-from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo
+from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo, SupportLevelEnum
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.builds import run_connector_build_pipeline
@@ -127,7 +127,7 @@ def get_selected_connectors_with_modified_files(
     "support_levels",
     multiple=True,
     help="Filter connectors to test by support_level.",
-    type=click.Choice(["community", "certified"]),
+    type=click.Choice(SupportLevelEnum),
 )
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
 @click.option(

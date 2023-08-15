@@ -6,18 +6,9 @@
 from datetime import datetime
 from enum import Enum
 from typing import List
-
 from pydantic import BaseModel, Field
 
-
-class ConnectorTypeEnum(str, Enum):
-    source = "source"
-    destination = "destination"
-
-class SupportLevelEnum(str, Enum):
-    certified = "certified"
-    community = "community"
-    unknown = "unknown"
+from connector_ops.connector_ops.utils import ConnectorTypeEnum, SupportLevelEnum
 
 
 PUBLIC_FIELD = Field(..., is_public=True)

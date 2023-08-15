@@ -9,33 +9,12 @@ import yaml
 
 from connector_ops import utils
 
-HIGH_TEST_STRICTNESS_LEVEL_THRESHOLD = {
-    "sl": 300,
-    "ql": 400,
-}
+
 BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibility"}
 TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-operations"}
 GA_BYPASS_REASON_REVIEWERS = {"connector-operations"}
 GA_CONNECTOR_REVIEWERS = {"gl-python"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
-
-def is_important_connector(connector: utils.Connector) -> bool:
-    """Check if a connector requires higher scrutiny.
-
-    Args:
-        connector (utils.Connector): The connector to check.
-
-    Returns:
-        bool: True if the connector requires high test strictness level, False otherwise.
-    """
-    if connector.ab_internal_sl >= HIGH_TEST_STRICTNESS_LEVEL_THRESHOLD["sl"]:
-        return True
-
-    if connector.ab_internal_ql >= HIGH_TEST_STRICTNESS_LEVEL_THRESHOLD["ql"]:
-        return True
-
-    return False
-
 
 def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
     """Check if changed connectors have the expected connector acceptance test strictness level according to their release stage.
@@ -50,8 +29,7 @@ def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
     connectors_with_bad_strictness_level = []
     changed_connector = utils.get_changed_connectors(destination=False, third_party=False)
     for connector in changed_connector:
-        requires_high_test_strictness_level = is_important_connector(connector)
-        check_for_high_strictness = connector.acceptance_test_config is not None and requires_high_test_strictness_level
+        check_for_high_strictness = connector.acceptance_test_config is not None and connector.requires_high_test_strictness_level
         if check_for_high_strictness:
             try:
                 assert connector.acceptance_test_config.get("test_strictness_level") == "high"
@@ -67,7 +45,7 @@ def find_changed_important_connectors() -> Set[utils.Connector]:
         Set[utils.Connector]: The set of GA connectors that were modified on the current branch.
     """
     changed_connectors = utils.get_changed_connectors(destination=False, third_party=False)
-    return {connector for connector in changed_connectors if is_important_connector(connector)}
+    return {connector for connector in changed_connectors if connector.is_important_connector}
 
 
 def get_bypass_reason_changes() -> Set[utils.Connector]:

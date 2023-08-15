@@ -46,6 +46,11 @@ OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
 ICON_FILE_NAME = "icon.svg"
 
+IMPORTANT_CONNECTOR_THRESHOLDS = {
+    "sl": 300,
+    "ql": 400,
+}
+
 
 class ConnectorInvalidNameError(Exception):
     pass
@@ -315,6 +320,30 @@ class Connector:
         return ql_value
 
     @property
+    def is_important_connector(self) -> bool:
+        """Check if a connector qualifies as an important connector.
+
+        Returns:
+            bool: True if the connector is a high value connector, False otherwise.
+        """
+        if self.ab_internal_sl >= IMPORTANT_CONNECTOR_THRESHOLDS["sl"]:
+            return True
+
+        if self.ab_internal_ql >= IMPORTANT_CONNECTOR_THRESHOLDS["ql"]:
+            return True
+
+        return False
+
+    @property
+    def requires_high_test_strictness_level(self) -> bool:
+        """Check if a connector requires high strictness CAT tests.
+
+        Returns:
+            bool: True if the connector requires high test strictness level, False otherwise.
+        """
+        return self.is_important_connector()
+
+    @property
     def allowed_hosts(self) -> Optional[List[str]]:
         return self.metadata.get("allowedHosts") if self.metadata else None
 
@@ -404,3 +433,11 @@ def get_all_connectors_in_repo() -> Set[Connector]:
         for metadata_file in glob(f"{repo_path}/airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
         if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
     }
+
+class ConnectorTypeEnum(str, Enum):
+    source = "source"
+    destination = "destination"
+
+class SupportLevelEnum(str, Enum):
+    certified = "certified"
+    community = "community"
