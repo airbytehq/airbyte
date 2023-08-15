@@ -12,7 +12,6 @@ version = props.getProperty('version')
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
 repositories {
-    mavenLocal()
     mavenCentral()
 }
 
