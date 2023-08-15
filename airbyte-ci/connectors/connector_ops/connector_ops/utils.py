@@ -51,6 +51,10 @@ IMPORTANT_CONNECTOR_THRESHOLDS = {
     "ql": 400,
 }
 
+ALLOWED_HOST_THRESHOLD = {
+    "ql": 300,
+}
+
 
 class ConnectorInvalidNameError(Exception):
     pass
@@ -345,6 +349,15 @@ class Connector:
             bool: True if the connector requires high test strictness level, False otherwise.
         """
         return self.ab_internal_ql >= IMPORTANT_CONNECTOR_THRESHOLDS["ql"]
+
+    @property
+    def requires_allowed_hosts_check(self) -> bool:
+        """Check if a connector requires allowed hosts.
+
+        Returns:
+            bool: True if the connector requires allowed hosts, False otherwise.
+        """
+        return self.ab_internal_ql >= ALLOWED_HOST_THRESHOLD["ql"]
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:
