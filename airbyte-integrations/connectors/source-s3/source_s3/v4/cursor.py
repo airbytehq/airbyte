@@ -49,7 +49,6 @@ class Cursor(DefaultFileBasedCursor):
         Else, if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
         Else, sync according to the default logic
         """
-        # When upgrading from v3 to v4, we want to sync all files that were modified within one hour of the last sync
         if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
             return False
         elif self._running_migration:
