@@ -51,7 +51,7 @@ def with_step_context(func):
                         "technical_name": connector.technical_name,
                         "language": connector.language,
                         "version": connector.version,
-                        "release_stage": connector.release_stage,
+                        "support_level": connector.support_level,
                     },
                 )
 
