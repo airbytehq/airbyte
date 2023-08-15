@@ -11,10 +11,6 @@ file("src/main/resources/version.properties").withInputStream { props.load(it) }
 version = props.getProperty('version')
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
 }
