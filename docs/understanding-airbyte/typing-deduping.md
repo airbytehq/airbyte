@@ -15,7 +15,7 @@ At launch, [Airbyte Destinations V2](/release_notes/upgrading_to_destinations_v2
 
 ## `_airbyte_meta` Errors
 
-"Per-row error handling" is a new paradigm for Airbyte which provides greater flexibility for our users.  Airbyte now separates `data-moving problems` from `data-content problems`. Prior to Destinations V2, both types of errors were handled the same way: by failing the sync. Now, a failing sync meas that Airbyte could not _move_ all of your data, and you can query the `_airbyte_meta` column to see which rows failed for _content_ reasons, and why. This is a more flexible approach, as you can now decide how to handle rows with errors on a case-by-case basis.
+"Per-row error handling" is a new paradigm for Airbyte which provides greater flexibility for our users.  Airbyte now separates `data-moving problems` from `data-content problems`. Prior to Destinations V2, both types of errors were handled the same way: by failing the sync. Now, a failing sync means that Airbyte could not _move_ all of your data. You can query the `_airbyte_meta` column to see which rows failed for _content_ reasons, and why. This is a more flexible approach, as you can now decide how to handle rows with errors on a case-by-case basis.
 
 :::tip
 When using data downstream from Airbyte, we generally recommend you only include rows which do not have an error, e.g:
