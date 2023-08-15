@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from datetime import datetime, timezone
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, Optional
 from unittest.mock import Mock
 
 import pytest
@@ -142,7 +142,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
 
 
 @pytest.mark.parametrize(
-    "input_state, all_files, expected_files_to_sync",
+    "input_state, all_files, expected_files_to_sync, max_history_size",
     [
         pytest.param(
             {
@@ -153,6 +153,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
             },
             [RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
             [RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
+            None,
             id="only_one_file_that_was_synced_exactly_at_midnight",
         ),
         pytest.param(
@@ -170,6 +171,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
             [
                 RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T06:00:00.000000Z")),
             ],
+            None,
             id="do_not_sync_files_last_updated_on_a_previous_date",
         ),
         pytest.param(
@@ -188,6 +190,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                 RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T23:00:01.000000Z")),
                 RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z")),
             ],
+            None,
             id="sync_files_last_updated_within_one_hour_of_cursor",
         ),
         pytest.param(
@@ -205,6 +208,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                 RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
                 RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T02:00:00.000000Z")),
             ],
+            None,
             id="sync_files_last_updated_within_one_hour_of_cursor_on_same_day",
         ),
         pytest.param(
@@ -221,6 +225,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
             [
                 RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T06:00:00.000000Z")),
             ],
+            None,
             id="do_not_sync_files_last_modified_earlier_than_one_hour_before_cursor_on_same_day",
         ),
         pytest.param(
@@ -233,6 +238,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                 RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
                 RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T06:00:00.000000Z")),
             ],
+            None,
             id="no_state",
         ),
         pytest.param(
@@ -250,6 +256,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                 RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
             ],
             [],
+            None,
             id="input_state_is_v4_no_new_files",
         ),
         pytest.param(
@@ -268,6 +275,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                 RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z")),
             ],
             [RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z"))],
+            None,
             id="input_state_is_v4_with_new_file_later_than_cursor",
         ),
         pytest.param(
@@ -286,6 +294,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                 RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z")),
             ],
             [RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
+            None,
             id="input_state_is_v4_with_new_file_earlier_than_cursor",
         ),
         pytest.param(
@@ -305,6 +314,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                 RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z")),
             ],
             [],
+            None,
             id="input_state_is_v4_with_a_new_file_earlier_than_migration_start_datetime",
         ),
         pytest.param(
@@ -314,7 +324,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                     "file2.txt": "2023-08-01T10:11:12.000000Z",
                     "file3.txt": "2023-07-31T23:59:59.999999Z",
                 },
-                # "v3_min_sync_date": "2023-07-01T00:00:00.000000Z",
+                "v3_min_sync_date": "2023-07-01T00:00:00.000000Z",
                 "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
             },
             [
@@ -324,12 +334,54 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                 RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z")),
             ],
             [RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z"))],
+            None,
             id="input_state_is_v4_with_a_new_file_later_than_migration_start_datetime",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "v3_min_sync_date": "2023-07-16T00:00:00.000000Z",
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
+                RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z")),
+            ],
+            [],
+            3,
+            id="input_state_is_v4_history_is_full_but_new_file_is_earlier_than_v3_min_sync_date",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "v3_min_sync_date": "2023-07-01T00:00:00.000000Z",
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
+                RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z")),
+            ],
+            [],  # file0.txt is not synced. It was presumably synced by v4 because its timestamp is later than v3_min_sync_date,
+            # but it was kicked from the history because it was not in the top 3 most recently modified files.
+            3,
+            id="input_state_is_v4_history_is_full_and_new_file_is_later_than_v3_min_sync_date",
         ),
     ],
 )
-def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync):
-    cursor = _init_cursor_with_state(input_state)
+def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync, max_history_size):
+    cursor = _init_cursor_with_state(input_state, max_history_size)
     files_to_sync = list(cursor.get_files_to_sync(all_files, Mock()))
     assert files_to_sync == expected_files_to_sync
 
@@ -422,7 +474,9 @@ def test_get_adjusted_date_timestamp(cursor_datetime, file_datetime, expected_ad
     assert adjusted_datetime == expected_adjusted_datetime
 
 
-def _init_cursor_with_state(input_state) -> Cursor:
+def _init_cursor_with_state(input_state, max_history_size: Optional[int] = None) -> Cursor:
     cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
     cursor.set_initial_state(input_state)
+    if max_history_size is not None:
+        cursor.DEFAULT_MAX_HISTORY_SIZE = max_history_size
     return cursor
