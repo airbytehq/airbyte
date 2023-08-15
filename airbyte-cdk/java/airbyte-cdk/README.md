@@ -76,3 +76,18 @@ Note:
 - This is documented as a manual process, but we will automate it into a CI workflow.
 - You can view and administer published CDK versions here: https://admin.cloudrepo.io/repository/airbyte-public-jars/io/airbyte/airbyte-cdk
 - The corresponding public endpoint for published CDK versions is here: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/airbyte-cdk/
+
+## Debugging
+
+MavenLocal debugging steps:
+
+1. Confirm local publish status by running:
+   `ls -la ~/.m2/repository/io/airbyte/airbyte-cdk\*`
+2. Confirm jar contents by running:
+   `jar tf ~/.m2/repository/io/airbyte/airbyte-cdk/0.0.2-SNAPSHOT/airbyte-cdk-0.0.2-SNAPSHOT.jar`
+3. Remove CDK artifacts from MavenLocal by running:
+   `rm -rf ~/.m2/repository/io/airbyte/airbyte-cdk\*`
+4. Rebuid CDK artifacts by running:
+   `./gradlew :airbyte-cdk:java:airbyte-cdk:build`
+   or
+   `./gradlew :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal`
