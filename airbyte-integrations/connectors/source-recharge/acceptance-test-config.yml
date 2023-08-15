@@ -35,7 +35,7 @@ acceptance_tests:
   discovery:
     tests:
     - backward_compatibility_tests_config:
-        disable_for_version: 0.2.0
+        disable_for_version: 0.2.10
       config_path: secrets/config.json
   full_refresh:
     tests:

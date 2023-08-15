@@ -20,7 +20,7 @@ A great place to start looking will be our GitHub projects for:
 Due to project priorities, we may not be able to accept all contributions at this time. 
 We are prioritizing the following contributions: 
 * Bug fixes, features, and enhancements to existing API source connectors
-* New connector sources and destinations built with the Python CDK, with a preference for low and no-code CDK, as these connectors are easier to maintain
+* New connector sources built with the Low-Code CDK and Connector Builder, as these connectors are easier to maintain.
 * Bug fixes, features, and enhancements to the following database sources: MongoDB, Postgres, MySQL, MSSQL
 * Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres
 * Helm Charts features, bug fixes, and other platform bug fixes

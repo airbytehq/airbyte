@@ -40,6 +40,7 @@ from .streams import (
     TicketMetrics,
     Tickets,
     TicketSkips,
+    Topics,
     Users,
     UserSettingsStream,
 )
@@ -63,7 +64,7 @@ class SourceZendeskSupport(AbstractSource):
     """
 
     @classmethod
-    def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
+    def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
 
         # old authentication flow support
         auth_old = config.get("auth_method")
@@ -140,6 +141,7 @@ class SourceZendeskSupport(AbstractSource):
             TicketMetricEvents(**args),
             TicketSkips(**args),
             Tickets(**args),
+            Topics(**args),
             Users(**args),
             Brands(**args),
             CustomRoles(**args),

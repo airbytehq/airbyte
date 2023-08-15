@@ -11,6 +11,8 @@ import static org.mockito.Mockito.mock;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
@@ -26,6 +28,8 @@ class GcsAvroWriterTest {
 
   @Test
   public void generatesCorrectObjectPath() throws IOException {
+    DestinationConfig.initialize(Jsons.deserialize("{}"));
+
     final GcsAvroWriter writer = new GcsAvroWriter(
         new GcsDestinationConfig(
             "fake-bucket",

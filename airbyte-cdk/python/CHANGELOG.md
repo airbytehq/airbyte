@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.51.0
+File-based CDK: handle legacy options
+
+## 0.50.2
+Fix title and description of datetime_format fields
+
+## 0.50.1
+File-based CDK cursor and entrypoint updates
+
+## 0.50.0
+Low code CDK: Decouple SimpleRetriever and HttpStream
+
+## 0.49.0
+Add utils for embedding sources in other Python applications
+
+## 0.48.0
+Relax pydantic version requirement and update to protocol models version 0.4.0
+
+## 0.47.5
+Support many format for cursor datetime
+
+## 0.47.4
+File-based CDK updates
+
+## 0.47.3
+Connector Builder: Ensure we return when there are no slices
+
+## 0.47.2
+low-code: deduplicate query params if they are already encoded in the URL
+
+## 0.47.1
+Fix RemoveFields transformation issue
+
+## 0.47.0
+Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
+
+## 0.46.1
+Connector builder: warn if the max number of records was reached
+
+## 0.46.0
+Remove pyarrow from main dependency and add it to extras
+
+## 0.45.0
+Fix pyyaml and cython incompatibility
+
+## 0.44.4
+Connector builder: Show all request/responses as part of the testing panel
+
 ## 0.44.3
 [ISSUE #27494] allow for state to rely on transformed field
 

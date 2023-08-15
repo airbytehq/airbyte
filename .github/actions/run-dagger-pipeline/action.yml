@@ -47,6 +47,9 @@ inputs:
     description: "Bucket name for metadata service"
     required: false
     default: "prod-airbyte-cloud-connector-metadata-service"
+  sentry_dsn:
+    description: "Sentry DSN"
+    required: false
   spec_cache_bucket_name:
     description: "Bucket name for GCS spec cache"
     required: false
@@ -57,10 +60,6 @@ inputs:
   gcs_credentials:
     description: "GCP credentials for GCS"
     required: false
-  dagger_cli_commit:
-    description: "Commit SHA of dagger-cli to use"
-    required: false
-    default: "6ed6264f1c4efbf84d310a104b57ef1bc57d57b0"
   ci_job_key:
     description: "CI job key"
     required: false
@@ -91,19 +90,15 @@ runs:
         token: ${{ inputs.github_token }}
     - name: Install ci-connector-ops package
       shell: bash
-      run: pip install --quiet -e ./tools/ci_connector_ops\[pipelines]\
+      run: |
+        pip install pipx
+        pipx ensurepath
+        pipx install airbyte-ci/connectors/pipelines/
     - name: Run airbyte-ci
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-        DAGGER_CLI_COMMIT=${{ inputs.dagger_cli_commit }}
-        DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
-        export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
-        if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
-          mkdir -p "$DAGGER_TMP_BINDIR"
-          curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
-        fi
-        airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+        airbyte-ci-internal --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
         CI_CONTEXT: "${{ inputs.context }}"
@@ -119,6 +114,7 @@ runs:
         METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata_service_gcs_credentials }}
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        SENTRY_DSN: ${{ inputs.sentry_dsn }}
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}

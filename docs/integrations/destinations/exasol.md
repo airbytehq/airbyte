@@ -16,15 +16,15 @@ Each Airbyte Stream becomes an Exasol table and each Airbyte Field becomes an Ex
 
 The Exasol destination supports the following features:
 
-| Feature                       | Supported? (Yes/No) | Notes |
-| :---------------------------- | :------------------ | :---- |
-| Full Refresh Sync             | Yes                 |       |
-| Incremental - Append Sync     | Yes                 |       |
-| Incremental - Deduped History | No                  |       |
-| Normalization                 | No                  |       |
-| Namespaces                    | Yes                 |       |
-| SSL connection                | Yes                 | TLS   |
-| SSH Tunnel Support            | No                  |       |
+| Feature                        | Supported? (Yes/No) | Notes |
+| :----------------------------- | :------------------ | :---- |
+| Full Refresh Sync              | Yes                 |       |
+| Incremental - Append Sync      | Yes                 |       |
+| Incremental - Append + Deduped | No                  |       |
+| Normalization                  | No                  |       |
+| Namespaces                     | Yes                 |       |
+| SSL connection                 | Yes                 | TLS   |
+| SSH Tunnel Support             | No                  |       |
 
 ### Limitations
 
