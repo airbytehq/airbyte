@@ -46,8 +46,8 @@ class Cursor(DefaultFileBasedCursor):
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         """
         Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
-        Else, if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
-        Else, sync according to the default logic
+        Else if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
+        Else sync according to the default logic
         """
         if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
             return False
