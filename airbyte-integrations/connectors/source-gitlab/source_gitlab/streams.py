@@ -416,4 +416,5 @@ class Deployments(GitlabChildStream):
         record["user_username"] = record["user"]["username"]
         record["user_full_name"] = record["user"]["name"]
         record["environment_name"] = record["environment"]["name"]
+        record["project_id"] = stream_slice["id"]
         return record

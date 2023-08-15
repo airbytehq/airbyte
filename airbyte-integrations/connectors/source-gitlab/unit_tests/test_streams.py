@@ -6,7 +6,7 @@ import datetime
 
 import pytest
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_gitlab.streams import Branches, Commits, Jobs, MergeRequestCommits, MergeRequests, Pipelines, Projects, Releases, Tags
+from source_gitlab.streams import Branches, Commits, Deployments, Jobs, MergeRequestCommits, MergeRequests, Pipelines, Projects, Releases, Tags
 
 auth_params = {"authenticator": NoAuth(), "api_url": "gitlab.com"}
 start_date = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14)
@@ -43,7 +43,7 @@ def jobs(pipelines):
 
 
 @pytest.fixture()
-def deployments(deployments):
+def deployments(projects):
     return Deployments(parent_stream=projects, **auth_params)
 
 
@@ -142,6 +142,23 @@ test_cases = (
             ),
         ),
         [{"author": {"id": "666", "name": "John"}, "author_id": "666", "commit": {"id": "abcd689"}, "commit_id": "abcd689", "id": "r_1", "milestones": ["m1", "m2"], "project_id": "p_1"}]
+    ),
+    (
+        "deployments",
+        (
+            (
+                "/api/v4/projects/p_1/deployments",
+                [
+                    {
+                        "id": "r_1",
+                        "user": {"name": "John", "id": "666", "username": "john"},
+                        "environment": {"name": "dev"},
+                        "commit": {"id": "abcd689"},
+                    }
+                ],
+            ),
+        ),
+        [{"id": "r_1", "user": {"name": "John", "id": "666", "username": "john"}, "environment": {"name": "dev"}, "commit": {"id": "abcd689"}, "user_id": "666", "environment_id": None, "user_username": "john", "user_full_name": "John", "environment_name": "dev", "project_id": "p_1"}]
     ),
     (
         "merge_request_commits",

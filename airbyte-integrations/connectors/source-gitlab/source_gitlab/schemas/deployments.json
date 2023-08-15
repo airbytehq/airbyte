@@ -44,6 +44,9 @@
     },
     "environment_id": {
       "type": ["null", "integer"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
     }
   }
 }
