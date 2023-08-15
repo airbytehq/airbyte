@@ -93,40 +93,27 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public void markPendingAsCommitted(final AirbyteStreamNameNamespacePair stream) {
+    // extremely hacky solution for specific connection:
     // Handle the case where the connection is configured to use a custom namespace. In this case, the records' namespace
     // will be set to that override, but the streams' namespace will still be the source's original namespace.
     // We need to match purely on the stream name.
-    // TODO handle stream name prefixes (i.e. use endsWith instead of equals)
     // This is a hack to work around https://github.com/airbytehq/airbyte-platform-internal/pull/8365.
+    // There are many cases that this code does not handle. edgao to submit other issues for those cases.
     final List<Entry<StreamDescriptor, AirbyteMessage>> matchingStates = streamToLastPendingState.entrySet().stream()
         .filter(entry -> entry.getKey().getName().equals(stream.getName()))
         .toList();
-    final StreamDescriptor streamToCommit;
     if (matchingStates.size() > 1) {
-      // Multiple streams have this name. Check if any of them have the right namespace.
-      final Optional<Entry<StreamDescriptor, AirbyteMessage>> matchingState = matchingStates.stream()
-          .filter(entry -> entry.getKey().getNamespace().equals(stream.getNamespace()))
-          .findFirst();
-      streamToCommit = matchingState.map(Entry::getKey).orElse(null);
-    } else if (matchingStates.isEmpty()) {
-      // None of the states match this stream. We can't commit anything.
-      streamToCommit = null;
-    } else {
-      // Exactly one stream has this name. Assume that we can commit it.
-      // This is technically wrong: it's possible for a source to emit these messages:
-      // 1. record(name=foo, namespace=bar)
-      // 2. state(name=foo, namespace=baz)
-      // But in practice, sources will emit records and states belonging to the same stream. And having multiple streams
-      // with the same but different namespace is relatively uncommon...
-      streamToCommit = matchingStates.get(0).getKey();
-    }
-
-    if (streamToCommit != null) {
+      // This is technically possible, but the connection in question doesn't do it.
+      throw new IllegalStateException("Multiple streams with the same name but different namespaces. This is not supported.");
+    } else if (!matchingStates.isEmpty()) {
+      // We found our stream.
+      final StreamDescriptor streamToCommit = matchingStates.get(0).getKey();
       final AirbyteMessage lastPendingState = streamToLastPendingState.remove(streamToCommit);
       if (lastPendingState != null) {
         streamToLastCommittedState.put(streamToCommit, lastPendingState);
       }
     }
+    // None of the states match this stream. We can't commit anything. This is weird, but not an error.
   }
 
   @Override
