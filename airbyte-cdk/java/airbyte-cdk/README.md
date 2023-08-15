@@ -91,3 +91,12 @@ MavenLocal debugging steps:
    `./gradlew :airbyte-cdk:java:airbyte-cdk:build`
    or
    `./gradlew :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal`
+
+## Changelog
+
+### Java CDK
+
+| Version | Date       | Pull Request                                               | Subject                               |
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------ |
+| 0.0.2   | 2023-08-16 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Version bump only (no other changes). |
+| 0.0.1   | 2023-08-08 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Initial release for testing.          |
