@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import ClassVar, List, Tuple
+from typing import ClassVar, Tuple
 
 from dagger import CacheVolume, Container, Directory, QueryError
 
@@ -27,6 +27,7 @@ class GradleTask(Step, ABC):
     DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
+    gradle_task_options: Tuple[str, ...] = ()
 
     def __init__(
             self, context: PipelineContext,
@@ -69,11 +70,12 @@ class GradleTask(Step, ABC):
         )
         return build_src_dir.with_new_file("src/main/groovy/airbyte-connector-acceptance-test.gradle", contents=cat_gradle_plugin_content)
 
-    def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon", "--scan", "--build-cache")) -> List:
+    def _get_gradle_command(self, extra_options: Tuple[str, ...] = ("--no-daemon", "--scan", "--build-cache")) -> List:
         command = (
             ["./gradlew"]
             + list(extra_options)
             + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"]
+            + list(self.gradle_task_options)
         )
         for task in self.DEFAULT_TASKS_TO_EXCLUDE:
             command += ["-x", task]
