@@ -79,7 +79,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public AirbyteMessage next() {
-    if ((count > 0 && count % batchSize == 0) || finalStateNext) {
+    if (shouldContinue() || finalStateNext) {
       count = 0;
 
       final var streamState = new AirbyteStreamState()
@@ -114,4 +114,15 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
             .withData(jsonNode));
   }
 
+  private boolean shouldContinue() {
+    if (count > 0) {
+      if (batchSize > 0) {
+        return count % batchSize == 0;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
 }
