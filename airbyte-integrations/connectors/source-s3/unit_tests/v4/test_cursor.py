@@ -56,6 +56,6 @@ from source_s3.v4.cursor import Cursor
     ],
 )
 def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], expected_state: MutableMapping[str, Any]) -> None:
-    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Records"))
+    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
     cursor.set_initial_state(input_state)
     assert cursor.get_state() == expected_state
