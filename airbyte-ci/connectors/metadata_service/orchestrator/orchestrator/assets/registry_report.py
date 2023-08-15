@@ -226,8 +226,8 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
             "title": "Connector Type",
         },
         {
-            "column": "releaseStage_oss",
-            "title": "Release Stage",
+            "column": "supportLevel_oss",
+            "title": "Support Level",
         },
         {
             "column": "test_summary_url",
