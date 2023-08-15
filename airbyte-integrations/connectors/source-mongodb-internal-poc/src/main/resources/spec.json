@@ -47,6 +47,13 @@
         "type": "string",
         "description": "The name of the replica set to be replicated.",
         "order": 6
+      },
+      "fetch_size": {
+        "title": "Fetch Size",
+        "type": "number",
+        "description": "The maximum number of documents that should be read in one go from each collection for the initial snapshot.",
+        "default": 1000,
+        "order": 7
       }
     }
   }

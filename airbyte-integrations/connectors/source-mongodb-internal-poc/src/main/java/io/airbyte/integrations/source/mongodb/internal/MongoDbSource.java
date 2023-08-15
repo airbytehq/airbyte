@@ -5,10 +5,10 @@
 package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.FETCH_SIZE_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.mongodb.CursorType;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -105,9 +105,9 @@ public class MongoDbSource extends BaseConnector implements Source {
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
+                                                    final JsonNode state) {
     final var databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
+    final var fetchSize = config.has(FETCH_SIZE_CONFIGURATION_KEY) ? config.get(FETCH_SIZE_CONFIGURATION_KEY).asInt() : BATCH_SIZE;
     final var emittedAt = Instant.now();
 
     final var states = convertState(state);
@@ -117,7 +117,7 @@ public class MongoDbSource extends BaseConnector implements Source {
       final var database = mongoClient.getDatabase(databaseName);
       // TODO treat INCREMENTAL and FULL_REFRESH differently?
       return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(
-              convertCatalogToIterators(catalog, states, database, emittedAt),
+              convertCatalogToIterators(catalog, states, database, emittedAt, fetchSize),
               AirbyteTraceMessageUtility::emitStreamStatusTrace),
           mongoClient::close);
     } catch (final Exception e) {
@@ -164,7 +164,8 @@ public class MongoDbSource extends BaseConnector implements Source {
       final ConfiguredAirbyteCatalog catalog,
       final Map<String, MongodbStreamState> states,
       final MongoDatabase database,
-      final Instant emittedAt
+      final Instant emittedAt,
+      final Integer fetchSize
   ) {
     return catalog.getStreams()
         .stream()
@@ -195,10 +196,10 @@ public class MongoDbSource extends BaseConnector implements Source {
               .filter(filter)
               .projection(fields)
               .sort(Sorts.ascending("_id"))
-              .batchSize(BATCH_SIZE)
+              .batchSize(fetchSize)
               .cursor();
 
-          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, emittedAt, BATCH_SIZE);
+          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, emittedAt, fetchSize);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
