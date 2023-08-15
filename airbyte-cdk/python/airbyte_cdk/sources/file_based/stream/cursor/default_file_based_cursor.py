@@ -74,6 +74,9 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
         if file.uri in self._file_to_datetime_history:
             # If the file's uri is in the history, we should sync the file if it has been modified since it was synced
             updated_at_from_history = datetime.strptime(self._file_to_datetime_history[file.uri], self.DATE_TIME_FORMAT)
+            print(f"file: {file}")
+            print(f" file_to_datetime_history: {self._file_to_datetime_history[file.uri]}")
+            print(f"updated_at_from_history: {updated_at_from_history}")
             if file.last_modified < updated_at_from_history:
                 logger.warning(
                     f"The file {file.uri}'s last modified date is older than the last time it was synced. This is unexpected. Skipping the file."
