@@ -96,10 +96,11 @@ class LegacyConfigTransformer:
             if "autogenerate_column_names" in advanced_options:
                 csv_options["autogenerate_column_names"] = advanced_options["autogenerate_column_names"]
             return csv_options
+
         elif isinstance(format_options, JsonlFormat):
             return {"filetype": "jsonl"}
         elif isinstance(format_options, ParquetFormat):
-            return {"filetype": "parquet"}
+            return {"filetype": "parquet", "decimal_as_float": True}
         else:
             # This should never happen because it would fail schema validation
             raise ValueError(f"Format filetype {format_options} is not a supported file type")

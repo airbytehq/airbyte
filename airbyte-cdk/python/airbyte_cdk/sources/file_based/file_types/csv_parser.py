@@ -11,7 +11,7 @@ from functools import partial
 from io import IOBase
 from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional, Set
 
-from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, InferenceType, QuotingBehavior
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, InferenceType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
@@ -20,13 +20,6 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING, SchemaType
 
 DIALECT_NAME = "_config_dialect"
-
-config_to_quoting: Mapping[QuotingBehavior, int] = {
-    QuotingBehavior.QUOTE_ALL: csv.QUOTE_ALL,
-    QuotingBehavior.QUOTE_SPECIAL_CHARACTERS: csv.QUOTE_MINIMAL,
-    QuotingBehavior.QUOTE_NONNUMERIC: csv.QUOTE_NONNUMERIC,
-    QuotingBehavior.QUOTE_NONE: csv.QUOTE_NONE,
-}
 
 
 class _CsvReader:
@@ -50,7 +43,7 @@ class _CsvReader:
             quotechar=config_format.quote_char,
             escapechar=config_format.escape_char,
             doublequote=config_format.double_quote,
-            quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
+            quoting=csv.QUOTE_MINIMAL,
         )
         with stream_reader.open_file(file, file_read_mode, config_format.encoding, logger) as fp:
             headers = self._get_headers(fp, config_format, dialect_name)
