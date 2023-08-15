@@ -35,7 +35,21 @@ Based on the outcome of previous attempts, the number of permitted attempts per 
 * 10 total attempts where no data was synchronized
 * 10 total attempts where some data was synchronized
 
-For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md) for more details.
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+### Retry Backoff
+
+After an attempt where no data was synchronized, we implement a short backoff period before starting a new attempt. This will increase with each successive complete failure—a partially successful attempt will reset this value.
+
+Currently, Airbyte is configured to backoff with the following values:
+* 10 seconds after the first complete failure
+* 30 seconds after the second
+* 90 seconds after the third
+* 4 minutes and 30 seconds after the fourth
+
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+The duration of expected backoff between attempts can be viewed in the logs accessible from the job history UI.
 
 ## Worker Responsibilities
 
