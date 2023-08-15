@@ -20,14 +20,13 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                     "aws_secret_access_key": "some_secret",
                     "endpoint": "https://external-s3.com",
                     "path_prefix": "a_folder/",
-                    "start_date": "2022-01-01T01:02:03Z"
-
+                    "start_date": "2022-01-01T01:02:03Z",
                 },
                 "format": {
                     "filetype": "avro",
                 },
                 "path_pattern": "**/*.avro",
-                "schema": '{"col1": "string", "col2": "integer"}'
+                "schema": '{"col1": "string", "col2": "integer"}',
             },
             {
                 "bucket": "test_bucket",
@@ -42,13 +41,11 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "globs": ["a_folder/**/*.avro"],
                         "validation_policy": "Emit Record",
                         "input_schema": '{"col1": "string", "col2": "integer"}',
-                        "format": {
-                            "filetype": "avro"
-                        }
+                        "format": {"filetype": "avro"},
                     }
-                ]
-            }
-            , id="test_convert_legacy_config"
+                ],
+            },
+            id="test_convert_legacy_config",
         ),
         pytest.param(
             {
@@ -70,15 +67,13 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "file_type": "avro",
                         "globs": ["**/*.avro"],
                         "validation_policy": "Emit Record",
-                        "format": {
-                            "filetype": "avro"
-                        }
+                        "format": {"filetype": "avro"},
                     }
-                ]
-            }
-            , id="test_convert_no_optional_fields"
+                ],
+            },
+            id="test_convert_no_optional_fields",
         ),
-    ]
+    ],
 )
 def test_convert_legacy_config(legacy_config, expected_config):
     parsed_legacy_config = SourceS3Spec(**legacy_config)
@@ -101,8 +96,8 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "encoding": "ansi",
                 "double_quote": False,
                 "newlines_in_values": True,
-                "additional_reader_options": "{\"strings_can_be_null\": true}",
-                "advanced_options": "{\"skip_rows\": 3, \"skip_rows_after_names\": 5, \"autogenerate_column_names\": true}",
+                "additional_reader_options": '{"strings_can_be_null": true}',
+                "advanced_options": '{"skip_rows": 3, "skip_rows_after_names": 5, "autogenerate_column_names": true}',
                 "blocksize": 20000,
             },
             {
@@ -122,7 +117,8 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "autogenerate_column_names": True,
             },
             None,
-            id="test_csv_all_legacy_options_set"),
+            id="test_csv_all_legacy_options_set",
+        ),
         pytest.param(
             "csv",
             {
@@ -145,14 +141,15 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "strings_can_be_null": False,
             },
             None,
-            id="test_csv_only_required_options"),
+            id="test_csv_only_required_options",
+        ),
         pytest.param(
             "csv",
             {},
             {
                 "filetype": "csv",
                 "delimiter": ",",
-                "quote_char": "\"",
+                "quote_char": '"',
                 "encoding": "utf8",
                 "double_quote": True,
                 "null_values": ["", "null", "NULL", "N/A", "NA", "NaN", "None"],
@@ -162,23 +159,26 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "strings_can_be_null": False,
             },
             None,
-            id="test_csv_empty_format"),
+            id="test_csv_empty_format",
+        ),
         pytest.param(
             "csv",
             {
-                "additional_reader_options": "{\"not_valid\": \"at all}",
+                "additional_reader_options": '{"not_valid": "at all}',
             },
             None,
             ValueError,
-            id="test_malformed_additional_reader_options"),
+            id="test_malformed_additional_reader_options",
+        ),
         pytest.param(
             "csv",
             {
-                "advanced_options": "{\"not_valid\": \"at all}",
+                "advanced_options": '{"not_valid": "at all}',
             },
             None,
             ValueError,
-            id="test_malformed_advanced_options"),
+            id="test_malformed_advanced_options",
+        ),
         pytest.param(
             "jsonl",
             {
@@ -187,11 +187,10 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "unexpected_field_behavior": "ignore",
                 "block_size": 0,
             },
-            {
-                "filetype": "jsonl"
-            },
+            {"filetype": "jsonl"},
             None,
-            id="test_jsonl_format"),
+            id="test_jsonl_format",
+        ),
         pytest.param(
             "parquet",
             {
@@ -200,22 +199,20 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "batch_size": 65536,
                 "buffer_size": 100,
             },
-            {
-                "filetype": "parquet"
-            },
+            {"filetype": "parquet", "decimal_as_float": True},
             None,
-            id="test_parquet_format"),
+            id="test_parquet_format",
+        ),
         pytest.param(
             "avro",
             {
                 "filetype": "avro",
             },
-            {
-                "filetype": "avro"
-            },
+            {"filetype": "avro"},
             None,
-            id="test_avro_format"),
-    ]
+            id="test_avro_format",
+        ),
+    ],
 )
 def test_convert_file_format(file_type, legacy_format_config, expected_format_config, expected_error):
     legacy_config = {
@@ -225,7 +222,6 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
             "bucket": "test_bucket",
             "aws_access_key_id": "some_access_key",
             "aws_secret_access_key": "some_secret",
-
         },
         "format": legacy_format_config,
         "path_pattern": f"**/*.{file_type}",
@@ -241,9 +237,9 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
                 "file_type": file_type,
                 "globs": [f"**/*.{file_type}"],
                 "validation_policy": "Emit Record",
-                "format": expected_format_config
+                "format": expected_format_config,
             }
-        ]
+        ],
     }
 
     parsed_legacy_config = SourceS3Spec(**legacy_config)
