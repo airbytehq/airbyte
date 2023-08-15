@@ -106,7 +106,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 #### For Airbyte Cloud:
 
 1. [Login to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **<Sources>** and then click **+ New source**.
+2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **LinkedIn Ads** from the **Source type** dropdown.
 4. Enter a name for the <connector name> connector.
 5. Click **Authenticate your account**.
