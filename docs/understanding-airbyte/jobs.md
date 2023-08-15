@@ -51,6 +51,137 @@ For oss users, these values are configurable. See [Configuring Airbyte](../opera
 
 The duration of expected backoff between attempts can be viewed in the logs accessible from the job history UI.
 
+### Retry examples
+
+To help illustrate what is possible, below are a couple examples of how the retry rules may play out under more elaborate circumstances. 
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Job #1</th>
+        </tr>
+        <tr>
+            <th>Attempt Number</th>
+            <th>Synced data?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">30 second backoff</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td colspan="2">Job succeeds — all data synced</td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Job #2</th>
+        </tr>
+        <tr>
+            <th>Attempt Number</th>
+            <th>Synced data?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">30 second backoff</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">90 second backoff</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">4 minute 30 second backoff</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">Job Fails — successive failure limit reached</td>
+        </tr>
+    </tbody>
+</table>
+
 ## Worker Responsibilities
 
 The worker has the following responsibilities.
