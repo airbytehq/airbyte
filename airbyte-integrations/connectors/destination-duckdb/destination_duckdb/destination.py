@@ -25,6 +25,9 @@ class DestinationDuckdb(Destination):
         Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
+        if destionation_path.startswith("md:") or destionation_path.startswith("motherduck:"):
+            return destination_path
+
         if not destination_path.startswith("/local"):
             destination_path = os.path.join("/local", destination_path)
 
@@ -57,11 +60,12 @@ class DestinationDuckdb(Destination):
         logger.info(f"Starting write to DuckDB with {len(streams)} streams")
 
         path = config.get("destination_path")
+        api_key = config.get("api_key")
         path = self._get_destination_path(path)
         # check if file exists
 
-        logger.info(f"Opening DuckDB file at {path}")
-        con = duckdb.connect(database=path, read_only=False)
+        logger.info(f"Opening DuckDB database at {path}")
+        con = duckdb.connect(database=path, read_only=False, api_key=api_key)
 
         # create the tables if needed
         # con.execute("BEGIN TRANSACTION")
@@ -150,12 +154,15 @@ class DestinationDuckdb(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # parse the destination path
             param_path = config.get("destination_path")
-            path = self._get_destination_path(param_path)
+            path = self._get_destination_path(path)
 
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            con = duckdb.connect(database=path, read_only=False)
+            api_key = config.get("api_key")
+
+            if path.startswith("/local"):
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+
+            con = duckdb.connect(database=path, read_only=False, api_key=api_key)
             con.execute("SELECT 1;")
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

@@ -78,4 +78,5 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.2.0   | 2022-10-14 | [](https://github.com/airbytehq/airbyte/pull/) | Add support for MotherDuck |
 | 0.1.0   | 2022-10-14 | [17494](https://github.com/airbytehq/airbyte/pull/17494) | New DuckDB destination |
