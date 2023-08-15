@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
@@ -162,7 +162,7 @@ public class BigQueryStagingConsumerFactory {
                     writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName()
         );
         // In Destinations V2, we will always use the 'airbyte' schema/namespace for raw tables
-        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? AIRBYTE_NAMESPACE_SCHEMA : writeConfig.datasetId();
+        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? DEFAULT_AIRBYTE_INTERNAL_NAMESPACE : writeConfig.datasetId();
         // Regardless, ensure the schema the customer wants to write to exists
         bigQueryGcsOperations.createSchemaIfNotExists(writeConfig.datasetId(), writeConfig.datasetLocation());
         // Schema used for raw and airbyte internal tables
