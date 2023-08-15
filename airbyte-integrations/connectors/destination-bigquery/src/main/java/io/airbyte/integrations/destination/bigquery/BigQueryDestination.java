@@ -36,6 +36,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRec
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV1V2Migrator;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -241,10 +242,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     TyperDeduper typerDeduper;
     if (TypingAndDedupingFlag.isDestinationV2()) {
       parsedCatalog = catalogParser.parseCatalog(catalog);
+      BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
       typerDeduper = new DefaultTyperDeduper<>(
           sqlGenerator,
           new BigQueryDestinationHandler(bigquery, datasetLocation),
-          parsedCatalog);
+          parsedCatalog,
+          migrator);
     } else {
       parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
@@ -350,7 +353,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         outputRecordCollector,
         BigQueryUtils.getDatasetId(config),
         typerDeduper,
-        parsedCatalog);
+        parsedCatalog
+    );
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(BigQuery bigQuery,
@@ -406,7 +410,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         getTargetTableNameTransformer(namingResolver),
         typerDeduper,
         parsedCatalog,
-        BigQueryUtils.getDatasetId(config));
+        BigQueryUtils.getDatasetId(config)
+    );
   }
 
   protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {

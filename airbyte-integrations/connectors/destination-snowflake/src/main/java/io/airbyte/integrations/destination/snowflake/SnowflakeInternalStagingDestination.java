@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoOpDestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
@@ -148,7 +149,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         catalogParser = new CatalogParser(sqlGenerator);
       }
       parsedCatalog = catalogParser.parseCatalog(catalog);
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
+      // TODO make a SnowflakeV1V2Migrator
+      NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
+      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
     } else {
       parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
@@ -194,7 +197,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         catalogParser = new CatalogParser(sqlGenerator);
       }
       parsedCatalog = catalogParser.parseCatalog(catalog);
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
+      // TODO make a SnowflakeV1V2Migrator
+      NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
+      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
     } else {
       parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();

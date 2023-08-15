@@ -457,4 +457,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             """);
   }
 
+  @Override
+  public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
+    return "";
+  }
 }

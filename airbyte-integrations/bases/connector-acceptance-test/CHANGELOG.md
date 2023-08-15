@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0
+Bump to Python 3.10, use dagger instead of docker-py in the ConnectorRunner.
+
 ## 0.11.5
 Changing test output and adding diff to test_read
 
