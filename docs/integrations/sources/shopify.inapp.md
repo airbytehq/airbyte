@@ -4,7 +4,7 @@
 
 ::: note
 
-If you are already a Cloud user but still use the `API PASSWORD` authentication method (option), please make sure you've switched to the `OAuth2.0`, as far as the `API PASSWORD` is going to be deprecated soon for Cloud Users, but this option remains for `OSS` users.
+If you previously used the `API Password` authentication method, please switch to the `OAuth2.0`, as the API Password will be deprecated shortly. If you prefer to continue using `API Password`, the option will remain available in `Airbyte Open-Source`.
 
 :::
 
@@ -12,12 +12,12 @@ If you are already a Cloud user but still use the `API PASSWORD` authentication 
 
 ### Connect using OAuth2.0
 1. Click `Authenticate your Shopify account` to start the autentication.
-2. Click `Install` to install Airbyte application.
-3. Log in to your account, if not already.
+2. Click `Install` to install the Airbyte application.
+3. Log in to your account, if you are not already logged in.
 4. Select the store you want to sync and review the consent.
 5. Click on `Install` to finish the Installation.
 6. Reveiew the `Shop Name` field for the chosen store for a sync.
-7. Set the `Start Date` as the starting point for your data replication.
+7. Set the `Start Date` as the starting point for your data replication. Any data created before this date will not be synced.
 8. Click `Test and Save` to finish the source set up.
 
 You're ready to set up Shopify in Airbyte!
