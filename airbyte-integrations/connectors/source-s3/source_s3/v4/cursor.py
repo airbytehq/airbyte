@@ -14,6 +14,7 @@ class Cursor(DefaultFileBasedCursor):
     _DATE_FORMAT = "%Y-%m-%d"
     _LEGACY_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     _V4_MIGRATION_BUFFER = timedelta(hours=1)
+    _V3_MIN_SYNC_DATE_FIELD = "v3_min_sync_date"
 
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
@@ -22,8 +23,8 @@ class Cursor(DefaultFileBasedCursor):
         else:
             self._running_migration = False
         self._v3_migration_start_datetime = (
-            datetime.strptime(value.get("v3_migration_start_datetime"), DefaultFileBasedCursor.DATE_TIME_FORMAT)
-            if "v3_migration_start_datetime" in value
+            datetime.strptime(value.get(Cursor._V3_MIN_SYNC_DATE_FIELD), DefaultFileBasedCursor.DATE_TIME_FORMAT)
+            if Cursor._V3_MIN_SYNC_DATE_FIELD in value
             else None
         )
         super().set_initial_state(value)
@@ -34,7 +35,7 @@ class Cursor(DefaultFileBasedCursor):
             return {
                 **state,
                 **{
-                    "v3_migration_start_datetime": datetime.strftime(
+                    Cursor._V3_MIN_SYNC_DATE_FIELD: datetime.strftime(
                         self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT
                     )
                 },
@@ -43,11 +44,16 @@ class Cursor(DefaultFileBasedCursor):
             return state
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
+        """
+        Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
+        Else, if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
+        Else, sync according to the default logic
+        """
         # When upgrading from v3 to v4, we want to sync all files that were modified within one hour of the last sync
-        if self._running_migration:
-            return file.last_modified > self._v3_migration_start_datetime
         if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
             return False
+        elif self._running_migration:
+            return True
         else:
             return super()._should_sync_file(file, logger)
 
@@ -114,7 +120,7 @@ class Cursor(DefaultFileBasedCursor):
         return {
             "history": converted_history,
             DefaultFileBasedCursor.CURSOR_FIELD: cursor,
-            "v3_migration_start_datetime": v3_migration_start_datetime.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT),
+            Cursor._V3_MIN_SYNC_DATE_FIELD: v3_migration_start_datetime.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT),
         }
 
     @staticmethod
