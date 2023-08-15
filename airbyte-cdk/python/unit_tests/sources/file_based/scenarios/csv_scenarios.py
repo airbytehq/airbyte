@@ -74,6 +74,12 @@ single_csv_scenario = (
                                     "type": "array",
                                     "items": {"type": "string"},
                                 },
+                                "legacy_prefix": {
+                                    "title": "Legacy Prefix",
+                                    "airbyte_hidden": True,
+                                    "type": "string",
+                                    "description": "The path prefix configured in v3 versions of the S3 connector. This option is deprecated in favor of a single glob.",
+                                },
                                 "validation_policy": {
                                     "title": "Validation Policy",
                                     "description": "The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
