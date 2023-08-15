@@ -40,4 +40,4 @@ echo -e "Moving files (ignoring existing)... \n - From: $OLD_PACKAGE_ROOT\n - To
 mkdir -p "$ARCHIVE_ROOT"
 
 # Move the entire remnants of `base-java` to the archived directory
-mv "$OLD_PACKAGE_ROOT" "$ARCHIVE_ROOT/base-java"
+mv "$OLD_PACKAGE_ROOT" "$ARCHIVE_ROOT/"
