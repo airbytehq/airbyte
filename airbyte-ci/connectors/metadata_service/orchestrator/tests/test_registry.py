@@ -38,6 +38,7 @@ VALID_METADATA_DICT = {
         "documentationUrl": "https://test_documentation_url.com",
         "githubIssueLabel": "test_label",
         "connectorSubtype": "api",
+        "supportLevel": "community",
         "releaseStage": "alpha",
         "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
     },
@@ -123,6 +124,7 @@ def test_get_registry_status_lists(registries_data, expected_enabled, expected_d
             "githubIssueLabel": "test_label",
             "connectorSubtype": "api",
             "releaseStage": "alpha",
+            "supportLevel": "community",
             "registries": registries_data,
         },
     }
@@ -301,9 +303,9 @@ def test_source_type_extraction():
     assert result["sourceType"] == "database"
 
 
-def test_release_stage_default():
+def test_support_level_default():
     """
-    Test if releaseStage is defaulted to alpha in the registry entry.
+    Test if supportLevel is defaulted to alpha in the registry entry.
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
@@ -312,7 +314,7 @@ def test_release_stage_default():
     mock_metadata_entry.icon_url = "test-icon-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
-    assert result["releaseStage"] == "alpha"
+    assert result["supportLevel"] == "community"
 
 
 def test_migration_documentation_url_default():
