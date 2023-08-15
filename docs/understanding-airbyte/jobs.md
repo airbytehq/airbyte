@@ -29,7 +29,7 @@ In the event of a failure, the Airbyte platform will retry the pipeline. Each of
 
 ### Retry Rules
 
-Based on the outcome of previous attempts, the number of permitted attempts per job changes. Currently, Airbyte is configured to allow the following:
+Based on the outcome of previous attempts, the number of permitted attempts per job changes. By default, Airbyte is configured to allow the following:
 
 * 5 subsequent attempts where no data was synchronized
 * 10 total attempts where no data was synchronized
@@ -41,7 +41,7 @@ For oss users, these values are configurable. See [Configuring Airbyte](../opera
 
 After an attempt where no data was synchronized, we implement a short backoff period before starting a new attempt. This will increase with each successive complete failure—a partially successful attempt will reset this value.
 
-Currently, Airbyte is configured to backoff with the following values:
+By default, Airbyte is configured to backoff with the following values:
 * 10 seconds after the first complete failure
 * 30 seconds after the second
 * 90 seconds after the third
