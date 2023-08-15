@@ -271,6 +271,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.1           | 2023-08-04 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Update SqlGenerator                                                                                                                |
 | 1.3.0           | 2023-08-07 | [\#29174](https://github.com/airbytehq/airbyte/pull/29174) | Destinations v2: early access release                                                                                                               |
 | 1.2.10          | 2023-08-07 | [\#29188](https://github.com/airbytehq/airbyte/pull/29188) | Internal code refactoring                                                                                                                           |
 | 1.2.9           | 2023-08-04 | [\#28677](https://github.com/airbytehq/airbyte/pull/28677) | Destinations v2: internal code changes to prepare for early access release                                                                          |
