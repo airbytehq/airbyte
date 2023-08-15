@@ -14,6 +14,7 @@ class Cursor(DefaultFileBasedCursor):
     DATE_FORMAT = "%Y-%m-%d"
     LEGACY_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     CURSOR_FIELD = "_ab_source_file_last_modified"
+    _V4_MIGRATION_BUFFER = timedelta(hours=1)
 
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
@@ -84,7 +85,7 @@ class Cursor(DefaultFileBasedCursor):
         if converted_history:
             filename, _ = max(converted_history.items(), key=lambda x: (x[1], x[0]))
             cursor = f"{cursor_datetime}_{filename}"
-            v3_migration_start_datetime = cursor_datetime - timedelta(hours=1)
+            v3_migration_start_datetime = cursor_datetime - Cursor._V4_MIGRATION_BUFFER
         else:
             # If there is no history, _is_legacy_state should return False, so we should never get here
             raise ValueError("No history found in state message. This is likely due to a bug in the connector. Please contact support.")
