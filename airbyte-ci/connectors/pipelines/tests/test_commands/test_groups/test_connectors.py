@@ -20,7 +20,7 @@ def test_get_selected_connectors_by_name_no_file_modification():
     connector = pick_a_random_connector()
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(connector.technical_name,),
-        selected_release_stages=(),
+        selected_support_levels=(),
         selected_languages=(),
         modified=False,
         metadata_changes_only=False,
@@ -33,23 +33,23 @@ def test_get_selected_connectors_by_name_no_file_modification():
     assert not selected_connectors[0].modified_files
 
 
-def test_get_selected_connectors_by_release_stage_no_file_modification():
+def test_get_selected_connectors_by_support_level_no_file_modification():
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_release_stages=("generally_available", "beta"),
+        selected_support_levels=["certified"],
         selected_languages=(),
         modified=False,
         metadata_changes_only=False,
         modified_files=set(),
     )
 
-    set([c.release_stage for c in selected_connectors]) == {"generally_available", "beta"}
+    set([c.support_level for c in selected_connectors]) == {"certified"}
 
 
 def test_get_selected_connectors_by_language_no_file_modification():
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_release_stages=(),
+        selected_support_levels=(),
         selected_languages=(ConnectorLanguage.LOW_CODE,),
         modified=False,
         metadata_changes_only=False,
@@ -64,7 +64,7 @@ def test_get_selected_connectors_by_name_with_file_modification():
     modified_files = {connector.code_directory / "setup.py"}
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(connector.technical_name,),
-        selected_release_stages=(),
+        selected_support_levels=(),
         selected_languages=(),
         modified=False,
         metadata_changes_only=False,
@@ -77,12 +77,12 @@ def test_get_selected_connectors_by_name_with_file_modification():
     assert selected_connectors[0].modified_files == modified_files
 
 
-def test_get_selected_connectors_by_name_and_release_stage_or_languages_leads_to_intersection():
+def test_get_selected_connectors_by_name_and_support_level_or_languages_leads_to_intersection():
     connector = pick_a_random_connector()
     modified_files = {connector.code_directory / "setup.py"}
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(connector.technical_name,),
-        selected_release_stages=(connector.release_stage,),
+        selected_support_levels=(connector.support_level,),
         selected_languages=(connector.language,),
         modified=False,
         metadata_changes_only=False,
@@ -98,7 +98,7 @@ def test_get_selected_connectors_with_modified():
     modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_release_stages=(),
+        selected_support_levels=(),
         selected_languages=(),
         modified=True,
         metadata_changes_only=False,
@@ -114,7 +114,7 @@ def test_get_selected_connectors_with_modified_and_language():
     modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_release_stages=(),
+        selected_support_levels=(),
         selected_languages=(ConnectorLanguage.JAVA,),
         modified=True,
         metadata_changes_only=False,
@@ -125,15 +125,13 @@ def test_get_selected_connectors_with_modified_and_language():
     assert selected_connectors[0].technical_name == second_modified_connector.technical_name
 
 
-def test_get_selected_connectors_with_modified_and_release_stage():
-    first_modified_connector = pick_a_random_connector(release_stage="alpha")
-    second_modified_connector = pick_a_random_connector(
-        release_stage="generally_available", other_picked_connectors=[first_modified_connector]
-    )
+def test_get_selected_connectors_with_modified_and_support_level():
+    first_modified_connector = pick_a_random_connector(support_level="community")
+    second_modified_connector = pick_a_random_connector(support_level="certified", other_picked_connectors=[first_modified_connector])
     modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_release_stages=("generally_available",),
+        selected_support_levels=["certified"],
         selected_languages=(),
         modified=True,
         metadata_changes_only=False,
@@ -154,7 +152,7 @@ def test_get_selected_connectors_with_modified_and_metadata_only():
     }
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_release_stages=(),
+        selected_support_levels=(),
         selected_languages=(),
         modified=True,
         metadata_changes_only=True,
@@ -179,7 +177,7 @@ def test_get_selected_connectors_with_metadata_only():
     }
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
-        selected_release_stages=(),
+        selected_support_levels=(),
         selected_languages=(),
         modified=False,
         metadata_changes_only=True,
