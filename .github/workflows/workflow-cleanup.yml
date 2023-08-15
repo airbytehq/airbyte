@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    if: github.repository_owner == 'airbytehq'
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo content

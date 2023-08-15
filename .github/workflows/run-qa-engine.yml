@@ -9,6 +9,7 @@ on:
 jobs:
   run-qa-engine:
     name: "Run QA Engine"
+    if: github.repository_owner == 'airbytehq'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
