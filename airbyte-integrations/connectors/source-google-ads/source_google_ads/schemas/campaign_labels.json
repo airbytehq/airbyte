@@ -5,6 +5,9 @@
     "customer.id": {
       "type": ["null", "integer"]
     },
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
     "label.id": {
       "type": ["null", "integer"]
     },
