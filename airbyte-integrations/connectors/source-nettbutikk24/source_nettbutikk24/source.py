@@ -77,7 +77,6 @@ class Nettbutikk24Stream(HttpStream, ABC):
         """
         :return an iterable containing each record in the response
         """
-
         if response.status_code == 404:
             yield from []
 
@@ -85,7 +84,63 @@ class Nettbutikk24Stream(HttpStream, ABC):
 
     def update_uri_params(self, next_page_token: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None):
         offset = next_page_token.get("offset", 0) if next_page_token else 0
-        stream_since = stream_state.get("modified_on", self.uri_params.get("since")) if stream_state else self.uri_params.get("since")
+        stream_since = stream_state.get("modified_on", self.uri_params.get(
+            "since")) if stream_state else self.uri_params.get("since")
+
+        self.uri_params.update(
+            {
+                "offset": int(offset),
+                "since": stream_since
+            }
+        )
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+        to most other methods in this class to help you form headers, request bodies, query params, etc..
+
+        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
+        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
+        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
+
+        :param response: the most recent response from the API
+        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+                If there are no more pages in the result, return None.
+        """
+
+        paging = response.json().get("paging", {})
+        if type(paging) == list:
+            return None
+
+        next_path = paging.get("next")
+        if next_path:
+            offset = next_path.split("/")[7]
+            return {"offset": offset}
+
+        return None
+
+
+class Customers(Nettbutikk24Stream):
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        self.update_uri_params(next_page_token, stream_state)
+        self.uri_params.update({"limit": 1000})
+
+        print('URI PARAMS: ', self.uri_params)
+
+        return "customers/{limit}/{offset}".format_map(self.uri_params)
+
+    def update_uri_params(self, next_page_token: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None):
+        offset = next_page_token.get("offset", '0') if next_page_token else '0'
+        if '?' in offset:
+            offset = offset.split('?')[0]
+
+        stream_since = stream_state.get("modified_on", self.uri_params.get(
+            "since")) if stream_state else self.uri_params.get("since")
+
         self.uri_params.update(
             {
                 "offset": int(offset),
@@ -115,13 +170,15 @@ class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
         """
         start_ts = self.uri_params.get("since")
 
-        latest_record_modified_on = latest_record.get(self.cursor_field, "1970-01-01")
+        latest_record_modified_on = latest_record.get(
+            self.cursor_field, "1970-01-01")
         latest_record_unix = convert_date_to_epoch(latest_record_modified_on)
         latest_record_unix = max(latest_record_unix, start_ts)
 
         stream_state = current_stream_state.get(self.cursor_field, 0)
         new_stream_state = max(stream_state, latest_record_unix)
-        new_stream_state = min(int(pendulum.now().timestamp()), new_stream_state)
+        new_stream_state = min(
+            int(pendulum.now().timestamp()), new_stream_state)
 
         return {self.cursor_field: new_stream_state}
 
@@ -137,6 +194,7 @@ class Products(IncrementalNettbutikk24Stream):
         self.update_uri_params(next_page_token, stream_state)
         self.uri_params.update({"limit": 10000})
         return "products/{limit}/{offset}/{since}".format_map(self.uri_params)
+
 
 class Products_Flatted(IncrementalNettbutikk24Stream):
     primary_key = "id"
@@ -160,6 +218,8 @@ class Orders(IncrementalNettbutikk24Stream):
         self.update_uri_params(next_page_token, stream_state)
         return "orders/{limit}/{offset}/{since}".format_map(self.uri_params)
 
+
+
 class SourceNettbutikk24(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
@@ -176,4 +236,4 @@ class SourceNettbutikk24(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Orders(config=config, flat = True), Products(config=config, flat = False), Products_Flatted(config=config, flat = True)]
+        return [Orders(config=config, flat=True), Products(config=config, flat=False), Products_Flatted(config=config, flat=True), Customers(config=config, flat=False)]
