@@ -10,6 +10,7 @@ data:
   maxSecondsBetweenMessages: 7200
   dockerRepository: airbyte/source-postgres
   githubIssueLabel: source-postgres
+  test_strictness_level: high
   icon: postgresql.svg
   license: ELv2
   name: Postgres
