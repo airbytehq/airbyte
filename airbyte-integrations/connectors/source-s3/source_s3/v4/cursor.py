@@ -3,7 +3,7 @@
 #
 import logging
 from datetime import datetime, timedelta
-from typing import MutableMapping
+from typing import Any, MutableMapping
 from zoneinfo import ZoneInfo
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -23,6 +23,7 @@ class Cursor(DefaultFileBasedCursor):
         super().set_initial_state(value)
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
+        # When upgrading from v3 to v4, we want to sync all files that were modified within one hour of the last sync
         if self._v3_min_sync_dt:
             return file.last_modified >= self._v3_min_sync_dt
         else:
@@ -47,7 +48,7 @@ class Cursor(DefaultFileBasedCursor):
         return True
 
     @staticmethod
-    def _convert_legacy_state(legacy_state: StreamState) -> MutableMapping[str, str]:
+    def _convert_legacy_state(legacy_state: StreamState) -> MutableMapping[str, Any]:
         """
         Transform the history from the old state message format to the new.
 

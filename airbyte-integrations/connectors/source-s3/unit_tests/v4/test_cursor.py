@@ -92,149 +92,105 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
     assert cursor.get_state() == expected_state
 
 
-def test_v4_migration_only_one_file_that_was_synced_exactly_at_midnight():
-    legacy_state = {
-        "history": {
-            "2023-08-01": ["file1.txt"],
-        },
-        "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
-    }
+@pytest.mark.parametrize(
+    "input_state, all_files, expected_files_to_sync",
+    [
+        pytest.param(
+            {
+                "history": {
+                    "2023-08-01": ["file1.txt"],
+                },
+                "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
+            },
+            [RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z")],
+            [RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z")],
+            id="only_one_file_that_was_synced_exactly_at_midnight",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "2023-08-01": ["file1.txt"],
+                    "2023-08-02": ["file2.txt"],
+                },
+                "_ab_source_file_last_modified": "2023-08-02T00:06:00Z",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-02T06:00:00.000000Z"),
+            ],
+            [
+                RemoteFile(uri="file2.txt", last_modified="2023-08-02T06:00:00.000000Z"),
+            ],
+            id="do_not_sync_files_last_updated_on_a_previous_date",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "2023-08-01": ["file1.txt"],
+                    "2023-08-02": ["file2.txt"],
+                },
+                "_ab_source_file_last_modified": "2023-08-02T00:00:00Z",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T23:00:01.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-02T00:00:00.000000Z"),
+            ],
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T23:00:01.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-02T00:00:00.000000Z"),
+            ],
+            id="sync_files_last_updated_within_one_hour_of_cursor",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "2023-08-01": ["file1.txt", "file2.txt"],
+                },
+                "_ab_source_file_last_modified": "2023-08-01T02:00:00Z",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-01T02:00:00.000000Z"),
+            ],
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-01T02:00:00.000000Z"),
+            ],
+            id="sync_files_last_updated_within_one_hour_of_cursor_on_same_day",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "2023-08-01": ["file1.txt", "file2.txt"],
+                },
+                "_ab_source_file_last_modified": "2023-08-01T06:00:00Z",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+            ],
+            [
+                RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+            ],
+        ),
+        pytest.param(
+            {},
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+            ],
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+            ],
+        ),
+    ],
+)
+def test_v4_migration_only_one_file_that_was_synced_exactly_at_midnight(input_state, all_files, expected_files_to_sync):
     cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
-    cursor.set_initial_state(legacy_state)
+    cursor.set_initial_state(input_state)
 
-    all_files = [RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z")]
-    logger = Mock()
-
-    files_to_sync = list(cursor.get_files_to_sync(all_files, logger))
-
-    expected_files_to_sync = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z"),
-    ]
-
-    assert files_to_sync == expected_files_to_sync
-
-
-def test_v4_migration_do_not_sync_files_last_updated_on_a_previous_date():
-    legacy_state = {
-        "history": {
-            "2023-08-01": ["file1.txt"],
-            "2023-08-02": ["file2.txt"],
-        },
-        "_ab_source_file_last_modified": "2023-08-02T00:06:00Z",
-    }
-    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
-    cursor.set_initial_state(legacy_state)
-
-    all_files = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z"),
-        RemoteFile(uri="file2.txt", last_modified="2023-08-02T06:00:00.000000Z"),
-    ]
-    logger = Mock()
-
-    files_to_sync = list(cursor.get_files_to_sync(all_files, logger))
-
-    expected_files_to_sync = [
-        RemoteFile(uri="file2.txt", last_modified="2023-08-02T06:00:00.000000Z"),
-    ]
-
-    assert files_to_sync == expected_files_to_sync
-
-
-def test_v4_migration_sync_files_last_updated_within_one_hour_of_cursor_even_if_on_different_day():
-    legacy_state = {
-        "history": {
-            "2023-08-01": ["file1.txt"],
-            "2023-08-02": ["file2.txt"],
-        },
-        "_ab_source_file_last_modified": "2023-08-02T00:00:00Z",
-    }
-    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
-    cursor.set_initial_state(legacy_state)
-
-    all_files = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T23:00:01.000000Z"),
-        RemoteFile(uri="file2.txt", last_modified="2023-08-02T00:00:00.000000Z"),
-    ]
-    logger = Mock()
-
-    files_to_sync = list(cursor.get_files_to_sync(all_files, logger))
-
-    expected_files_to_sync = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T23:00:01.000000Z"),
-        RemoteFile(uri="file2.txt", last_modified="2023-08-02T00:00:00.000000Z"),
-    ]
-
-    assert files_to_sync == expected_files_to_sync
-
-
-def test_v4_migration_sync_files_last_updated_within_one_hour_of_cursor_on_same_day():
-    legacy_state = {
-        "history": {
-            "2023-08-01": ["file1.txt", "file2.txt"],
-        },
-        "_ab_source_file_last_modified": "2023-08-01T02:00:00Z",
-    }
-    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
-    cursor.set_initial_state(legacy_state)
-
-    all_files = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-        RemoteFile(uri="file2.txt", last_modified="2023-08-01T02:00:00.000000Z"),
-    ]
-    logger = Mock()
-
-    files_to_sync = list(cursor.get_files_to_sync(all_files, logger))
-
-    expected_files_to_sync = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-        RemoteFile(uri="file2.txt", last_modified="2023-08-01T02:00:00.000000Z"),
-    ]
-
-    assert files_to_sync == expected_files_to_sync
-
-
-def test_v4_migration_do_not_sync_files_last_earlier_than_one_hour_of_cursor_on_same_day():
-    legacy_state = {
-        "history": {
-            "2023-08-01": ["file1.txt", "file2.txt"],
-        },
-        "_ab_source_file_last_modified": "2023-08-01T06:00:00Z",
-    }
-    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
-    cursor.set_initial_state(legacy_state)
-
-    all_files = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-        RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
-    ]
-    logger = Mock()
-
-    files_to_sync = list(cursor.get_files_to_sync(all_files, logger))
-
-    expected_files_to_sync = [
-        RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
-    ]
-
-    assert files_to_sync == expected_files_to_sync
-
-
-def test_v3_migration_with_empty_state():
-    legacy_state = {}
-    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
-    cursor.set_initial_state(legacy_state)
-
-    all_files = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-        RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
-    ]
-    logger = Mock()
-
-    files_to_sync = list(cursor.get_files_to_sync(all_files, logger))
-
-    expected_files_to_sync = [
-        RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-        RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
-    ]
+    files_to_sync = list(cursor.get_files_to_sync(all_files, Mock()))
 
     assert files_to_sync == expected_files_to_sync
 
