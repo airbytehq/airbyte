@@ -51,7 +51,11 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     final SerializableBuffer writer;
     try {
-      writer = createBuffer.apply(new AirbyteStreamNameNamespacePair(decs.getName(), decs.getNamespace()), catalog);
+//      writer = createBuffer.apply(new AirbyteStreamNameNamespacePair(decs.getName(), decs.getNamespace()), catalog);
+      writer = new CsvSerializedBuffer(
+          new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
+          new StagingDatabaseCsvSheetGenerator(),
+          true);
 
       stream.forEach(record -> {
         try {
