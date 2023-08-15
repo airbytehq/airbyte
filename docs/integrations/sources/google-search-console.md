@@ -5,7 +5,9 @@ This page contains the setup guide and reference information for the Google Sear
 ## Prerequisites
 
 - A verified property in Google Search Console
-- Google Search Console API enabled for your project
+<!-- env:oss -->
+- Google Search Console API enabled for your project (**Airbyte Open Source** only)
+<!-- /env:oss -->
 
 ## Setup guide
 
@@ -15,7 +17,19 @@ To authenticate the Google Search Console connector, you will need to use one of
 
 #### I: OAuth (Recommended for Airbyte Cloud)
 
+<!-- env:cloud -->
 You can authenticate using your Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+To authenticate with OAuth in **Airbyte Open Source**, you will need to create an authentication app and obtain the following credentials and tokens:
+
+- Client ID
+- Client Secret
+- Refresh Token
+- Access Token
+
+More information on the steps to create an OAuth app to access Google APIs and obtain these credentials can be found [in Google's documentation](https://developers.google.com/identity/protocols/oauth2).
 
 #### II: Google service account with JSON key file (Recommended for Airbyte Open Source)
 
@@ -52,6 +66,7 @@ To enable delegated domain-wide authority, follow the steps listed in the [Googl
 - `https://www.googleapis.com/auth/webmasters.readonly`
 
 For more information on this topic, please refer to [this Google article](https://support.google.com/a/answer/162106?hl=en).
+<!-- /env:oss -->
 
 ### Step 2: Set up the Google Search Console connector in Airbyte
 
@@ -67,12 +82,14 @@ For more information on this topic, please refer to [this Google article](https:
    - **For Airbyte Cloud**: Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
    <!-- /env:cloud -->
    <!-- env:oss -->
-   - **For Airbyte Open Source**: Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
+   - **For Airbyte Open Source**:
+      - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
+      - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
    <!-- /env:oss -->
 
 8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
 9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
-10. (Optional) For **Data State**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data State](#data-state) section below for more information on this parameter.
+10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](#data-freshness) section below for more information on this parameter.
 11. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -115,7 +132,7 @@ Custom reports allow you to query the API with a custom set of dimensions to gro
 {
    "name": "<report-name>",
    "dimensions": ["<dimension-name>", "<dimension-name>", ...]
-}
+   }
 ```
 
 The available dimensions are:
@@ -140,9 +157,9 @@ For example, to query the API for a report that groups results by country, then 
 
 You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
 
-### Data State
+### Data Freshness
 
-The **Data State** parameter deals with the "freshness", or finality of the data that is being queried.
+The **Data Freshness** parameter deals with the "freshness", or finality of the data that is being queried.
 
 - `final`: The query will include only finalized, stable data. This is data that has been processed, verified, and is unlikely to change. When you select this option, you are querying for the definitive statistics and information that Google has analyzed and confirmed.
 - `all`: The query will return both finalized data and what Google terms "fresh" data. Fresh data includes more recent data that hasn't gone through the full processing and verification that finalized data has. This option can give you more up-to-the-minute insights, but it may be subject to change as Google continues to process and analyze it.
