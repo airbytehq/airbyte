@@ -172,6 +172,7 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
             [
                 RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
             ],
+            id="do_not_sync_files_last_modified_earlier_than_one_hour_before_cursor_on_same_day",
         ),
         pytest.param(
             {},
@@ -183,10 +184,11 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
                 RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
                 RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
             ],
+            id="no_state",
         ),
     ],
 )
-def test_v4_migration_only_one_file_that_was_synced_exactly_at_midnight(input_state, all_files, expected_files_to_sync):
+def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync):
     cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
     cursor.set_initial_state(input_state)
 
