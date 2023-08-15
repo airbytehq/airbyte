@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -414,6 +415,65 @@ public class BufferedStreamConsumerTest {
     // Now we've closed the consumer, which flushes everything.
     // Verify that we ack stream 1's pending state.
     verify(outputRecordCollector).accept(state1);
+  }
+
+  /**
+   * Same idea as {@link #testStreamTail()} but with global state. We shouldn't emit any state messages
+   * until we close the consumer.
+   */
+  @Test
+  void testStreamTailGlobalSTate() throws Exception {
+    // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
+    final BufferingStrategy strategy = mock(BufferingStrategy.class);
+    when(strategy.addRecord(any(), any())).thenReturn(Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM));
+    consumer = new BufferedStreamConsumer(
+        outputRecordCollector,
+        onStart,
+        strategy,
+        onClose,
+        CATALOG,
+        isValidRecord,
+        // Never periodic flush
+        Duration.ofHours(24),
+        null);
+    // A small set of records, not enough to trigger a flush
+    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(250);
+    // A medium set of records. Reading this once won't flush; reading this twice _will_ flush.
+    final List<AirbyteMessage> expectedRecordsStream2 = generateRecords(750)
+        .stream()
+        .peek(m -> m.getRecord().withStream(STREAM_NAME2))
+        .collect(Collectors.toList());
+
+    final AirbyteMessage state1 = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+            .withGlobal(new AirbyteGlobalState()
+                .withSharedState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1)))));
+    final AirbyteMessage state2 = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+            .withGlobal(new AirbyteGlobalState()
+                .withSharedState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2)))));
+
+    consumer.start();
+    consumeRecords(consumer, expectedRecordsStream1);
+    consumer.accept(state1);
+    // At this point, we have not yet flushed anything
+    consumeRecords(consumer, expectedRecordsStream2);
+    consumer.accept(state2);
+    consumeRecords(consumer, expectedRecordsStream2);
+    // Now we have flushed stream 2, but not stream 1
+    // We should not have acked any state yet, because we haven't written stream1's records yet.
+    verify(outputRecordCollector, never()).accept(any());
+
+    consumer.close();
+    // Now we've closed the consumer, which flushes everything.
+    // Verify that we ack the final state.
+    // Note that we discard state1 entirely - this is OK. As long as we ack the last state message,
+    // the source can correctly resume from that point.
+    verify(outputRecordCollector).accept(state2);
   }
 
   private BufferedStreamConsumer getConsumerWithFlushFrequency() {
