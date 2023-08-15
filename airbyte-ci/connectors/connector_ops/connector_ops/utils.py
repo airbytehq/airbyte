@@ -11,6 +11,7 @@ from enum import Enum
 from glob import glob
 from pathlib import Path
 from typing import List, Optional, Set, Tuple, Union
+from pydash.objects import get
 
 import git
 import requests
@@ -44,6 +45,11 @@ def download_catalog(catalog_url):
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
 ICON_FILE_NAME = "icon.svg"
+
+IMPORTANT_CONNECTOR_THRESHOLDS = {
+    "sl": 300,
+    "ql": 400,
+}
 
 
 class ConnectorInvalidNameError(Exception):
@@ -273,8 +279,72 @@ class Connector:
         return self.metadata.get("name") if self.metadata else None
 
     @property
-    def release_stage(self) -> Optional[str]:
-        return self.metadata.get("releaseStage") if self.metadata else None
+    def support_level(self) -> Optional[str]:
+        return self.metadata.get("supportLevel") if self.metadata else None
+
+    @property
+    def ab_internal_sl(self) -> int:
+        """Airbyte Internal Field.
+
+        More info can be found here: https://www.notion.so/Internal-Metadata-Fields-32b02037e7b244b7934214019d0b7cc9
+
+        Returns:
+            int: The value
+        """
+        default_value = 100
+        sl_value = get(self.metadata, "ab_internal.sl")
+
+        if sl_value is None:
+            logging.warning(
+                f"Connector {self.technical_name} does not have a `ab_internal.sl` defined in metadata.yaml. Defaulting to {default_value}"
+            )
+            return default_value
+
+        return sl_value
+
+    @property
+    def ab_internal_ql(self) -> int:
+        """Airbyte Internal Field.
+
+        More info can be found here: https://www.notion.so/Internal-Metadata-Fields-32b02037e7b244b7934214019d0b7cc9
+
+        Returns:
+            int: The value
+        """
+        default_value = 100
+        ql_value = get(self.metadata, "ab_internal.ql")
+
+        if ql_value is None:
+            logging.warning(
+                f"Connector {self.technical_name} does not have a `ab_internal.ql` defined in metadata.yaml. Defaulting to {default_value}"
+            )
+            return default_value
+
+        return ql_value
+
+    @property
+    def is_important_connector(self) -> bool:
+        """Check if a connector qualifies as an important connector.
+
+        Returns:
+            bool: True if the connector is a high value connector, False otherwise.
+        """
+        if self.ab_internal_sl >= IMPORTANT_CONNECTOR_THRESHOLDS["sl"]:
+            return True
+
+        if self.ab_internal_ql >= IMPORTANT_CONNECTOR_THRESHOLDS["ql"]:
+            return True
+
+        return False
+
+    @property
+    def requires_high_test_strictness_level(self) -> bool:
+        """Check if a connector requires high strictness CAT tests.
+
+        Returns:
+            bool: True if the connector requires high test strictness level, False otherwise.
+        """
+        return self.is_important_connector()
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:
@@ -366,3 +436,13 @@ def get_all_connectors_in_repo() -> Set[Connector]:
         for metadata_file in glob(f"{repo_path}/airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
         if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
     }
+
+
+class ConnectorTypeEnum(str, Enum):
+    source = "source"
+    destination = "destination"
+
+
+class SupportLevelEnum(str, Enum):
+    certified = "certified"
+    community = "community"
