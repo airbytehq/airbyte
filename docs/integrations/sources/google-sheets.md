@@ -1,6 +1,6 @@
 # Google Sheets
 
-This page guides you through the process of setting up the Google Sheets source connector.
+This page contains the setup guide and reference information for the Google Sheets source connector.
 
 :::info
 The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. To replicate multiple spreadsheets, set up multiple Google Sheets source connectors in your Airbyte instance.
@@ -10,19 +10,21 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+### For Airbyte Cloud
 
 To set up Google Sheets as a source in Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, select **Google Sheets** from the **Source type** dropdown.
-4. Enter a name for the Google Sheets connector.
+3. Find and select **Google Sheets** from the list of available sources.
+4. For **Source name**, enter a name to help you identify this source.
 5. Authenticate your Google account via OAuth or Service Account Key Authentication.
    - **(Recommended)** To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission. If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
-7. For **Row Batch Size**, define the number of records you want the Google API to fetch at a time. The default value is 200.
+7. (Optional) For **Columns Name Conversion**, you may specify whether to automatically convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
+8. (Optional) For **Row Batch Size**, you may specify the number of records you want the Google API to fetch at a time. The default value is 200.
+9. Click **
 <!-- /env:cloud -->
 
 <!-- env:oss -->
