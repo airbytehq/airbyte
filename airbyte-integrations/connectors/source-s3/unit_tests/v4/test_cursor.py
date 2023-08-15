@@ -27,6 +27,7 @@ def _create_datetime(dt: str) -> datetime:
                     "file1.txt": "2023-08-01T00:00:00.000000Z",
                 },
                 "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z_file1.txt",
+                "v3_migration_start_datetime": "2023-07-31T23:00:00.000000Z",
             },
             id="single-date-single-file",
         ),
@@ -37,6 +38,7 @@ def _create_datetime(dt: str) -> datetime:
                     "file1.txt": "2023-08-01T02:03:04.000000Z",
                 },
                 "_ab_source_file_last_modified": "2023-08-01T02:03:04.000000Z_file1.txt",
+                "v3_migration_start_datetime": "2023-08-01T01:03:04.000000Z",
             },
             id="single-date-not-at-midnight-single-file",
         ),
@@ -48,6 +50,7 @@ def _create_datetime(dt: str) -> datetime:
                     "file2.txt": "2023-08-01T00:00:00.000000Z",
                 },
                 "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z_file2.txt",
+                "v3_migration_start_datetime": "2023-07-31T23:00:00.000000Z",
             },
             id="single-date-multiple-files",
         ),
@@ -66,6 +69,7 @@ def _create_datetime(dt: str) -> datetime:
                     "file2.txt": "2023-08-01T00:00:00.000000Z",
                     "file3.txt": "2023-07-31T23:59:59.999999Z",
                 },
+                "v3_migration_start_datetime": "2023-07-31T23:00:00.000000Z",
                 "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z_file2.txt",
             },
             id="multiple-dates-multiple-files",
@@ -86,12 +90,53 @@ def _create_datetime(dt: str) -> datetime:
                     "file3.txt": "2023-07-31T23:59:59.999999Z",
                 },
                 "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+                "v3_migration_start_datetime": "2023-08-01T09:11:12.000000Z",
             },
             id="multiple-dates-multiple-files-not-at-midnight",
         ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            id="v4-no-migration",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+                "v3_migration_start_datetime": "2023-07-31T23:00:00.000000Z",
+            },
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "v3_migration_start_datetime": "2023-07-31T23:00:00.000000Z",
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            id="v4-migrated-from-v3",
+        ),
     ],
 )
-def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], expected_state: MutableMapping[str, Any]) -> None:
+def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state: MutableMapping[str, Any]) -> None:
     cursor = _init_cursor_with_state(input_state)
     assert cursor.get_state() == expected_state
 
@@ -242,6 +287,44 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
             ],
             [RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
             id="input_state_is_v4_with_new_file_earlier_than_cursor",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "v3_migration_start_datetime": "2023-07-16T00:00:00.000000Z",
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
+                RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z")),
+            ],
+            [],
+            id="input_state_is_v4_with_a_new_file_earlier_than_migration_start_datetime",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                # "v3_migration_start_datetime": "2023-07-01T00:00:00.000000Z",
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
+                RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z")),
+            ],
+            [RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z"))],
+            id="input_state_is_v4_with_a_new_file_later_than_migration_start_datetime",
         ),
     ],
 )

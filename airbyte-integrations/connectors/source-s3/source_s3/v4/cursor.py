@@ -17,14 +17,37 @@ class Cursor(DefaultFileBasedCursor):
 
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
+            self._running_migration = True
             value = self._convert_legacy_state(value)
-        self._v3_migration_start_datetime = value.get("v3_migration_start_datetime", None)
+        else:
+            self._running_migration = False
+        self._v3_migration_start_datetime = (
+            datetime.strptime(value.get("v3_migration_start_datetime"), DefaultFileBasedCursor.DATE_TIME_FORMAT)
+            if "v3_migration_start_datetime" in value
+            else None
+        )
         super().set_initial_state(value)
+
+    def get_state(self) -> StreamState:
+        state = {"history": self._file_to_datetime_history, self.CURSOR_FIELD: self._get_cursor()}
+        if self._v3_migration_start_datetime:
+            return {
+                **state,
+                **{
+                    "v3_migration_start_datetime": datetime.strftime(
+                        self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT
+                    )
+                },
+            }
+        else:
+            return state
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         # When upgrading from v3 to v4, we want to sync all files that were modified within one hour of the last sync
-        if self._v3_migration_start_datetime:
-            return file.last_modified >= self._v3_migration_start_datetime
+        if self._running_migration:
+            return file.last_modified > self._v3_migration_start_datetime
+        if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
+            return False
         else:
             return super()._should_sync_file(file, logger)
 
@@ -91,7 +114,7 @@ class Cursor(DefaultFileBasedCursor):
         return {
             "history": converted_history,
             DefaultFileBasedCursor.CURSOR_FIELD: cursor,
-            "v3_migration_start_datetime": v3_migration_start_datetime,
+            "v3_migration_start_datetime": v3_migration_start_datetime.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT),
         }
 
     @staticmethod
