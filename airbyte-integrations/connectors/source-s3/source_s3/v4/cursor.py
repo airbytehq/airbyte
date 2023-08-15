@@ -38,7 +38,7 @@ class Cursor(DefaultFileBasedCursor):
             datetime.strptime(item, Cursor._DATE_FORMAT)
 
             # verify the format of the last_modified cursor
-            last_modified_at_cursor = value.get(Cursor.CURSOR_FIELD)
+            last_modified_at_cursor = value.get(DefaultFileBasedCursor.CURSOR_FIELD)
             if not last_modified_at_cursor:
                 return False
             datetime.strptime(last_modified_at_cursor, Cursor._LEGACY_DATE_TIME_FORMAT)
@@ -67,7 +67,7 @@ class Cursor(DefaultFileBasedCursor):
         """
         converted_history = {}
 
-        cursor_datetime = datetime.strptime(legacy_state[Cursor.CURSOR_FIELD], Cursor._LEGACY_DATE_TIME_FORMAT)
+        cursor_datetime = datetime.strptime(legacy_state[DefaultFileBasedCursor.CURSOR_FIELD], Cursor._LEGACY_DATE_TIME_FORMAT)
         for date_str, filenames in legacy_state.get("history", {}).items():
             datetime_obj = Cursor._get_adjusted_date_timestamp(cursor_datetime, datetime.strptime(date_str, Cursor._DATE_FORMAT))
 
@@ -88,7 +88,11 @@ class Cursor(DefaultFileBasedCursor):
         else:
             # If there is no history, _is_legacy_state should return False, so we should never get here
             raise ValueError("No history found in state message. Please contact support.")
-        return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_migration_start_datetime": v3_migration_start_datetime}
+        return {
+            "history": converted_history,
+            DefaultFileBasedCursor.CURSOR_FIELD: cursor,
+            "v3_migration_start_datetime": v3_migration_start_datetime,
+        }
 
     @staticmethod
     def _get_adjusted_date_timestamp(cursor_datetime: datetime, file_datetime: datetime) -> datetime:
