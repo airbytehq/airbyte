@@ -357,8 +357,8 @@ public class BufferedStreamConsumerTest {
   }
 
   /**
-   * Verify that if we ack a state message for stream2 while stream1 has unflushed records+state,
-   * that we do _not_ ack stream1's state message.
+   * Verify that if we ack a state message for stream2 while stream1 has unflushed records+state, that
+   * we do _not_ ack stream1's state message.
    */
   @Test
   void testStreamTail() throws Exception {
