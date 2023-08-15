@@ -20,10 +20,10 @@ If you previously used the `API Password` authentication method, please switch t
 7. Set the `Start Date` as the starting point for your data replication. Any data created before this date will not be synced.
 8. Click `Test and Save` to finish the source set up.
 
-You're ready to set up Shopify in Airbyte!
 
-### Scopes Required for Custom App
-Add the following scopes to your custom app to ensure Airbyte can sync all available data. To see a list of streams this source supports, see our full [Shopify documentation](https://docs.airbyte.com/integrations/sources/shopify/).
+### Scopes Required
+The Airbyte requires the following data scopes to fetch the data from your Shopify store:
+
 * `read_analytics`
 * `read_assigned_fulfillment_orders`
 * `read_gdpr_data_request`
