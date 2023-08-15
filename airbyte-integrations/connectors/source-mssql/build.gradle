@@ -12,8 +12,6 @@ application {
 }
 
 dependencies {
-    implementation 'io.airbyte:airbyte-cdk:0.0.2-SNAPSHOT'
-
     implementation libs.postgresql
 
     implementation project(':airbyte-db:db-lib')

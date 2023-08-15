@@ -16,14 +16,16 @@ from pipelines.gradle import GradleTask
 
 class BuildConnectorDistributionTar(GradleTask):
     title = "Build connector tar"
-    gradle_task_name = "jar"
+    gradle_task_name = "distTar"
 
     async def _run(self) -> StepResult:
+        cdk_includes = ["./airbyte-cdk/java/airbyte-cdk/**"]
         with_built_tar = (
             environments.with_gradle(
                 self.context,
-                self.build_include,
+                self.build_include + cdk_includes,
             )
+            .with_exec(["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"])
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_exec(self._get_gradle_command())
             .with_workdir(f"{self.context.connector.code_directory}/build/distributions")

@@ -296,7 +296,7 @@ class Salesforce:
                 resp = self.session.post(url, headers=headers, data=body)
             resp.raise_for_status()
         except HTTPError as err:
-            self.logger.warn(f"http error body: {err.response.text}")
+            self.logger.warning(f"http error body: {err.response.text}")
             raise
         return resp
 

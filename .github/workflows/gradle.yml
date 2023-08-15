@@ -167,9 +167,6 @@ jobs:
     steps:
       - name: Checkout master
         uses: actions/checkout@v3
-        # We checkout master to run mypy the CDK files that were modified in the PR.
-        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
-        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
         with:
           ref: master
       - name: Checkout Airbyte
@@ -222,6 +219,55 @@ jobs:
         with:
           command: SUB_BUILD=CDK ./gradlew build --scan
           attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+  java-cdk-build:
+    needs: changes
+    runs-on: ubuntu-latest
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.java_cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
+    name: "Airbyte Java CDK: Build"
+    timeout-minutes: 90
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        # We checkout master to run mypy the CDK files that were modified in the PR.
+        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
+        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
+        with:
+          ref: master
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}-java-cdk
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m \
+            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Build
+        uses: Wandalen/wretry.action@v1.0.42
+        with:
+          command: ./gradlew :airbyte-cdk:java:airbyte-cdk:build --scan
+          attempt_limit: 1
           attempt_delay: 5000 # in ms
 
   # Connectors Base
