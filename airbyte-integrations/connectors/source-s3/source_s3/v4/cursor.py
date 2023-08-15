@@ -11,9 +11,8 @@ from airbyte_cdk.sources.file_based.types import StreamState
 
 
 class Cursor(DefaultFileBasedCursor):
-    DATE_FORMAT = "%Y-%m-%d"
-    LEGACY_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-    CURSOR_FIELD = "_ab_source_file_last_modified"
+    _DATE_FORMAT = "%Y-%m-%d"
+    _LEGACY_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     _V4_MIGRATION_BUFFER = timedelta(hours=1)
 
     def set_initial_state(self, value: StreamState) -> None:
@@ -36,13 +35,13 @@ class Cursor(DefaultFileBasedCursor):
         try:
             # Verify datetime format in history
             item = list(value.get("history", {}).keys())[0]
-            datetime.strptime(item, Cursor.DATE_FORMAT)
+            datetime.strptime(item, Cursor._DATE_FORMAT)
 
             # verify the format of the last_modified cursor
             last_modified_at_cursor = value.get(Cursor.CURSOR_FIELD)
             if not last_modified_at_cursor:
                 return False
-            datetime.strptime(last_modified_at_cursor, Cursor.LEGACY_DATE_TIME_FORMAT)
+            datetime.strptime(last_modified_at_cursor, Cursor._LEGACY_DATE_TIME_FORMAT)
         except (IndexError, ValueError):
             return False
         return True
@@ -68,9 +67,9 @@ class Cursor(DefaultFileBasedCursor):
         """
         converted_history = {}
 
-        cursor_datetime = datetime.strptime(legacy_state[Cursor.CURSOR_FIELD], Cursor.LEGACY_DATE_TIME_FORMAT)
+        cursor_datetime = datetime.strptime(legacy_state[Cursor.CURSOR_FIELD], Cursor._LEGACY_DATE_TIME_FORMAT)
         for date_str, filenames in legacy_state.get("history", {}).items():
-            datetime_obj = Cursor._get_adjusted_date_timestamp(cursor_datetime, datetime.strptime(date_str, Cursor.DATE_FORMAT))
+            datetime_obj = Cursor._get_adjusted_date_timestamp(cursor_datetime, datetime.strptime(date_str, Cursor._DATE_FORMAT))
 
             for filename in filenames:
                 if filename in converted_history:
