@@ -15,17 +15,17 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class CatalogParser {
 
-  public static final String DEFAULT_RAW_TABLE_NAMESPACE = "airbyte";
+  public static final String DEFAULT_RAW_TABLE_NAMESPACE = "airbyte_internal";
   private final SqlGenerator<?> sqlGenerator;
-  private final String rawNamespaceOverride;
+  private final String rawNamespace;
 
   public CatalogParser(final SqlGenerator<?> sqlGenerator) {
     this(sqlGenerator, DEFAULT_RAW_TABLE_NAMESPACE);
   }
 
-  public CatalogParser(final SqlGenerator<?> sqlGenerator, final String rawNamespaceOverride) {
+  public CatalogParser(final SqlGenerator<?> sqlGenerator, final String rawNamespace) {
     this.sqlGenerator = sqlGenerator;
-    this.rawNamespaceOverride = rawNamespaceOverride;
+    this.rawNamespace = rawNamespace;
   }
 
   public ParsedCatalog parseCatalog(final ConfiguredAirbyteCatalog catalog) {
@@ -45,7 +45,7 @@ public class CatalogParser {
         final String hash = DigestUtils.sha1Hex(originalStreamConfig.id().finalNamespace() + "&airbyte&" + originalName).substring(0, 3);
         final String newName = originalName + "_" + hash;
         streamConfigs.add(new StreamConfig(
-            sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespaceOverride),
+            sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
             originalStreamConfig.syncMode(),
             originalStreamConfig.destinationSyncMode(),
             originalStreamConfig.primaryKey(),
@@ -118,7 +118,7 @@ public class CatalogParser {
     }
 
     return new StreamConfig(
-        sqlGenerator.buildStreamId(stream.getStream().getNamespace(), stream.getStream().getName(), rawNamespaceOverride),
+        sqlGenerator.buildStreamId(stream.getStream().getNamespace(), stream.getStream().getName(), rawNamespace),
         stream.getSyncMode(),
         stream.getDestinationSyncMode(),
         primaryKey,

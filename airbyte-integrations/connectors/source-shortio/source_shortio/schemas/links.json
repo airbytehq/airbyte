@@ -1,7 +1,23 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
+    "lcpath":{
+      "type": ["null", "string"]
+    },
+    "passwordContact": {
+      "type": ["null", "string"]
+    },
+    "hasPassword": {
+      "type": ["null", "boolean"]
+    },
+    "OwnerId": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
     "path": {
       "type": ["null", "string"]
     },

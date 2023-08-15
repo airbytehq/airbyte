@@ -38,14 +38,11 @@ As a community contributor, you will need to have an Atlas cluster to test Mongo
    1. Insert below json to the file with your configuration
        ```
       {
-        "database": "database_name",
-        "user": "user",
-        "password": "password",
-        "instance_type": {
-            "instance": "atlas",
-            "cluster_url": "cluster_url"
-        },
-        "auth_source": "admin"
+         "database": "database_name",
+         "user": "user",
+         "password": "password",
+         "cluster_url": "cluster_url"
+       }
       ```
 
 ## Airbyte Employee

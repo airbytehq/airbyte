@@ -96,3 +96,9 @@ dd-java-agent.jar
 
 # Ignore generated credentials from google-github-actions/auth
 gha-creds-*.json
+
+# Legacy pipeline reports path
+tools/ci_connector_ops/pipeline_reports/
+
+# ignore local build scan uri output
+scan-journal.log
