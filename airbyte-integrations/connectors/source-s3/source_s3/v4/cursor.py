@@ -18,13 +18,13 @@ class Cursor(DefaultFileBasedCursor):
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
             value = self._convert_legacy_state(value)
-        self._v3_min_sync_dt = value.get("v3_min_sync_dt", None)
+        self._v3_migration_start_datetime = value.get("v3_migration_start_datetime", None)
         super().set_initial_state(value)
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         # When upgrading from v3 to v4, we want to sync all files that were modified within one hour of the last sync
-        if self._v3_min_sync_dt:
-            return file.last_modified >= self._v3_min_sync_dt
+        if self._v3_migration_start_datetime:
+            return file.last_modified >= self._v3_migration_start_datetime
         else:
             return super()._should_sync_file(file, logger)
 
@@ -81,11 +81,11 @@ class Cursor(DefaultFileBasedCursor):
         if converted_history:
             filename, _ = max(converted_history.items(), key=lambda x: (x[1], x[0]))
             cursor = f"{cursor_datetime}_{filename}"
-            v3_min_sync_dt = cursor_datetime - timedelta(hours=1)
+            v3_migration_start_datetime = cursor_datetime - timedelta(hours=1)
         else:
             # If there is no history, _is_legacy_state should return False, so we should never get here
             raise ValueError("No history found in state message. This is likely due to a bug in the connector. Please contact support.")
-        return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_min_sync_dt": v3_min_sync_dt}
+        return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_migration_start_datetime": v3_migration_start_datetime}
 
     @staticmethod
     def _get_adjusted_date_timestamp(cursor_datetime: datetime, file_datetime: datetime) -> datetime:
