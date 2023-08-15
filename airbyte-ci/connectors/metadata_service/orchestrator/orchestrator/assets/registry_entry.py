@@ -119,6 +119,7 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
     return metadata_data
 
+
 @deep_copy_params
 def apply_ab_internal_defaults(metadata_data: dict) -> dict:
     """Apply ab_internal defaults to the metadata data field.

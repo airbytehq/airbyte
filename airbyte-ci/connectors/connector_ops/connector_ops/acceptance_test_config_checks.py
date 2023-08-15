@@ -16,6 +16,7 @@ GA_BYPASS_REASON_REVIEWERS = {"connector-operations"}
 GA_CONNECTOR_REVIEWERS = {"gl-python"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
+
 def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
     """Check if changed connectors have the expected connector acceptance test strictness level according to their release stage.
     1. Identify changed connectors

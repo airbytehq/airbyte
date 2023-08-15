@@ -405,7 +405,6 @@ def publish(
 def list(
     ctx: click.Context,
 ):
-
     selected_connectors = sorted(ctx.obj["selected_connectors_with_modified_files"], key=lambda x: x.technical_name)
     table = Table(title=f"{len(selected_connectors)} selected connectors")
     table.add_column("Modified")

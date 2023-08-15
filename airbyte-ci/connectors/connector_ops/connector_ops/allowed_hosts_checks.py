@@ -13,6 +13,7 @@ ALLOWED_HOST_THRESHOLD = {
     "ql": 300,
 }
 
+
 def _requires_allowed_hosts(connector: utils.Connector) -> bool:
     """Check if a connector requires allowed hosts.
 

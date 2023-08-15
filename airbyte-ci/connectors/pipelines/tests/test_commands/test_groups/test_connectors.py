@@ -127,9 +127,7 @@ def test_get_selected_connectors_with_modified_and_language():
 
 def test_get_selected_connectors_with_modified_and_support_level():
     first_modified_connector = pick_a_random_connector(support_level="community")
-    second_modified_connector = pick_a_random_connector(
-        support_level="certified", other_picked_connectors=[first_modified_connector]
-    )
+    second_modified_connector = pick_a_random_connector(support_level="certified", other_picked_connectors=[first_modified_connector])
     modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
     selected_connectors = connectors.get_selected_connectors_with_modified_files(
         selected_names=(),
