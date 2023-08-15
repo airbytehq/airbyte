@@ -1,0 +1,35 @@
+{
+    "type": "object",
+    "properties": {
+      "id": { "type": "string" },
+      "name": { "type": "string" },
+      "headline": { "type": "string" },
+      "contact": { "type": "string" },
+      "emails": { "type": ["null", "object"] },
+      "phones": { "type": ["null", "object"] },
+      "confidentiality": { "type": "string" },
+      "location": { "type": "string" },
+      "links": { "type": ["null", "object"] },
+      "createdAt": { "type": "string", "format": "timestamp" },
+      "updatedAt": { "type": "string", "format": "timestamp" },
+      "lastInteractionAt": { "type": "string", "format": "timestamp" },
+      "lastAdvancedAt": { "type": "string", "format": "timestamp" },
+      "snoozedUntil": { "type": "string", "format": "timestamp" },
+      "archivedAt": { "type": "string", "format": "timestamp" },
+      "archiveReason": { "type": ["null", "string"] },
+      "stage": { "type": "string" },
+      "stageChanges": { "type": ["null", "object"] },
+      "owner": { "type": "string" },
+      "tags": { "type": ["null", "object"] },
+      "sources": { "type": ["null", "object"] },
+      "origin": { "type": "string" },
+      "sourcedBy": { "type": "string" },
+      "applications": { "type": ["null", "object"] },
+      "resume": { "type": ["null", "object"] },
+      "followers": { "type": ["null", "object"] },
+      "urls": { "type": ["null", "object"] },
+      "dataProtection": { "type": ["null", "object"] },
+      "isAnonymized": { "type": ["null", "string"] }
+    }
+  }
+  

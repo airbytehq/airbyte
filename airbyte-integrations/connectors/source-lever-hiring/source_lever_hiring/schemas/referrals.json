@@ -1,0 +1,17 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "text": { "type": "string" },
+        "instructions": { "type": "string" },
+        "fields": { "type": ["null", "object"] },
+        "baseTemplateId": { "type": "string" },
+        "user": { "type": "string" },
+        "referrer": { "type": "string" },
+        "stage": { "type": "string" },
+        "createdAt": { "type": "string", "format": "timestamp" },
+        "completedAt": { "type": "string", "format": "timestamp" }
+      }
+  }
+  

@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "opportunityId": { "type": "string" },
+    "candidateId": { "type": "string" },
+    "createdAt": { "type": "string", "format": "timestamp" },
+    "type": { "type": "string" },
+    "posting": { "type": "string" },
+    "user": { "type": "string" },
+    "name": { "type": "string" },
+    "email": { "type": "string" },
+    "phone": { "type": ["null", "object"] },
+    "company": { "type": ["null", "object"] },
+    "links": { "type": ["null", "object"] },
+    "comments": { "type": ["null", "object"] },
+    "resume": { "type": ["null", "object"] },
+    "customQuestions": { "type": ["null", "object"] }
+  }
+}

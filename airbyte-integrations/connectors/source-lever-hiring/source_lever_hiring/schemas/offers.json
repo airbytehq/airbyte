@@ -1,0 +1,13 @@
+{
+    "type": "object",
+    "properties": {
+      "id": { "type": "string" },
+      "createdAt": { "type": "string", "format": "timestamp" },
+      "status": { "type": "string" },
+      "creator": { "type": "string" },
+      "fields": { "type": ["null", "object"] },
+      "sentDocument": { "type": ["null", "object"] },
+      "signedDocument": { "type": ["null", "object"] }
+    }
+  }
+  

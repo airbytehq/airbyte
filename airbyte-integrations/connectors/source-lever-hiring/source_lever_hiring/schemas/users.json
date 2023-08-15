@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "username": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "timestamp" },
+        "deactivatedAt": { "type": "string", "format": "timestamp" },
+        "externalDirectoryId": { "type": "string" },
+        "accessRole": { "type": "string" },
+        "photo": { "type": "string" },
+        "linkedContactIds": { "type": ["null", "object"] }
+      }
+  }
+  

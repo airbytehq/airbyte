@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "panel": { "type": "string" },
+    "subject": { "type": "string" },
+    "note": { "type": "string" },
+    "interviewers": { "type": ["null", "object"] },
+    "timezone": { "type": "string" },
+    "createdAt": { "type": "string", "format": "timestamp" },
+    "date": { "type": "string", "format": "timestamp" },
+    "duration": { "type": "string" },
+    "location": { "type": "string" },
+    "feedbackTemplate": { "type": "string" },
+    "feedbackForms": { "type": ["null", "object"] },
+    "feedbackReminder": { "type": "string" },
+    "user": { "type": "string" },
+    "stage": { "type": "string" },
+    "canceledAt": { "type": "string", "format": "timestamp" },
+    "postings": { "type": ["null", "object"] }
+  }
+}

@@ -1,0 +1,14 @@
+{
+    "type": "object",
+    "properties": {
+      "id": { "type": "string" },
+      "text": { "type": "string" },
+      "fields": { "type": ["null", "object"] },
+      "user": { "type": "string" },
+      "secret": { "type": "string" },
+      "completedAt": { "type": "string", "format": "timestamp" },
+      "createdAt": { "type": "string", "format": "timestamp" },
+      "deletedAt": { "type": "string", "format": "timestamp" }
+    }
+  }
+  
