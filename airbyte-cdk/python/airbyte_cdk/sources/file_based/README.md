@@ -16,10 +16,6 @@ The abstract classes house the vast majority of the logic required by file-based
 
 The result is that an implementation of a source might look like this:
 ```
-class CustomSource(AbstractFileBasedSource):
-    def __init__(self):
-        self.stream_reader = CustomStreamReader(<...>)
-
 class CustomStreamReader(AbstractStreamReader):
     def open_file(self, remote_file: RemoteFile) -> FileHandler:
         <...>
@@ -95,21 +91,12 @@ Only error if there are conflicting field types or malformed rows.
 
 When the `schemaless` is enabled, validation will be skipped.
 
-## TODO Globs(?)
-Maybe provide a couple of examples
+## Breaking Changes (compared to previous S3 implementation)
 
-## TODO Breaking Changes (compared to previous S3 implementation)
-
-* Different behavior if input schema maps to an object or array
-* String values are only converted to null if `strings_can_be_null` is true
-* [CSV] `decimal_point` option is deprecated:
-* [CSV] `auto_dict_encode` option is deprecated:
-* [CSV] `timestamp_parsers` option is deprecated:
-* [Parquet] `columns` option is deprecated: you can use Airbyte column selection in order to have the same behavior. We don't expect it, but this could have impact on the performance as payload could be bigger.
-
-### TODO Spec backward compatibility and migration
-
-
+TODO * Different behavior if input schema maps to an object or array
+* [CSV] Before, a string value would not be considered as `null_values` if the column type was a string. We will now start to cast string columns with values matching `null_values` to null.  
+* [CSV] `decimal_point` option is deprecated: It is not possible anymore to use another character than `.` to separate the integer part from non-integer part. Given that the float is format with another character than this, it will be considered as a string.
+* [Parquet] `columns` option is deprecated: You can use Airbyte column selection in order to have the same behavior. We don't expect it, but this could have impact on the performance as payload could be bigger.
 
 ## Incremental syncs
 The file-based connectors supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -131,8 +118,3 @@ After the initial sync, the connector only pulls files that were modified since 
 The connector checkpoints the connection states when it is done syncing all files for a given timestamp. The connection's state only keeps track of the last 10 000 files synced. If more than 10 000 files are synced, the connector won't be able to rely on the connection state to deduplicate files. In this case, the connector will initialize its cursor to the minimum between the earliest file in the history, or 3 days ago.
 
 Both the maximum number of files, and the time buffer can be configured by connector developers.
-
-
-
-# TODO: days_to_sync_if_history_is_full
-start_date?
