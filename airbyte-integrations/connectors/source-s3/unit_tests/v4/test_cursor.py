@@ -208,6 +208,42 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
             [],
             id="input_state_is_v4_no_new_files",
         ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
+                RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z")),
+            ],
+            [RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z"))],
+            id="input_state_is_v4_with_new_file_later_than_cursor",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
+                RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z")),
+            ],
+            [RemoteFile(uri="file4.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
+            id="input_state_is_v4_with_new_file_earlier_than_cursor",
+        ),
     ],
 )
 def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync):
