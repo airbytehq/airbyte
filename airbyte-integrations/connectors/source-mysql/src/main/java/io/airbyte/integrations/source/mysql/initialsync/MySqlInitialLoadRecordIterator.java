@@ -101,8 +101,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         final String sql = String.format("SELECT %s FROM %s ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
             quotedCursorField, chunkSize);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
-
       } else {
         LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
         final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
@@ -112,7 +112,6 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         final MysqlType cursorFieldType = pkInfo.fieldType();
         sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());
-
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       }

@@ -86,8 +86,7 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessage;
-      finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
+      final AirbyteStateMessage finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
       LOGGER.info("Finished initial sync of stream {}, Emitting final state, state is {}", pair, finalStateMessage);
       return new AirbyteMessage()
           .withType(Type.STATE)
