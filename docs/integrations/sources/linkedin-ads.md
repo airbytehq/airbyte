@@ -119,6 +119,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
    * select **Pivot By** property for the report from the list
    * select **Time Granularity** property for the report from the list
 10. Click **Set up source**.
+<!-- /env:cloud -->
 
 <!-- env:oss -->
 #### For Airbyte Open Source:
