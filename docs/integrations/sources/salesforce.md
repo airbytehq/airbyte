@@ -10,6 +10,13 @@ This page contains the setup guide and reference information for the Salesforce 
 - (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
 <!-- /env:oss -->
 
+
+:::tip
+
+To use this connector, you'll need at least the Enterprise edition of Salesforce or the Professional Edition with API access purchased as an add-on. Reference the [Salesforce docs about API access](https://help.salesforce.com/s/articleView?id=000385436&type=1) for more information.
+
+:::
+
 ## Setup guide
 
 ### Step 1: (Optional, Recommended) Create a read-only Salesforce user
@@ -81,7 +88,7 @@ The Salesforce source connector supports the following sync modes:
 
 ### Incremental Deletes sync
 
-The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the `isDeleted=true` value in the respective field.
+The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with `isDeleted=true`.
 
 ## Performance considerations
 
@@ -91,36 +98,48 @@ The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](htt
 
 The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
 
-Airbyte fetches and handles all the possible and available streams dynamically based on:
+Airbyte allows exporting all available Salesforce objects dynamically based on:
 
 - If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
+- If the salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
 
-- If the stream has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with.
+### A note on the BULK API vs REST API and their limitations
 
-**Note:** [BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) cannot be used to receive data from the following streams due to Salesforce API limitations. The Salesforce connector syncs them using the REST API which will occasionally cost more of your API quota:
+Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
 
-- AcceptedEventRelation
-- Attachment
-- CaseStatus
-- ContractStatus
-- DeclinedEventRelation
-- FieldSecurityClassification
-- KnowledgeArticle
-- KnowledgeArticleVersion
-- KnowledgeArticleVersionHistory
-- KnowledgeArticleViewStat
-- KnowledgeArticleVoteStat
-- OrderStatus
-- PartnerRole
-- RecentlyViewed
-- ServiceAppointmentStatus
-- ShiftStatus
-- SolutionStatus
-- TaskPriority
-- TaskStatus
-- UndecidedEventRelation
+- The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
+- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionalyl cost more of your API quota. This list of objects was obtained experimentally, and includes the following objects: 
+   - AcceptedEventRelation
+   - Attachment
+   - CaseStatus
+   - ContractStatus
+   - DeclinedEventRelation
+   - FieldSecurityClassification
+   - KnowledgeArticle
+   - KnowledgeArticleVersion
+   - KnowledgeArticleVersionHistory
+   - KnowledgeArticleViewStat
+   - KnowledgeArticleVoteStat
+   - OrderStatus
+   - PartnerRole
+   - RecentlyViewed
+   - ServiceAppointmentStatus
+   - ShiftStatus
+   - SolutionStatus
+   - TaskPriority
+   - TaskStatus
+   - UndecidedEventRelation
 
-## Salesforce tutorials
+More information on the differences between various Salesforce APIs can be found [here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
+
+:::info Force Using Bulk API
+
+If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync Stream using BULK API.
+
+:::
+
+
+## Tutorials
 
 Now that you have set up the Salesforce source connector, check out the following Salesforce tutorials:
 
@@ -130,7 +149,8 @@ Now that you have set up the Salesforce source connector, check out the followin
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.2   | 2023-08-10 | [28781](https://github.com/airbytehq/airbyte/pull/28781) | Fix pagination for BULK API jobs; Add option to force use BULK API                                                                   |
 | 2.1.1   | 2023-07-06 | [28021](https://github.com/airbytehq/airbyte/pull/28021) | Several Vulnerabilities Fixes; switched to use alpine instead of slim, CVE-2022-40897, CVE-2023-29383, CVE-2023-31484, CVE-2016-2781 |
 | 2.1.0   | 2023-06-26 | [27726](https://github.com/airbytehq/airbyte/pull/27726) | License Update: Elv2                                                                                                                 |
 | 2.0.14  | 2023-05-04 | [25794](https://github.com/airbytehq/airbyte/pull/25794) | Avoid pandas inferring wrong data types by forcing all data type as object                                                           |
