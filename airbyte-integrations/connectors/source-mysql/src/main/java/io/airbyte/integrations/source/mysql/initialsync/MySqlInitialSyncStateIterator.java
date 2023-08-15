@@ -23,7 +23,7 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialSyncStateIterator.class);
   public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
-  public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
+  public static final Integer SYNC_CHECKPOINT_RECORDS = 100_000;
 
   private final Iterator<AirbyteMessage> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;

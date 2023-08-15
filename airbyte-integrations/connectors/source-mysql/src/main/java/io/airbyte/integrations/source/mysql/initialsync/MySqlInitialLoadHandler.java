@@ -109,7 +109,6 @@ public class MySqlInitialLoadHandler {
       LOGGER.info("Chunk size could not be determined for pair: {}, defaulting to {} rows", pair, DEFAULT_CHUNK_SIZE);
       return DEFAULT_CHUNK_SIZE;
     }
-    final long tableSize = tableSizeInfo.tableSize();
     final long avgRowLength = tableSizeInfo.avgRowLength();
     final long chunkSize = QUERY_TARGET_SIZE_GB / avgRowLength;
     LOGGER.info("Chunk size determined for pair: {}, is {}", pair, chunkSize);

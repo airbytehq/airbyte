@@ -22,6 +22,16 @@ import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This record iterator operates over a single stream. It continuously reads data from a table via multiple queries with the configured
+ * chunk size until the entire table is processed. The next query uses the highest watermark of the primary key seen in the previous
+ * subquery. Consider a table with chunk size = 1,000,000, and 3,500,000 records. The series of queries executed are :
+ * Query 1 : select * from table order by pk limit 1,800,000, pk_max = pk_max_1
+ * Query 2 : select * from table where pk > pk_max_1 order by pk limit 1,800,000, pk_max = pk_max_2
+ * Query 3 : select * from table where pk > pk_max_2 order by pk limit 1,800,000, pk_max = pk_max_3
+ * Query 4 : select * from table where pk > pk_max_3 order by pk limit 1,800,000, pk_max = pk_max_4
+ * Query 5 : select * from table where pk > pk_max_4 order by pk limit 1,800,000. Final query, since there are zero records processed here.
+ */
 public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     implements AutoCloseableIterator<JsonNode> {
 
@@ -61,7 +71,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   @CheckForNull
   @Override
   protected JsonNode computeNext() {
-    if (currentIterator == null || !currentIterator.hasNext()) {
+    if (shouldBuildNextSubquery()) {
       try {
         LOGGER.info("Subquery number : {}", numSubqueries);
         final Stream<JsonNode> stream = database.unsafeQuery(
@@ -73,14 +83,20 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         }
         currentIterator = AutoCloseableIterators.fromStream(stream, pair);
         numSubqueries++;
+        // If the current subquery has no records associated with it, the entire stream has been read.
+        if (!currentIterator.hasNext()) {
+          return endOfData();
+        }
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     }
-    if (!currentIterator.hasNext()) {
-      return endOfData();
-    }
     return currentIterator.next();
+  }
+
+  private boolean shouldBuildNextSubquery() {
+    // The next sub-query should be built if (i) it is the first subquery in the sequence. (ii) the previous subquery has finished.
+    return currentIterator == null || !currentIterator.hasNext();
   }
 
   private PreparedStatement getPkPreparedStatement(final Connection connection) {
