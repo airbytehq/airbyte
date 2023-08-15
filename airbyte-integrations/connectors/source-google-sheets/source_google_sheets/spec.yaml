@@ -12,18 +12,22 @@ connectionSpecification:
       type: string
       title: Spreadsheet Link
       description: >-
-        Enter the link to the Google spreadsheet you want to sync
+        Enter the link to the Google spreadsheet you want to sync. To copy the link, click the 'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
       examples:
         - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
     row_batch_size:
       type: integer
       title: Row Batch Size
-      description: Number of rows fetched when making a Google Sheet API call. Defaults to 200.
+      description: The number of rows fetched when making a Google Sheet API call. Defaults to 200.
       default: 200
+      examples:
+        - 50
+        - 100
+        - 200
     names_conversion:
       type: boolean
       title: Columns Name Conversion
-      description: Columns name conversion using a set of rules, for example, 'My Name' -> 'my-name'.
+      description: Enables the conversion of column names to a standardized, SQL-compliant format. For example, 'My Name' -> 'my_name'.
       default: false
     credentials:
       type: object
@@ -45,7 +49,7 @@ connectionSpecification:
             client_id:
               title: Client ID
               type: string
-              description: "Enter your Google application's Client ID"
+              description: "Enter your Google application's Client ID. "
               airbyte_secret: true
             client_secret:
               title: Client Secret
