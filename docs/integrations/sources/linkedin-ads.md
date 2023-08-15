@@ -108,7 +108,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 1. [Login to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **LinkedIn Ads** from the **Source type** dropdown.
-4. Enter a name for the <connector name> connector.
+4. Enter a name for the LinkedIn Ads connector.
 5. Click **Authenticate your account**.
 6. Login and Authorize the LinkedIn Ads account
 7. Add `Start Date` - the starting point for your data replication.
