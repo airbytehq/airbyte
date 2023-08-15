@@ -8,6 +8,7 @@ from orchestrator.templates.render import (
     simple_link_html,
     icon_image_html,
     test_badge_html,
+    internal_level_html,
     ColumnInfo,
 )
 from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
@@ -83,6 +84,22 @@ def test_summary_url(row: pd.DataFrame) -> str:
     return get_public_metadata_service_url(path)
 
 
+def ab_internal_sl(row: pd.DataFrame) -> str:
+    if "ab_internal_oss" not in row:
+        return None
+
+    ab_internal = row["ab_internal_oss"]
+    return ab_internal["sl"] if "sl" in ab_internal else None
+
+
+def ab_internal_ql(row: pd.DataFrame) -> str:
+    if "ab_internal_oss" not in row:
+        return None
+
+    ab_internal = row["ab_internal_oss"]
+    return ab_internal["ql"] if "ql" in ab_internal else None
+
+
 # 📊 Dataframe Augmentation
 
 
@@ -117,6 +134,10 @@ def augment_and_normalize_connector_dataframes(
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
+
+    # Show Internal Fields
+    total_registry["ab_internal_ql"] = total_registry.apply(ab_internal_ql, axis=1)
+    total_registry["ab_internal_sl"] = total_registry.apply(ab_internal_sl, axis=1)
 
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
@@ -226,8 +247,22 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
             "title": "Connector Type",
         },
         {
+            "column": "releaseStage_oss",
+            "title": "Release Stage",
+        },
+        {
             "column": "supportLevel_oss",
             "title": "Support Level",
+        },
+        {
+            "column": "ab_internal_sl",
+            "title": "Internal SL",
+            "formatter": internal_level_html,
+        },
+        {
+            "column": "ab_internal_ql",
+            "title": "Internal QL",
+            "formatter": internal_level_html,
         },
         {
             "column": "test_summary_url",
