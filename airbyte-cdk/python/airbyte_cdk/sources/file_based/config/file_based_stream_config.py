@@ -32,6 +32,11 @@ class FileBasedStreamConfig(BaseModel):
         title="Globs",
         description='The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
     )
+    legacy_prefix: Optional[str] = Field(
+        title="Legacy Prefix",
+        description="The path prefix configured in v3 versions of the S3 connector. This option is deprecated in favor of a single glob.",
+        airbyte_hidden=True,
+    )
     validation_policy: ValidationPolicy = Field(
         title="Validation Policy",
         description="The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
