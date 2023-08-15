@@ -256,6 +256,10 @@ public class BigQueryUtils {
     return GcsDestinationConfig.getGcsDestinationConfig(getGcsAvroJsonNodeConfig(config));
   }
 
+  public static GcsDestinationConfig getGcsCsvDestinationConfig(final JsonNode config) {
+    return GcsDestinationConfig.getGcsDestinationConfig(getGcsJsonNodeConfig(config));
+  }
+
   public static JsonNode getGcsAvroJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()

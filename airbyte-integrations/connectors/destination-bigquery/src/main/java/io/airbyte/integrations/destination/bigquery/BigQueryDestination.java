@@ -309,7 +309,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
-    final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
+    final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsCsvDestinationConfig(config);
     final UUID stagingId = UUID.randomUUID();
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
     final boolean keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config);
@@ -323,15 +323,16 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         syncDatetime,
         keepStagingFiles);
 
-    final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) gcsConfig.getFormatConfig();
-    final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator = getRecordFormatterCreator(namingResolver);
+//    final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) gcsConfig.getFormatConfig();
+//    final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator = getRecordFormatterCreator(namingResolver);
 
     final BufferCreateFunction onCreateBuffer =
-        BigQueryAvroSerializedBuffer.createBufferFunction(
-            avroFormatConfig,
-            recordFormatterCreator,
-            getAvroSchemaCreator(),
-            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX));
+        null;
+//        BigQueryAvroSerializedBuffer.createBufferFunction(
+//            avroFormatConfig,
+//            recordFormatterCreator,
+//            getAvroSchemaCreator(),
+//            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX));
 
     // COPIED code end
 
@@ -343,7 +344,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       outputRecordCollector,
       bigQueryGcsOperations,
       onCreateBuffer,
-      getRecordFormatterCreator(namingResolver),
+      getCsvRecordFormatterCreator(namingResolver),
       namingResolver::getTmpTableName,
       getTargetTableNameTransformer(namingResolver),
       typerDeduper,
@@ -509,6 +510,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected Function<JsonNode, BigQueryRecordFormatter> getRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
     return streamSchema -> new GcsAvroBigQueryRecordFormatter(streamSchema, namingResolver);
+  }
+
+  protected Function<JsonNode, BigQueryRecordFormatter> getCsvRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
+    return streamSchema -> new GcsCsvBigQueryRecordFormatter(streamSchema, namingResolver);
   }
 
   protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
