@@ -11,13 +11,31 @@ Thus, there are generally 4 types of workers.
 
 **Note: Workers here refers to Airbyte workers. Temporal, which Airbyte uses under the hood for scheduling, has its own worker concept. This distinction is important.**
 
-## Job State Machine
+## Sync Jobs
 
-Jobs have the following state machine.
+At a high level, a sync job is an individual invocation of the Airbyte pipeline to synchronize data from a source to a destination data store.
+
+### Sync Job State Machine
+
+Sync jobs have the following state machine.
 
 ![Job state machine](../.gitbook/assets/job-state-machine.png)
 
 [Image Source](https://docs.google.com/drawings/d/1cp8LRZs6UnhAt3jbQ4h40nstcNB0OBOnNRdMFwOJL8I/edit)
+
+### Attempts and Retries
+
+In the event of a failure, the Airbyte platform will retry the pipeline. Each of these sub-invocations of a job is called an attempt.
+
+### Retry Rules
+
+Based on the outcome of previous attempts, the number of permitted attempts per job changes. Currently, Airbyte is configured to allow the following:
+
+* 5 subsequent attempts where no data was synchronized
+* 10 total attempts where no data was synchronized
+* 10 total attempts where some data was synchronized
+
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md) for more details.
 
 ## Worker Responsibilities
 
@@ -105,9 +123,9 @@ The Container Orchestrator is only available for Airbyte Kubernetes today and au
 
 Users running Airbyte Docker should be aware of the above pitfalls.
 
-## Configuring Workers
+## Configuring Jobs & Workers
 
-Details on configuring workers can be found [here](../operator-guides/configuring-airbyte.md).
+Details on configuring jobs & workers can be found [here](../operator-guides/configuring-airbyte.md).
 
 ### Worker Parallization
 Airbyte exposes the following environment variable to change the maximum number of each type of worker allowed to run in parallel. 
