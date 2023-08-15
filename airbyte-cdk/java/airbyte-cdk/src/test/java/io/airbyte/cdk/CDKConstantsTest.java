@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 class CDKConstantsTest {
 
-  /* TODO: Remove these three canary tests once real tests are in place. */
+  /* TODO: Remove these canary tests once real tests are in place. */
   @Test
   void getVersion() {
     assertEquals("0.0.2", CDKConstants.VERSION.replace("-SNAPSHOT", ""));

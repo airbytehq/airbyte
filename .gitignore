@@ -102,10 +102,3 @@ tools/ci_connector_ops/pipeline_reports/
 
 # ignore local build scan uri output
 scan-journal.log
-
-# Java compilation outputs
-# bin  # << Don't full ignore 'bin'. The CI bot will auto-delete files in your PR if so. Example auto-commit: https://github.com/airbytehq/airbyte/commit/71437260b04b2e6fb30920a6af9cb96c362a1915
-#           
-# Instead, use a local .gitignore file to ignore the 'bin' folder if this is a problem for you. (https://stackoverflow.com/a/50981828/4298208)
-#
-# $ echo bin >> ~/.gitignore && git config --global core.excludesfile ~/.gitignore
