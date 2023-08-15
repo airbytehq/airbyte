@@ -75,6 +75,9 @@ class Cursor(DefaultFileBasedCursor):
                 if filename in converted_history:
                     if datetime_obj > datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT):
                         converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
+                    else:
+                        # If the file was already synced with a later timestamp, ignore
+                        pass
                 else:
                     converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
 
