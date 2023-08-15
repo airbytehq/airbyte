@@ -177,7 +177,7 @@ SCHEDULES = [
     ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="*/5 * * * *", tags={"dagster/priority": HIGH_QUEUE_PRIORITY}),
     ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
     ScheduleDefinition(
-        cron_schedule="0 8 * * *", # Daily at 8am US/Pacific
+        cron_schedule="0 8 * * *",  # Daily at 8am US/Pacific
         execution_timezone="US/Pacific",
         job=generate_stale_gcs_latest_metadata_file,
     ),

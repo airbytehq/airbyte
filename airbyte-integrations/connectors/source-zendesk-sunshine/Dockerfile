@@ -1,16 +1,28 @@
-FROM python:3.9-slim
+FROM python:3.9.11-alpine3.15 as base
+FROM base as builder
 
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip  \
+    && apk --no-cache add tzdata build-base
 
 WORKDIR /airbyte/integration_code
-COPY source_zendesk_sunshine ./source_zendesk_sunshine
-COPY main.py ./
 COPY setup.py ./
-RUN pip install .
+RUN pip install --prefix=/install .
+
+FROM base
+COPY --from=builder /install /usr/local
+# add default timezone settings
+COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
+RUN echo "Etc/UTC" > /etc/timezone
+
+WORKDIR /airbyte/integration_code
+COPY main.py ./
+COPY source_zendesk_sunshine ./source_zendesk_sunshine
+
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.2
 LABEL io.airbyte.name=airbyte/source-zendesk-sunshine
