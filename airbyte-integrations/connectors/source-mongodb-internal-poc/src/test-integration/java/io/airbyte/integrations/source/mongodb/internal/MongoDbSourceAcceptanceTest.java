@@ -103,16 +103,15 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     final List<Field> fields = List.of(
-            Field.of(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING),
-            Field.of("id", JsonSchemaType.STRING),
-            Field.of("name", JsonSchemaType.STRING),
-            Field.of("test", JsonSchemaType.STRING),
-            Field.of("test_array", JsonSchemaType.ARRAY),
-            Field.of("empty_test", JsonSchemaType.STRING),
-            Field.of("double_test", JsonSchemaType.NUMBER),
-            Field.of("int_test", JsonSchemaType.NUMBER),
-            Field.of("object_test", JsonSchemaType.OBJECT)
-    );
+        Field.of(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING),
+        Field.of("id", JsonSchemaType.STRING),
+        Field.of("name", JsonSchemaType.STRING),
+        Field.of("test", JsonSchemaType.STRING),
+        Field.of("test_array", JsonSchemaType.ARRAY),
+        Field.of("empty_test", JsonSchemaType.STRING),
+        Field.of("double_test", JsonSchemaType.NUMBER),
+        Field.of("int_test", JsonSchemaType.NUMBER),
+        Field.of("object_test", JsonSchemaType.OBJECT));
 
     final AirbyteStream airbyteStream = MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields);
     final ConfiguredAirbyteStream configuredIncrementalAirbyteStream = convertToConfiguredAirbyteStream(airbyteStream, SyncMode.INCREMENTAL);

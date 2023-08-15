@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class MongoDbStateIterator implements Iterator<AirbyteMessage> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIterator.class);
   private final MongoCursor<Document> iter;
 
@@ -34,11 +35,19 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   private final Instant emittedAt;
   private final int batchSize;
-  /** Counts the number of records seen in this batch, resets when a state-message has been generated. */
+  /**
+   * Counts the number of records seen in this batch, resets when a state-message has been generated.
+   */
   private int count = 0;
-  /** Pointer to the last document seen by this iterator, necessary to track the _id field for state messages */
+  /**
+   * Pointer to the last document seen by this iterator, necessary to track the _id field for state
+   * messages
+   */
   private Document last = null;
-  /** This iterator outputs a final state when the wrapped `iter` has concluded. When this is true, the final message will be returned. */
+  /**
+   * This iterator outputs a final state when the wrapped `iter` has concluded. When this is true, the
+   * final message will be returned.
+   */
   private boolean finalStateNext = false;
 
   MongoDbStateIterator(final MongoCursor<Document> iter, final ConfiguredAirbyteStream stream, final Instant emittedAt, final int batchSize) {
@@ -76,13 +85,11 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       final var streamState = new AirbyteStreamState()
           .withStreamDescriptor(new StreamDescriptor()
               .withName(stream.getStream().getName())
-              .withNamespace(stream.getStream().getNamespace())
-          );
+              .withNamespace(stream.getStream().getNamespace()));
       if (last != null) {
         // TODO add type support in here once more than ObjectId fields are supported
         streamState.withStreamState(Jsons.jsonNode(
-            new MongodbStreamState(last.getObjectId("_id").toString())
-        ));
+            new MongodbStreamState(last.getObjectId("_id").toString())));
       }
 
       final var stateMessage = new AirbyteStateMessage()
@@ -104,7 +111,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
             .withStream(stream.getStream().getName())
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
-            .withData(jsonNode)
-        );
+            .withData(jsonNode));
   }
+
 }

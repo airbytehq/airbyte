@@ -47,8 +47,9 @@ import org.slf4j.LoggerFactory;
 public class MongoDbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
+
   /** Helper class for holding a collection-name and stream state together */
-  private record CollectionNameState(Optional<String> name, Optional<MongodbStreamState> state){}
+  private record CollectionNameState(Optional<String> name, Optional<MongodbStreamState> state) {}
 
   /**
    * Number of documents to read at once.
@@ -117,12 +118,12 @@ public class MongoDbSource extends BaseConnector implements Source {
       final var database = mongoClient.getDatabase(databaseName);
       // TODO treat INCREMENTAL and FULL_REFRESH differently?
       return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(
-              convertCatalogToIterators(catalog, states, database, emittedAt, fetchSize),
-              AirbyteTraceMessageUtility::emitStreamStatusTrace),
+          convertCatalogToIterators(catalog, states, database, emittedAt, fetchSize),
+          AirbyteTraceMessageUtility::emitStreamStatusTrace),
           mongoClient::close);
     } catch (final Exception e) {
-          mongoClient.close();
-          throw e;
+      mongoClient.close();
+      throw e;
     }
   }
 
@@ -131,57 +132,56 @@ public class MongoDbSource extends BaseConnector implements Source {
    */
   @VisibleForTesting
   protected Map<String, MongodbStreamState> convertState(final JsonNode state) {
-    // I'm unsure if the JsonNode data is going to be a singular AirbyteStateMessage or an array of AirbyteStateMessages.
-    // So this currently handles both cases, converting the singular message into a list of messages, leaving the list of messages
+    // I'm unsure if the JsonNode data is going to be a singular AirbyteStateMessage or an array of
+    // AirbyteStateMessages.
+    // So this currently handles both cases, converting the singular message into a list of messages,
+    // leaving the list of messages
     // as a list of messages, or returning an empty list.
     final List<AirbyteStateMessage> states = Jsons.tryObject(state, AirbyteStateMessage.class)
         .map(List::of)
-        .orElseGet(() ->
-            Jsons.tryObject(state, AirbyteStateMessage[].class)
-                .map(Arrays::asList)
-                .orElse(List.of())
-        );
+        .orElseGet(() -> Jsons.tryObject(state, AirbyteStateMessage[].class)
+            .map(Arrays::asList)
+            .orElse(List.of()));
 
     // TODO add namespace support?
     return states.stream()
         .filter(s -> s.getType() == AirbyteStateType.STREAM)
         .map(s -> new CollectionNameState(
             Optional.ofNullable(s.getStream().getStreamDescriptor()).map(StreamDescriptor::getName),
-            Jsons.tryObject(s.getStream().getStreamState(), MongodbStreamState.class))
-        )
+            Jsons.tryObject(s.getStream().getStreamState(), MongodbStreamState.class)))
         // only keep states that could be parsed
         .filter(p -> p.name.isPresent() && p.state.isPresent())
         .collect(Collectors.toMap(
-          p -> p.name.orElseThrow(),
-          p -> p.state.orElseThrow())
-        );
+            p -> p.name.orElseThrow(),
+            p -> p.state.orElseThrow()));
   }
 
   /**
    * Converts the streams in the catalog into a list of AutoCloseableIterators.
    */
   private List<AutoCloseableIterator<AirbyteMessage>> convertCatalogToIterators(
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, MongodbStreamState> states,
-      final MongoDatabase database,
-      final Instant emittedAt,
-      final Integer fetchSize
-  ) {
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final Map<String, MongodbStreamState> states,
+                                                                                final MongoDatabase database,
+                                                                                final Instant emittedAt,
+                                                                                final Integer fetchSize) {
     return catalog.getStreams()
         .stream()
         .peek(airbyteStream -> {
-          if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
+          if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+            LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
         })
         .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var collection = database.getCollection(collectionName);
           // TODO verify that if all fields are selected that all fields are returned here
-          //  (or should this check and ignore them if all fields are selected)
+          // (or should this check and ignore them if all fields are selected)
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
           // The filter determines the starting point of this iterator based on the state of this collection.
-          // If a state exists, it will use that state to create a query akin to "where _id > [last saved state] order by _id ASC".
+          // If a state exists, it will use that state to create a query akin to "where _id > [last saved
+          // state] order by _id ASC".
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = states.entrySet().stream()
               // look only for states that match this stream's name
