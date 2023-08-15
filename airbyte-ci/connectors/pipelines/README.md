@@ -379,6 +379,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 | ------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 0.5.0   | [#28000](https://github.com/airbytehq/airbyte/pull/28000) | Run connector acceptance tests with dagger-in-dagger.                                                     |
 | 0.4.7   | [#29156](https://github.com/airbytehq/airbyte/pull/29156) | Improve how we check existence of requirement.txt or setup.py file to not raise early pip install errors. |
 | 0.4.6   | [#28729](https://github.com/airbytehq/airbyte/pull/28729) | Use keyword args instead of positional argument for optional  paramater in Dagger's API                   |
 | 0.4.5   | [#29034](https://github.com/airbytehq/airbyte/pull/29034) | Disable Dagger terminal UI when running publish.                                                          |

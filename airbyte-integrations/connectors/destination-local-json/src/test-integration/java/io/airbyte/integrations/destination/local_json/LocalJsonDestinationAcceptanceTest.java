@@ -16,6 +16,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestD
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -91,12 +92,12 @@ public class LocalJsonDestinationAcceptanceTest extends DestinationAcceptanceTes
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // no op
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // no op
   }
 

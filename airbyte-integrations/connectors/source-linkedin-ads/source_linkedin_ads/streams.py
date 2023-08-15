@@ -10,7 +10,10 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
+from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils import casing
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
@@ -172,7 +175,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """Define the checkpoint from the records output size."""
-        return super().records_limit
+        return 100
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
@@ -274,6 +277,7 @@ class Campaigns(LinkedInAdsStreamSlicing):
     """
 
     endpoint = "adCampaigns"
+    use_cache = True
 
     def path(
         self,
@@ -361,10 +365,27 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     primary_key = ["pivotValue", "end_date"]
     cursor_field = "end_date"
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
+
+    def __init__(self, name: str = None, pivot_by: str = None, time_granularity: str = None, **kwargs):
+        self.user_stream_name = name
+        if pivot_by:
+            self.pivot_by = pivot_by
+        if time_granularity:
+            self.time_granularity = time_granularity
+        super().__init__(**kwargs)
+
+    @property
+    def name(self) -> str:
+        """We override stream name to let the user change it via configuration."""
+        name = self.user_stream_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
+
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
         """Define the base parameters for analytics streams"""
-        return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "(value:DAILY)"}
+        return {"q": "analytics", "pivot": f"(value:{self.pivot_by})", "timeGranularity": f"(value:{self.time_granularity})"}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -419,7 +440,8 @@ class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     parent_values_map = {"campaign_id": "id"}
     search_param = "campaigns"
     search_param_value = "sponsoredCampaign"
-    pivot_by = "(value:CAMPAIGN)"
+    pivot_by = "CAMPAIGN"
+    time_granularity = "DAILY"
 
 
 class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
@@ -431,8 +453,45 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     parent_values_map = {"creative_id": "id"}
     search_param = "creatives"
     search_param_value = "sponsoredCreative"
-    pivot_by = "(value:CREATIVE)"
+    pivot_by = "CREATIVE"
+    time_granularity = "DAILY"
 
     def get_primary_key_from_slice(self, stream_slice) -> str:
         creative_id = stream_slice.get(self.primary_slice_key).split(":")[-1]
         return creative_id
+
+
+class AdImpressionDeviceAnalytics(AdCampaignAnalytics):
+    pivot_by = "IMPRESSION_DEVICE_TYPE"
+
+
+class AdMemberCompanySizeAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_COMPANY_SIZE"
+
+
+class AdMemberIndustryAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_INDUSTRY"
+
+
+class AdMemberSeniorityAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_SENIORITY"
+
+
+class AdMemberJobTitleAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_JOB_TITLE"
+
+
+class AdMemberJobFunctionAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_JOB_FUNCTION"
+
+
+class AdMemberCountryAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_COUNTRY_V2"
+
+
+class AdMemberRegionAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_REGION_V2"
+
+
+class AdMemberCompanyAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_COMPANY"
