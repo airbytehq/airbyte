@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -86,6 +87,15 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   @Override
   public void markPendingAsCommitted() {
     moveToNextPhase(streamToLastPendingState, streamToLastCommittedState);
+  }
+
+  @Override
+  public void markPendingAsCommitted(final AirbyteStreamNameNamespacePair stream) {
+    final StreamDescriptor sd = new StreamDescriptor().withName(stream.getName()).withNamespace(stream.getNamespace());
+    final AirbyteMessage lastPendingState = streamToLastPendingState.remove(sd);
+    if (lastPendingState != null) {
+      streamToLastCommittedState.put(sd, lastPendingState);
+    }
   }
 
   @Override
