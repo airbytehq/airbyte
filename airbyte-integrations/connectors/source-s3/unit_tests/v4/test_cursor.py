@@ -8,7 +8,12 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from source_s3.v4.cursor import Cursor
+
+
+def _create_datetime(dt: str) -> datetime:
+    return datetime.strptime(dt, DefaultFileBasedCursor.DATE_TIME_FORMAT)
 
 
 @pytest.mark.parametrize(
@@ -102,8 +107,8 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
                 },
                 "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
             },
-            [RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z")],
-            [RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z")],
+            [RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
+            [RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
             id="only_one_file_that_was_synced_exactly_at_midnight",
         ),
         pytest.param(
@@ -115,11 +120,11 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
                 "_ab_source_file_last_modified": "2023-08-02T00:06:00Z",
             },
             [
-                RemoteFile(uri="file1.txt", last_modified="2023-08-01T00:00:00.000000Z"),
-                RemoteFile(uri="file2.txt", last_modified="2023-08-02T06:00:00.000000Z"),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T06:00:00.000000Z")),
             ],
             [
-                RemoteFile(uri="file2.txt", last_modified="2023-08-02T06:00:00.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T06:00:00.000000Z")),
             ],
             id="do_not_sync_files_last_updated_on_a_previous_date",
         ),
@@ -132,12 +137,12 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
                 "_ab_source_file_last_modified": "2023-08-02T00:00:00Z",
             },
             [
-                RemoteFile(uri="file1.txt", last_modified="2023-08-01T23:00:01.000000Z"),
-                RemoteFile(uri="file2.txt", last_modified="2023-08-02T00:00:00.000000Z"),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T23:00:01.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z")),
             ],
             [
-                RemoteFile(uri="file1.txt", last_modified="2023-08-01T23:00:01.000000Z"),
-                RemoteFile(uri="file2.txt", last_modified="2023-08-02T00:00:00.000000Z"),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T23:00:01.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z")),
             ],
             id="sync_files_last_updated_within_one_hour_of_cursor",
         ),
@@ -149,12 +154,12 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
                 "_ab_source_file_last_modified": "2023-08-01T02:00:00Z",
             },
             [
-                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-                RemoteFile(uri="file2.txt", last_modified="2023-08-01T02:00:00.000000Z"),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T02:00:00.000000Z")),
             ],
             [
-                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-                RemoteFile(uri="file2.txt", last_modified="2023-08-01T02:00:00.000000Z"),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T02:00:00.000000Z")),
             ],
             id="sync_files_last_updated_within_one_hour_of_cursor_on_same_day",
         ),
@@ -166,23 +171,23 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
                 "_ab_source_file_last_modified": "2023-08-01T06:00:00Z",
             },
             [
-                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-                RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T06:00:00.000000Z")),
             ],
             [
-                RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T06:00:00.000000Z")),
             ],
             id="do_not_sync_files_last_modified_earlier_than_one_hour_before_cursor_on_same_day",
         ),
         pytest.param(
             {},
             [
-                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-                RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T06:00:00.000000Z")),
             ],
             [
-                RemoteFile(uri="file1.txt", last_modified="2023-08-01T01:30:00.000000Z"),
-                RemoteFile(uri="file2.txt", last_modified="2023-08-01T06:00:00.000000Z"),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T06:00:00.000000Z")),
             ],
             id="no_state",
         ),
@@ -196,9 +201,9 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
                 "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
             },
             [
-                RemoteFile(uri="file1.txt", last_modified=datetime.strptime("2023-08-01T10:11:12.000000Z", "%Y-%m-%dT%H:%M:%S.%fZ")),
-                RemoteFile(uri="file2.txt", last_modified=datetime.strptime("2023-08-01T10:11:12.000000Z", "%Y-%m-%dT%H:%M:%S.%fZ")),
-                RemoteFile(uri="file3.txt", last_modified=datetime.strptime("2023-07-31T23:59:59.999999Z", "%Y-%m-%dT%H:%M:%S.%fZ")),
+                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
+                RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
             ],
             [],
             id="input_state_is_v4_no_new_files",

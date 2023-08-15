@@ -4,7 +4,6 @@
 import logging
 from datetime import datetime, timedelta
 from typing import Any, MutableMapping
-from zoneinfo import ZoneInfo
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
@@ -87,7 +86,7 @@ class Cursor(DefaultFileBasedCursor):
         else:
             # If there is no history, _is_legacy_state should return False, so we should never get here
             raise ValueError("No history found in state message. This is likely due to a bug in the connector. Please contact support.")
-        return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_min_sync_dt": v3_min_sync_dt.replace(tzinfo=ZoneInfo("UTC"))}
+        return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_min_sync_dt": v3_min_sync_dt}
 
     @staticmethod
     def _get_adjusted_date_timestamp(cursor_datetime: datetime, file_datetime: datetime) -> datetime:
