@@ -63,7 +63,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         Get all files matching the specified glob patterns.
         """
         s3 = self.s3_client
-        prefixes = [prefix] or self.get_prefixes_from_globs(globs)
+        prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
         total_n_keys = 0
 
