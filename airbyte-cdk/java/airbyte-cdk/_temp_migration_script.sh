@@ -2,10 +2,15 @@
 
 # This file is an audit tool for the migration.
 # It may be deleted befor the PR is merged.
+# Usage:
+#    ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.sh <OLD_PACKAGE_ROOT> <SUBPACKAGE_PATH>
+# Example:
+#   ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.sh airbyte-integrations/bases/base-java integrations/base
+#   ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.sh airbyte-integrations/bases/debezium integrations/debezium
 
 # Change these two lines for each new subpackage to move
-OLD_PACKAGE_ROOT="airbyte-integrations/bases/base-java"
-SUBPACKAGE_PATH="integrations/base"
+OLD_PACKAGE_ROOT="$1"
+SUBPACKAGE_PATH="$2"
 
 # These lines should not need to be changed
 OLD_SRC_PATH="$OLD_PACKAGE_ROOT/src/main/java/io/airbyte/"
