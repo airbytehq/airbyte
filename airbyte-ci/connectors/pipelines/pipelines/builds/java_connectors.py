@@ -18,9 +18,8 @@ class BuildConnectorDistributionTar(GradleTask):
     title = "Build connector tar"
     gradle_task_name = "distTar"
 
-    cdk_includes = ["./airbyte-cdk/java/airbyte-cdk/**"]
-
     async def _run(self) -> StepResult:
+        cdk_includes = ["./airbyte-cdk/java/airbyte-cdk/**"]
         with_built_tar = (
             environments.with_gradle(
                 self.context,
