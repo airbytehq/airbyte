@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,7 +30,7 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     configJson = TestDataFactory.createJsonConfig(
         cassandraContainer.getUsername(),
         cassandraContainer.getPassword(),
@@ -41,7 +42,7 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     cassandraCqlProvider.retrieveMetadata().forEach(meta -> {
       var keyspace = meta.value1();
       meta.value2().forEach(table -> cassandraCqlProvider.truncate(keyspace, table));

@@ -15,14 +15,16 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
+from requests.models import PreparedRequest
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
@@ -280,7 +282,6 @@ class RestSalesforceStream(SalesforceStream):
 
 
 class BulkSalesforceStream(SalesforceStream):
-    page_size = 15000
     DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
@@ -291,8 +292,8 @@ class BulkSalesforceStream(SalesforceStream):
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
     @default_backoff_handler(max_tries=5, factor=15)
-    def _send_http_request(self, method: str, url: str, json: dict = None, stream: bool = False):
-        headers = self.authenticator.get_auth_header()
+    def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
+        headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
             self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
@@ -347,11 +348,16 @@ class BulkSalesforceStream(SalesforceStream):
                         f"The stream '{self.name}' is not queryable, "
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
+                elif (
+                    error.response.status_code == codes.BAD_REQUEST
+                    and error_code == "API_ERROR"
+                    and error_message.startswith("Implementation restriction")
+                ):
+                    message = f"Unable to sync '{self.name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
+                    raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
                 elif error.response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
+                    message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
+                    self.logger.error(message)
                 else:
                     raise error
             else:
@@ -368,7 +374,20 @@ class BulkSalesforceStream(SalesforceStream):
         # this value was received empirically
         time.sleep(0.5)
         while pendulum.now() < expiration_time:
-            job_info = self._send_http_request("GET", url=url).json()
+            try:
+                job_info = self._send_http_request("GET", url=url).json()
+            except exceptions.HTTPError as error:
+                error_data = error.response.json()[0]
+                error_code = error_data.get("errorCode")
+                error_message = error_data.get("message", "")
+                if (
+                    "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
+                    and error_code == "TXN_SECURITY_METERING_ERROR"
+                ):
+                    message = 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'
+                    raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
+                else:
+                    raise error
             job_status = job_info["state"]
             if job_status in ["JobComplete", "Aborted", "Failed"]:
                 if job_status != "JobComplete":
@@ -422,7 +441,7 @@ class BulkSalesforceStream(SalesforceStream):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
         return res
 
-    def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str]:
+    def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
         @ url: string - the url of the `executed_job`
@@ -431,13 +450,16 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
-        with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
+        with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
+            tmp_file, "wb"
+        ) as data_file:
             response_encoding = response.encoding or self.encoding
+            response_headers = response.headers
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
         if os.path.isfile(tmp_file):
-            return tmp_file, response_encoding
+            return tmp_file, response_encoding, response_headers
         else:
             raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist.")
 
@@ -477,9 +499,16 @@ class BulkSalesforceStream(SalesforceStream):
         return None
 
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return {"next_token": f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "}  # type: ignore[index]
         return None
+
+    def get_query_select_fields(self) -> str:
+        return ", ".join(
+            {
+                key: value
+                for key, value in self.get_json_schema().get("properties", {}).items()
+                if value.get("format") != "base64" and "object" not in value["type"]
+            }
+        )
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -488,13 +517,11 @@ class BulkSalesforceStream(SalesforceStream):
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
 
-        selected_properties = self.get_json_schema().get("properties", {})
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        select_fields = self.get_query_select_fields()
+        query = f"SELECT {select_fields} FROM {self.name}"
         if next_page_token:
             query += next_page_token["next_token"]
 
-        if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
         return {"q": query}
 
     def read_records(
@@ -507,45 +534,38 @@ class BulkSalesforceStream(SalesforceStream):
         stream_state = stream_state or {}
         next_page_token = None
 
-        while True:
-            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            job_full_url, job_status = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
-            if not job_full_url:
-                if job_status == "Failed":
-                    # As rule as BULK logic returns unhandled error. For instance:
-                    # error message: 'Unexpected exception encountered in query processing.
-                    #                 Please contact support with the following id: 326566388-63578 (-436445966)'"
-                    # Thus we can try to switch to GET sync request because its response returns obvious error message
-                    standard_instance = self.get_standard_instance()
-                    self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
-                    stream_is_available, error = standard_instance.check_availability(self.logger, None)
-                    if not stream_is_available:
-                        self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
-                        return
-                    yield from standard_instance.read_records(
-                        sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-                    )
+        params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        job_full_url, job_status = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
+        if not job_full_url:
+            if job_status == "Failed":
+                # As rule as BULK logic returns unhandled error. For instance:
+                # error message: 'Unexpected exception encountered in query processing.
+                #                 Please contact support with the following id: 326566388-63578 (-436445966)'"
+                # Thus we can try to switch to GET sync request because its response returns obvious error message
+                standard_instance = self.get_standard_instance()
+                self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+                stream_is_available, error = standard_instance.check_availability(self.logger, None)
+                if not stream_is_available:
+                    self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
                     return
-                raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
-
-            count = 0
-            record: Mapping[str, Any] = {}
-            for record in self.read_with_chunks(*self.download_data(url=job_full_url)):
-                count += 1
+                yield from standard_instance.read_records(
+                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                )
+                return
+            raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
+        salesforce_bulk_api_locator = None
+        while True:
+            req = PreparedRequest()
+            req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator})
+            tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
+            for record in self.read_with_chunks(tmp_file, response_encoding):
                 yield record
-            self.delete_job(url=job_full_url)
 
-            if count < self.page_size:
-                # Salesforce doesn't give a next token or something to know the request was
-                # the last page. The connectors will sync batches in `page_size` and
-                # considers that batch is smaller than the `page_size` it must be the last page.
+            if response_headers.get("Sforce-Locator", "null") == "null":
                 break
-
-            next_page_token = self.next_page_token(record)
-            if not next_page_token:
-                # not found a next page data.
-                break
+            salesforce_bulk_api_locator = response_headers.get("Sforce-Locator")
+        self.delete_job(url=job_full_url)
 
     def get_standard_instance(self) -> SalesforceStream:
         """Returns a instance of standard logic(non-BULK) with same settings"""
@@ -580,6 +600,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
     STREAM_SLICE_STEP = 30
+    _slice = None
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
@@ -604,6 +625,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         while not end == now:
             start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
             end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
+            self._slice = {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             slice_number = slice_number + 1
 
@@ -632,17 +654,14 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         select_fields = ",".join(property_chunk.keys())
         table_name = self.name
         where_conditions = []
-        order_by_clause = ""
 
         if start_date:
             where_conditions.append(f"{self.cursor_field} >= {start_date}")
         if end_date:
             where_conditions.append(f"{self.cursor_field} < {end_date}")
-        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            order_by_clause = f"ORDER BY {self.cursor_field} ASC"
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
-        query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
+        query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
 
         return {"q": query}
 
@@ -653,39 +672,33 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
-        object and returning an updated state object.
+        object and returning an updated state object. Check if latest record is IN stream slice interval => ignore if not
         """
-        latest_benchmark = latest_record[self.cursor_field]
+        latest_record_value: pendulum.DateTime = pendulum.parse(latest_record[self.cursor_field])
+        slice_max_value: pendulum.DateTime = pendulum.parse(self._slice.get("end_date"))
+        max_possible_value = min(latest_record_value, slice_max_value)
         if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+            if latest_record_value > slice_max_value:
+                return {self.cursor_field: max_possible_value.isoformat()}
+            max_possible_value = max(latest_record_value, pendulum.parse(current_stream_state[self.cursor_field]))
+        return {self.cursor_field: max_possible_value.isoformat()}
 
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
-    def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        return None
+    state_checkpoint_interval = None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        start_date = max(
-            (stream_state or {}).get(self.cursor_field, ""),
-            (stream_slice or {}).get("start_date", ""),
-            (next_page_token or {}).get("start_date", ""),
-        )
+        start_date = stream_slice["start_date"]
         end_date = stream_slice["end_date"]
 
-        select_fields = ", ".join(self.get_json_schema().get("properties", {}).keys())
+        select_fields = self.get_query_select_fields()
         table_name = self.name
         where_conditions = [f"{self.cursor_field} >= {start_date}", f"{self.cursor_field} < {end_date}"]
-        order_by_clause = ""
-
-        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            order_by_fields = ", ".join([self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field])
-            order_by_clause = f"ORDER BY {order_by_fields} ASC"
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
-        query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
+        query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
         return {"q": query}
 
 
