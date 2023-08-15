@@ -344,7 +344,7 @@ class Connector:
         Returns:
             bool: True if the connector requires high test strictness level, False otherwise.
         """
-        return self.is_important_connector()
+        return self.ab_internal_ql >= IMPORTANT_CONNECTOR_THRESHOLDS["ql"]
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:
