@@ -10,9 +10,9 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
     "pytest~=6.2.5",
     "pytest-mock~=3.6.1",
-    "connector-acceptance-test",
 ]
 
 setup(

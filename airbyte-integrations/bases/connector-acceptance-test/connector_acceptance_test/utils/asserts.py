@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Mapping
 
 import dpath.util
 import pendulum
-from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
+from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError, validators
 
 # fmt: off
