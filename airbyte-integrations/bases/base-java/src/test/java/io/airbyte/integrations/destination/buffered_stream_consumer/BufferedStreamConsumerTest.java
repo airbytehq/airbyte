@@ -418,8 +418,8 @@ public class BufferedStreamConsumerTest {
   }
 
   /**
-   * Same idea as {@link #testStreamTail()} but with global state. We shouldn't emit any state messages
-   * until we close the consumer.
+   * Same idea as {@link #testStreamTail()} but with global state. We shouldn't emit any state
+   * messages until we close the consumer.
    */
   @Test
   void testStreamTailGlobalSTate() throws Exception {
