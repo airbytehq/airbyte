@@ -186,14 +186,28 @@ def test_set_initial_state_with_v3_state(input_state: MutableMapping[str, Any], 
             ],
             id="no_state",
         ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T10:11:12.000000Z",
+                    "file2.txt": "2023-08-01T10:11:12.000000Z",
+                    "file3.txt": "2023-07-31T23:59:59.999999Z",
+                },
+                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
+            },
+            [
+                RemoteFile(uri="file1.txt", last_modified="2023-08-01T10:11:12.000000Z"),
+                RemoteFile(uri="file2.txt", last_modified="2023-08-01T10:11:12.000000Z"),
+                RemoteFile(uri="file3.txt", last_modified="2023-07-31T23:59:59.999999Z"),
+            ],
+            [],
+            id="input_state_is_v4_no_new_files",
+        ),
     ],
 )
 def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync):
-    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
-    cursor.set_initial_state(input_state)
-
+    cursor = _init_cursor_with_state(input_state)
     files_to_sync = list(cursor.get_files_to_sync(all_files, Mock()))
-
     assert files_to_sync == expected_files_to_sync
 
 
@@ -283,3 +297,9 @@ def test_is_legacy_state(input_state, expected):
 def test_get_adjusted_date_timestamp(cursor_datetime, file_datetime, expected_adjusted_datetime):
     adjusted_datetime = Cursor._get_adjusted_date_timestamp(cursor_datetime, file_datetime)
     assert adjusted_datetime == expected_adjusted_datetime
+
+
+def _init_cursor_with_state(input_state) -> Cursor:
+    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
+    cursor.set_initial_state(input_state)
+    return cursor

@@ -19,7 +19,7 @@ class Cursor(DefaultFileBasedCursor):
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
             value = self._convert_legacy_state(value)
-        self._v3_min_sync_dt = value.get("v3_min_sync_dt", datetime.min).replace(tzinfo=ZoneInfo("UTC"))
+        self._v3_min_sync_dt = value.get("v3_min_sync_dt", None)
         super().set_initial_state(value)
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
@@ -27,7 +27,7 @@ class Cursor(DefaultFileBasedCursor):
         if self._v3_min_sync_dt:
             return file.last_modified >= self._v3_min_sync_dt
         else:
-            return self.super()._should_sync_file(file, logger)
+            return super()._should_sync_file(file, logger)
 
     @staticmethod
     def _is_legacy_state(value: StreamState) -> bool:
@@ -87,7 +87,7 @@ class Cursor(DefaultFileBasedCursor):
         else:
             # If there is no history, _is_legacy_state should return False, so we should never get here
             raise ValueError("No history found in state message. This is likely due to a bug in the connector. Please contact support.")
-        return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_min_sync_dt": v3_min_sync_dt}
+        return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_min_sync_dt": v3_min_sync_dt.replace(tzinfo=ZoneInfo("UTC"))}
 
     @staticmethod
     def _get_adjusted_date_timestamp(cursor_datetime: datetime, file_datetime: datetime) -> datetime:
