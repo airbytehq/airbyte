@@ -140,6 +140,7 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
             else:
                 project_dependencies.append(path)
 
+    project_dependencies.append(Path("airbyte-cdk", "java", "airbyte-cdk"))
     return project_dependencies, test_dependencies
 
 
