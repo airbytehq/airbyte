@@ -98,14 +98,15 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
                                        final String schemaName,
                                        final String tmpTableName) throws SQLException {
     final String insertQueryComponent = String.format(
-        "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
+        "INSERT INTO %s.%s (%s, %s, %s, %s) VALUES\n",
         schemaName,
         tmpTableName,
         JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT
     );
-    final String recordQueryComponent = "(?, JSON_PARSE(?), ?),\n";
+    final String recordQueryComponent = "(?, JSON_PARSE(?), ?, null),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
 }

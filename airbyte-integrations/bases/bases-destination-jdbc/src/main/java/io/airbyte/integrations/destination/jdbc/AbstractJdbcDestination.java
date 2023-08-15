@@ -46,6 +46,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
+  public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
+
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
@@ -73,7 +75,12 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
+      attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        final var rawSchemaName = namingResolver.getIdentifier(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
+                                                                                    .orElse(CatalogParser.DEFAULT_RAW_TABLE_NAMESPACE));
+        attemptTableOperations(rawSchemaName, database, namingResolver, sqlOperations, false);
+      }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
@@ -212,7 +219,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     final DataSource dataSource = getDataSource(config);
     if (TypingAndDedupingFlag.isDestinationV2()) {
       final JdbcSqlGenerator sqlGenerator = new JdbcSqlGenerator(getNamingResolver(), sqlOperations, dataSource);
-      final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride("raw_data_schema")
+      final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
                                                                .map(override -> new CatalogParser(sqlGenerator, override))
                                                                .orElse(new CatalogParser(sqlGenerator))
                                                                .parseCatalog(catalog);
