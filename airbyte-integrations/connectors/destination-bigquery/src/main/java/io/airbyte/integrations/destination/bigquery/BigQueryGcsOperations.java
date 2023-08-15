@@ -141,7 +141,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
           .setFormatOptions(FormatOptions.csv())
           .setSchema(tableSchema)
           .setWriteDisposition(WriteDisposition.WRITE_APPEND)
-          .setUseAvroLogicalTypes(true)
+//          .setUseAvroLogicalTypes(true)
           .build();
 
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
