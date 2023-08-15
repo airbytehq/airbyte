@@ -87,7 +87,7 @@ class Cursor(DefaultFileBasedCursor):
             v3_migration_start_datetime = cursor_datetime - Cursor._V4_MIGRATION_BUFFER
         else:
             # If there is no history, _is_legacy_state should return False, so we should never get here
-            raise ValueError("No history found in state message. This is likely due to a bug in the connector. Please contact support.")
+            raise ValueError("No history found in state message. Please contact support.")
         return {"history": converted_history, Cursor.CURSOR_FIELD: cursor, "v3_migration_start_datetime": v3_migration_start_datetime}
 
     @staticmethod
