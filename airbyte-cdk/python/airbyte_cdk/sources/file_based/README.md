@@ -110,7 +110,7 @@ The file-based connectors supports the following [sync modes](https://docs.airby
 | Replicate Multiple Streams \(distinct tables\) | Yes        |
 | Namespaces                                     | No         |
 
-We recommend you do not (do not what? the suspense is unbearable!)
+We recommend you do not manually modify files that are already synced. The connector has file-level granularity, which means adding or modifying a row in a CSV file will trigger a re-sync of the content of that file.
 
 ### Incremental sync 
 After the initial sync, the connector only pulls files that were modified since the last sync.
