@@ -196,6 +196,10 @@ class Retrieval(IncrementalFiservStream):
     primary_key = "debitNetworkIDKey"
     endpoint = "retrieval"
 
+class Authorization(IncrementalFiservStream):
+    primary_key = "externalTerminalID"
+    endpoint = "authorization"
+
 
 class Sites(FiservStream):
     primary_key = "corpID"
@@ -290,5 +294,6 @@ class SourceFiserv(AbstractSource):
             Settlement(**kwargs),
             Bin(**kwargs),
             Sites(**kwargs),
+            Authorization(**kwargs),
             Transactions(**kwargs),
         ]

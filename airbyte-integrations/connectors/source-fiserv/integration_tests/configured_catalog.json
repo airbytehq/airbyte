@@ -4675,6 +4675,2412 @@
       }
     },
     {
+      "sync_mode": "incremental",
+      "cursor_field": [
+        "last_sync_at"
+      ],
+      "destination_sync_mode": "append",
+      "stream": {
+        "name": "authorization",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "last_sync_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "AVSResponse": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "AVSResponseKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "CAVVResponse": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "CAVVResponseKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "CVVResult": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "CVVResultKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "DCCAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "DCCCurrency": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "DCCCurrencyKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "DCCIND": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "DCCINDKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ECIIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ECIIndicatorKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "P2PEncryptionType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "P2PEncryptionTypeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "P2PTokenAssurance": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "P2PTokenAssuranceKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "P2PTokenType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "P2PTokenTypeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "accountNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "aci": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "addendumNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "adjustmentAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "adjustmentIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "alternativeMerchantId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "amount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "approvalCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "approvalCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "assocRespCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "assocRespCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "associationResponse": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "associationResponseKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "authCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "authResponseCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "authorizationTraceNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "bankFiid": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "banknetRef": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "binID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cardExpiryDate": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cardGroup": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cardGroupKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cardLevelResult": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cardNetworkCVCError": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cardNetworkDataError": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cashAdvanceIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cashAdvanceIndicatorKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cashBackIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cashBackIndicatorKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cavvDowngradeReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "crossBorderIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cshbAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "currency": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "currencyKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "customerName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "dailyRentalRate": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "dccCountryCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "dccRate": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "debitFeeAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "declineReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "declineReasonKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "drdGroupRouteID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "drdNetwork": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "drdNetworkList": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "drdRegulatorIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "drdRouteFunction": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "driverID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "dutyAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "emvAppCryptogram": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvAppInterchangeProfile": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvAppTxnCounter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvAppVersionNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvCVMResult": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvChipAuthResult": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvChipTxnInd": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvCryptoInfoData": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvDedicatedFileName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvExpDate": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvIssuerAppData": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvIssuerAuthData": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvTermCapProfile": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvTermCountryCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvTermVerificationResult": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "emvTxnType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "entryModeIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "equivalentTrack2Data": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "exprProvider": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "exprProviderKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "externalMid": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "externalTerminalID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "extraChargeAmount": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "first6": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "first8": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "folioNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "formFactor": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fraudScore": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "freightAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "fuelPurchaseLocation": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fuelPurchaseLocationKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "giftCardNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issuerScript1": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issuerScriptResults": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "last4": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lcldt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lineItemTotal": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "linkResponseCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lodgNoShowIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lodgingAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "lodgingChargeType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lodgingDailyRoomRate": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lodgingDailyRoomTax": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lodgingDuration": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lodgingOtherSvcCharges": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "masterCardBanknetDt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mcPromotionCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "merchandiseCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "merchandiseCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "merchantCategory": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "merchantCategoryKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "merchantName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "messageTypeIdentifier": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mktSpecificDataInd": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mktSpecificDataIndKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mobileWallet": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mobileWalletKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mrchTranId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativeDebitRejectCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativeECI": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativeExprProvider": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativeMerchandiseCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativePosConditionCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativeProductUnitOfMeasure": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativeRejectCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativeTxnStatus": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nativeTxnSubType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "network": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkAuthIndicator2": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkAuthIndicator2Key": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkAuthIndicator3": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkAuthIndicator3Key": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkTokenEligibleIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkTokenNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkTokenOfferingType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkTokenOfferingTypeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkTokenRetryAttempt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "networkTokenRetryAttemptKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "odometerReading": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "oldAccountNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "onlineTxnInd": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "onlineTxnIndKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ordNo": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "origAuthResponse": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "origAuthResponseDesc": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "parID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "partialApprovalFlag": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "partnerOrderID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "paymentMethod": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "paymentMethodKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "paypalAccountNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "paypalTransactionID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "posConditionCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "posConditionCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "posData": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "posMessageType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "posTermCap": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "processor": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "processorKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product0Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product0NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product0NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product0ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product0Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product0UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product0nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product0nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product10Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product10NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product10NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product10ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product10Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product10UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product10nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product10nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product11Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product11NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product11NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product11ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product11Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product11UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product11nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product11nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product12Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product12NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product12NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product12ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product12Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product12UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product12nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product12nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product13Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product13NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product13NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product13ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product13Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product13UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product13nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product13nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product14Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product14NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product14NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product14ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product14Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product14UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product14nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product14nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product15Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product15NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product15NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product15ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product15Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product15UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product15nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product15nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product16Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product16NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product16NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product16ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product16Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product16UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product16nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product16nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product17Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product17NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product17NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product17ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product17Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product17UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product17nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product17nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product18Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product18NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product18NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product18ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product18Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product18UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product18nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product18nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product19Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product19NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product19NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product19ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product19Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product19UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product19nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product19nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product1Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product1NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product1NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product1ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product1Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product1UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product1nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product1nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product2Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product2NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product2NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product2ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product2Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product2UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product2nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product2nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product3Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product3NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product3NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product3ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product3Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product3UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product3nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product3nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product4Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product4NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product4NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product4ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product4Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product4UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product4nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product4nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product5Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product5NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product5NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product5ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product5Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product5UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product5nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product5nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product6Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product6NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product6NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product6ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product6Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product6UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product6nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product6nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product7Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product7NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product7NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product7ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product7Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product7UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product7nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product7nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product8Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product8NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product8NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product8ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product8Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product8UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product8nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product8nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product9Amount": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product9NUnitOfMeausre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product9NUnitOfMeausreKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product9ProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product9Quantity": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product9UnitPrice": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "product9nProductCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "product9nProductCodeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "productAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "productDetails": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "productQuantity": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "productUnitOfMeasure": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "productUnitOfMeasureKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "productUnitPrice": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "pumpRegisterNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "purchaseCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "quantity": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "recordNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "recurring": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "recurringKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "referenceNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rentalAgreementNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rentalClass": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rentalReturnCity": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rentalReturnCountry": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rentalReturnLocationID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rentalReturnState": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rentalState": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "renterName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reversed": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rtAction": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rtActionKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rtStatus": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rtStatusKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "salesTaxAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "sendMode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sendModeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "seqno": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "serverId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "serviceCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "settleCutOffTime": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "shipmentFromZip": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "shipmentToCountryCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "shipmentToZip": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "siteID": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "sourceType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "subMerchantId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "subType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "subTypeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "taxRate": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "termCapCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "terminalID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "terminalSerialNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "terminalType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "timeTaken": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "tipAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "tokenId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tokenResponseInd": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tokenResponseIndKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tppVarID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tppVarIDKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "transactionTime": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "trckrid": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "txnCatCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "txnID": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "txnOriginator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "txnStatus": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "txnStatusKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "type": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "typeKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "unpredictableNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "vatReferenceNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "velocityIndicator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "vendorCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "visaValidCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "voucherNumber": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "last_sync_at"
+        ],
+        "source_defined_primary_key": [
+          [
+            "externalTerminalID"
+          ]
+        ]
+      }
+    },
+    {
       "sync_mode": "full_refresh",
       "cursor_field": [
         "last_sync_at"
