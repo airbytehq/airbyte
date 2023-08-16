@@ -68,7 +68,7 @@ definitions:
     $parameters:
       name: "audit"
       path: "audit"
-      primary_key: "author"
+      primary_key: "creationDate"
 
   blogposts_stream:
     $ref: "#/definitions/base_stream"

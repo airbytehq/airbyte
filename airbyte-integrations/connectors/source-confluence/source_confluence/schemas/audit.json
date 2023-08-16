@@ -5,7 +5,7 @@
   "properties": {
     "author": { "type": ["null", "object"] },
     "remoteAddress": { "type": ["null", "string"] },
-    "creationDate": { "type": ["null", "string"] },
+    "creationDate": { "type": ["null", "integer"] },
     "summary": { "type": ["null", "string"] },
     "description": { "type": ["null", "string"] },
     "category": { "type": ["null", "string"] },
