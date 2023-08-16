@@ -10,18 +10,31 @@ application {
 
 dependencies {
     implementation 'org.apache.commons:commons-csv:1.4'
-    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.33'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
     implementation 'com.alibaba:fastjson:1.2.75'
     implementation libs.connectors.testcontainers
 
-    implementation project(':airbyte-config-oss:config-models-oss')
+   
     // implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    implementation project(':airbyte-config-oss:config-models-oss')
+    implementation project(':airbyte-config-oss:init-oss')
+    implementation project(':airbyte-json-validation')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation libs.airbyte.protocol
+
+    implementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))
+    implementation 'org.junit.jupiter:junit-jupiter-api'
+    implementation 'org.junit.jupiter:junit-jupiter-params'
+    implementation 'org.mockito:mockito-core:4.6.1'
+
+    testImplementation "org.testcontainers:testcontainers:1.18.3"
+    implementation platform('org.testcontainers:testcontainers-bom:1.18.3') //import bom
+    testImplementation('org.testcontainers:mysql') //no version specified
 
     integrationTestJavaImplementation libs.connectors.testcontainers
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-starrocks')
+
 }

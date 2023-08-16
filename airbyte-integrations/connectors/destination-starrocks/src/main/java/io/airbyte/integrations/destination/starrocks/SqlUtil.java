@@ -34,15 +34,12 @@ public class SqlUtil {
                 config.get(StarRocksConstants.KEY_FE_HOST).asText(),
                 config.get(StarRocksConstants.KEY_FE_QUERY_PORT).asInt(StarRocksConstants.DEFAULT_FE_QUERY_PORT),
                 config.get(StarRocksConstants.KEY_DB).asText());
-        LOG.info("dbURL: {}", dbUrl);
+        LOG.info(String.format("dbURL: %s", dbUrl));
 
-        String dbUrl2 = String.format(StarRocksConstants.PATTERN_JDBC_URL,
-                config.get(StarRocksConstants.KEY_FE_HOST).asText(),
-                config.get(StarRocksConstants.KEY_FE_QUERY_PORT).asInt(StarRocksConstants.DEFAULT_FE_QUERY_PORT), "");
-        LOG.info("dbURL-root: {}", dbUrl2);
 
         try {
             Class.forName(StarRocksConstants.CJ_JDBC_DRIVER);
+//            Class.forName(StarRocksConstants.JDBC_DRIVER);
         } catch (ClassNotFoundException e) {
             Class.forName(StarRocksConstants.JDBC_DRIVER);
         }
@@ -53,11 +50,22 @@ public class SqlUtil {
         String pwd = config.get(StarRocksConstants.KEY_PWD) == null ?
                 StarRocksConstants.DEFAULT_PWD :
                 config.get(StarRocksConstants.KEY_PWD).asText();
+        LOG.info(String.format("username: %s, pwd: %s", user, pwd));
 
-        Connection conn = DriverManager.getConnection(dbUrl2, user, pwd);
+        String PATTERN_JDBC_URL_WITHOUTDB = "jdbc:mysql://%s:%d/?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&enabledTLSProtocols=TLSv1.3,TLSv1.2,TLSv1.1,TLSv1&tcpKeepalive=true";
+
+        String dbUrlwithoutdb = String.format(PATTERN_JDBC_URL_WITHOUTDB,
+        config.get(StarRocksConstants.KEY_FE_HOST).asText(),
+        config.get(StarRocksConstants.KEY_FE_QUERY_PORT).asInt(StarRocksConstants.DEFAULT_FE_QUERY_PORT),
+        "");
+        LOG.info(String.format("dbURL-withoutDB: %s", dbUrlwithoutdb));        
+
+        Connection conn = DriverManager.getConnection(dbUrlwithoutdb, user, pwd);
         Statement statement = conn.createStatement();
         String query = String.format("create database if not exists %s;", config.get(StarRocksConstants.KEY_DB).asText());
+        LOG.info(String.format("query: %s", query));
         statement.executeUpdate(query);
+        conn.close();
 
         return DriverManager.getConnection(dbUrl, user, pwd);
     }
@@ -71,25 +79,25 @@ public class SqlUtil {
 
     public static void createDatabaseIfNotExist(Connection conn, String db) throws SQLException {
         String sql = String.format("CREATE DATABASE IF NOT EXISTS %s;", db);
-        LOG.info("SQL: {}", sql);
+        LOG.info(String.format("SQL: %s", sql));
         execute(conn, sql);
     }
 
     public static void truncateTable(Connection conn, String tableName) throws SQLException {
         String sql = String.format("TRUNCATE TABLE %s;", tableName);
-        LOG.info("SQL: {}", sql);
+        LOG.info(String.format("SQL: %s", sql));
         execute(conn, sql);
     }
 
     public static void insertFromTable(Connection conn, String srcTableName, String dstTableName) throws SQLException {
         String sql = String.format("INSERT INTO %s SELECT * FROM %s;",  dstTableName, srcTableName);
-        LOG.info("SQL: {}", sql);
+        LOG.info(String.format("SQL: %s", sql));
         execute(conn, sql);
     }
 
     public static void renameTable(Connection conn, String srcTableName, String dstTableName) throws SQLException {
         String sql = String.format("ALTER TABLE %s RENAME %s;", srcTableName, dstTableName);
-        LOG.info("SQL: {}", sql);
+        LOG.info(String.format("SQL: %s", sql));
         execute(conn, sql);
     }
 
@@ -104,13 +112,13 @@ public class SqlUtil {
                 + "PROPERTIES ( \n"
                 + "\"replication_num\" = \"1\" \n"
                 + ");";
-                LOG.info("SQL: {}", sql);
+                LOG.info(String.format("SQL: %s", sql));
         execute(conn, sql);
     }
 
     public static void dropTableIfExists(Connection conn, String tableName) throws SQLException {
         String sql = String.format("DROP TABLE IF EXISTS `%s`;", tableName);
-        LOG.info("SQL: {}", sql);
+        LOG.info(String.format("SQL: %s", sql));
         execute(conn, sql);
     }
 
