@@ -121,6 +121,29 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
 
 @deep_copy_params
+def apply_ab_internal_defaults(metadata_data: dict) -> dict:
+    """Apply ab_internal defaults to the metadata data field.
+
+    Args:
+        metadata_data (dict): The metadata data field.
+
+    Returns:
+        dict: The metadata data field with the ab_internal defaults applied.
+    """
+    default_ab_internal_values = {
+        "sl": 100,
+        "ql": 100,
+    }
+
+    existing_ab_internal_values = metadata_data.get("ab_internal") or {}
+    ab_internal_values = {**default_ab_internal_values, **existing_ab_internal_values}
+
+    metadata_data["ab_internal"] = ab_internal_values
+
+    return metadata_data
+
+
+@deep_copy_params
 @sentry_sdk.trace
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
@@ -160,9 +183,12 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data["custom"] = False
     overridden_metadata_data["public"] = True
 
-    # if there is no releaseStage, set it to "alpha"
-    if not overridden_metadata_data.get("releaseStage"):
-        overridden_metadata_data["releaseStage"] = "alpha"
+    # if there is no supportLevel, set it to "community"
+    if not overridden_metadata_data.get("supportLevel"):
+        overridden_metadata_data["supportLevel"] = "community"
+
+    # apply ab_internal defaults
+    overridden_metadata_data = apply_ab_internal_defaults(overridden_metadata_data)
 
     # apply generated fields
     overridden_metadata_data["iconUrl"] = metadata_entry.icon_url
