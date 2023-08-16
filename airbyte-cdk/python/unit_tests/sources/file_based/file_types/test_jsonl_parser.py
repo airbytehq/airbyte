@@ -67,6 +67,14 @@ def test_when_infer_then_return_proper_types(stream_reader: MagicMock) -> None:
     }
 
 
+def test_given_str_io_when_infer_then_return_proper_types(stream_reader: MagicMock) -> None:
+    stream_reader.open_file.return_value.__enter__.return_value = io.StringIO('{"col": 1}')
+
+    schema = _infer_schema(stream_reader)
+
+    assert schema == {"col": {"type": "integer"}}
+
+
 def test_given_empty_record_when_infer_then_return_empty_schema(stream_reader: MagicMock) -> None:
     stream_reader.open_file.return_value.__enter__.return_value = io.BytesIO("{}".encode("utf-8"))
     schema = _infer_schema(stream_reader)

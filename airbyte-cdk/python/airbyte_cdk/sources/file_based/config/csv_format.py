@@ -4,9 +4,9 @@
 
 import codecs
 from enum import Enum
-from typing import Any, Mapping, Optional, Set
+from typing import Optional, Set
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, validator
 from typing_extensions import Literal
 
 
