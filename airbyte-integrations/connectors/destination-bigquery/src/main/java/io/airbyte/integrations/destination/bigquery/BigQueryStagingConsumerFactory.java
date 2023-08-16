@@ -10,8 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
@@ -21,9 +19,6 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
-import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
-import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -32,12 +27,10 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,52 +42,18 @@ import org.slf4j.LoggerFactory;
 public class BigQueryStagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStagingConsumerFactory.class);
-
-  public AirbyteMessageConsumer create(final JsonNode config,
-                                       final ConfiguredAirbyteCatalog catalog,
-                                       final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final BigQueryStagingOperations bigQueryGcsOperations,
-                                       final BufferCreateFunction onCreateBuffer,
-                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                       final Function<String, String> tmpTableNameTransformer,
-                                       final TyperDeduper typerDeduper,
-                                       final ParsedCatalog parsedCatalog,
-                                       final String defaultNamespace)
-      throws Exception {
-    final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
-        config,
-        catalog,
-        parsedCatalog,
-        recordFormatterCreator,
-        tmpTableNameTransformer);
-
-    CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
-        incrementalTypingAndDedupingStreamConsumer(typerDeduper);
-
-    return new BufferedStreamConsumer(
-        outputRecordCollector,
-        onStartFunction(bigQueryGcsOperations, writeConfigs, typerDeduper),
-        new SerializedBufferingStrategy(
-            onCreateBuffer,
-            catalog,
-            flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog, typeAndDedupeStreamFunction)),
-        onCloseFunction(bigQueryGcsOperations, writeConfigs, typerDeduper),
-        catalog,
-        json -> true,
-        defaultNamespace);
-  }
-
+  
   public SerializedAirbyteMessageConsumer createAsync(
-                                       final JsonNode config,
-                                       final ConfiguredAirbyteCatalog catalog,
-                                       final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final BigQueryStagingOperations bigQueryGcsOperations,
-                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                       final Function<String, String> tmpTableNameTransformer,
-                                       final Function<String, String> targetTableNameTransformer,
-                                       final TyperDeduper typerDeduper,
-                                       final ParsedCatalog parsedCatalog,
-                                       final String defaultNamespace) {
+                                                      final JsonNode config,
+                                                      final ConfiguredAirbyteCatalog catalog,
+                                                      final Consumer<AirbyteMessage> outputRecordCollector,
+                                                      final BigQueryStagingOperations bigQueryGcsOperations,
+                                                      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                                      final Function<String, String> tmpTableNameTransformer,
+                                                      final Function<String, String> targetTableNameTransformer,
+                                                      final TyperDeduper typerDeduper,
+                                                      final ParsedCatalog parsedCatalog,
+                                                      final String defaultNamespace) {
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigsByPair = createWriteConfigs(
         config,
         catalog,
@@ -212,49 +171,6 @@ public class BigQueryStagingConsumerFactory {
         }
       }
       LOGGER.info("Preparing tables in destination completed.");
-    };
-  }
-
-  /**
-   * Flushes buffer data, writes to staging environment then proceeds to upload those same records to
-   * destination table
-   *
-   * @param bigQueryGcsOperations collection of utility SQL operations
-   * @param writeConfigs book keeping configurations for writing and storing state to write records
-   * @param catalog configured Airbyte catalog
-   */
-  private FlushBufferFunction flushBufferFunction(
-                                                  final BigQueryStagingOperations bigQueryGcsOperations,
-                                                  final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                                  final ConfiguredAirbyteCatalog catalog,
-                                                  final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypeAndDedupeConsumer) {
-    return (pair, writer) -> {
-      LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-      if (!writeConfigs.containsKey(pair)) {
-        throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog: %s.\nKeys: %s\ncatalog: %s", pair,
-                writeConfigs.keySet(), Jsons.serialize(catalog)));
-      }
-
-      final BigQueryWriteConfig writeConfig = writeConfigs.get(pair);
-      final String datasetId = writeConfig.datasetId();
-      final String stream = writeConfig.streamName();
-      try (writer) {
-        writer.flush();
-        final String stagedFile = bigQueryGcsOperations.uploadRecordsToStage(datasetId, stream, writer);
-        /*
-         * The primary reason for still adding staged files despite immediately uploading the staged file to
-         * the destination's raw table is because the cleanup for the staged files will occur at the end of
-         * the sync
-         */
-        writeConfig.addStagedFile(stagedFile);
-        bigQueryGcsOperations.copyIntoTableFromStage(datasetId, stream, writeConfig.targetTableId(), writeConfig.tableSchema(),
-            List.of(stagedFile));
-        incrementalTypeAndDedupeConsumer.accept(new AirbyteStreamNameNamespacePair(writeConfig.streamName(), writeConfig.namespace()));
-      } catch (final Exception e) {
-        LOGGER.error("Failed to flush and commit buffer data into destination's raw table:", e);
-        throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
-      }
     };
   }
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -29,10 +33,10 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
   private final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer;
 
   public BigQueryAsyncFlush(
-      final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
-      final BigQueryStagingOperations stagingOperations,
-      final ConfiguredAirbyteCatalog catalog,
-      final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer) {
+                            final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
+                            final BigQueryStagingOperations stagingOperations,
+                            final ConfiguredAirbyteCatalog catalog,
+                            final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.catalog = catalog;
@@ -77,8 +81,7 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
           writeConfig.streamName(),
           writeConfig.targetTableId(),
           writeConfig.tableSchema(),
-          List.of(stagedFile)
-      );
+          List.of(stagedFile));
 
       incrementalTypingAndDedupingStreamConsumer.accept(new AirbyteStreamNameNamespacePair(writeConfig.streamName(), writeConfig.namespace()));
     } catch (final Exception e) {

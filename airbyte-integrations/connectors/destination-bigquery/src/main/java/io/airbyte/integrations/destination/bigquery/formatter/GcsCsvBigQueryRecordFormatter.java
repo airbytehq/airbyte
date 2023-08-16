@@ -19,9 +19,9 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 public class GcsCsvBigQueryRecordFormatter extends DefaultBigQueryRecordFormatter {
 
   public static final com.google.cloud.bigquery.Schema CSV_SCHEMA = com.google.cloud.bigquery.Schema.of(
-    Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-    Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
-    Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
   public GcsCsvBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
