@@ -4,6 +4,8 @@ connector_image: airbyte/source-dockerhub:dev
 tests:
   spec:
     - spec_path: "source_dockerhub/spec.yaml"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.0"
   connection:
     - config_path: "sample_files/config.json"
       status: "succeed"
@@ -12,6 +14,8 @@ tests:
   #      status: "failed"
   discovery:
     - config_path: "sample_files/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.0"
   basic_read:
     - config_path: "sample_files/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

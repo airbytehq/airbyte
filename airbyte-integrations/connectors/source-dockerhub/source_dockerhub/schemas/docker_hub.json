@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "user": {
       "type": ["null", "string"]
@@ -13,6 +14,24 @@
     },
     "repository_type": {
       "type": ["null", "string"]
+    },
+    "date_registered": {
+      "type": ["null", "string"]
+    },
+    "status_description": {
+      "type": ["null", "string"]
+    },
+    "content_types": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "media_types": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "status": {
       "type": ["null", "integer"]
