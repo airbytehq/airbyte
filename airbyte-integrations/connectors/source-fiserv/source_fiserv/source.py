@@ -6,7 +6,6 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 
 import requests
