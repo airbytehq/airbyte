@@ -16,7 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
@@ -94,11 +93,14 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   @Override
   public void markPendingAsCommitted(final AirbyteStreamNameNamespacePair stream) {
     // extremely hacky solution for specific connection:
-    // Handle the case where the connection is configured to use a custom namespace. In this case, the records' namespace
-    // will be set to that override, but the streams' namespace will still be the source's original namespace.
+    // Handle the case where the connection is configured to use a custom namespace. In this case, the
+    // records' namespace
+    // will be set to that override, but the streams' namespace will still be the source's original
+    // namespace.
     // We need to match purely on the stream name.
     // This is a hack to work around https://github.com/airbytehq/airbyte-platform-internal/pull/8365.
-    // There are many cases that this code does not handle. edgao to submit other issues for those cases.
+    // There are many cases that this code does not handle. edgao to submit other issues for those
+    // cases.
     final List<Entry<StreamDescriptor, AirbyteMessage>> matchingStates = streamToLastPendingState.entrySet().stream()
         .filter(entry -> entry.getKey().getName().equals(stream.getName()))
         .toList();
