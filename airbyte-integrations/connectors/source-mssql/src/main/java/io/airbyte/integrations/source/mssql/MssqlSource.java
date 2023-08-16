@@ -242,8 +242,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           .map(MssqlSource::overrideSyncModes)
           .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
-          .map(MssqlSource::addCdcMetadataColumns)
           .map(MssqlSource::setDefaultCursorFieldForCdc)
+          .map(MssqlSource::addCdcMetadataColumns)
           .collect(toList());
 
       catalog.setStreams(streams);
