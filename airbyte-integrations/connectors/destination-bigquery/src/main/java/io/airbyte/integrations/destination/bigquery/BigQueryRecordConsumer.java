@@ -46,13 +46,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final boolean use1s1t;
   private final TyperDeduper typerDeduper;
 
-
   public BigQueryRecordConsumer(final BigQuery bigquery,
-      final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final String defaultDatasetId,
-      TyperDeduper typerDeduper,
-      final ParsedCatalog catalog) {
+                                final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
+                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                final String defaultDatasetId,
+                                final TyperDeduper typerDeduper,
+                                final ParsedCatalog catalog) {
     this.bigquery = bigquery;
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
@@ -86,8 +85,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       });
     }
   }
-
-
 
   /**
    * Processes STATE and RECORD {@link AirbyteMessage} with all else logged as unexpected
