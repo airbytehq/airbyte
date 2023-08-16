@@ -5,9 +5,9 @@
 import logging
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
-import pyarrow as pa
 import pandas as pd
-from pyarrow import ArrowNotImplementedError,ArrowInvalid
+import pyarrow as pa
+from pyarrow import ArrowInvalid, ArrowNotImplementedError
 from pyarrow import json as pa_json
 from source_s3.source_files_abstract.file_info import FileInfo
 
@@ -35,10 +35,10 @@ class JsonlParser(AbstractFileParser):
         ),
         "null": ("large_string",),
     }
-    CAN_TYPECAST ={
-        "integer":int,
-        "number":int,
-        "string":str,
+    CAN_TYPECAST = {
+        "integer": int,
+        "number": int,
+        "string": str,
     }
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -54,37 +54,44 @@ class JsonlParser(AbstractFileParser):
         if self.format_model is None:
             self.format_model = JsonlFormat.parse_obj(self._format)
         return self.format_model
-    def apply_typecasting(self,data: dict,column_path,cast_type:str,current_path_key_idx:int,) :
-        if current_path_key_idx == len(column_path)-1 :
+
+    def apply_typecasting(
+        self,
+        data: dict,
+        column_path,
+        cast_type: str,
+        current_path_key_idx: int,
+    ):
+        if current_path_key_idx == len(column_path) - 1:
             # column to be typecasted
             current_column = column_path[-1]
             data[current_column] = self.CAN_TYPECAST[cast_type](data[current_column])
-            return 
+            return
         current_column = column_path[current_path_key_idx]
         if current_column == "[]":
-            for value in data :
-                self.apply_typecasting(value,column_path,cast_type,current_path_key_idx+1)
+            for value in data:
+                self.apply_typecasting(value, column_path, cast_type, current_path_key_idx + 1)
         else:
-            self.apply_typecasting(data[current_column],column_path,cast_type,current_path_key_idx+1)
+            self.apply_typecasting(data[current_column], column_path, cast_type, current_path_key_idx + 1)
 
-    
-    def _reformat_table(self, data: pd.DataFrame, json_schema: Mapping[str, Any] = None)-> pa.Table:
+    def _reformat_table(self, data: pd.DataFrame, json_schema: Mapping[str, Any] = None) -> pa.Table:
         if json_schema:
+            # example json schema = {"event":"object","event/user_attributes/Mobile Phone Number":"number"}
             top_level_key = list(json_schema.keys())[0]
-            for column,d_type in list(json_schema.items())[1:]:
+            for column, d_type in list(json_schema.items())[1:]:
                 if d_type in self.CAN_TYPECAST:
-                    column_path_list = column.split('/')
-                    if column_path_list[0] != top_level_key :
+                    column_path_list = column.split("/")
+                    if column_path_list[0] != top_level_key:
                         logger.error("incorrect top level key or column path")
                         raise ValueError("incorrect top level key or column path")
-                    
-                    for value in data[top_level_key] :
+
+                    for value in data[top_level_key]:
                         # start from first index zeroth index is for top level key
-                        self.apply_typecasting(value,column_path_list,d_type,1)
-        # reset index by default pandas add integer index
+                        self.apply_typecasting(value, column_path_list, d_type, 1)
+        # reset index, by default pandas add integer indexes
         data.reset_index(drop=True, inplace=True)
-        return  pa.Table.from_pandas(data)
-        
+        return pa.Table.from_pandas(data)
+
     def _read_options(self) -> Mapping[str, str]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.json.ReadOptions.html
@@ -134,19 +141,21 @@ class JsonlParser(AbstractFileParser):
             if isinstance(type_, pa.lib.DataType):
                 return str(type_)
             raise Exception(f"Unknown PyArrow Type: {type_}")
+
         try:
             table = self._read_table(file)
-        except ArrowInvalid as e :
+        except ArrowInvalid:
             logger.warning("warning: mixed json types in data")
             # move to begining of file
             file.seek(0)
-            if self.format.block_size :
-                table = pd.read_json(file, lines=True, chunksize= self.format.block_size)
+            if self.format.block_size:
+                chunks_data = pd.read_json(file, lines=True, chunksize=self.format.block_size)
                 for data in chunks_data:
-                    yield from self._reformat_table(data.to_dict(), self._master_schema).to_pylist()
-            else :
+                    table = self._reformat_table(data.to_dict(), self._master_schema).to_pylist()
+                    break
+            else:
                 chunks_data = pd.read_json(file, lines=True)
-                table =  self._reformat_table(chunks_data, self._master_schema).to_pylist()
+                table = self._reformat_table(chunks_data, self._master_schema).to_pylist()
         schema_dict = {field.name: field_type_to_str(field.type) for field in table.schema}
         return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
 
@@ -155,17 +164,17 @@ class JsonlParser(AbstractFileParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.json.read_json.html
 
         """
-        try: 
-            yield from self._read_table(file, self._master_schema).to_pylist() 
-        except ArrowInvalid as e :
+        try:
+            yield from self._read_table(file, self._master_schema).to_pylist()
+        except ArrowInvalid:
             logger.warning("warning: mixed json types in data")
             # move to begining of file
             file.seek(0)
-            if self.format.block_size :
-                chunks_data = pd.read_json(file, lines=True, chunksize= self.format.block_size)
+            if self.format.block_size:
+                chunks_data = pd.read_json(file, lines=True, chunksize=self.format.block_size)
                 for data in chunks_data:
                     yield from self._reformat_table(data.to_dict(), self._master_schema).to_pylist()
-            else :
+            else:
                 chunks_data = pd.read_json(file, lines=True)
                 yield from self._reformat_table(chunks_data, self._master_schema).to_pylist()
 
