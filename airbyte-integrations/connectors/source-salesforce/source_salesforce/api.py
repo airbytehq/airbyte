@@ -316,6 +316,7 @@ class Salesforce:
             if err.response.status_code == requests.codes.BAD_REQUEST:
                 if error_message := AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(err.response.json().get("error_description")):
                     raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
+            raise
         auth = resp.json()
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
