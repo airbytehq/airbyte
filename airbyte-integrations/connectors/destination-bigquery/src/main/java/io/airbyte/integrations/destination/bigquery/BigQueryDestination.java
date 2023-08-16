@@ -322,7 +322,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         bigQueryGcsOperations,
         getCsvRecordFormatterCreator(namingResolver),
         namingResolver::getTmpTableName,
-        getTargetTableNameTransformer(namingResolver),
         typerDeduper,
         parsedCatalog,
         BigQueryUtils.getDatasetId(config));
@@ -413,10 +412,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected Function<JsonNode, BigQueryRecordFormatter> getCsvRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
     return streamSchema -> new GcsCsvBigQueryRecordFormatter(streamSchema, namingResolver);
-  }
-
-  protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
-    return namingResolver::getRawTableName;
   }
 
   /**

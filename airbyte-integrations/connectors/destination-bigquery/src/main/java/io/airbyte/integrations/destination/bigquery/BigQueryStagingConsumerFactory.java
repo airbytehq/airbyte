@@ -50,26 +50,15 @@ public class BigQueryStagingConsumerFactory {
                                                       final BigQueryStagingOperations bigQueryGcsOperations,
                                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                                       final Function<String, String> tmpTableNameTransformer,
-                                                      final Function<String, String> targetTableNameTransformer,
                                                       final TyperDeduper typerDeduper,
                                                       final ParsedCatalog parsedCatalog,
                                                       final String defaultNamespace) {
-    final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigsByPair = createWriteConfigs(
+    final Map<StreamDescriptor, BigQueryWriteConfig> writeConfigsByDescriptor = createWriteConfigs(
         config,
         catalog,
         parsedCatalog,
         recordFormatterCreator,
-        tmpTableNameTransformer,
-        targetTableNameTransformer);
-
-    final Map<StreamDescriptor, BigQueryWriteConfig> writeConfigsByDescriptor = writeConfigsByPair
-        .entrySet()
-        .stream()
-        .collect(Collectors.toMap(
-            entry -> new StreamDescriptor()
-                .withName(entry.getKey().getName())
-                .withNamespace(entry.getKey().getNamespace()),
-            entry -> entry.getValue()));
+        tmpTableNameTransformer);
 
     final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
         incrementalTypingAndDedupingStreamConsumer(typerDeduper);
@@ -77,8 +66,8 @@ public class BigQueryStagingConsumerFactory {
     final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog, typeAndDedupeStreamFunction);
     return new AsyncStreamConsumer(
         outputRecordCollector,
-        onStartFunction(bigQueryGcsOperations, writeConfigsByPair, typerDeduper),
-        () -> onCloseFunction(bigQueryGcsOperations, writeConfigsByPair, typerDeduper).accept(false),
+        onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
+        () -> onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(false),
         flusher,
         catalog,
         new BufferManager(),
@@ -98,11 +87,11 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
-  private Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
-                                                                                      final ConfiguredAirbyteCatalog catalog,
-                                                                                      final ParsedCatalog parsedCatalog,
-                                                                                      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                                                                      final Function<String, String> tmpTableNameTransformer) {
+  private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
+                                                                        final ConfiguredAirbyteCatalog catalog,
+                                                                        final ParsedCatalog parsedCatalog,
+                                                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                                                        final Function<String, String> tmpTableNameTransformer) {
     return catalog.getStreams().stream()
         .map(configuredStream -> {
           Preconditions.checkNotNull(configuredStream.getDestinationSyncMode(), "Undefined destination sync mode");
@@ -130,7 +119,7 @@ public class BigQueryStagingConsumerFactory {
           return writeConfig;
         })
         .collect(Collectors.toMap(
-            c -> new AirbyteStreamNameNamespacePair(c.streamName(), c.namespace()),
+            c -> new StreamDescriptor().withName(c.streamName()).withNamespace(c.namespace()),
             Functions.identity()));
   }
 
@@ -145,7 +134,7 @@ public class BigQueryStagingConsumerFactory {
    * @param writeConfigs configuration settings used to describe how to write data and where it exists
    */
   private OnStartFunction onStartFunction(final BigQueryStagingOperations bigQueryGcsOperations,
-                                          final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                          final Map<StreamDescriptor, BigQueryWriteConfig> writeConfigs,
                                           final TyperDeduper typerDeduper) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
@@ -181,7 +170,7 @@ public class BigQueryStagingConsumerFactory {
    * @param writeConfigs configuration settings used to describe how to write data and where it exists
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
-                                          final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                          final Map<StreamDescriptor, BigQueryWriteConfig> writeConfigs,
                                           final TyperDeduper typerDeduper) {
     return (hasFailed) -> {
       /*
@@ -191,7 +180,7 @@ public class BigQueryStagingConsumerFactory {
        */
 
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
-      for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
+      for (final Map.Entry<StreamDescriptor, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
         typerDeduper.typeAndDedupe(entry.getKey().getNamespace(), entry.getKey().getName());
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
       }
