@@ -1206,6 +1206,20 @@ files = [
 ]
 
 [[package]]
+name = "py-markdown-table"
+version = "0.4.0"
+description = "Package that generates markdown tables from a list of dicts"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "py-markdown-table-0.4.0.tar.gz", hash = "sha256:e595f9cc03d8a464f6aa616027be29cf033cd778ae8fe8c030d3d664e790dbc3"},
+    {file = "py_markdown_table-0.4.0-py3-none-any.whl", hash = "sha256:28a4848322cb1f975cf444080d3ada752138968b0f3727e295504c5f5fb5bae1"},
+]
+
+[package.extras]
+dev = ["black", "pylint", "pytest", "pytest-cov"]
+
+[[package]]
 name = "pyasn1"
 version = "0.5.0"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
@@ -1922,4 +1936,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2903a2c7f1a7ebc91ada22a4e6b73aa96e7195e0d3da72310254862e49c6f22b"
+content-hash = "1cecda107a85fd1eb1cc496ac805c685e09271e88ec2840845a224edf7ba7f31"
