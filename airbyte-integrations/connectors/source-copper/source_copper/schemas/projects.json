@@ -33,6 +33,12 @@
         "type": ["null", "object"],
         "additionalProperties": true
       }
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }
