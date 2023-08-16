@@ -1,6 +1,7 @@
 data:
   connectorSubtype: api
   connectorType: source
+  connectorBaseImage: airbyte-python-base:0.0.1
   definitionId: d8540a80-6120-485d-b7d6-272bca477d9b
   dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-openweather
