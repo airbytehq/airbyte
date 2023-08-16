@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import useStateCallback from "hooks/useStateCallback";
 import { RoutePaths } from "pages/routePaths";
 
-import { RegisterUserDetails } from "../../services/auth/AuthService";
 import { IAuthUser, MyAuthUser } from "./authenticatedUser";
+import { RegisterUserDetails } from "../../services/auth/AuthService";
 
 interface IUserContext {
   user: IAuthUser;
@@ -49,7 +49,9 @@ export const AuthContextProvider: React.FC = ({ children }) => {
 
   const setUser = (user: IAuthUser) => {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-    setAuthenticatedUser(user, () => navigate(`/${user.workspaceId ? RoutePaths.Connections : RoutePaths.Payment}`));
+    if (user.workspaceId && user.token) {
+      setAuthenticatedUser(user, () => navigate(`/${user.workspaceId ? RoutePaths.Connections : RoutePaths.Payment}`));
+    }
   };
 
   const updateUserStatus = (status: number) => {
