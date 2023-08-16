@@ -46,8 +46,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
     final var noValidV2RawTableExists = !doesValidV2RawTableAlreadyExist(streamConfig);
     final var aValidV1RawTableExists = doesValidV1RawTableExist(v1RawTable.namespace(), v1RawTable.tableName());
     LOGGER.info("Migration Info: Required for Sync mode: {}, No existing v2 raw tables: {}, A v1 raw table exists: {}",
-                syncModeNeedsMigration, noValidV2RawTableExists, aValidV1RawTableExists
-    );
+        syncModeNeedsMigration, noValidV2RawTableExists, aValidV1RawTableExists);
     return syncModeNeedsMigration && noValidV2RawTableExists && aValidV1RawTableExists;
   }
 
@@ -65,11 +64,9 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);
     final var migrateAndReset = String.join("\n\n",
-                                            sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(),
-                                                                           namespacedTableName.tableName()
-                                            ),
-                                            sqlGenerator.softReset(streamConfig)
-    );
+        sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(),
+            namespacedTableName.tableName()),
+        sqlGenerator.softReset(streamConfig));
     try {
       destinationHandler.execute(migrateAndReset);
     } catch (Exception e) {

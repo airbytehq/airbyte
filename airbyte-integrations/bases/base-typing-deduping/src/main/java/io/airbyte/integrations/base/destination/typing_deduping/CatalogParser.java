@@ -16,6 +16,7 @@ import java.util.Optional;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class CatalogParser {
+
   private final SqlGenerator<?> sqlGenerator;
   private final String rawNamespace;
 
