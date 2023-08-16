@@ -1,808 +1,409 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "additionalProperties": true,
-    "properties": {
-        "last_sync_at":{
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-        "accountNo": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "accountOrigin": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "accountOriginKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "accountStatus": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "accountStatusKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "actBusinessDateMax": {
-            "type": [
-                "string",
-                "null"
-            ],
-            "format": "date-time"
-        },
-        "actBusinessDateMin": {
-            "type": [
-                "string",
-                "null"
-            ],
-            "format": "date-time"
-        },
-        "activationLocDesc": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activationMIDDesc": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activationMonth": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activationQuarter": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activationTime": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activationWeek": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activationYear": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activityDay": {
-            "type": [
-                "string",
-                "null"
-            ],
-            "format": "date-time"
-        },
-        "activityMonth": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activityQuarter": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activityWeek": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "activityYear": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "altAccountNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "altMerchantCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "amount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "authCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "balance": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "baseAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "baseCashBackAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "baseCurrencyCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "baseCurrencyCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "baseFundedAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "baseLockAmt": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "batchNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "bonusAmt": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "cardClass": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cardCostAmt": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "cashBackAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "checkSum": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "clerk": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "consortiumCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "consortiumDesc": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "consumerBaseFundedAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "consumerFundedAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "couponId": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "currencyCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "currencyCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "discountAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "escheatTxn": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "excessiveActivityInterval": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "excessiveActivitySize": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "exchangeRate": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "extRequestCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "extRequestCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "extResponseCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "extResponseCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "financial": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "financialKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "fundedAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "fundingId": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "gyftId": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "linkedDiscountAmt": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "linkedLoyaltyAcct": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "localLockAmt": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "lockId": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "loyaltyReqAcct": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "loyaltyReqConsort": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "ltoAltMid": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "ltoFundUsed": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "ltoMid": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "masterLoyaltyAcct": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "masterLoyaltyConsort": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "memoField": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "merchantCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "merchantFundBal": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "messaging": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "mfEnable": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "mfLocDesc": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "mfMIDDesc": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "mfaltMerchantNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "mfmerchantNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "nrtmConsortiumID": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "offset": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "packId": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "packageAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "pactivationAltMerchantCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "pactivationMerchantCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "pbcUserName": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "prevAccountStatus": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "primaryPromoCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "processedTime": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "promotionCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "promotionDesc": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reasonCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reasonCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "referenceNum": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "replaceSerialNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "reportingAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "reportingCashBackAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "reportingCurrencyCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reportingCurrencyCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reportingFundedAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "requestCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "requestCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "requestGroupCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "requestGroupCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "responseCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "responseCodeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reversed": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reversedKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reversedTimestampTime": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "rewardAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "routeInfo": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "serialNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "sign": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "source": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "sourceKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "targetConsortiumCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "targetPromoCode": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "termTxnNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "terminalNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "transactionDayGMT": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "transactionLocDesc": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "transactionMIDDesc": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "transactionTimeEst": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "transactionTimeGMT": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "transactionTimeLocal": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "txnAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "txnGroupId": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "txnId": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "upliftAmount": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "user1": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "user2": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "userID": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "wicNo": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "last_sync_at": {
+      "type": ["string", "null"]
+    },
+    "accountNo": {
+      "type": ["string", "null"]
+    },
+    "accountOrigin": {
+      "type": ["string", "null"]
+    },
+    "accountOriginKey": {
+      "type": ["string", "null"]
+    },
+    "accountStatus": {
+      "type": ["string", "null"]
+    },
+    "accountStatusKey": {
+      "type": ["string", "null"]
+    },
+    "actBusinessDateMax": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "actBusinessDateMin": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "activationLocDesc": {
+      "type": ["string", "null"]
+    },
+    "activationMIDDesc": {
+      "type": ["string", "null"]
+    },
+    "activationMonth": {
+      "type": ["string", "null"]
+    },
+    "activationQuarter": {
+      "type": ["string", "null"]
+    },
+    "activationTime": {
+      "type": ["string", "null"]
+    },
+    "activationWeek": {
+      "type": ["string", "null"]
+    },
+    "activationYear": {
+      "type": ["string", "null"]
+    },
+    "activityDay": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "activityMonth": {
+      "type": ["string", "null"]
+    },
+    "activityQuarter": {
+      "type": ["string", "null"]
+    },
+    "activityWeek": {
+      "type": ["string", "null"]
+    },
+    "activityYear": {
+      "type": ["string", "null"]
+    },
+    "altAccountNo": {
+      "type": ["integer", "null"]
+    },
+    "altMerchantCode": {
+      "type": ["integer", "null"]
+    },
+    "amount": {
+      "type": ["number", "null"]
+    },
+    "authCode": {
+      "type": ["string", "null"]
+    },
+    "balance": {
+      "type": ["number", "null"]
+    },
+    "baseAmount": {
+      "type": ["number", "null"]
+    },
+    "baseCashBackAmount": {
+      "type": ["number", "null"]
+    },
+    "baseCurrencyCode": {
+      "type": ["string", "null"]
+    },
+    "baseCurrencyCodeKey": {
+      "type": ["string", "null"]
+    },
+    "baseFundedAmount": {
+      "type": ["number", "null"]
+    },
+    "baseLockAmt": {
+      "type": ["number", "null"]
+    },
+    "batchNo": {
+      "type": ["integer", "null"]
+    },
+    "bonusAmt": {
+      "type": ["number", "null"]
+    },
+    "cardClass": {
+      "type": ["string", "null"]
+    },
+    "cardCostAmt": {
+      "type": ["number", "null"]
+    },
+    "cashBackAmount": {
+      "type": ["number", "null"]
+    },
+    "checkSum": {
+      "type": ["integer", "null"]
+    },
+    "clerk": {
+      "type": ["string", "null"]
+    },
+    "consortiumCode": {
+      "type": ["integer", "null"]
+    },
+    "consortiumDesc": {
+      "type": ["string", "null"]
+    },
+    "consumerBaseFundedAmount": {
+      "type": ["number", "null"]
+    },
+    "consumerFundedAmount": {
+      "type": ["number", "null"]
+    },
+    "couponId": {
+      "type": ["string", "null"]
+    },
+    "currencyCode": {
+      "type": ["string", "null"]
+    },
+    "currencyCodeKey": {
+      "type": ["string", "null"]
+    },
+    "discountAmount": {
+      "type": ["number", "null"]
+    },
+    "escheatTxn": {
+      "type": ["string", "null"]
+    },
+    "excessiveActivityInterval": {
+      "type": ["integer", "null"]
+    },
+    "excessiveActivitySize": {
+      "type": ["integer", "null"]
+    },
+    "exchangeRate": {
+      "type": ["integer", "null"]
+    },
+    "extRequestCode": {
+      "type": ["string", "null"]
+    },
+    "extRequestCodeKey": {
+      "type": ["string", "null"]
+    },
+    "extResponseCode": {
+      "type": ["string", "null"]
+    },
+    "extResponseCodeKey": {
+      "type": ["string", "null"]
+    },
+    "financial": {
+      "type": ["string", "null"]
+    },
+    "financialKey": {
+      "type": ["string", "null"]
+    },
+    "fundedAmount": {
+      "type": ["number", "null"]
+    },
+    "fundingId": {
+      "type": ["integer", "null"]
+    },
+    "gyftId": {
+      "type": ["string", "null"]
+    },
+    "linkedDiscountAmt": {
+      "type": ["number", "null"]
+    },
+    "linkedLoyaltyAcct": {
+      "type": ["integer", "null"]
+    },
+    "localLockAmt": {
+      "type": ["number", "null"]
+    },
+    "lockId": {
+      "type": ["integer", "null"]
+    },
+    "loyaltyReqAcct": {
+      "type": ["integer", "null"]
+    },
+    "loyaltyReqConsort": {
+      "type": ["integer", "null"]
+    },
+    "ltoAltMid": {
+      "type": ["integer", "null"]
+    },
+    "ltoFundUsed": {
+      "type": ["integer", "null"]
+    },
+    "ltoMid": {
+      "type": ["integer", "null"]
+    },
+    "masterLoyaltyAcct": {
+      "type": ["integer", "null"]
+    },
+    "masterLoyaltyConsort": {
+      "type": ["integer", "null"]
+    },
+    "memoField": {
+      "type": ["string", "null"]
+    },
+    "merchantCode": {
+      "type": ["integer", "null"]
+    },
+    "merchantFundBal": {
+      "type": ["number", "null"]
+    },
+    "messaging": {
+      "type": ["string", "null"]
+    },
+    "mfEnable": {
+      "type": ["string", "null"]
+    },
+    "mfLocDesc": {
+      "type": ["string", "null"]
+    },
+    "mfMIDDesc": {
+      "type": ["string", "null"]
+    },
+    "mfaltMerchantNo": {
+      "type": ["integer", "null"]
+    },
+    "mfmerchantNo": {
+      "type": ["integer", "null"]
+    },
+    "nrtmConsortiumID": {
+      "type": ["integer", "null"]
+    },
+    "offset": {
+      "type": ["integer", "null"]
+    },
+    "packId": {
+      "type": ["integer", "null"]
+    },
+    "packageAmount": {
+      "type": ["number", "null"]
+    },
+    "pactivationAltMerchantCode": {
+      "type": ["integer", "null"]
+    },
+    "pactivationMerchantCode": {
+      "type": ["integer", "null"]
+    },
+    "pbcUserName": {
+      "type": ["string", "null"]
+    },
+    "prevAccountStatus": {
+      "type": ["integer", "null"]
+    },
+    "primaryPromoCode": {
+      "type": ["integer", "null"]
+    },
+    "processedTime": {
+      "type": ["string", "null"]
+    },
+    "promotionCode": {
+      "type": ["integer", "null"]
+    },
+    "promotionDesc": {
+      "type": ["string", "null"]
+    },
+    "reasonCode": {
+      "type": ["string", "null"]
+    },
+    "reasonCodeKey": {
+      "type": ["string", "null"]
+    },
+    "referenceNum": {
+      "type": ["integer", "null"]
+    },
+    "replaceSerialNo": {
+      "type": ["integer", "null"]
+    },
+    "reportingAmount": {
+      "type": ["number", "null"]
+    },
+    "reportingCashBackAmount": {
+      "type": ["number", "null"]
+    },
+    "reportingCurrencyCode": {
+      "type": ["string", "null"]
+    },
+    "reportingCurrencyCodeKey": {
+      "type": ["string", "null"]
+    },
+    "reportingFundedAmount": {
+      "type": ["number", "null"]
+    },
+    "requestCode": {
+      "type": ["string", "null"]
+    },
+    "requestCodeKey": {
+      "type": ["string", "null"]
+    },
+    "requestGroupCode": {
+      "type": ["string", "null"]
+    },
+    "requestGroupCodeKey": {
+      "type": ["string", "null"]
+    },
+    "responseCode": {
+      "type": ["string", "null"]
+    },
+    "responseCodeKey": {
+      "type": ["string", "null"]
+    },
+    "reversed": {
+      "type": ["string", "null"]
+    },
+    "reversedKey": {
+      "type": ["string", "null"]
+    },
+    "reversedTimestampTime": {
+      "type": ["string", "null"]
+    },
+    "rewardAmount": {
+      "type": ["number", "null"]
+    },
+    "routeInfo": {
+      "type": ["string", "null"]
+    },
+    "serialNo": {
+      "type": ["integer", "null"]
+    },
+    "sign": {
+      "type": ["string", "null"]
+    },
+    "source": {
+      "type": ["string", "null"]
+    },
+    "sourceKey": {
+      "type": ["string", "null"]
+    },
+    "targetConsortiumCode": {
+      "type": ["integer", "null"]
+    },
+    "targetPromoCode": {
+      "type": ["integer", "null"]
+    },
+    "termTxnNo": {
+      "type": ["integer", "null"]
+    },
+    "terminalNo": {
+      "type": ["integer", "null"]
+    },
+    "transactionDayGMT": {
+      "type": ["string", "null"]
+    },
+    "transactionLocDesc": {
+      "type": ["string", "null"]
+    },
+    "transactionMIDDesc": {
+      "type": ["string", "null"]
+    },
+    "transactionTimeEst": {
+      "type": ["string", "null"]
+    },
+    "transactionTimeGMT": {
+      "type": ["string", "null"]
+    },
+    "transactionTimeLocal": {
+      "type": ["string", "null"]
+    },
+    "txnAmount": {
+      "type": ["number", "null"]
+    },
+    "txnGroupId": {
+      "type": ["integer", "null"]
+    },
+    "txnId": {
+      "type": ["integer", "null"]
+    },
+    "upliftAmount": {
+      "type": ["number", "null"]
+    },
+    "user1": {
+      "type": ["string", "null"]
+    },
+    "user2": {
+      "type": ["string", "null"]
+    },
+    "userID": {
+      "type": ["string", "null"]
+    },
+    "wicNo": {
+      "type": ["integer", "null"]
     }
+  }
 }

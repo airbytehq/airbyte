@@ -1,211 +1,109 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "additionalProperties": true,
-    "properties": {
-        "corpID": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "city": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "commrHubId": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "altid": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "platform": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "st_abbr_nm": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "Name": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "effectiveTo": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cardPresentIn": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "contact": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "addressLine1": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "addressLine2": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "id": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "networkTokenOfferingType": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "agntName": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "leadName": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "fundingTypeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "mrchID": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "fundingType": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "corpName": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "fax": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "email": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "zip": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "agentID": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "website": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "address": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "contactName": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "storeNo": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "platformKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "phone": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "merchantCategoryCode": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "contactPhone": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "effectiveFrom": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "leadID": {
-            "type": [
-                "string",
-                "null"
-            ]
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "corpID": {
+      "type": ["string", "null"]
+    },
+    "city": {
+      "type": ["string", "null"]
+    },
+    "commrHubId": {
+      "type": ["string", "null"]
+    },
+    "altid": {
+      "type": ["string", "null"]
+    },
+    "platform": {
+      "type": ["string", "null"]
+    },
+    "st_abbr_nm": {
+      "type": ["string", "null"]
+    },
+    "Name": {
+      "type": ["string", "null"]
+    },
+    "effectiveTo": {
+      "type": ["string", "null"]
+    },
+    "cardPresentIn": {
+      "type": ["string", "null"]
+    },
+    "contact": {
+      "type": ["string", "null"]
+    },
+    "addressLine1": {
+      "type": ["string", "null"]
+    },
+    "addressLine2": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "networkTokenOfferingType": {
+      "type": ["string", "null"]
+    },
+    "agntName": {
+      "type": ["string", "null"]
+    },
+    "leadName": {
+      "type": ["string", "null"]
+    },
+    "fundingTypeKey": {
+      "type": ["string", "null"]
+    },
+    "mrchID": {
+      "type": ["string", "null"]
+    },
+    "fundingType": {
+      "type": ["string", "null"]
+    },
+    "corpName": {
+      "type": ["string", "null"]
+    },
+    "fax": {
+      "type": ["string", "null"]
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "zip": {
+      "type": ["string", "null"]
+    },
+    "agentID": {
+      "type": ["string", "null"]
+    },
+    "website": {
+      "type": ["string", "null"]
+    },
+    "address": {
+      "type": ["string", "null"]
+    },
+    "contactName": {
+      "type": ["string", "null"]
+    },
+    "storeNo": {
+      "type": ["string", "null"]
+    },
+    "platformKey": {
+      "type": ["string", "null"]
+    },
+    "phone": {
+      "type": ["string", "null"]
+    },
+    "merchantCategoryCode": {
+      "type": ["string", "null"]
+    },
+    "contactPhone": {
+      "type": ["string", "null"]
+    },
+    "effectiveFrom": {
+      "type": ["string", "null"]
+    },
+    "leadID": {
+      "type": ["string", "null"]
     }
+  }
 }

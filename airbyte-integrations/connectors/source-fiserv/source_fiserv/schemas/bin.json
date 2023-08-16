@@ -1,547 +1,277 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "additionalProperties": true,
-    "properties": {
-        "affn": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "country": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cu24Key": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "regulated": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "bin": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "type": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "productSubTypeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "day": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "productSubType": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "largeTicket": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "moneySend": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "binLength": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "originalCreditKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "debitNetwork": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "moneyTransfer": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "onlineGambling": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "tokenBin": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "panLength": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "month": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "fundSourceKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "moneyTransferKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "fastFundsKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "fsa": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "panMinLength": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "tokenBinKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "b2bProgramKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "prepaid": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "billingCurrency": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "moneySendKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "fundSource": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "b2bProgram": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "fsaKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "year": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "billingCurrencyKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "processingIndicatorKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "onlineGamblingKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "originalCredit": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "debitNetworkKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "panMaxLength": {
-            "type": [
-                "integer",
-                "null"
-            ]
-        },
-        "fastFunds": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "processingIndicator": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "pulseKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "issuer": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cardSubTypeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "athKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "visaKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "ath": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "interlinkKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cu24": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "details": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "id": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cardBrand": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "ebtKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cardClassKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cardClass": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "binMapKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "lowacct": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "highacct": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "shazamKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "active": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cardBrandKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "interlink": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "countryKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "nyceKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "starKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reloadable": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "interac": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "EBTState": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "maestroKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "reloadableKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "jeanie": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "accelKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "nyce": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "shazam": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "binMap": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "typeKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "star": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "cardSubType": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "affnKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "accel": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "jeanieKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "interacKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "detailsKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "EBTStateKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "ebt": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "issuerKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "regulatedKey": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "visa": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "pulse": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "maestro": {
-            "type": [
-                "string",
-                "null"
-            ]
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "affn": {
+      "type": ["string", "null"]
+    },
+    "country": {
+      "type": ["string", "null"]
+    },
+    "cu24Key": {
+      "type": ["string", "null"]
+    },
+    "regulated": {
+      "type": ["string", "null"]
+    },
+    "bin": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "productSubTypeKey": {
+      "type": ["string", "null"]
+    },
+    "day": {
+      "type": ["integer", "null"]
+    },
+    "productSubType": {
+      "type": ["string", "null"]
+    },
+    "largeTicket": {
+      "type": ["string", "null"]
+    },
+    "moneySend": {
+      "type": ["string", "null"]
+    },
+    "binLength": {
+      "type": ["integer", "null"]
+    },
+    "originalCreditKey": {
+      "type": ["string", "null"]
+    },
+    "debitNetwork": {
+      "type": ["string", "null"]
+    },
+    "moneyTransfer": {
+      "type": ["string", "null"]
+    },
+    "onlineGambling": {
+      "type": ["string", "null"]
+    },
+    "tokenBin": {
+      "type": ["string", "null"]
+    },
+    "panLength": {
+      "type": ["integer", "null"]
+    },
+    "month": {
+      "type": ["integer", "null"]
+    },
+    "fundSourceKey": {
+      "type": ["string", "null"]
+    },
+    "moneyTransferKey": {
+      "type": ["string", "null"]
+    },
+    "fastFundsKey": {
+      "type": ["string", "null"]
+    },
+    "fsa": {
+      "type": ["string", "null"]
+    },
+    "panMinLength": {
+      "type": ["integer", "null"]
+    },
+    "tokenBinKey": {
+      "type": ["string", "null"]
+    },
+    "b2bProgramKey": {
+      "type": ["string", "null"]
+    },
+    "prepaid": {
+      "type": ["string", "null"]
+    },
+    "billingCurrency": {
+      "type": ["string", "null"]
+    },
+    "moneySendKey": {
+      "type": ["string", "null"]
+    },
+    "fundSource": {
+      "type": ["string", "null"]
+    },
+    "b2bProgram": {
+      "type": ["string", "null"]
+    },
+    "fsaKey": {
+      "type": ["string", "null"]
+    },
+    "year": {
+      "type": ["integer", "null"]
+    },
+    "billingCurrencyKey": {
+      "type": ["string", "null"]
+    },
+    "processingIndicatorKey": {
+      "type": ["string", "null"]
+    },
+    "onlineGamblingKey": {
+      "type": ["string", "null"]
+    },
+    "originalCredit": {
+      "type": ["string", "null"]
+    },
+    "debitNetworkKey": {
+      "type": ["string", "null"]
+    },
+    "panMaxLength": {
+      "type": ["integer", "null"]
+    },
+    "fastFunds": {
+      "type": ["string", "null"]
+    },
+    "processingIndicator": {
+      "type": ["string", "null"]
+    },
+    "pulseKey": {
+      "type": ["string", "null"]
+    },
+    "issuer": {
+      "type": ["string", "null"]
+    },
+    "cardSubTypeKey": {
+      "type": ["string", "null"]
+    },
+    "athKey": {
+      "type": ["string", "null"]
+    },
+    "visaKey": {
+      "type": ["string", "null"]
+    },
+    "ath": {
+      "type": ["string", "null"]
+    },
+    "interlinkKey": {
+      "type": ["string", "null"]
+    },
+    "cu24": {
+      "type": ["string", "null"]
+    },
+    "details": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "cardBrand": {
+      "type": ["string", "null"]
+    },
+    "ebtKey": {
+      "type": ["string", "null"]
+    },
+    "cardClassKey": {
+      "type": ["string", "null"]
+    },
+    "cardClass": {
+      "type": ["string", "null"]
+    },
+    "binMapKey": {
+      "type": ["string", "null"]
+    },
+    "lowacct": {
+      "type": ["string", "null"]
+    },
+    "highacct": {
+      "type": ["string", "null"]
+    },
+    "shazamKey": {
+      "type": ["string", "null"]
+    },
+    "active": {
+      "type": ["string", "null"]
+    },
+    "cardBrandKey": {
+      "type": ["string", "null"]
+    },
+    "interlink": {
+      "type": ["string", "null"]
+    },
+    "countryKey": {
+      "type": ["string", "null"]
+    },
+    "nyceKey": {
+      "type": ["string", "null"]
+    },
+    "starKey": {
+      "type": ["string", "null"]
+    },
+    "reloadable": {
+      "type": ["string", "null"]
+    },
+    "interac": {
+      "type": ["string", "null"]
+    },
+    "EBTState": {
+      "type": ["string", "null"]
+    },
+    "maestroKey": {
+      "type": ["string", "null"]
+    },
+    "reloadableKey": {
+      "type": ["string", "null"]
+    },
+    "jeanie": {
+      "type": ["string", "null"]
+    },
+    "accelKey": {
+      "type": ["string", "null"]
+    },
+    "nyce": {
+      "type": ["string", "null"]
+    },
+    "shazam": {
+      "type": ["string", "null"]
+    },
+    "binMap": {
+      "type": ["string", "null"]
+    },
+    "typeKey": {
+      "type": ["string", "null"]
+    },
+    "star": {
+      "type": ["string", "null"]
+    },
+    "cardSubType": {
+      "type": ["string", "null"]
+    },
+    "affnKey": {
+      "type": ["string", "null"]
+    },
+    "accel": {
+      "type": ["string", "null"]
+    },
+    "jeanieKey": {
+      "type": ["string", "null"]
+    },
+    "interacKey": {
+      "type": ["string", "null"]
+    },
+    "detailsKey": {
+      "type": ["string", "null"]
+    },
+    "EBTStateKey": {
+      "type": ["string", "null"]
+    },
+    "ebt": {
+      "type": ["string", "null"]
+    },
+    "issuerKey": {
+      "type": ["string", "null"]
+    },
+    "regulatedKey": {
+      "type": ["string", "null"]
+    },
+    "visa": {
+      "type": ["string", "null"]
+    },
+    "pulse": {
+      "type": ["string", "null"]
+    },
+    "maestro": {
+      "type": ["string", "null"]
     }
+  }
 }

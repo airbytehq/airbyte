@@ -18,12 +18,12 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: 
+        empty_streams:
            - name: "disbursement"
-             bypass_reason: "Disbresement does not have any existing records currently"
+             bypass_reason: "Disbursements doesn't always have records"
            - name: "retrieval"
-             bypass_reason: "Retrieval does not have any existing records currently"
-  incremental: 
+             bypass_reason: "Retrieval doesn't always have records"
+  incremental:
     tests:
      - config_path: "secrets/config.json"
        configured_catalog_path: "integration_tests/configured_catalog.json"
