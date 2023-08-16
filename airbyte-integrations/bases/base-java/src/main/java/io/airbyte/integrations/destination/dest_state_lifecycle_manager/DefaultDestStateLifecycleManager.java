@@ -34,8 +34,8 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   private AirbyteStateType stateType;
   private final Supplier<DestStateLifecycleManager> internalStateManagerSupplier;
 
-  public DefaultDestStateLifecycleManager() {
-    this(new DestSingleStateLifecycleManager(), new DestStreamStateLifecycleManager());
+  public DefaultDestStateLifecycleManager(final String defaultNamespace) {
+    this(new DestSingleStateLifecycleManager(), new DestStreamStateLifecycleManager(defaultNamespace));
   }
 
   @VisibleForTesting

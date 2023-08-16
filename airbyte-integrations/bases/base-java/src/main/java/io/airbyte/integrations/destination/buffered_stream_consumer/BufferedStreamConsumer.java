@@ -158,7 +158,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-    this.stateManager = new DefaultDestStateLifecycleManager();
+    this.stateManager = new DefaultDestStateLifecycleManager(defaultNamespace);
     this.bufferFlushFrequency = flushFrequency;
     this.defaultNamespace = defaultNamespace;
   }

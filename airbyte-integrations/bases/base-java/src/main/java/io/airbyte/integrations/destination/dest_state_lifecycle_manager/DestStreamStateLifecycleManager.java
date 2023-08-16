@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 
+import com.amazonaws.util.StringUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -35,8 +36,10 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastPendingState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastFlushedState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastCommittedState;
+  private final String defaultNamespace;
 
-  public DestStreamStateLifecycleManager() {
+  public DestStreamStateLifecycleManager(final String defaultNamespace) {
+    this.defaultNamespace = defaultNamespace;
     streamToLastPendingState = new HashMap<>();
     streamToLastFlushedState = new HashMap<>();
     streamToLastCommittedState = new HashMap<>();
@@ -45,7 +48,14 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   @Override
   public void addState(final AirbyteMessage message) {
     Preconditions.checkArgument(message.getState().getType() == AirbyteStateType.STREAM);
-    streamToLastPendingState.put(message.getState().getStream().getStreamDescriptor(), message);
+    final StreamDescriptor streamDescriptor = message.getState().getStream().getStreamDescriptor();
+    if (StringUtils.isNullOrEmpty(streamDescriptor.getNamespace())) {
+      // If the state's namespace is null/empty, we need to be able to find it using the default namespace
+      // (because many destinations actually set records' namespace to the default namespace before
+      // they make it into this class).
+      streamDescriptor.setNamespace(defaultNamespace);
+    }
+    streamToLastPendingState.put(streamDescriptor, message);
   }
 
   @VisibleForTesting
@@ -91,7 +101,11 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public void markPendingAsCommitted(final AirbyteStreamNameNamespacePair stream) {
-    final StreamDescriptor sd = new StreamDescriptor().withName(stream.getName()).withNamespace(stream.getNamespace());
+    // streamToLastCommittedState is keyed using defaultNamespace instead of namespace=null. (see #addState)
+    // Many destinations actually modify the records' namespace immediately after reading them from stdin,
+    // but we should have a null-check here just in case.
+    final String actualNamespace = stream.getNamespace() == null ? defaultNamespace : stream.getNamespace();
+    final StreamDescriptor sd = new StreamDescriptor().withName(stream.getName()).withNamespace(actualNamespace);
     final AirbyteMessage lastPendingState = streamToLastPendingState.remove(sd);
     if (lastPendingState != null) {
       streamToLastCommittedState.put(sd, lastPendingState);
