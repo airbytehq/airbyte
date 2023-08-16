@@ -39,17 +39,6 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
     this.recordFormatter = recordFormatter;
   }
 
-  /*
-   * @param recordString serialized record
-   * @param emittedAt timestamp of the record in milliseconds
-   * @throws IOException
-   */
-  @Override
-  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
-    writeRecord(new AirbyteRecordMessage().withData(Jsons.deserialize(recordString)).withEmittedAt(emittedAt));
-  }
-
-
   @Override
   protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(recordFormatter.formatRecord(record)));

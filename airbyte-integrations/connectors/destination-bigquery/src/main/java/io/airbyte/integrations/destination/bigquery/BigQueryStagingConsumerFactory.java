@@ -89,7 +89,6 @@ public class BigQueryStagingConsumerFactory {
                                        final ConfiguredAirbyteCatalog catalog,
                                        final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BigQueryStagingOperations bigQueryGcsOperations,
-                                       final BufferCreateFunction onCreateBuffer,
                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                        final Function<String, String> tmpTableNameTransformer,
                                        final Function<String, String> targetTableNameTransformer,
@@ -116,7 +115,7 @@ public class BigQueryStagingConsumerFactory {
     final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
         incrementalTypingAndDedupingStreamConsumer(typerDeduper);
 
-    final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog, typeAndDedupeStreamFunction, onCreateBuffer);
+    final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog, typeAndDedupeStreamFunction);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByPair, typerDeduper),

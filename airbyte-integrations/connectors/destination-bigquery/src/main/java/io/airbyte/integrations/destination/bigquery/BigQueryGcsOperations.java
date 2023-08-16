@@ -137,11 +137,9 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
       final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFile);
       LOGGER.info("Uploading staged file: {}", fullFilePath);
       final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tableId, fullFilePath)
-//          .setFormatOptions(FormatOptions.avro())
           .setFormatOptions(FormatOptions.csv())
           .setSchema(tableSchema)
           .setWriteDisposition(WriteDisposition.WRITE_APPEND)
-//          .setUseAvroLogicalTypes(true)
           .build();
 
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));

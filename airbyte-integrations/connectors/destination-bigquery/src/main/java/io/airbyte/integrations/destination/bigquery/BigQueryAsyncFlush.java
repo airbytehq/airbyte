@@ -1,11 +1,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
-import com.google.cloud.bigquery.Schema;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
-import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
@@ -31,27 +27,22 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
   private final BigQueryStagingOperations stagingOperations;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer;
-  private final BufferCreateFunction createBuffer;
 
   public BigQueryAsyncFlush(
       final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
       final BigQueryStagingOperations stagingOperations,
       final ConfiguredAirbyteCatalog catalog,
-      final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer,
-      final BufferCreateFunction createBuffer
-  ) {
+      final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.catalog = catalog;
     this.incrementalTypingAndDedupingStreamConsumer = incrementalTypingAndDedupingStreamConsumer;
-    this.createBuffer = createBuffer;
   }
 
   @Override
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     final SerializableBuffer writer;
     try {
-//      writer = createBuffer.apply(new AirbyteStreamNameNamespacePair(decs.getName(), decs.getNamespace()), catalog);
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
           new StagingDatabaseCsvSheetGenerator(),
@@ -69,7 +60,7 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
     }
 
     writer.flush();
-    log.info("Flushing Avro buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+    log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
     if (!streamDescToWriteConfig.containsKey(decs)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
