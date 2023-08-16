@@ -208,3 +208,4 @@ class Subscriptions(IncrementalRechargeStream):
     """
     Subscriptions Stream: https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions
     """
+    primary_key = None
