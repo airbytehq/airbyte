@@ -80,7 +80,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     try {
       database.execute(String.format("CREATE DATABASE \"%s\" AS PERMANENT = 120e6, SPOOL = 120e6;", schemaName));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       if (e.getMessage() != null && e.getMessage().contains("already exists")) {
         LOGGER.warn("Database " + schemaName + " already exists.");
       } else {
@@ -95,7 +95,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
       throws SQLException {
     try {
       database.execute(createTableQuery(database, schemaName, tableName));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       if (e.getMessage() != null && e.getMessage().contains("already exists")) {
         LOGGER.warn("Table " + schemaName + "." + tableName + " already exists.");
       } else {
