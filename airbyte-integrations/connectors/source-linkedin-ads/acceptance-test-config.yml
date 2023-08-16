@@ -14,11 +14,11 @@ acceptance_tests:
       timeout_seconds: 60
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+    - config_path: "integration_tests/invalid_config_custom_report.json"
+      status: "failed"
   discovery:
     tests:
     - config_path: "secrets/config_oauth.json"
-      backward_compatibility_tests_config:
-        disable_for_version: 0.2.1 # new fields added to schemas: `Campaigns`, 'Campaign_Groups', `Creatives`
       timeout_seconds: 60
   basic_read:
     tests:
@@ -27,6 +27,23 @@ acceptance_tests:
         path: "integration_tests/expected_records.jsonl"
       fail_on_extra_columns: true
       timeout_seconds: 3600
+      empty_streams:
+        - name: ad_member_company_size_analytics
+          bypass_reason: "Empty stream; Retention period is 2y"
+        - name: ad_member_country_analytics
+          bypass_reason: "Empty stream; Retention period is 2y"
+        - name: ad_member_job_function_analytics
+          bypass_reason: "Empty stream; Retention period is 2y"
+        - name: ad_member_job_title_analytics
+          bypass_reason: "Empty stream; Retention period is 2y"
+        - name: ad_member_industry_analytics
+          bypass_reason: "Empty stream; Retention period is 2y"
+        - name: ad_member_seniority_analytics
+          bypass_reason: "Empty stream; Retention period is 2y"
+        - name: ad_member_region_analytics
+          bypass_reason: "Empty stream; Retention period is 2y"
+        - name: ad_member_company_analytics
+          bypass_reason: "Empty stream; Retention period is 2y"
   incremental:
     tests:
     - config_path: "secrets/config_oauth.json"

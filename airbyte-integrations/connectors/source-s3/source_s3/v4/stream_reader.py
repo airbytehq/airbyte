@@ -58,12 +58,12 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 )
         return self._s3_client
 
-    def get_matching_files(self, globs: List[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Get all files matching the specified glob patterns.
         """
         s3 = self.s3_client
-        prefixes = self.get_prefixes_from_globs(globs)
+        prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
         total_n_keys = 0
 
