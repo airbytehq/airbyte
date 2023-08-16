@@ -41,7 +41,7 @@ For detailed instructions on how to generate a service account key or OAuth cred
 
 ### Google Sheets format requirements
 
-- Sheet names and column headers must only contain alphanumeric characters or `_`, as specified in the [**Airbyte Protocol**](../../understanding-airbyte/airbyte-protocol.md). For example, if your sheet or column header is named `the data`, rename it to `the_data`. This restriction does not apply to non-header cell values.
+- When replicating data to a SQL-based destination (such as Postgres or MySQL), sheet names and column headers must contain **only alphanumeric characters or `_`**. For example, if your sheet or column header is named `The Data 2022`, it should be renamed to `the_data_2022`. To automatically convert column names to this format, enable the **Convert Column Names to SQL-Compliant Format** option. Please note that this option only converts column names and not sheet names. This naming restriction does not apply to non-header cell values.
 - Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
 
 For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Google Sheets](https://docs.airbyte.com/integrations/sources/google-sheets/).
