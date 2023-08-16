@@ -30,7 +30,8 @@ class LegacyConfigTransformer:
                 {
                     "name": legacy_config.dataset,
                     "file_type": legacy_config.format.filetype,
-                    "globs": cls._create_globs(legacy_config.path_pattern, legacy_config.provider.path_prefix),
+                    "globs": cls._create_globs(legacy_config.path_pattern),
+                    "legacy_prefix": legacy_config.provider.path_prefix,
                     "validation_policy": "Emit Record",
                 }
             ],
@@ -52,10 +53,11 @@ class LegacyConfigTransformer:
         return transformed_config
 
     @classmethod
-    def _create_globs(cls, path_pattern: str, path_prefix: str) -> List[str]:
-        if path_prefix:
-            return [path_prefix + path_pattern]
-        return [path_pattern]
+    def _create_globs(cls, path_pattern: str) -> List[str]:
+        if "|" in path_pattern:
+            return path_pattern.split("|")
+        else:
+            return [path_pattern]
 
     @classmethod
     def _transform_seconds_to_micros(cls, datetime_str: str) -> str:
