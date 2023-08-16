@@ -11,6 +11,7 @@ from typing import List
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
+from source_s3 import SourceS3 as SourceS3V3
 
 
 def get_source(args: List[str]):
@@ -36,6 +37,11 @@ def get_source(args: List[str]):
 
 if __name__ == "__main__":
     _args = sys.argv[1:]
-    source = get_source(_args)
+    # FIXME this is a transition step as configs will not be migrated until we have done sufficient testing on V4
+    if _args[0] == "spec":
+        source = SourceS3V3()
+    else:
+        source = get_source(_args)
+
     if source:
         launch(source, _args)
