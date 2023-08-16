@@ -8,15 +8,16 @@
 #
 # Examples:
 #   $MIGRATE_SH airbyte-db/db-lib db
-#   $MIGRATE_SH airbyte-integrations/bases/base-java integrations/base
-#   $MIGRATE_SH airbyte-integrations/bases/base-java-s3 integrations/destination/s3
-#   $MIGRATE_SH airbyte-integrations/bases/base-typing-deduping integrations/base/destination/typing_deduping
-#   $MIGRATE_SH airbyte-integrations/bases/base-typing-deduping-test integrations/base/destination/typing_deduping_test
-#   $MIGRATE_SH airbyte-integrations/bases/bases-destination-jdbc integrations/destination
-#   $MIGRATE_SH airbyte-integrations/bases/debezium integrations/debezium
-#   $MIGRATE_SH airbyte-integrations/bases/s3-destination-base-integration-test integrations/destination/s3
-#   $MIGRATE_SH airbyte-integrations/bases/standard-destination-test integrations/standardtest/destination
-#   $MIGRATE_SH airbyte-integrations/bases/standard-source-test integrations/standardtest/source
+#   $MIGRATE_SH airbyte-integrations/bases/base-java
+#   $MIGRATE_SH airbyte-integrations/bases/base-java-s3
+#   $MIGRATE_SH airbyte-integrations/bases/base-typing-deduping
+#   $MIGRATE_SH airbyte-integrations/bases/base-typing-deduping-test
+#   $MIGRATE_SH airbyte-integrations/bases/bases-destination-jdbc
+#   $MIGRATE_SH airbyte-integrations/bases/debezium
+#   $MIGRATE_SH airbyte-integrations/bases/s3-destination-base-integration-test
+#   $MIGRATE_SH airbyte-integrations/bases/standard-destination-test
+#   $MIGRATE_SH airbyte-integrations/bases/standard-source-test
+#   $MIGRATE_SH airbyte-integrations/connectors/source-jdbc
 
 # Other notes:
 # - This script is idempotent. It should become a no-op if run to completion.
