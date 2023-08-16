@@ -325,17 +325,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         syncDatetime,
         keepStagingFiles);
 
-//    final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) gcsConfig.getFormatConfig();
-//    final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator = getRecordFormatterCreator(namingResolver);
-
-    final BufferCreateFunction onCreateBuffer =
-        null;
-//        BigQueryAvroSerializedBuffer.createBufferFunction(
-//            avroFormatConfig,
-//            recordFormatterCreator,
-//            getAvroSchemaCreator(),
-//            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX));
-
     // COPIED code end
 
     LOGGER.info("Creating BigQuery Serialized Message Consumer 420.");
@@ -345,7 +334,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       catalog,
       outputRecordCollector,
       bigQueryGcsOperations,
-      onCreateBuffer,
       getCsvRecordFormatterCreator(namingResolver),
       namingResolver::getTmpTableName,
       getTargetTableNameTransformer(namingResolver),
