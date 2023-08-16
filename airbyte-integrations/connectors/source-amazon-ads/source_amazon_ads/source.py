@@ -79,9 +79,12 @@ class SourceAmazonAds(AbstractSource):
         # in response body.
         # It doesnt support pagination so there is no sense of reading single
         # record, it would fetch all the data anyway.
-        Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
-
-        return True, None
+        profiles_list = Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
+        filtered_profiles = self._choose_profiles(config, profiles_list)
+        if filtered_profiles or not profiles_list:
+            return True, None
+        else:
+            return False, "No profiles found after filtering by Profile ID and Marketplace ID"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
