@@ -85,19 +85,19 @@ def test_summary_url(row: pd.DataFrame) -> str:
 
 
 def ab_internal_sl(row: pd.DataFrame) -> str:
-    if "ab_internal_oss" not in row:
+    ab_internal = row.get("ab_internal_oss")
+    if not isinstance(ab_internal, dict) or "sl" not in ab_internal:
         return None
 
-    ab_internal = row["ab_internal_oss"]
-    return ab_internal["sl"] if "sl" in ab_internal else None
+    return ab_internal["sl"]
 
 
 def ab_internal_ql(row: pd.DataFrame) -> str:
-    if "ab_internal_oss" not in row:
+    ab_internal = row.get("ab_internal_oss")
+    if not isinstance(ab_internal, dict) or "ql" not in ab_internal:
         return None
 
-    ab_internal = row["ab_internal_oss"]
-    return ab_internal["ql"] if "ql" in ab_internal else None
+    return ab_internal["ql"]
 
 
 # 📊 Dataframe Augmentation
