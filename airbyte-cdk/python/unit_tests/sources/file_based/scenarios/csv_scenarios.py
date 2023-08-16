@@ -74,6 +74,12 @@ single_csv_scenario = (
                                     "type": "array",
                                     "items": {"type": "string"},
                                 },
+                                "legacy_prefix": {
+                                    "title": "Legacy Prefix",
+                                    "airbyte_hidden": True,
+                                    "type": "string",
+                                    "description": "The path prefix configured in v3 versions of the S3 connector. This option is deprecated in favor of a single glob.",
+                                },
                                 "validation_policy": {
                                     "title": "Validation Policy",
                                     "description": "The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
@@ -147,12 +153,6 @@ single_csv_scenario = (
                                                     "description": "Whether two quotes in a quoted CSV value denote a single quote in the data.",
                                                     "default": True,
                                                     "type": "boolean",
-                                                },
-                                                "quoting_behavior": {
-                                                    "title": "Quoting Behavior",
-                                                    "description": "The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
-                                                    "default": "Quote Special Characters",
-                                                    "enum": ["Quote All", "Quote Special Characters", "Quote Non-numeric", "Quote None"],
                                                 },
                                                 "null_values": {
                                                     "title": "Null Values",
@@ -781,7 +781,6 @@ csv_custom_format_scenario = (
                         "quote_char": "|",
                         "escape_char": "!",
                         "double_quote": True,
-                        "quoting_behavior": "Quote Special Characters",
                     },
                 }
             ]
@@ -896,7 +895,6 @@ multi_stream_custom_format = (
                         "escape_char": "@",
                         "double_quote": True,
                         "newlines_in_values": False,
-                        "quoting_behavior": "Quote All",
                     },
                 },
             ]
@@ -1733,7 +1731,9 @@ csv_newline_in_values_quoted_value_scenario = (
                     "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "format": {"filetype": "csv", "quoting_behavior": "Quote All"},
+                    "format": {
+                        "filetype": "csv",
+                    }
                 }
             ],
             "start_date": "2023-06-04T03:54:07.000000Z",
@@ -1883,8 +1883,7 @@ csv_escape_char_is_set_scenario = (
                         "quote_char": '"',
                         "delimiter": ",",
                         "escape_char": "\\",
-                        "quoting_behavior": "Quote All",
-                    },
+                    }
                 }
             ],
             "start_date": "2023-06-04T03:54:07.000000Z",
@@ -1955,8 +1954,7 @@ csv_double_quote_is_set_scenario = (
                         "double_quotes": True,
                         "quote_char": '"',
                         "delimiter": ",",
-                        "quoting_behavior": "Quote All",
-                    },
+                    }
                 }
             ],
             "start_date": "2023-06-04T03:54:07.000000Z",
