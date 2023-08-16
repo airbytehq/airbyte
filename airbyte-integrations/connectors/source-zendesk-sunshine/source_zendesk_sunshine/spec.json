@@ -25,6 +25,7 @@
         "oneOf": [
           {
             "type": "object",
+            "additionalProperties": true,
             "title": "OAuth2.0",
             "required": [
               "auth_method",
@@ -62,6 +63,7 @@
           },
           {
             "type": "object",
+            "additionalProperties": true,
             "title": "API Token",
             "required": ["auth_method", "api_token", "email"],
             "properties": {
