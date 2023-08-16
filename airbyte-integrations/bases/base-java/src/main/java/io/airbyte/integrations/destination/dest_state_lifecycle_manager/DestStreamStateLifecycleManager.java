@@ -101,8 +101,10 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public void markPendingAsCommitted(final AirbyteStreamNameNamespacePair stream) {
-    // streamToLastCommittedState is keyed using defaultNamespace instead of namespace=null. (see #addState)
-    // Many destinations actually modify the records' namespace immediately after reading them from stdin,
+    // streamToLastCommittedState is keyed using defaultNamespace instead of namespace=null. (see
+    // #addState)
+    // Many destinations actually modify the records' namespace immediately after reading them from
+    // stdin,
     // but we should have a null-check here just in case.
     final String actualNamespace = stream.getNamespace() == null ? defaultNamespace : stream.getNamespace();
     final StreamDescriptor sd = new StreamDescriptor().withName(stream.getName()).withNamespace(actualNamespace);
