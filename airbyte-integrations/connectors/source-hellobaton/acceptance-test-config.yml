@@ -3,7 +3,7 @@
 connector_image: airbyte/source-hellobaton:dev
 tests:
   spec:
-    - spec_path: "source_hellobaton/spec.json"
+    - spec_path: "source_hellobaton/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
