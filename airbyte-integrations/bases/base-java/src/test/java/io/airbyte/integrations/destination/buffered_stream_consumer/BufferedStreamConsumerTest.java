@@ -365,7 +365,11 @@ public class BufferedStreamConsumerTest {
   void testStreamTail() throws Exception {
     // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
     final BufferingStrategy strategy = mock(BufferingStrategy.class);
-    when(strategy.addRecord(any(), any())).thenReturn(Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM));
+    // The first two records that we push will not trigger any flushes, but the third record _will_ trigger a flush
+    when(strategy.addRecord(any(), any())).thenReturn(
+        Optional.empty(),
+        Optional.empty(),
+        Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM));
     consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
@@ -376,13 +380,16 @@ public class BufferedStreamConsumerTest {
         // Never periodic flush
         Duration.ofHours(24),
         null);
-    // A small set of records, not enough to trigger a flush
-    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(250);
-    // A medium set of records. Reading this once won't flush; reading this twice _will_ flush.
-    final List<AirbyteMessage> expectedRecordsStream2 = generateRecords(750)
-        .stream()
-        .peek(m -> m.getRecord().withStream(STREAM_NAME2))
-        .collect(Collectors.toList());
+    final List<AirbyteMessage> expectedRecordsStream1 = List.of(new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(STREAM_NAME)
+                .withNamespace(SCHEMA_NAME)));
+    final List<AirbyteMessage> expectedRecordsStream2 = List.of(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME2)
+            .withNamespace(SCHEMA_NAME)));
 
     final AirbyteMessage state1 = new AirbyteMessage()
         .withType(Type.STATE)
@@ -422,10 +429,14 @@ public class BufferedStreamConsumerTest {
    * messages until we close the consumer.
    */
   @Test
-  void testStreamTailGlobalSTate() throws Exception {
+  void testStreamTailGlobalState() throws Exception {
     // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
     final BufferingStrategy strategy = mock(BufferingStrategy.class);
-    when(strategy.addRecord(any(), any())).thenReturn(Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM));
+    // The first two records that we push will not trigger any flushes, but the third record _will_ trigger a flush
+    when(strategy.addRecord(any(), any())).thenReturn(
+        Optional.empty(),
+        Optional.empty(),
+        Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM));
     consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
@@ -436,13 +447,16 @@ public class BufferedStreamConsumerTest {
         // Never periodic flush
         Duration.ofHours(24),
         null);
-    // A small set of records, not enough to trigger a flush
-    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(250);
-    // A medium set of records. Reading this once won't flush; reading this twice _will_ flush.
-    final List<AirbyteMessage> expectedRecordsStream2 = generateRecords(750)
-        .stream()
-        .peek(m -> m.getRecord().withStream(STREAM_NAME2))
-        .collect(Collectors.toList());
+    final List<AirbyteMessage> expectedRecordsStream1 = List.of(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)));
+    final List<AirbyteMessage> expectedRecordsStream2 = List.of(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME2)
+            .withNamespace(SCHEMA_NAME)));
 
     final AirbyteMessage state1 = new AirbyteMessage()
         .withType(Type.STATE)
