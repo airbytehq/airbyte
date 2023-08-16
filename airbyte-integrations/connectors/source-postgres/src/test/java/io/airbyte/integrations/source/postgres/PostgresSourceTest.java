@@ -81,6 +81,7 @@ class PostgresSourceTest {
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE = "id_and_name_3";
   private static final String STREAM_NAME_WITH_QUOTES = "\"test_dq_table\"";
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW = "id_and_name_3_view";
+  private static final String STREAM_NAME_BYTES_TEST_CASE = "id_and_bytes";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
@@ -801,4 +802,54 @@ class PostgresSourceTest {
         .withPrimaryKey(new ArrayList<>());
   }
 
+  @Test
+  void testParseJdbcParameters() {
+    final String jdbcPropertiesString = "foo=bar&options=-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000&baz=quux";
+    Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
+    assertEquals("-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000", parameters.get("options"));
+    assertEquals("bar", parameters.get("foo"));
+    assertEquals("quux", parameters.get("baz"));
+  }
+
+  @Test
+  public void testJdbcOptionsParameter() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+
+      // Populate DB.
+      final JsonNode dbConfig = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(dbConfig)) {
+        final Database database = getDatabase(dslContext);
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE id_and_bytes (id INTEGER, bytes BYTEA);");
+          ctx.fetch("INSERT INTO id_and_bytes (id, bytes) VALUES (1, decode('DEADBEEF', 'hex'));");
+          return null;
+        });
+      }
+
+      // Read the table contents using the non-default 'escape' format for bytea values.
+      final JsonNode sourceConfig = Jsons.jsonNode(ImmutableMap.builder()
+          .putAll(Jsons.flatten(dbConfig))
+          .put(JdbcUtils.JDBC_URL_PARAMS_KEY, "options=-c%20statement_timeout=90000%20-c%20bytea_output=escape")
+          .build());
+      final AirbyteStream airbyteStream = CatalogHelpers.createAirbyteStream(
+              "id_and_bytes",
+              SCHEMA_NAME,
+              Field.of("id", JsonSchemaType.NUMBER),
+              Field.of("bytes", JsonSchemaType.STRING))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")));
+      final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(airbyteStream));
+      final Set<AirbyteMessage> actualMessages =
+          MoreIterators.toSet(new PostgresSource().read(sourceConfig, CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog), null));
+      setEmittedAtToNull(actualMessages);
+
+      // Check that the 'options' JDBC URL parameter was parsed correctly
+      // and that the bytea value is not in the default 'hex' format.
+      assertEquals(1,actualMessages.size());
+      final AirbyteMessage actualMessage = actualMessages.stream().findFirst().get();
+      assertTrue(actualMessage.getRecord().getData().has("bytes"));
+      assertEquals("\\336\\255\\276\\357", actualMessage.getRecord().getData().get("bytes").asText());
+    }
+  }
 }
