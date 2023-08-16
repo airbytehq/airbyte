@@ -48,14 +48,20 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   @Override
   public void addState(final AirbyteMessage message) {
     Preconditions.checkArgument(message.getState().getType() == AirbyteStateType.STREAM);
-    final StreamDescriptor streamDescriptor = message.getState().getStream().getStreamDescriptor();
-    if (StringUtils.isNullOrEmpty(streamDescriptor.getNamespace())) {
+    final StreamDescriptor originalStreamId = message.getState().getStream().getStreamDescriptor();
+    final StreamDescriptor actualStreamId;
+    if (StringUtils.isNullOrEmpty(originalStreamId.getNamespace())) {
       // If the state's namespace is null/empty, we need to be able to find it using the default namespace
       // (because many destinations actually set records' namespace to the default namespace before
       // they make it into this class).
-      streamDescriptor.setNamespace(defaultNamespace);
+      // Clone the streamdescriptor so that we don't modify the original state message.
+      actualStreamId = new StreamDescriptor()
+          .withName(originalStreamId.getName())
+          .withNamespace(defaultNamespace);
+    } else {
+      actualStreamId = originalStreamId;
     }
-    streamToLastPendingState.put(streamDescriptor, message);
+    streamToLastPendingState.put(actualStreamId, message);
   }
 
   @VisibleForTesting
