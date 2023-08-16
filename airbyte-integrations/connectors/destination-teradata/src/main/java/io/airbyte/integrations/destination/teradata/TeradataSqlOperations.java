@@ -129,8 +129,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("DELETE %s.%s ALL;\n", schemaName, tableName);
   }
-
-  private String dropTableIfExistsQuery(final String schemaName, final String tableName) {
+  private String dropTableIfExistsQueryInternal(final String schemaName, final String tableName) {
     return String.format("DROP TABLE  %s.%s;\n", schemaName, tableName);
   }
 
