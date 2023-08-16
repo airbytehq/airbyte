@@ -4,7 +4,7 @@
 
 import logging
 import uuid
-from typing import Any, Dict, Iterable, Mapping
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 import fastavro
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
@@ -12,6 +12,7 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 
 AVRO_TYPE_TO_JSON_TYPE = {
     "null": "null",
@@ -39,18 +40,20 @@ AVRO_LOGICAL_TYPE_TO_JSON = {
 
 
 class AvroParser(FileTypeParser):
+    ENCODING = None
+
     async def infer_schema(
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Dict[str, Any]:
-        avro_format = config.format[config.file_type] if config.format else AvroFormat()
+    ) -> SchemaType:
+        avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             avro_reader = fastavro.reader(fp)
             avro_schema = avro_reader.writer_schema
         if not avro_schema["type"] == "record":
@@ -130,12 +133,13 @@ class AvroParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        avro_format = config.format[config.file_type] if config.format else AvroFormat()
+        avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             avro_reader = fastavro.reader(fp)
             schema = avro_reader.writer_schema
             schema_field_name_to_type = {field["name"]: field["type"] for field in schema["fields"]}

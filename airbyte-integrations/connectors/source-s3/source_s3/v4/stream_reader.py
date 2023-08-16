@@ -58,12 +58,12 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 )
         return self._s3_client
 
-    def get_matching_files(self, globs: List[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Get all files matching the specified glob patterns.
         """
         s3 = self.s3_client
-        prefixes = self.get_prefixes_from_globs(globs)
+        prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
         total_n_keys = 0
 
@@ -89,7 +89,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             ) from exc
 
     @contextmanager
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
             params = {"client": self.s3_client}
         except Exception as exc:
@@ -97,7 +97,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         logger.debug(f"try to open {file.uri}")
         try:
-            result = smart_open.open(f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value)
+            result = smart_open.open(f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding)
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."

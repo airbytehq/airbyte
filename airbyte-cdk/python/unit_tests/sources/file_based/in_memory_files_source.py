@@ -85,6 +85,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     def get_matching_files(
         self,
         globs: List[str],
+        prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
         yield from self.filter_files_by_globs_and_start_date([
@@ -92,7 +93,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             for f, data in self.files.items()
         ], globs)
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         if self.file_type == "csv":
             return self._make_csv_file_contents(file.uri)
         elif self.file_type == "jsonl":
@@ -144,7 +145,7 @@ class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
     A file reader that writes RemoteFiles to a temporary file and then reads them back.
     """
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         return io.BytesIO(self._create_file(file.uri))
 
     def _create_file(self, file_name: str) -> bytes:
@@ -165,7 +166,7 @@ class TemporaryAvroFilesStreamReader(InMemoryFilesStreamReader):
     A file reader that writes RemoteFiles to a temporary file and then reads them back.
     """
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         return io.BytesIO(self._make_file_contents(file.uri))
 
     def _make_file_contents(self, file_name: str) -> bytes:

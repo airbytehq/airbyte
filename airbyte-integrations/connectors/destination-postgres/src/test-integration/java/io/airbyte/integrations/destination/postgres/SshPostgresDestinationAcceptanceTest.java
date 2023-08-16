@@ -18,6 +18,7 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -133,7 +134,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
 
     startTestContainers();
     // do everything in a randomly generated schema so that we can wipe it out at the end.
@@ -143,6 +144,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
         JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
+          TEST_SCHEMAS.add(schemaName);
         });
   }
 
@@ -158,7 +160,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     // blow away the test schema at the end.
     SshTunnel.sshWrap(
         getConfig(),
