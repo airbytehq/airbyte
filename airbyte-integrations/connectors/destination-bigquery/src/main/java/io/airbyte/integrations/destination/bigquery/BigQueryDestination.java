@@ -212,46 +212,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
-    // logic in the rest of the connector.
-    // (record messages still need to handle null namespaces though, which currently happens in e.g.
-    // BigQueryRecordConsumer#acceptTracked)
-    // This probably should be shared logic amongst destinations eventually.
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
-        stream.getStream().withNamespace(BigQueryUtils.getDatasetId(config));
-      }
-    }
+    final String defaultNamespace = BigQueryUtils.getDatasetId(config);
+    setDefaultStreamNamespace(catalog, defaultNamespace);
 
-    String datasetLocation = BigQueryUtils.getDatasetLocation(config);
+    final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final CatalogParser catalogParser;
-    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()) {
-      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
-    } else {
-      catalogParser = new CatalogParser(sqlGenerator);
-    }
-    final ParsedCatalog parsedCatalog;
-
+    final ParsedCatalog parsedCatalog = parseCatalog(catalog, datasetLocation);
     final BigQuery bigquery = getBigQuery(config);
-    TyperDeduper typerDeduper;
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      parsedCatalog = catalogParser.parseCatalog(catalog);
-      BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
-      typerDeduper = new DefaultTyperDeduper<>(
-          sqlGenerator,
-          new BigQueryDestinationHandler(bigquery, datasetLocation),
-          parsedCatalog,
-          migrator);
-    } else {
-      parsedCatalog = null;
-      typerDeduper = new NoopTyperDeduper();
-    }
+    final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
 
     LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
         "Please use the GCS upload mode if you are syncing a large amount of data.");
     return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
   }
+
 
   @Override
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
@@ -263,41 +237,16 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       return Destination.super.getSerializedMessageConsumer(config, catalog, outputRecordCollector);
     }
 
-    // COPIED code start
+    // Shared code start
+    final String defaultNamespace = BigQueryUtils.getDatasetId(config);
+    setDefaultStreamNamespace(catalog, defaultNamespace);
 
-    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
-    // logic in the rest of the connector.
-    // (record messages still need to handle null namespaces though, which currently happens in e.g.
-    // AsyncStreamConsumer#accept)
-    // This probably should be shared logic amongst destinations eventually.
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
-        stream.getStream().withNamespace(BigQueryUtils.getDatasetId(config));
-      }
-    }
-
-    String datasetLocation = BigQueryUtils.getDatasetLocation(config);
+    final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final CatalogParser catalogParser;
-    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()) {
-      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
-    } else {
-      catalogParser = new CatalogParser(sqlGenerator);
-    }
-    ParsedCatalog parsedCatalog = catalogParser.parseCatalog(catalog);
-
-    final BigQuery bigQuery = getBigQuery(config);
-    TyperDeduper typerDeduper;
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigQuery, namingResolver);
-      typerDeduper = new DefaultTyperDeduper<>(
-          sqlGenerator,
-          new BigQueryDestinationHandler(bigQuery, datasetLocation),
-          parsedCatalog,
-          migrator);
-    } else {
-      typerDeduper = new NoopTyperDeduper();
-    }
+    final ParsedCatalog parsedCatalog = parseCatalog(catalog, datasetLocation);
+    final BigQuery bigquery = getBigQuery(config);
+    final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
+    // Shared code end
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsCsvDestinationConfig(config);
@@ -306,17 +255,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final boolean keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config);
     final GcsStorageOperations gcsOperations = new GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig);
     final BigQueryStagingOperations bigQueryGcsOperations = new BigQueryGcsOperations(
-        bigQuery,
+        bigquery,
         gcsNameTransformer,
         gcsConfig,
         gcsOperations,
         stagingId,
         syncDatetime,
         keepStagingFiles);
-
-    // COPIED code end
-
-    LOGGER.info("Creating BigQuery Serialized Message Consumer 420.");
 
     return new BigQueryStagingConsumerFactory().createAsync(
         config,
@@ -430,6 +375,48 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
     return namingResolver::getRawTableName;
+  }
+
+  private void setDefaultStreamNamespace(final ConfiguredAirbyteCatalog catalog, final String namespace) {
+    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
+    // logic in the rest of the connector.
+    // (record messages still need to handle null namespaces though, which currently happens in e.g.
+    // AsyncStreamConsumer#accept)
+    // This probably should be shared logic amongst destinations eventually.
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
+        stream.getStream().withNamespace(namespace);
+      }
+    }
+  }
+
+  private ParsedCatalog parseCatalog(final ConfiguredAirbyteCatalog catalog, final String datasetLocation) {
+    if (!TypingAndDedupingFlag.isDestinationV2()) {
+      return null;
+    }
+
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
+    final CatalogParser catalogParser = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()
+        ? new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get())
+        : new CatalogParser(sqlGenerator);
+
+    return catalogParser.parseCatalog(catalog);
+  }
+
+  private TyperDeduper buildTyperDeduper(final BigQuerySqlGenerator sqlGenerator,
+                                         final ParsedCatalog parsedCatalog,
+                                         final BigQuery bigquery,
+                                         final String datasetLocation) {
+    if (!TypingAndDedupingFlag.isDestinationV2()) {
+      return new NoopTyperDeduper();
+    }
+
+    final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
+    return new DefaultTyperDeduper<>(
+        sqlGenerator,
+        new BigQueryDestinationHandler(bigquery, datasetLocation),
+        parsedCatalog,
+        migrator);
   }
 
   /**
