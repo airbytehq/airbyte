@@ -191,7 +191,6 @@ class TestAcceptanceTests:
         initial_datetime = datetime.datetime(year=1992, month=6, day=19, hour=13, minute=1, second=0)
 
         with freeze_time(initial_datetime) as frozen_datetime:
-
             acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_image_tar, test_input_dir
