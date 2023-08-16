@@ -20,6 +20,6 @@ data:
     - language:python
   ab_internal:
     sl: 200
-    ql: 300
+    ql: 200
   supportLevel: certified
 metadataSpecVersion: "1.0"

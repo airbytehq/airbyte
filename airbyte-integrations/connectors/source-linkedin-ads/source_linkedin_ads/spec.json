@@ -75,6 +75,63 @@
           "type": "integer"
         },
         "default": []
+      },
+      "ad_analytics_reports": {
+        "title": "Custom Ad Analytics reports",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "title": "Ad Analytics Report Configuration",
+          "description": "Config for custom ad Analytics Report",
+          "required": ["name", "pivot_by", "time_granularity"],
+          "properties": {
+            "name": {
+              "title": "Name",
+              "description": "The name for the report",
+              "type": "string"
+            },
+            "pivot_by": {
+              "title": "Pivot By",
+              "description": "Select value from list to pivot by",
+              "type": "string",
+              "enum": [
+                "COMPANY",
+                "ACCOUNT",
+                "SHARE",
+                "CAMPAIGN",
+                "CREATIVE",
+                "CAMPAIGN_GROUP",
+                "CONVERSION",
+                "CONVERSATION_NODE",
+                "CONVERSATION_NODE_OPTION_INDEX",
+                "SERVING_LOCATION",
+                "CARD_INDEX",
+                "MEMBER_COMPANY_SIZE",
+                "MEMBER_INDUSTRY",
+                "MEMBER_SENIORITY",
+                "MEMBER_JOB_TITLE ",
+                "MEMBER_JOB_FUNCTION ",
+                "MEMBER_COUNTRY_V2 ",
+                "MEMBER_REGION_V2",
+                "MEMBER_COMPANY",
+                "PLACEMENT_NAME",
+                "IMPRESSION_DEVICE_TYPE"
+              ]
+            },
+            "time_granularity": {
+              "title": "Time granularity",
+              "description": "Set time granularity for report: \nALL - Results grouped into a single result across the entire time range of the report.\nDAILY - Results grouped by day.\nMONTHLY - Results grouped by month.\nYEARLY - Results grouped by year.",
+              "type": "string",
+              "enum": [
+                "ALL",
+                "DAILY",
+                "MONTHLY",
+                "YEARLY"
+              ]
+            }
+          }
+        },
+        "default": []
       }
     }
   },
