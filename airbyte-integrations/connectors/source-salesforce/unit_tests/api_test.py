@@ -19,6 +19,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
+from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -27,6 +28,20 @@ from source_salesforce.streams import (
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
 )
+
+
+@pytest.mark.parametrize(
+    "login_status_code, login_json_resp, expected_error_msg",
+    [(400, {"error": "invalid_grant", "error_description": "expired access/refresh token"}, AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"))]
+)
+def test_login_authentication_error_handler(stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg):
+    source = SourceSalesforce()
+    logger = logging.getLogger("airbyte")
+
+    with pytest.raises(AirbyteTracedException) as err:
+        requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
+        source.check_connection(logger, stream_config)
+    assert err.value.message == expected_error_msg
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
