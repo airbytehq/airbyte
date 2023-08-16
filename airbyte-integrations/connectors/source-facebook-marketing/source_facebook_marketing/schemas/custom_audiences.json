@@ -66,16 +66,19 @@
           "type": ["null", "string"]
         },
         "origin": {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "type": {
-              "type": ["null", "string"]
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              }
             }
           }
         }
