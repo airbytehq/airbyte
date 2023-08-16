@@ -83,6 +83,7 @@
       "type": ["null", "string"]
     },
     "customFields": {
+      "type": ["null", "array"],
       "items": {
         "properties": {
           "_id": {
@@ -119,10 +120,11 @@
           }
         },
         "type": ["null", "object"]
-      },
-      "type": ["null", "array"]
+      }
     },
     "bookingRate": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "external": {
           "properties": {
@@ -140,8 +142,7 @@
           },
           "type": ["null", "object"]
         }
-      },
-      "type": ["null", "object"]
+      }
     },
     "bookingCreatorId": {
       "type": ["null", "string"]
@@ -151,6 +152,16 @@
     },
     "backgroundColor": {
       "type": ["null", "string"]
+    },
+    "deletedById": {
+      "type": ["null", "string"]
+    },
+    "billable": {
+      "type": ["null", "boolean"]
+    },
+    "approvalInfo": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     }
   }
 }

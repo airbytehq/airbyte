@@ -23,6 +23,12 @@
     "note": {
       "type": ["null", "string"]
     },
+    "billable": {
+      "type": ["null", "boolean"]
+    },
+    "isApprover": {
+      "type": ["null", "boolean"]
+    },
     "firstName": {
       "type": "string"
     },

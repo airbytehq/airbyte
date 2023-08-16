@@ -24,6 +24,35 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "budgetCategories": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
+    },
+    "customers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
+    },
+    "fixedCosts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "billable": {
+      "type": ["null", "boolean"]
+    },
+    "private": {
+      "type": ["null", "boolean"]
+    },
+    "defaultCategory": {
+      "type": ["null", "string"]
+    },
     "timeEntryEnabled": {
       "type": ["null", "boolean"]
     },
