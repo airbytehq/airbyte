@@ -22,9 +22,6 @@ data:
         resourceRequirements:
           cpu_limit: "4.0"
           cpu_request: "1.0"
-        resourceRequirements:
-          cpu_limit: "4.0"
-          cpu_request: "1.0"
   suggestedStreams:
     streams:
       - users
@@ -36,7 +33,8 @@ data:
   releases:
     breakingChanges:
       5.0.0:
-        message: "ID and products.year fields are changing to be integers instead
+        message:
+          "ID and products.year fields are changing to be integers instead
           of floats."
         upgradeDeadline: "2023-08-31"
       4.0.0:
