@@ -87,7 +87,7 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ max( config['start_date'], day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+          {{ max( format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
@@ -138,7 +138,7 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ max( config['start_date'], day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+          {{ max( format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
@@ -185,8 +185,8 @@ spec:
           format</a>. Date must be in range from 3 years till 12 hrs before
           present time.
         type: string
-        examples: ["2021-06-11T23:59:59Z"]
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples: ["2021-06-11T23:59:59", "2021-06-11T23:59:59+00:00"]
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|Z|[+-][0-9]{2}:[0-9]{2})$
         format: "date-time"
         order: 2
       is_sandbox:
