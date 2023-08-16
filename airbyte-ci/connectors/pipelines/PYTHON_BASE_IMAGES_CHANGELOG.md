@@ -1,4 +1,4 @@
-# Changelog for airbyte-python-base
+Python base images used for connector built are declared [here](https://github.com/airbytehq/airbyte/blob/8328c9dd89f6417295a20f7c0f5b823a2f02ee8e/airbyte-ci/connectors/pipelines/pipelines/builds/base_images/python.py)# Changelog for airbyte-python-base
 
 |Version|                                            Changelog                                            |
 |-------|-------------------------------------------------------------------------------------------------|

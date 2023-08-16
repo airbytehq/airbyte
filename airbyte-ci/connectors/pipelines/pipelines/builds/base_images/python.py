@@ -51,7 +51,7 @@ class AirbytePythonBase(ABC):
 
     @property
     def base(self) -> dagger.Container:
-        return self.dagger_client.container().from_(self.python_base_image).with_env_variable("BASE_IMAGE", self.name_and_version())
+        return self.dagger_client.container().from_(self.python_base_image.value).with_env_variable("BASE_IMAGE", self.name_and_version())
 
     @property
     @abstractmethod
@@ -59,7 +59,7 @@ class AirbytePythonBase(ABC):
         raise NotImplementedError("Subclasses must define a 'container' property.")
 
     def validate_version(self):
-        version_parts = self.version.split(".")
+        version_parts = self.version().split(".")
         if not len(version_parts) == 3 and all([v.isdigit() for v in version_parts]):
             raise VersionError("Version must be in the format 'x.y.z' and each part must be a digit.")
 
@@ -123,6 +123,9 @@ def write_changelog_file():
     entries = [{"Version": base_cls.version(), "Changelog": base_cls.changelog} for _, base_cls in ALL_BASE_IMAGES.items()]
     markdown = markdown_table(entries).set_params(row_sep="markdown", quote=False).get_markdown()
     with open("PYTHON_BASE_IMAGES_CHANGELOG.md", "w") as f:
+        f.write(
+            "Python base images used for connector built are declared [here](https://github.com/airbytehq/airbyte/blob/8328c9dd89f6417295a20f7c0f5b823a2f02ee8e/airbyte-ci/connectors/pipelines/pipelines/builds/base_images/python.py)"
+        )
         f.write(f"# Changelog for {AirbytePythonBase.name}\n\n")
         f.write(markdown)
 

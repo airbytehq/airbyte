@@ -22,15 +22,18 @@ class BuildConnectorImage(BuildConnectorImageBase):
     entrypoint = ["python", "/airbyte/integration_code/main.py"]
 
     async def _run(self) -> StepResult:
-        connector_base_image = self.context.connector.metadata["connectorBaseImage"]
+        # connector_base_image = self.context.connector.metadata["connectorBaseImage"]
+        # Hardcode the base image for demo purposes
+        connector_base_image = "airbyte-python-base:0.0.1"
+
         if connector_base_image not in ALL_BASE_IMAGES:
             return StepResult(
                 self,
                 StepStatus.FAILURE,
                 f"Connector base image {connector_base_image} does not exists. " f"Supported connector base images are {ALL_BASE_IMAGES}",
             )
-        base: Container = ALL_BASE_IMAGES[connector_base_image]
-        connector: Container = self._build_from_base(base)
+        base: Container = ALL_BASE_IMAGES[connector_base_image](self.dagger_client).container
+        connector: Container = await self._build_from_base(base)
         try:
             return await self.get_step_result(connector.with_exec(["spec"]))
         except QueryError as e:
@@ -60,7 +63,8 @@ class BuildConnectorImage(BuildConnectorImageBase):
             with_local_dependencies = with_local_dependencies.with_mounted_directory(
                 in_container_dependency_path, self.context.get_repo_dir(dependency_path)
             )
-        with_main = with_local_dependencies.with_file("main.py", self.context.connector.code_directory.file("main.py"))
+        with_local_dependencies_installed = with_local_dependencies.with_exec(["pip", "install", "--prefix=/usr/local", "."])
+        with_main = with_local_dependencies_installed.with_file("main.py", (await self.context.get_connector_dir()).file("main.py"))
         with_connector_code = with_main.with_directory(
             snake_case_name, (await self.context.get_connector_dir(include=snake_case_name)).directory(snake_case_name)
         )
