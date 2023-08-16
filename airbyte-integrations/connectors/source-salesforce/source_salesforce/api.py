@@ -314,8 +314,8 @@ class Salesforce:
             resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
         except HTTPError as err:
             if err.response.status_code == requests.codes.BAD_REQUEST:
-                error_message = AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(err.response.json().get("error_description"))
-                raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
+                if error_message := AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(err.response.json().get("error_description")):
+                    raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
         auth = resp.json()
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
