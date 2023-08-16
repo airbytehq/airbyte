@@ -105,7 +105,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
   }
 
   @Override
-  public boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
+  public boolean isEventAheadOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
     if (offset.size() != 1) {
       return false;
     }
@@ -126,10 +126,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
 
   @Override
   public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
-    if (offsetA == null || offsetA.size() != 1) {
-      return false;
-    }
-    if (offsetB == null || offsetB.size() != 1) {
+    if ((offsetA == null || offsetA.size() != 1) || (offsetB == null || offsetB.size() != 1)) {
       return false;
     }
 
@@ -141,11 +138,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
     final String offsetBFileName = offsetJsonB.get("file").asText();
     final long offsetBPosition = offsetJsonB.get("pos").asLong();
 
-    if (offsetAFileName.compareTo(offsetBFileName) != 0) {
-      return false;
-    }
-
-    return offsetAPosition == offsetBPosition;
+    return offsetAFileName.equals(offsetBFileName) && offsetAPosition == offsetBPosition;
   }
 
   @Override
