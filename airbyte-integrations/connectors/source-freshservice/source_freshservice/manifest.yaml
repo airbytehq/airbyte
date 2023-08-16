@@ -14,6 +14,10 @@ definitions:
       type: "BasicHttpAuthenticator"
       username: "{{config['api_key']}}"
       password: ""
+    error_handler:
+      response_filters:
+        - http_codes: [403]
+          action: IGNORE
   retriever:
     type: SimpleRetriever
     record_selector:
