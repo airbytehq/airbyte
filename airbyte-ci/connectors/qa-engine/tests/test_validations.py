@@ -138,13 +138,15 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
                     "connector_technical_name": "connectors/source-pokeapi",
                 }
             ),
-            {
-                "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
-                "outcome": "success",
-                "docker_version": "0.1.5",
-                "timestamp": "1674872401",
-                "connector": "connectors/source-pokeapi",
-            },
+            [
+                {
+                    "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+                    "success": True,
+                    "docker_version": "0.1.5",
+                    "date": "2021-10-01T00:00:00Z",
+                    "connector": "connectors/source-pokeapi",
+                }
+            ],
             200,
             True,
         ),
@@ -155,13 +157,15 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
                     "connector_technical_name": "connectors/source-pokeapi",
                 }
             ),
-            {
-                "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
-                "outcome": "failure",
-                "docker_version": "0.1.5",
-                "timestamp": "1674872401",
-                "connector": "connectors/source-pokeapi",
-            },
+            [
+                {
+                    "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+                    "success": False,
+                    "docker_version": "0.1.5",
+                    "date": "2021-10-01T00:00:00Z",
+                    "connector": "connectors/source-pokeapi",
+                }
+            ],
             200,
             False,
         ),
