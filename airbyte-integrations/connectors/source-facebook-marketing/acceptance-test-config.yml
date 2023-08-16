@@ -28,6 +28,8 @@ acceptance_tests:
               bypass_reason: is changeable
             - name: amount_spent
               bypass_reason: is changeable
+            - name: capabilities
+              bypass_reason: is changeable
           ad_creatives:
             - name: thumbnail_url
               bypass_reason: is changeable
