@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator {
 
-  Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
 
   @Override
   public void migrateIfNecessary(
