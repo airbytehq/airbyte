@@ -3,7 +3,7 @@
 connector_image: airbyte/source-bigcommerce:dev
 tests:
   spec:
-    - spec_path: "source_bigcommerce/spec.json"
+    - spec_path: "source_bigcommerce/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
