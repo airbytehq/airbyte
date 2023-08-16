@@ -143,4 +143,4 @@ class SponsoredBrandsVideoReportStream(ReportStream):
             "reportDate": report_date,
             "creativeType": "video",
         }
-        return {**body, "metrics": ",".join(metrics_list)}
+        yield {**body, "metrics": ",".join(metrics_list)}

@@ -39,6 +39,7 @@ from source_hubspot.streams import (
     LineItems,
     MarketingEmails,
     Owners,
+    OwnersArchived,
     Products,
     PropertyHistory,
     SubscriptionChanges,
@@ -59,15 +60,15 @@ class SourceHubspot(AbstractSource):
         try:
             contacts = Contacts(**common_params)
             _ = contacts.properties
-        except HubspotInvalidAuth:
-            alive = False
-            error_msg = "Authentication failed: Please check if provided credentials are valid and try again."
         except HTTPError as error:
             alive = False
             error_msg = repr(error)
             if error.response.status_code == HTTPStatus.BAD_REQUEST:
                 response_json = error.response.json()
                 error_msg = f"400 Bad Request: {response_json['message']}, please check if provided credentials are valid."
+        except HubspotInvalidAuth as e:
+            alive = False
+            error_msg = repr(e)
         return alive, error_msg
 
     def get_granted_scopes(self, authenticator):
@@ -120,6 +121,7 @@ class SourceHubspot(AbstractSource):
             LineItems(**common_params),
             MarketingEmails(**common_params),
             Owners(**common_params),
+            OwnersArchived(**common_params),
             Products(**common_params),
             PropertyHistory(**common_params),
             SubscriptionChanges(**common_params),

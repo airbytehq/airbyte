@@ -13,6 +13,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -42,12 +43,12 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // do nothing
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // do nothing
   }
 

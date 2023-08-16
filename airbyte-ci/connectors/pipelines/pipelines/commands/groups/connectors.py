@@ -11,7 +11,7 @@ from typing import List, Set, Tuple
 
 import anyio
 import click
-from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo
+from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo, SupportLevelEnum
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.builds import run_connector_build_pipeline
@@ -52,7 +52,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
 
 def get_selected_connectors_with_modified_files(
     selected_names: Tuple[str],
-    selected_release_stages: Tuple[str],
+    selected_support_levels: Tuple[str],
     selected_languages: Tuple[str],
     modified: bool,
     metadata_changes_only: bool,
@@ -63,7 +63,7 @@ def get_selected_connectors_with_modified_files(
 
     Args:
         selected_names (Tuple[str]): Selected connector names.
-        selected_release_stages (Tuple[str]): Selected connector release stages.
+        selected_support_levels (Tuple[str]): Selected connector support levels.
         selected_languages (Tuple[str]): Selected connector languages.
         modified (bool): Whether to select the modified connectors.
         metadata_changes_only (bool): Whether to select only the connectors with metadata changes.
@@ -81,19 +81,19 @@ def get_selected_connectors_with_modified_files(
         get_modified_connectors(modified_files, ALL_CONNECTORS, enable_dependency_scanning) if modified else set()
     )
     selected_connectors_by_name = {c for c in ALL_CONNECTORS if c.technical_name in selected_names}
-    selected_connectors_by_release_stage = {connector for connector in ALL_CONNECTORS if connector.release_stage in selected_release_stages}
+    selected_connectors_by_support_level = {connector for connector in ALL_CONNECTORS if connector.support_level in selected_support_levels}
     selected_connectors_by_language = {connector for connector in ALL_CONNECTORS if connector.language in selected_languages}
     non_empty_connector_sets = [
         connector_set
         for connector_set in [
             selected_connectors_by_name,
-            selected_connectors_by_release_stage,
+            selected_connectors_by_support_level,
             selected_connectors_by_language,
             selected_modified_connectors,
         ]
         if connector_set
     ]
-    # The selected connectors are the intersection of the selected connectors by name, release stage, language and modified.
+    # The selected connectors are the intersection of the selected connectors by name, support_level, language and modified.
     selected_connectors = set.intersection(*non_empty_connector_sets) if non_empty_connector_sets else set()
 
     selected_connectors_with_modified_files = []
@@ -123,11 +123,11 @@ def get_selected_connectors_with_modified_files(
 )
 @click.option("--language", "languages", multiple=True, help="Filter connectors to test by language.", type=click.Choice(ConnectorLanguage))
 @click.option(
-    "--release-stage",
-    "release_stages",
+    "--support-level",
+    "support_levels",
     multiple=True,
-    help="Filter connectors to test by release stage.",
-    type=click.Choice(["alpha", "beta", "generally_available"]),
+    help="Filter connectors to test by support_level.",
+    type=click.Choice(SupportLevelEnum),
 )
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
 @click.option(
@@ -155,7 +155,7 @@ def connectors(
     use_remote_secrets: bool,
     names: Tuple[str],
     languages: Tuple[ConnectorLanguage],
-    release_stages: Tuple[str],
+    support_levels: Tuple[str],
     modified: bool,
     metadata_changes_only: bool,
     concurrency: int,
@@ -170,7 +170,7 @@ def connectors(
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names, release_stages, languages, modified, metadata_changes_only, ctx.obj["modified_files"], enable_dependency_scanning
+        names, support_levels, languages, modified, metadata_changes_only, ctx.obj["modified_files"], enable_dependency_scanning
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
 
@@ -405,7 +405,6 @@ def publish(
 def list(
     ctx: click.Context,
 ):
-
     selected_connectors = sorted(ctx.obj["selected_connectors_with_modified_files"], key=lambda x: x.technical_name)
     table = Table(title=f"{len(selected_connectors)} selected connectors")
     table.add_column("Modified")
@@ -420,15 +419,15 @@ def list(
         connector_name = Text(connector.technical_name)
         language = Text(connector.language.value) if connector.language else "N/A"
         try:
-            release_stage = Text(connector.release_stage)
+            support_level = Text(connector.support_level)
         except Exception:
-            release_stage = "N/A"
+            support_level = "N/A"
         try:
             version = Text(connector.version)
         except Exception:
             version = "N/A"
         folder = Text(str(connector.code_directory))
-        table.add_row(modified, connector_name, language, release_stage, version, folder)
+        table.add_row(modified, connector_name, language, support_level, version, folder)
 
     console.print(table)
     return True

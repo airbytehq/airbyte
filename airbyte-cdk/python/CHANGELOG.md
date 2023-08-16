@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.51.0
+File-based CDK: handle legacy options
+
+## 0.50.2
+Fix title and description of datetime_format fields
+
 ## 0.50.1
 File-based CDK cursor and entrypoint updates
 
