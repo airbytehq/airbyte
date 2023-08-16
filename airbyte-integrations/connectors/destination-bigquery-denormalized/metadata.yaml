@@ -26,5 +26,5 @@ data:
   ab_internal:
     sl: 200
     ql: 300
-  supportLevel: certified
+  supportLevel: community
 metadataSpecVersion: "1.0"
