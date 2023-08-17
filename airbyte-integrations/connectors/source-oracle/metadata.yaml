@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   allowedHosts:
     hosts:
       - ${host}
@@ -8,6 +11,7 @@ data:
   definitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-oracle
+  documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   githubIssueLabel: source-oracle
   icon: oracle.svg
   license: ELv2
@@ -20,12 +24,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
+  supportLevel: community
   tags:
     - language:java
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"
