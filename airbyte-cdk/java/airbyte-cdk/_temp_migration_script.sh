@@ -37,30 +37,50 @@
 #     - Replace with: `package io.airbyte.cdk`
 #   - Find all the packages that were moved, and name them in a way that is specific to the CDK inclusions:
 #     - Find (regex): `io.airbyte...` # Everything that now shows up with a search for `package io.airbyte.cdk`
-#                      io.airbyte.db
-#                      io.airbyte.integrations.base
-#                      io.airbyte.integrations.debezium
-#                      io.airbyte.integrations.destination.NamingConventionTransformer
-#                      io.airbyte.integrations.destination.StandardNameTransformer
-#                      io.airbyte.integrations.destination.jdbc
-#                      io.airbyte.integrations.destination.normalization
-#                      io.airbyte.integrations.destination.record_buffer
-#                      io.airbyte.integrations.destination.buffered_stream_consumer
-#                      io.airbyte.integrations.destination.dest_state_lifecycle_manager
-#                      io.airbyte.integrations.destination.staging
-#                      io.airbyte.integrations.destination_async
-#                      io.airbyte.integrations.source.jdbc
-#                      io.airbyte.integrations.source.relationaldb
-#                      io.airbyte.integrations.util
-#                      io.airbyte.integrations.BaseConnector
-#                      io.airbyte.test.utils
-#            Maybe?:
-#                      io.airbyte.integrations.destination.s3
-#                      io.airbyte.integrations.standardtest
-
+#                      io.airbyte.cdk.db
+#                      io.airbyte.cdk.integrations.base
+#                      io.airbyte.cdk.integrations.debezium
+#                      io.airbyte.cdk.integrations.destination.NamingConventionTransformer
+#                      io.airbyte.cdk.integrations.destination.StandardNameTransformer
+#                      io.airbyte.cdk.integrations.destination.jdbc
+#                      io.airbyte.cdk.integrations.destination.normalization
+#                      io.airbyte.cdk.integrations.destination.record_buffer
+#                      io.airbyte.cdk.integrations.destination.buffered_stream_consumer
+#                      io.airbyte.cdk.integrations.destination.dest_state_lifecycle_manager
+#                      io.airbyte.cdk.integrations.destination.staging
+#                      io.airbyte.cdk.integrations.destination_async
+#                      io.airbyte.cdk.integrations.source.jdbc
+#                      io.airbyte.cdk.integrations.source.relationaldb
+#                      io.airbyte.cdk.integrations.util
+#                      io.airbyte.cdk.integrations.BaseConnector
+#                      io.airbyte.cdk.test.utils
+#            Warning: these packages all share the `io.airbyte.integrations.destination.s3` package name prefix:
+#                       `base-java-s3`
+#                       `destination-s3`
+#                       `s3-destination-base-integration-test`
+#            These packages refs must be fixed manually without a global search/replace.
+#                    - io.airbyte.integrations.destination.s3.avro
+#                    - io.airbyte.integrations.destination.s3.credential
+#                    - io.airbyte.integrations.destination.s3.constant
+#                    - io.airbyte.integrations.destination.s3.csv
+#                    - io.airbyte.integrations.destination.s3.jsonl
+#                    - io.airbyte.integrations.destination.s3.parquet
+#                    - io.airbyte.integrations.destination.s3.S3DestinationConfig
+#                    - io.airbyte.integrations.destination.s3.StorageProvider
+#                    - io.airbyte.integrations.destination.s3.S3DestinationConstants;
+#                    - io.airbyte.integrations.destination.s3.S3Format;
+#                    - io.airbyte.integrations.destination.s3.S3FormatConfig
+#                    - io.airbyte.integrations.destination.s3.template
+#                    - io.airbyte.integrations.destination.s3.util
+#                    - io.airbyte.integrations.destination.s3.writer
+#           You can use this regex pattern to find and replace each one:
+#              Find: `io\.airbyte\.integrations\.destination\.s3\.(avro)\b`
+#              Replace: `io.airbyte.cdk.integrations.destination.s3.$1`
+#            Also - be careful about word boundaries because this also exists with the same prefix:
+#                       `...destination.s3_glue`
 #   - Within rest of repo:
 #     - Find (regex) based on the above list:
-#         io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.normalization|integrations\.destination\.record_buffer|integrations\.destination\.s3|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.standardtest|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)
+#         io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.normalization|integrations\.destination\.record_buffer|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)
 #     - Replace with: `io.airbyte.cdk.$1`
 #     - Exclude files: _temp_migration_script.sh,*.html,build,bin
 # - Replace references to the moved packages with the new package names.

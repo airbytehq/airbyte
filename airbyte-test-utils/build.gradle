@@ -8,13 +8,14 @@ configurations.all {
 }
 
 dependencies {
-    api project(':airbyte-db:db-lib')
+    api project(':airbyte-cdk:java:airbyte-cdk')
     implementation project(':airbyte-api')
     implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation libs.temporal.sdk
 
+    implementation libs.jooq
 
     api libs.junit.jupiter.api
 
