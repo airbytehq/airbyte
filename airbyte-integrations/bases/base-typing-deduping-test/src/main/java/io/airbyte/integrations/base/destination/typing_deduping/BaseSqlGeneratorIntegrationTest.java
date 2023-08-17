@@ -718,11 +718,48 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
+  /**
+   * A stream with no columns is weird, but we shouldn't treat it specially in any way. It should
+   * create a final table as usual, and populate it with the relevant metadata columns.
+   */
+  @Test
+  public void noColumns() throws Exception {
+    createRawTable(streamId);
+    insertRawTableRecords(
+        streamId,
+        List.of(Jsons.deserialize(
+            """
+            {
+              "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {}
+            }
+            """)));
+    final StreamConfig stream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND,
+        emptyList(),
+        Optional.empty(),
+        new LinkedHashMap<>());
+
+    final String createTable = generator.createTable(stream, "");
+    destinationHandler.execute(createTable);
+    final String updateTable = generator.updateTable(stream, "");
+    destinationHandler.execute(updateTable);
+
+    verifyRecords(
+        "sqlgenerator/nocolumns_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/nocolumns_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, ""));
+  }
+
   @Test
   public void testV1V2migration() throws Exception {
     // This is maybe a little hacky, but it avoids having to refactor this entire class and subclasses
     // for something that is going away
-    StreamId v1RawTableStreamId = new StreamId(null, null, streamId.finalNamespace(), "v1_" + streamId.rawName(), null, null);
+    final StreamId v1RawTableStreamId = new StreamId(null, null, streamId.finalNamespace(), "v1_" + streamId.rawName(), null, null);
     createV1RawTable(v1RawTableStreamId);
     insertV1RawTableRecords(v1RawTableStreamId, singletonList(Jsons.jsonNode(Map.of(
         "_airbyte_ab_id", "v1v2",
@@ -730,8 +767,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "_airbyte_data", "{\"hello\": \"world\"}"))));
     final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
-    List<JsonNode> v1RawRecords = dumpRawTableRecords(v1RawTableStreamId);
-    List<JsonNode> v2RawRecords = dumpRawTableRecords(streamId);
+    final List<JsonNode> v1RawRecords = dumpRawTableRecords(v1RawTableStreamId);
+    final List<JsonNode> v2RawRecords = dumpRawTableRecords(streamId);
     assertAll(
         () -> assertEquals(1, v1RawRecords.size()),
         () -> assertEquals(1, v2RawRecords.size()),
