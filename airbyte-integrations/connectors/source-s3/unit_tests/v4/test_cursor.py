@@ -406,7 +406,7 @@ def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync,
             id="legacy_state_with_invalid_last_modified_datetime_format_is_not_legacy",
         ),
         pytest.param(
-            {"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, False, id="legacy_state_without_history_is_not_legacy_state"
+            {"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, True, id="legacy_state_without_history_is_legacy_state"
         ),
         pytest.param({"history": {"2023-08-01": ["file1.txt"]}}, False, id="legacy_state_without_last_modified_cursor_is_not_legacy_state"),
         pytest.param(
