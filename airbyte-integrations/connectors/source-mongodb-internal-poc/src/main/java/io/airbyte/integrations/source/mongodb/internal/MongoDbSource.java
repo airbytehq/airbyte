@@ -117,7 +117,6 @@ public class MongoDbSource extends BaseConnector implements Source {
 
     try {
       final var database = mongoClient.getDatabase(databaseName);
-      // TODO treat INCREMENTAL and FULL_REFRESH differently?
       return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(
           convertCatalogToIterators(catalog, states, database, emittedAt, fetchSize),
           AirbyteTraceMessageUtility::emitStreamStatusTrace),
