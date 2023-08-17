@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "api_token": {
+      "description": "Please see documentation for more information on generating an API token: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+    }
+  }
+}

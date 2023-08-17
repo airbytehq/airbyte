@@ -1,0 +1,115 @@
+{
+    "definitions": {
+      "contentRestriction": {
+        "properties": {
+          "restrictions": {
+            "properties": {
+              "user": {
+                "properties": {
+                  "results": {
+                    "items": {
+                      "properties": {
+                        "accountId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "email": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "publicName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object",
+            "user": null
+          }
+        },
+        "type": "object"
+      }
+    },
+        "properties": {
+          "restrictions": {
+            "properties": {
+              "read": {
+                "properties": {
+                  "operations": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "restrictions": {
+                    "properties": {
+                      "user": {
+                        "properties": {
+                          "results": {
+                            "items": {
+                              "properties": {
+                                "accountId": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "email": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "publicName": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "type": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "type": "object"
+                      }
+                    },
+                    "type": "object",
+                    "user": null
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          }
+        }
+      }
+
+  
