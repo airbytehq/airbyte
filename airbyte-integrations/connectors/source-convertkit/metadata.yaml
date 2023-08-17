@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: be9ee02f-6efe-4970-979b-95f797a37188
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-convertkit
+  githubIssueLabel: source-convertkit
+  icon: convertkit.svg
+  license: MIT
+  name: ConvertKit
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

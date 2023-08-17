@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
@@ -12,6 +12,7 @@ import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -30,13 +31,14 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
     addTestData(container);
     certs = MySqlUtils.getCertificate(container, true);
 
-    var sslMode = getSslConfig();
+    final var sslMode = getSslConfig();
+    final var innerContainerAddress = SshHelpers.getInnerContainerAddress(container);
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "STANDARD")
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, innerContainerAddress.left)
+        .put(JdbcUtils.PORT_KEY, innerContainerAddress.right)
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
@@ -48,14 +50,15 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
 
   public abstract ImmutableMap getSslConfig();
 
-  private void addTestData(MySQLContainer container) throws Exception {
+  private void addTestData(final MySQLContainer container) throws Exception {
+    final var outerContainerAddress = SshHelpers.getOuterContainerAddress(container);
     try (final DSLContext dslContext = DSLContextFactory.create(
         container.getUsername(),
         container.getPassword(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
+            outerContainerAddress.left,
+            outerContainerAddress.right,
             container.getDatabaseName()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);

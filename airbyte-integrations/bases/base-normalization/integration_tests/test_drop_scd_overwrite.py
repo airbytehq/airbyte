@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -46,7 +46,7 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_reset_scd_on_overwrite(destination_type: DestinationType, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")

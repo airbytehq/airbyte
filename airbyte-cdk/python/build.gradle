@@ -7,13 +7,29 @@ airbytePython {
     moduleDirectory 'airbyte_cdk'
 }
 
-task generateProtocolClassFiles(type: Exec) {
+task generateComponentManifestClassFiles(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
-    commandLine 'bin/generate-protocol-files.sh'
+    commandLine 'bin/generate-component-manifest-files.sh'
     dependsOn ':tools:code-generator:airbyteDocker'
 }
 
-blackFormat.dependsOn generateProtocolClassFiles
-isortFormat.dependsOn generateProtocolClassFiles
-flakeCheck.dependsOn generateProtocolClassFiles
-installReqs.dependsOn generateProtocolClassFiles
+task validateSourceYamlManifest(type: Exec) {
+    environment 'ROOT_DIR', rootDir.absolutePath
+    commandLine 'bin/validate-yaml-schema.sh'
+}
+
+task runLowCodeConnectorUnitTests(type: Exec) {
+    environment 'ROOT_DIR', rootDir.absolutePath
+    commandLine 'bin/low-code-unit-tests.sh'
+}
+
+task runMypyOnModifiedFiles(type: Exec) {
+    environment 'ROOT_DIR', rootDir.absolutePath
+    commandLine 'bin/run-mypy-on-modified-files.sh'
+}
+
+blackFormat.dependsOn runMypyOnModifiedFiles
+isortFormat.dependsOn generateComponentManifestClassFiles
+flakeCheck.dependsOn generateComponentManifestClassFiles
+installReqs.dependsOn generateComponentManifestClassFiles
+runMypyOnModifiedFiles.dependsOn generateComponentManifestClassFiles

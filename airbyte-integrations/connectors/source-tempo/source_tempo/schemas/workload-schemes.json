@@ -37,12 +37,15 @@
       "type": "array",
       "description": "The days of the tempo Workload Scheme.",
       "readOnly": true,
-      "properties": {
-        "day": {
-          "type": "string"
-        },
-        "requiredSeconds": {
-          "type": "string"
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string"
+          },
+          "requiredSeconds": {
+            "type": "integer"
+          }
         }
       }
     }

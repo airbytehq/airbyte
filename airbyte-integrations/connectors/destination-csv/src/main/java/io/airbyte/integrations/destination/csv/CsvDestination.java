@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -14,14 +14,14 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -44,6 +44,8 @@ public class CsvDestination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
   static final String DESTINATION_PATH_FIELD = "destination_path";
+
+  static final String DELIMITER_TYPE = "delimiter_type";
 
   private final StandardNameTransformer namingResolver;
 
@@ -73,6 +75,8 @@ public class CsvDestination extends BaseConnector implements Destination {
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
+    final Character delimiter = getDelimiter(config);
+    CSVFormat csvFormat;
 
     FileUtils.forceMkdir(destinationDir.toFile());
 
@@ -83,7 +87,8 @@ public class CsvDestination extends BaseConnector implements Destination {
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+      csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter);
+      csvFormat = csvFormat.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
           JavaBaseConstants.COLUMN_NAME_DATA);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
@@ -96,7 +101,7 @@ public class CsvDestination extends BaseConnector implements Destination {
       }
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
       final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
-      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
+      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath, delimiter));
     }
 
     return new CsvConsumer(writeConfigs, catalog, outputRecordCollector);
@@ -120,6 +125,28 @@ public class CsvDestination extends BaseConnector implements Destination {
     }
 
     return destinationPath;
+  }
+
+  /**
+   * Extract provided delimiter from csv config object.
+   *
+   * @param config - csv config object
+   * @return delimiter.
+   */
+  protected Character getDelimiter(final JsonNode config) {
+
+    JsonNode tempConfig = config;
+    Character delimiter;
+
+    if (tempConfig.has(DELIMITER_TYPE)) {
+      String delimiter_as_text = tempConfig.get(DELIMITER_TYPE).get("delimiter").asText();
+      delimiter = (char) Integer.parseInt(delimiter_as_text.substring(2), 16);
+      return delimiter;
+    } else {
+      delimiter = ',';
+    }
+    Preconditions.checkNotNull(delimiter);
+    return delimiter;
   }
 
   /**
@@ -214,11 +241,13 @@ public class CsvDestination extends BaseConnector implements Destination {
     private final CSVPrinter writer;
     private final Path tmpPath;
     private final Path finalPath;
+    private final Character delimiter;
 
-    public WriteConfig(final CSVPrinter writer, final Path tmpPath, final Path finalPath) {
+    public WriteConfig(final CSVPrinter writer, final Path tmpPath, final Path finalPath, final Character delimiter) {
       this.writer = writer;
       this.tmpPath = tmpPath;
       this.finalPath = finalPath;
+      this.delimiter = delimiter;
     }
 
     public CSVPrinter getWriter() {
@@ -231,6 +260,10 @@ public class CsvDestination extends BaseConnector implements Destination {
 
     public Path getFinalPath() {
       return finalPath;
+    }
+
+    public Character getDelimiter() {
+      return delimiter;
     }
 
   }

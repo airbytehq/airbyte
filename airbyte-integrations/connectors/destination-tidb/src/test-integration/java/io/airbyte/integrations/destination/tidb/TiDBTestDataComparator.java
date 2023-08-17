@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.tidb;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class TiDBTestDataComparator extends AdvancedTestDataComparator {
 
-  private final ExtendedNameTransformer namingResolver = new TiDBSQLNameTransformer();
+  private final StandardNameTransformer namingResolver = new TiDBSQLNameTransformer();
   private final String TIDB_DATATIME_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
 
   @Override

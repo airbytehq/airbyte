@@ -1,29 +1,28 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
 
 import static io.airbyte.db.PostgresUtils.getCertificate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.Database;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.workers.exception.WorkerException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -36,10 +35,12 @@ import org.testcontainers.utility.DockerImageName;
 public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
 
   private PostgreSQLContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
+  private static final String NORMALIZATION_VERSION = "dev"; // this is hacky. This test should extend or encapsulate
+                                                             // PostgresDestinationAcceptanceTest
 
   @Override
   protected String getImageName() {
@@ -91,16 +92,6 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
@@ -109,7 +100,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
+    // Temporarily disabling the behavior of the StandardNameTransformer, see (issue #1785) so we don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
     // // Currently, Normalization always quote tables identifiers
@@ -150,7 +141,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"));
     db.start();
@@ -158,13 +149,13 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db.stop();
     db.close();
   }
 
   @Test
-  void testStrictSSLUnsecuredNoTunnel() throws WorkerException {
+  void testStrictSSLUnsecuredNoTunnel() throws Exception {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -186,7 +177,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Test
-  void testStrictSSLSecuredNoTunnel() throws WorkerException {
+  void testStrictSSLSecuredNoTunnel() throws Exception {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -206,25 +197,19 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
     assertEquals(Status.SUCCEEDED, actual.getStatus());
   }
 
-  @Test
-  void testStrictSSLUnsecuredWithTunnel() throws WorkerException {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-            .put("mode", "require")
-            .build())
-        .put("tunnel_method", ImmutableMap.builder()
-            .put("tunnel_method", "SSH_KEY_AUTH")
-            .build())
-        .build());
-    final var actual = runCheck(config);
-    // DefaultCheckConnectionWorker is swallowing the NullPointerException
-    assertNull(actual);
+  @Override
+  protected boolean normalizationFromDefinition() {
+    return true;
+  }
+
+  @Override
+  protected boolean dbtFromDefinition() {
+    return true;
+  }
+
+  @Override
+  protected String getDestinationDefinitionKey() {
+    return "airbyte/destination-postgres";
   }
 
 }

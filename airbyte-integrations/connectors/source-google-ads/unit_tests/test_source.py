@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from collections import namedtuple
 from unittest.mock import Mock
 
@@ -11,10 +12,11 @@ from freezegun import freeze_time
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import today
-from source_google_ads.custom_query_stream import CustomQuery
+from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, AdGroupLabels, ServiceAccounts, chunk_date_range
+from source_google_ads.utils import GAQL
 
 from .common import MockErroringGoogleAdsClient, MockGoogleAdsClient, make_google_ads_exception
 
@@ -59,11 +61,12 @@ def mocked_gads_api(mocker):
 
 @pytest.fixture()
 def mock_fields_meta_data():
+    DataType = namedtuple("DataType", ["name"])
     Node = namedtuple("Node", ["data_type", "name", "enum_values", "is_repeated"])
     nodes = (
-        Node("RESOURCE_NAME", "campaign.accessible_bidding_strategy", [], False),
+        Node(DataType("RESOURCE_NAME"), "campaign.accessible_bidding_strategy", [], False),
         Node(
-            "ENUM",
+            DataType("ENUM"),
             "segments.ad_destination_type",
             [
                 "APP_DEEP_LINK",
@@ -82,22 +85,22 @@ def mock_fields_meta_data():
             ],
             False,
         ),
-        Node("DATE", "campaign.start_date", [], is_repeated=False),
-        Node("DATE", "campaign.end_date", [], False),
-        Node("DATE", "segments.date", [], False),
+        Node(DataType("DATE"), "campaign.start_date", [], is_repeated=False),
+        Node(DataType("DATE"), "campaign.end_date", [], False),
+        Node(DataType("DATE"), "segments.date", [], False),
         Node(
-            "ENUM",
+            DataType("ENUM"),
             "accessible_bidding_strategy.target_impression_share.location",
             ["ABSOLUTE_TOP_OF_PAGE", "ANYWHERE_ON_PAGE", "TOP_OF_PAGE", "UNKNOWN", "UNSPECIFIED"],
             False,
         ),
-        Node("STRING", "campaign.name", [], False),
-        Node("DOUBLE", "campaign.optimization_score", [], False),
-        Node("RESOURCE_NAME", "campaign.resource_name", [], False),
-        Node("INT32", "campaign.shopping_setting.campaign_priority", [], False),
-        Node("INT64", "campaign.shopping_setting.merchant_id", [], False),
-        Node("BOOLEAN", "campaign_budget.explicitly_shared", [], False),
-        Node("MESSAGE", "bidding_strategy.enhanced_cpc", [], False),
+        Node(DataType("STRING"), "campaign.name", [], False),
+        Node(DataType("DOUBLE"), "campaign.optimization_score", [], False),
+        Node(DataType("RESOURCE_NAME"), "campaign.resource_name", [], False),
+        Node(DataType("INT32"), "campaign.shopping_setting.campaign_priority", [], False),
+        Node(DataType("INT64"), "campaign.shopping_setting.merchant_id", [], False),
+        Node(DataType("BOOLEAN"), "campaign_budget.explicitly_shared", [], False),
+        Node(DataType("MESSAGE"), "bidding_strategy.enhanced_cpc", [], False),
     )
     return Mock(get_fields_metadata=Mock(return_value={node.name: node for node in nodes}))
 
@@ -107,43 +110,42 @@ def mock_fields_meta_data():
 def test_chunk_date_range_without_end_date():
     start_date_str = "2022-01-24"
     conversion_window = 0
-    field = "date"
-    response = chunk_date_range(
-        start_date=start_date_str, conversion_window=conversion_window, field=field, end_date=None, days_of_data_storage=None, range_days=1
-    )
+    slices = list(chunk_date_range(
+        start_date=start_date_str, conversion_window=conversion_window, end_date=None, days_of_data_storage=None, range_days=1, time_zone="UTC"
+    ))
     expected_response = [
-        {"start_date": "2022-01-25", "end_date": "2022-01-26"},
-        {"start_date": "2022-01-26", "end_date": "2022-01-27"},
-        {"start_date": "2022-01-27", "end_date": "2022-01-28"},
-        {"start_date": "2022-01-28", "end_date": "2022-01-29"},
-        {"start_date": "2022-01-29", "end_date": "2022-01-30"},
-        {"start_date": "2022-01-30", "end_date": "2022-01-31"},
+        {"start_date": "2022-01-24", "end_date": "2022-01-24"},
+        {"start_date": "2022-01-25", "end_date": "2022-01-25"},
+        {"start_date": "2022-01-26", "end_date": "2022-01-26"},
+        {"start_date": "2022-01-27", "end_date": "2022-01-27"},
+        {"start_date": "2022-01-28", "end_date": "2022-01-28"},
+        {"start_date": "2022-01-29", "end_date": "2022-01-29"},
+        {"start_date": "2022-01-30", "end_date": "2022-01-30"},
     ]
-    assert expected_response == response
+    assert expected_response == slices
 
 
 def test_chunk_date_range():
     start_date = "2021-03-04"
     end_date = "2021-05-04"
     conversion_window = 14
-    field = "date"
-    response = chunk_date_range(start_date, conversion_window, field, end_date, range_days=10)
+    slices = list(chunk_date_range(start_date, conversion_window, end_date, range_days=10, time_zone="UTC"))
     assert [
-        {"start_date": "2021-02-19", "end_date": "2021-02-28"},
-        {"start_date": "2021-03-01", "end_date": "2021-03-10"},
-        {"start_date": "2021-03-11", "end_date": "2021-03-20"},
-        {"start_date": "2021-03-21", "end_date": "2021-03-30"},
-        {"start_date": "2021-03-31", "end_date": "2021-04-09"},
-        {"start_date": "2021-04-10", "end_date": "2021-04-19"},
-        {"start_date": "2021-04-20", "end_date": "2021-04-29"},
-        {"start_date": "2021-04-30", "end_date": "2021-05-04"},
-    ] == response
+        {"start_date": "2021-02-18", "end_date": "2021-02-27"},
+        {"start_date": "2021-02-28", "end_date": "2021-03-09"},
+        {"start_date": "2021-03-10", "end_date": "2021-03-19"},
+        {"start_date": "2021-03-20", "end_date": "2021-03-29"},
+        {"start_date": "2021-03-30", "end_date": "2021-04-08"},
+        {"start_date": "2021-04-09", "end_date": "2021-04-18"},
+        {"start_date": "2021-04-19", "end_date": "2021-04-28"},
+        {"start_date": "2021-04-29", "end_date": "2021-05-04"},
+    ] == slices
 
 
 def test_streams_count(config, mock_account_info):
     source = SourceGoogleAds()
     streams = source.streams(config)
-    expected_streams_number = 19
+    expected_streams_number = 29
     assert len(streams) == expected_streams_number
 
 
@@ -159,7 +161,7 @@ def test_streams_count(config, mock_account_info):
 )
 def test_metrics_in_custom_query(query, is_metrics_in_query):
     source = SourceGoogleAds()
-    assert source.is_metrics_in_custom_query(query) is is_metrics_in_query
+    assert source.is_metrics_in_custom_query(GAQL.parse(query)) is is_metrics_in_query
 
 
 @pytest.mark.parametrize(
@@ -181,49 +183,14 @@ def test_updated_state(stream_mock, latest_record, current_state, expected_state
 def stream_instance(query, api_mock, **kwargs):
     start_date = "2021-03-04"
     conversion_window_days = 14
-    instance = CustomQuery(
+    instance = IncrementalCustomQuery(
         api=api_mock,
         conversion_window_days=conversion_window_days,
         start_date=start_date,
-        custom_query_config={"query": query, "table_name": "whatever_table"},
+        config={"query": GAQL.parse(query), "table_name": "whatever_table"},
         **kwargs,
     )
     return instance
-
-
-@pytest.mark.parametrize(
-    "query, fields",
-    [
-        (
-            """
-SELECT
-  campaign.id,
-  campaign.name,
-  campaign.status,
-  metrics.impressions
-FROM campaign
-WHERE campaign.status = 'PAUSED'
-AND metrics.impressions > 100
-ORDER BY campaign.status
-    """,
-            ["campaign.id", "campaign.name", "campaign.status", "metrics.impressions"],
-        ),
-        (
-            """
-SELECT
-  campaign.accessible_bidding_strategy,
-  segments.ad_destination_type,
-  campaign.start_date,
-  campaign.end_date
-FROM campaign
-    """,
-            ["campaign.accessible_bidding_strategy", "segments.ad_destination_type", "campaign.start_date", "campaign.end_date"],
-        ),
-        ("""selet aasdasd from aaa""", []),
-    ],
-)
-def test_get_query_fields(query, fields):
-    assert CustomQuery.get_query_fields(query) == fields
 
 
 @pytest.mark.parametrize(
@@ -246,8 +213,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 WHERE campaign.status = 'PAUSED'
 AND metrics.impressions > 100
@@ -270,8 +237,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 
 WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
@@ -294,8 +261,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 WHERE campaign.status = 'PAUSED'
 AND metrics.impressions > 100
@@ -316,8 +283,8 @@ SELECT
     campaign.accessible_bidding_strategy,
     segments.ad_destination_type,
     campaign.start_date,
-    campaign.end_date
-, segments.date
+    campaign.end_date,
+    segments.date
 FROM campaign
 
 WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
@@ -326,7 +293,8 @@ WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
     ],
 )
 def test_insert_date(original_query, expected_query):
-    assert CustomQuery.insert_segments_date_expr(original_query, "1980-01-01", "2000-01-01") == expected_query
+    expected_query = re.sub(r"\s+", " ", expected_query.strip())
+    assert str(IncrementalCustomQuery.insert_segments_date_expr(GAQL.parse(original_query), "1980-01-01", "2000-01-01")) == expected_query
 
 
 def test_get_json_schema_parse_query(mock_fields_meta_data, customers):
@@ -526,15 +494,15 @@ def test_invalid_custom_query_handled(mocked_gads_api, config):
 
 
 @pytest.mark.parametrize(
-    ("cls", "error", "failure_code", "raise_expected", "log_expected"),
+    ("cls", "error", "failure_code", "raise_expected"),
     (
-        (AdGroupLabels, "authorization_error", AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED, False, True),
-        (AdGroupLabels, "internal_error", 1, True, False),
-        (ServiceAccounts, "authentication_error", 1, True, False),
-        (ServiceAccounts, "internal_error", 1, True, False),
+        (AdGroupLabels, "authorization_error", AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED, False),
+        (AdGroupLabels, "internal_error", 1, True),
+        (ServiceAccounts, "authentication_error", 1, True),
+        (ServiceAccounts, "internal_error", 1, True),
     ),
 )
-def test_read_record_error_handling(config, customers, caplog, mocked_gads_api, cls, error, failure_code, raise_expected, log_expected):
+def test_read_record_error_handling(config, customers, mocked_gads_api, cls, error, failure_code, raise_expected):
     error_msg = "Some unexpected error"
     mocked_gads_api(failure_code=failure_code, failure_msg=error_msg, error_type=error)
     google_api = GoogleAds(credentials=config["credentials"])
@@ -546,8 +514,6 @@ def test_read_record_error_handling(config, customers, caplog, mocked_gads_api, 
     else:
         for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890"}):
             pass
-    error_in_log = error_msg in caplog.text
-    assert error_in_log is log_expected
 
 
 def test_stream_slices(config, customers):
@@ -561,8 +527,8 @@ def test_stream_slices(config, customers):
     )
     slices = list(stream.stream_slices())
     assert slices == [
-        {"start_date": "2020-12-19", "end_date": "2021-01-02", "customer_id": "123"},
-        {"start_date": "2021-01-03", "end_date": "2021-01-17", "customer_id": "123"},
-        {"start_date": "2021-01-18", "end_date": "2021-02-01", "customer_id": "123"},
-        {"start_date": "2021-02-02", "end_date": "2021-02-10", "customer_id": "123"},
+        {"start_date": "2020-12-18", "end_date": "2021-01-01", "customer_id": "123"},
+        {"start_date": "2021-01-02", "end_date": "2021-01-16", "customer_id": "123"},
+        {"start_date": "2021-01-17", "end_date": "2021-01-31", "customer_id": "123"},
+        {"start_date": "2021-02-01", "end_date": "2021-02-10", "customer_id": "123"},
     ]

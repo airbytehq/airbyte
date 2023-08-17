@@ -1,0 +1,18 @@
+{
+  "string_type" : "sample_string",
+  "number_integer_type" : 948,
+  "string_big_integer_type" : "54667543256786653424",
+  "number_float_type" : 34.657322,
+  "number_type" : 78.32,
+  "integer_type" : 5389,
+  "boolean_type" : false,
+  "date_time_with_tz_type" : "2021-07-12T03:12:22+05:00",
+  "date_time_without_tz_type" : "2023-11-07T02:10:32",
+  "date_type" : "2021-01-01",
+  "time_type": "12:23:01.541",
+  "array_type": ["151", "152"],
+  "row_type": {
+    "first_name": "charles",
+    "last_name": "darwin"
+  }
+}

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -10,14 +10,14 @@ from urllib import parse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import HTTPError
 
-from .graphql import CursorStorage, QueryReactions, get_query_pull_requests, get_query_reviews
+from . import constants
+from .graphql import CursorStorage, QueryReactions, get_query_issue_reactions, get_query_pull_requests, get_query_reviews
 from .utils import getter
-
-DEFAULT_PAGE_SIZE = 100
 
 
 class GithubStream(HttpStream, ABC):
@@ -30,17 +30,22 @@ class GithubStream(HttpStream, ABC):
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, access_token_type: str = "", **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
+        self.access_token_type = access_token_type
 
         # GitHub pagination could be from 1 to 100.
-        self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
+        # This parameter is deprecated and in future will be used sane default, page_size: 10
+        self.page_size = page_size_for_large_streams if self.large_stream else constants.DEFAULT_PAGE_SIZE
 
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
         self._session.mount("https://", adapter)
-        self._session.mount("http://", adapter)
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
@@ -160,6 +165,11 @@ class GithubStream(HttpStream, ABC):
                     error_msg = (
                         f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
                     )
+            elif e.response.status_code == requests.codes.UNAUTHORIZED:
+                if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
+                    error_msg = str(e.response.json().get("message"))
+                    self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
+                raise e
             elif e.response.status_code == requests.codes.GONE and isinstance(self, Projects):
                 # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
                 # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
@@ -171,6 +181,8 @@ class GithubStream(HttpStream, ABC):
                 )
             elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.BAD_GATEWAY:
+                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
             else:
                 # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e.response.text}")
@@ -237,12 +249,12 @@ class SemiIncrementalMixin:
         self._starting_point_cache = {}
 
     @property
-    def __slice_key(self):
+    def slice_keys(self):
         if hasattr(self, "repositories"):
-            return "repository"
-        return "organization"
+            return ["repository"]
+        return ["organization"]
 
-    record_slice_key = __slice_key
+    record_slice_key = slice_keys
 
     def convert_cursor_value(self, value):
         return value
@@ -267,17 +279,17 @@ class SemiIncrementalMixin:
 
     def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
-            slice_value = stream_slice[self.__slice_key]
-            stream_state_value = stream_state.get(slice_value, {}).get(self.cursor_field)
+            state_path = [stream_slice[k] for k in self.slice_keys] + [self.cursor_field]
+            stream_state_value = getter(stream_state, state_path, strict=False)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
         return self._start_date
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        slice_value = stream_slice[self.__slice_key]
-        if slice_value not in self._starting_point_cache:
-            self._starting_point_cache[slice_value] = self._get_starting_point(stream_state, stream_slice)
-        return self._starting_point_cache[slice_value]
+        cache_key = tuple([stream_slice[k] for k in self.slice_keys])
+        if cache_key not in self._starting_point_cache:
+            self._starting_point_cache[cache_key] = self._get_starting_point(stream_state, stream_slice)
+        return self._starting_point_cache[cache_key]
 
     def read_records(
         self,
@@ -366,9 +378,10 @@ class Organizations(GithubStream):
     # GitHub pagination could be from 1 to 100.
     page_size = 100
 
-    def __init__(self, organizations: List[str], **kwargs):
+    def __init__(self, organizations: List[str], access_token_type: str = "", **kwargs):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
+        self.access_token_type = access_token_type
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for organization in self.organizations:
@@ -629,6 +642,7 @@ class Commits(IncrementalMixin, GithubStream):
 
     primary_key = "sha"
     cursor_field = "created_at"
+    slice_keys = ["repository", "branch"]
 
     def __init__(self, branches_to_pull: Mapping[str, List[str]], default_branches: Mapping[str, str], **kwargs):
         super().__init__(**kwargs)
@@ -661,36 +675,14 @@ class Commits(IncrementalMixin, GithubStream):
         return record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
-        current_repository = latest_record["repository"]
-        current_branch = latest_record["branch"]
-
-        if current_stream_state.get(current_repository):
-            repository_commits_state = current_stream_state[current_repository]
-            if repository_commits_state.get(self.cursor_field):
-                # transfer state from old source version to per-branch version
-                if current_branch == self.default_branches[current_repository]:
-                    state_value = max(latest_cursor_value, repository_commits_state[self.cursor_field])
-                    del repository_commits_state[self.cursor_field]
-            elif repository_commits_state.get(current_branch, {}).get(self.cursor_field):
-                state_value = max(latest_cursor_value, repository_commits_state[current_branch][self.cursor_field])
-
-        if current_repository not in current_stream_state:
-            current_stream_state[current_repository] = {}
-
-        current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
+        repository = latest_record["repository"]
+        branch = latest_record["branch"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
         return current_stream_state
-
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        repository = stream_slice["repository"]
-        branch = stream_slice["branch"]
-        if stream_state:
-            stream_state_value = stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
-            if stream_state_value:
-                return max(self._start_date, stream_state_value)
-        if branch == self.default_branches[repository]:
-            return super().get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        return self._start_date
 
 
 class Issues(IncrementalMixin, GithubStream):
@@ -1000,14 +992,83 @@ class IssueCommentReactions(ReactionStream):
     parent_entity = Comments
 
 
-class IssueReactions(ReactionStream):
+class IssueReactions(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue
+    https://docs.github.com/en/graphql/reference/objects#issue
+    https://docs.github.com/en/graphql/reference/objects#reaction
     """
 
-    parent_entity = Issues
-    parent_key = "number"
-    copy_parent_key = "issue_number"
+    http_method = "POST"
+    cursor_field = "created_at"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_cursor = {}
+        self.reactions_cursors = {}
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "graphql"
+
+    def raise_error_from_response(self, response_json):
+        if "errors" in response_json:
+            raise Exception(str(response_json["errors"]))
+
+    def _get_name(self, repository):
+        return repository["owner"]["login"] + "/" + repository["name"]
+
+    def _get_reactions_from_issue(self, issue, repository_name):
+        for reaction in issue["reactions"]["nodes"]:
+            reaction["repository"] = repository_name
+            reaction["issue_number"] = issue["number"]
+            reaction["user"]["type"] = "User"
+            yield reaction
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.raise_error_from_response(response_json=response.json())
+        repository = response.json()["data"]["repository"]
+        if repository:
+            repository_name = self._get_name(repository)
+            if "issues" in repository:
+                for issue in repository["issues"]["nodes"]:
+                    yield from self._get_reactions_from_issue(issue, repository_name)
+            elif "issue" in repository:
+                yield from self._get_reactions_from_issue(repository["issue"], repository_name)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json()["data"]["repository"]
+        if repository:
+            repository_name = self._get_name(repository)
+            reactions_cursors = self.reactions_cursors.setdefault(repository_name, {})
+            if "issues" in repository:
+                if repository["issues"]["pageInfo"]["hasNextPage"]:
+                    self.issues_cursor[repository_name] = repository["issues"]["pageInfo"]["endCursor"]
+                for issue in repository["issues"]["nodes"]:
+                    if issue["reactions"]["pageInfo"]["hasNextPage"]:
+                        issue_number = issue["number"]
+                        reactions_cursors[issue_number] = issue["reactions"]["pageInfo"]["endCursor"]
+            elif "issue" in repository:
+                if repository["issue"]["reactions"]["pageInfo"]["hasNextPage"]:
+                    issue_number = repository["issue"]["number"]
+                    reactions_cursors[issue_number] = repository["issue"]["reactions"]["pageInfo"]["endCursor"]
+            if reactions_cursors:
+                number, after = reactions_cursors.popitem()
+                return {"after": after, "number": number}
+            if repository_name in self.issues_cursor:
+                return {"after": self.issues_cursor.pop(repository_name)}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        if not next_page_token:
+            next_page_token = {"after": None}
+        query = get_query_issue_reactions(owner=organization, name=name, first=self.page_size, **next_page_token)
+        return {"query": query}
 
 
 class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):

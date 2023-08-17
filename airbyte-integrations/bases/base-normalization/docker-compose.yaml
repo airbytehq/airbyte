@@ -18,3 +18,5 @@ services:
     image: airbyte/normalization-redshift:${VERSION}
   normalization-tidb:
     image: airbyte/normalization-tidb:${VERSION}
+  normalization-duckdb:
+    image: airbyte/normalization-duckdb:${VERSION}

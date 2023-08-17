@@ -1,0 +1,77 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "JournalID": {
+      "type": ["string"]
+    },
+    "JournalDate": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "JournalNumber": {
+      "type": ["null", "integer"]
+    },
+    "CreatedDateUTC": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "Reference": {
+      "type": ["null", "string"]
+    },
+    "SourceID": {
+      "type": ["null", "string"]
+    },
+    "SourceType": {
+      "type": ["null", "string"]
+    },
+    "JournalLines": {
+      "items": {
+        "properties": {
+          "JournalLineID": {
+            "type": ["null", "string"]
+          },
+          "AccountType": {
+            "type": ["null", "string"]
+          },
+          "AccountID": {
+            "type": ["null", "string"]
+          },
+          "AccountCode": {
+            "type": ["null", "string"]
+          },
+          "TaxName": {
+            "type": ["null", "string"]
+          },
+          "TaxType": {
+            "type": ["null", "string"]
+          },
+          "Description": {
+            "type": ["null", "string"]
+          },
+          "GrossAmount": {
+            "type": ["null", "number"]
+          },
+          "NetAmount": {
+            "type": ["null", "number"]
+          },
+          "AccountName": {
+            "type": ["null", "string"]
+          },
+          "TaxAmount": {
+            "type": ["null", "number"]
+          },
+          "TrackingCategories": {
+            "items": {
+              "$ref": "tracking_categories.json"
+            },
+            "type": ["null", "array"]
+          }
+        },
+        "type": ["null", "object"],
+        "additionalProperties": true
+      },
+      "type": ["null", "array"]
+    }
+  },
+  "additionalProperties": true
+}

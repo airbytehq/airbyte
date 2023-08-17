@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -8,7 +8,9 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeV
 import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 
 from .utils import transform_properties
 
@@ -24,19 +26,37 @@ class NotionStream(HttpStream, ABC):
 
     page_size = 100  # set by Notion API spec
 
+    raise_on_http_errors = True
+
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.start_date = config["start_date"]
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
+
+    @staticmethod
+    def check_invalid_start_cursor(response: requests.Response):
+        if response.status_code == 400:
+            message = response.json().get("message", "")
+            if message.startswith("The start_cursor provided is invalid: "):
+                return message
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         retry_after = response.headers.get("retry-after")
         if retry_after:
             return float(retry_after)
+        if self.check_invalid_start_cursor(response):
+            return 10
+
+    def should_retry(self, response: requests.Response) -> bool:
+        return response.status_code == 400 or super().should_retry(response)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
         # Notion API version, see https://developers.notion.com/reference/versioning
-        params["Notion-Version"] = "2021-08-16"
+        params["Notion-Version"] = "2022-06-28"
         return params
 
     def next_page_token(
@@ -57,7 +77,8 @@ class NotionStream(HttpStream, ABC):
             return {"next_cursor": next_cursor}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json().get("results")
+        # sometimes notion api returns response without results object
+        data = response.json().get("results", [])
         yield from data
 
 
@@ -121,7 +142,14 @@ class IncrementalNotionStream(NotionStream, ABC):
     def read_records(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         if sync_mode == SyncMode.full_refresh:
             stream_state = None
-        return super().read_records(sync_mode, stream_state=stream_state, **kwargs)
+        try:
+            yield from super().read_records(sync_mode, stream_state=stream_state, **kwargs)
+        except UserDefinedBackoffException as e:
+            message = self.check_invalid_start_cursor(e.response)
+            if message:
+                self.logger.error(f"Skipping stream {self.name}, error message: {message}")
+                return
+            raise e
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         records = super().parse_response(response, stream_state=stream_state, **kwargs)
@@ -168,6 +196,8 @@ class Databases(IncrementalNotionStream):
     Docs: https://developers.notion.com/reference/post-search
     """
 
+    state_checkpoint_interval = 100
+
     def __init__(self, **kwargs):
         super().__init__(obj_type="database", **kwargs)
 
@@ -176,6 +206,8 @@ class Pages(IncrementalNotionStream):
     """
     Docs: https://developers.notion.com/reference/post-search
     """
+
+    state_checkpoint_interval = 100
 
     def __init__(self, **kwargs):
         super().__init__(obj_type="page", **kwargs)
@@ -222,13 +254,15 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         # pages and databases blocks are already fetched in their streams, so no
         # need to do it again
+        # fetching of `ai_block` type is unsupported by API
+        # https://github.com/airbytehq/oncall/issues/1927
         records = super().parse_response(response, stream_state=stream_state, **kwargs)
         for record in records:
-            if record["type"] not in ("child_page", "child_database"):
+            if record["type"] not in ("child_page", "child_database", "ai_block"):
                 yield record
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        # if reached recursive limit, don't read any more
+        # if reached recursive limit, don't read anymore
         if len(self.block_id_stack) > MAX_BLOCK_DEPTH:
             return
 
@@ -241,3 +275,26 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             yield record
 
         self.block_id_stack.pop()
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.error(
+                f"Stream {self.name}: {response.json().get('message')}. 404 HTTP response returns if the block specified by id doesn't"
+                " exist, or if the integration doesn't have access to the block."
+                "See more in docs: https://developers.notion.com/reference/get-block-children"
+            )
+            return False
+
+        if response.status_code == 400:
+            error_code = response.json().get("code")
+            error_msg = response.json().get("message")
+            if "validation_error" in error_code and "ai_block is not supported" in error_msg:
+                setattr(self, "raise_on_http_errors", False)
+                self.logger.error(
+                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type."
+                )
+                return False
+            else:
+                return super().should_retry(response)
+        return super().should_retry(response)

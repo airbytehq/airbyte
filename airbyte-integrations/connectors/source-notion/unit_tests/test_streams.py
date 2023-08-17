@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import random
@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from source_notion.streams import NotionStream, Users
+from source_notion.streams import Blocks, NotionStream, Users
 
 
 @pytest.fixture
@@ -47,7 +47,7 @@ def test_parse_response(patch_base_class, requests_mock):
 def test_request_headers(patch_base_class):
     stream = NotionStream(config=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {"Notion-Version": "2021-08-16"}
+    expected_headers = {"Notion-Version": "2022-06-28"}
     assert stream.request_headers(**inputs) == expected_headers
 
 
@@ -61,7 +61,7 @@ def test_http_method(patch_base_class):
     ("http_status", "should_retry"),
     [
         (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
+        (HTTPStatus.BAD_REQUEST, True),
         (HTTPStatus.TOO_MANY_REQUESTS, True),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
@@ -71,6 +71,43 @@ def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock.status_code = http_status
     stream = NotionStream(config=MagicMock())
     assert stream.should_retry(response_mock) == should_retry
+
+
+def test_should_not_retry_with_ai_block(requests_mock):
+    stream = Blocks(parent=None, config=MagicMock())
+    json_response = {
+        "object":"error",
+        "status":400,
+        "code":"validation_error",
+        "message":"Block type ai_block is not supported via the API.",
+    }
+    requests_mock.get("https://api.notion.com/v1/blocks/123", json=json_response, status_code=400)
+    test_response = requests.get("https://api.notion.com/v1/blocks/123")
+    assert not stream.should_retry(test_response)
+
+
+def test_should_not_retry_with_not_found_block(requests_mock):
+    stream = Blocks(parent=None, config=MagicMock())
+    json_response = {
+        "object": "error",
+        "status": 404,
+        "message": "Not Found for url: https://api.notion.com/v1/blocks/123/children?page_size=100",
+    }
+    requests_mock.get("https://api.notion.com/v1/blocks/123", json=json_response, status_code=404)
+    test_response = requests.get("https://api.notion.com/v1/blocks/123")
+    assert not stream.should_retry(test_response)
+
+
+def test_empty_blocks_results(requests_mock):
+    stream = Blocks(parent=None, config=MagicMock())
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/aaa/children",
+        json={
+            "next_cursor": None,
+        },
+    )
+    stream.block_id_stack = ["aaa"]
+    assert list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=[])) == []
 
 
 def test_backoff_time(patch_base_class):
@@ -93,7 +130,7 @@ def test_users_request_params(patch_base_class):
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_user_stream_handles_pagination_correclty(requests_mock):
+def test_user_stream_handles_pagination_correctly(requests_mock):
     """
     Test shows that Users stream uses pagination as per Notion API docs.
     """

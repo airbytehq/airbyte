@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_pinterest.source import AdAccountAnalytics, Campaigns, IncrementalPinterestSubStream
+from source_pinterest.streams import AdAccountAnalytics, Campaigns, IncrementalPinterestSubStream
 
 
 @fixture

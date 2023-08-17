@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -41,9 +41,9 @@ def test_next_page_token(auth):
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
 
-    resp = {"lists": [{"id": i} for i in range(101)]}
+    resp = {"lists": [{"id": i} for i in range(1001)]}
     inputs = {"response": MagicMock(json=MagicMock(return_value=resp))}
-    expected_token = {"offset": 100}
+    expected_token = {"offset": 1000}
     assert stream.next_page_token(**inputs) == expected_token
 
 
@@ -52,11 +52,11 @@ def test_next_page_token(auth):
     [
         (
             {"stream_slice": None, "stream_state": None, "next_page_token": None},
-            {"count": 100, "sort_dir": "ASC", "sort_field": "date_created"},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created"},
         ),
         (
-            {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 100}},
-            {"count": 100, "sort_dir": "ASC", "sort_field": "date_created", "offset": 100},
+            {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1000}},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "offset": 1000},
         ),
     ],
 )
@@ -97,3 +97,15 @@ def test_stream_teams_read(auth):
     assert records
     assert records == [{"campaign_id": 123, "action": "q", "timestamp": "2021-08-24T14:15:22Z"}]
     assert len(responses.calls) == 2
+
+
+@responses.activate
+def test_stream_parse_json_error(auth, caplog):
+    args = {"authenticator": auth}
+    stream = EmailActivity(**args)
+    stream_url = stream.url_base + "reports/123/email-activity"
+    campaigns_stream_url = stream.url_base + "campaigns"
+    responses.add("GET", campaigns_stream_url, json={"campaigns": [{"id": 123}]})
+    responses.add("GET", stream_url, body="not_valid_json")
+    read_incremental(stream, {})
+    assert "response.content=b'not_valid_json'" in caplog.text

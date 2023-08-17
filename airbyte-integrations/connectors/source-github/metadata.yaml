@@ -1,0 +1,40 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.github.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
+  dockerImageTag: 1.0.4
+  maxSecondsBetweenMessages: 5400
+  dockerRepository: airbyte/source-github
+  githubIssueLabel: source-github
+  icon: github.svg
+  license: MIT
+  name: GitHub
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - branches
+      - comments
+      - issues
+      - organizations
+      - pull_requests
+      - repositories
+      - stargazers
+      - tags
+      - teams
+      - users
+  documentationUrl: https://docs.airbyte.com/integrations/sources/github
+  tags:
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

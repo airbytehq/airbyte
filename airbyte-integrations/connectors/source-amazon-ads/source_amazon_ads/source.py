@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -17,19 +17,25 @@ from .streams import (
     AttributionReportPerformanceCampaign,
     AttributionReportPerformanceCreative,
     AttributionReportProducts,
+    Portfolios,
     Profiles,
     SponsoredBrandsAdGroups,
     SponsoredBrandsCampaigns,
     SponsoredBrandsKeywords,
     SponsoredBrandsReportStream,
+    SponsoredBrandsV3ReportStream,
     SponsoredBrandsVideoReportStream,
     SponsoredDisplayAdGroups,
+    SponsoredDisplayBudgetRules,
     SponsoredDisplayCampaigns,
     SponsoredDisplayProductAds,
     SponsoredDisplayReportStream,
     SponsoredDisplayTargetings,
+    SponsoredProductAdGroupBidRecommendations,
     SponsoredProductAdGroups,
+    SponsoredProductAdGroupSuggestedKeywords,
     SponsoredProductAds,
+    SponsoredProductCampaignNegativeKeywords,
     SponsoredProductCampaigns,
     SponsoredProductKeywords,
     SponsoredProductNegativeKeywords,
@@ -52,6 +58,10 @@ class SourceAmazonAds(AbstractSource):
         if not config.get("region"):
             source_spec = self.spec(logging.getLogger("airbyte"))
             config["region"] = source_spec.connectionSpecification["properties"]["region"]["default"]
+        if not config.get("look_back_window"):
+            source_spec = self.spec(logging.getLogger("airbyte"))
+            config["look_back_window"] = source_spec.connectionSpecification["properties"]["look_back_window"]["default"]
+        config["report_record_types"] = config.get("report_record_types", [])
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -94,10 +104,14 @@ class SourceAmazonAds(AbstractSource):
             SponsoredDisplayProductAds,
             SponsoredDisplayTargetings,
             SponsoredDisplayReportStream,
+            SponsoredDisplayBudgetRules,
             SponsoredProductCampaigns,
             SponsoredProductAdGroups,
+            SponsoredProductAdGroupBidRecommendations,
+            SponsoredProductAdGroupSuggestedKeywords,
             SponsoredProductKeywords,
             SponsoredProductNegativeKeywords,
+            SponsoredProductCampaignNegativeKeywords,
             SponsoredProductAds,
             SponsoredProductTargetings,
             SponsoredProductsReportStream,
@@ -105,13 +119,15 @@ class SourceAmazonAds(AbstractSource):
             SponsoredBrandsAdGroups,
             SponsoredBrandsKeywords,
             SponsoredBrandsReportStream,
+            SponsoredBrandsV3ReportStream,
             SponsoredBrandsVideoReportStream,
             AttributionReportPerformanceAdgroup,
             AttributionReportPerformanceCampaign,
             AttributionReportPerformanceCreative,
             AttributionReportProducts,
         ]
-        return [profiles_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
+        portfolios_stream = Portfolios(**stream_args)
+        return [profiles_stream, portfolios_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
 
     @staticmethod
     def _make_authenticator(config: Mapping[str, Any]):

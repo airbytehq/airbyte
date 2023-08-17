@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.formatter;
@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.bigquery.formatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Schema;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -45,6 +45,16 @@ public abstract class BigQueryRecordFormatter {
     // Do nothing by default
     return jsonSchema;
   };
+
+  /***
+   * To write to a JSON type, Standard inserts needs the Json to be an object. For Avro however, it
+   * needs to be a string. The column in the schema remains JSON regardless.
+   *
+   * @return whether to use an object for the formatting of the record.
+   */
+  protected boolean useObjectForData() {
+    return true;
+  }
 
   public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
 

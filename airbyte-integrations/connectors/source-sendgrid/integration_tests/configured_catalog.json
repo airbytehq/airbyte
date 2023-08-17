@@ -140,18 +140,15 @@
       "sync_mode": "incremental",
       "cursor_field": ["created"],
       "destination_sync_mode": "append"
-    },
+    },    
     {
       "stream": {
-        "name": "messages",
+        "name": "unsubscribe_groups",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["last_event_time"]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "cursor_field": ["last_event_time"],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

@@ -1,16 +1,18 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Set, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
+from . import constants
 from .streams import (
     Assignees,
     Branches,
@@ -52,11 +54,20 @@ from .streams import (
 )
 from .utils import read_full_refresh
 
-TOKEN_SEPARATOR = ","
-DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM = 10
-
 
 class SourceGithub(AbstractSource):
+    @staticmethod
+    def _get_and_prepare_repositories_config(config: Mapping[str, Any]) -> Set[str]:
+        """
+        _get_and_prepare_repositories_config gets set of repositories names from config and removes simple errors that user could provide
+        Args:
+            config: Dict representing connector's config
+        Returns:
+            set of provided repositories
+        """
+        config_repositories = set(filter(None, config["repository"].split(" ")))
+        return config_repositories
+
     @staticmethod
     def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
         """
@@ -65,9 +76,7 @@ class SourceGithub(AbstractSource):
             config (dict): Dict representing connector's config
             authenticator(MultipleTokenAuthenticator): authenticator object
         """
-        config_repositories = set(filter(None, config["repository"].split(" ")))
-        if not config_repositories:
-            raise Exception("Field `repository` required to be provided for connect to Github API")
+        config_repositories = SourceGithub._get_and_prepare_repositories_config(config)
 
         repositories = set()
         organizations = set()
@@ -92,7 +101,8 @@ class SourceGithub(AbstractSource):
             stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=unchecked_repos,
-                page_size_for_large_streams=config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
+                # This parameter is deprecated and in future will be used sane default, page_size: 10
+                page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
             )
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
@@ -103,14 +113,29 @@ class SourceGithub(AbstractSource):
         return list(organizations), list(repositories)
 
     @staticmethod
-    def _get_authenticator(config: Dict[str, Any]):
+    def get_access_token(config: Mapping[str, Any]):
         # Before we supported oauth, personal_access_token was called `access_token` and it lived at the
         # config root. So we first check to make sure any backwards compatbility is handled.
-        token = config.get("access_token")
-        if not token:
-            creds = config.get("credentials")
-            token = creds.get("access_token") or creds.get("personal_access_token")
-        tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
+        if "access_token" in config:
+            return constants.PERSONAL_ACCESS_TOKEN_TITLE, config["access_token"]
+
+        credentials = config.get("credentials", {})
+        if "access_token" in credentials:
+            return constants.ACCESS_TOKEN_TITLE, credentials["access_token"]
+        if "personal_access_token" in credentials:
+            return constants.PERSONAL_ACCESS_TOKEN_TITLE, credentials["personal_access_token"]
+        raise Exception("Invalid config format")
+
+    def _get_authenticator(self, config: Mapping[str, Any]):
+        _, token = self.get_access_token(config)
+        tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
+        requests_per_hour = config.get("requests_per_hour")
+        if requests_per_hour:
+            return MultipleTokenAuthenticatorWithRateLimiter(
+                tokens=tokens,
+                auth_method="token",
+                requests_per_hour=requests_per_hour,
+            )
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     @staticmethod
@@ -150,37 +175,72 @@ class SourceGithub(AbstractSource):
 
         return default_branches, branches_to_pull
 
+    def user_friendly_error_message(self, message: str) -> str:
+        user_message = ""
+        if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
+            # 404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100
+            full_repo_name = message.split("https://api.github.com/repos/")[1].split("?")[0]
+            user_message = f'Repo name: "{full_repo_name}" is unknown, "repository" config option should use existing full repo name <organization>/<repository>'
+        elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
+            # 404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100
+            org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
+            user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated'
+        elif "401 Client Error: Unauthorized for url" in message:
+            # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
+            user_message = "Bad credentials, re-authentication or access token renewal is required"
+        return user_message
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = self._get_authenticator(config)
             _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
             if not repositories:
-                return False, "no valid repositories found"
+                return False, "Invalid repositories. Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte"
             return True, None
 
         except Exception as e:
             message = repr(e)
-            if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
-                # HTTPError('404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100')"
-                full_repo_name = message.split("https://api.github.com/repos/")[1]
-                full_repo_name = full_repo_name.split("?")[0]
-                message = f'Unknown repo name: "{full_repo_name}", use existing full repo name <organization>/<repository>'
-            elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
-                # HTTPError('404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100')"
-                org_name = message.split("https://api.github.com/orgs/")[1]
-                org_name = org_name.split("/")[0]
-                message = f'Unknown organization name: "{org_name}"'
-
-            return False, message
+            user_message = self.user_friendly_error_message(message)
+            return False, user_message or message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
-        organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
-        page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
+        try:
+            organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+        except Exception as e:
+            message = repr(e)
+            user_message = self.user_friendly_error_message(message)
+            if user_message:
+                raise AirbyteTracedException(
+                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e
+                )
+            else:
+                raise e
 
-        organization_args = {"authenticator": authenticator, "organizations": organizations}
+        if not any((organizations, repositories)):
+            user_message = (
+                "No streams available. Looks like your config for repositories or organizations is not valid."
+                " Please, check your permissions, names of repositories and organizations."
+            )
+            raise AirbyteTracedException(
+                internal_message="No streams available. Please check permissions",
+                message=user_message,
+                failure_type=FailureType.config_error,
+            )
+
+        # This parameter is deprecated and in future will be used sane default, page_size: 10
+        page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
+        access_token_type, _ = self.get_access_token(config)
+
+        organization_args = {"authenticator": authenticator, "organizations": organizations, "access_token_type": access_token_type}
         organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
-        repository_args = {"authenticator": authenticator, "repositories": repositories, "page_size_for_large_streams": page_size}
+
+        repository_args = {
+            "authenticator": authenticator,
+            "repositories": repositories,
+            "page_size_for_large_streams": page_size,
+            "access_token_type": access_token_type,
+        }
         repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)

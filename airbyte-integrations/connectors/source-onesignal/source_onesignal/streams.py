@@ -1,27 +1,29 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class OnesignalStream(HttpStream, ABC):
-
     url_base = "https://onesignal.com/api/v1/"
 
     primary_key = "id"
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
-        self._auth_token = config["user_auth_key"]
+        self.applications = config.get("applications")
 
         # OneSignal uses epoch timestamp, so we need to convert the start_date
         # config to epoch timestamp too.
@@ -52,6 +54,34 @@ class OnesignalStream(HttpStream, ABC):
             backoff_time = 60
         return backoff_time
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = response.json()
+        yield from data
+
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+        return True, None
+
+
+class AppSlicesStream(OnesignalStream):
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        **kwargs,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.applications
+
+    # default record filter, do nothing
+    def filter_by_state(self, **kwargs) -> bool:
+        return True
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], **kwargs
+    ) -> Iterable[Mapping]:
+        data = response.json().get(self.data_field)
+        for record in data:
+            if self.filter_by_state(stream_state=stream_state, record=record, stream_slice=stream_slice):
+                yield record
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -59,55 +89,14 @@ class OnesignalStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        # OneSignal needs different auth token for each app, so we inject it
-        # right before read records request.
-        # Note: The _session.auth can be replaced when HttpStream provided
-        # some ways to get its request authenticator in the future
-        token = self._auth_token
-        if stream_slice:
-            token = stream_slice.get("rest_api_key", token)
+        token = stream_slice.get("app_api_key")
         self._session.auth = TokenAuthenticator(token, "Basic")
 
         return super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()
-        yield from data
 
-
-class ChildStreamMixin(HttpSubStream):
-
-    is_finished = False
-
-    def stream_slices(
-        self,
-        sync_mode: SyncMode,
-        **kwargs,
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # get stream slices from parent app's stream slice cache, if it is not
-        # set yet, start a full refresh request to get it in full
-        app_slices = self.parent._app_slices
-        if not app_slices:
-            all(super().stream_slices(SyncMode.full_refresh, **kwargs))
-            app_slices = self.parent._app_slices
-        for app in app_slices:
-            # stream sync is finished when it is on the last slice
-            self.is_finished = app["app_id"] == app_slices[-1]["app_id"]
-            yield app
-
-    # default record filter, do nothing
-    def filter_by_state(self, **kwargs) -> bool:
-        return True
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = response.json().get(self.data_field)
-        for record in data:
-            if self.filter_by_state(stream_state=stream_state, record=record):
-                yield record
-
-
-class IncrementalOnesignalStream(ChildStreamMixin, OnesignalStream, ABC):
-
+class IncrementalOnesignalStream(AppSlicesStream, IncrementalMixin, ABC):
+    _state = {}
     cursor_field = "updated_at"
 
     def request_params(
@@ -142,22 +131,22 @@ class IncrementalOnesignalStream(ChildStreamMixin, OnesignalStream, ABC):
         if next_offset < total:
             return {"offset": next_offset}
 
-    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
-        value = 0
-        if record:
-            value = record.get(self.cursor_field, value)
-        return not stream_state or value >= int(stream_state.get(self.cursor_field, "0"))
+    def filter_by_state(
+        self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+    ) -> bool:
+        app_id = stream_slice.get("app_id")
+        record_value = record.get(self.cursor_field, 0)
+        cursor_value = max(stream_state.get(app_id, {}).get(self.cursor_field, 0), record_value)
+        self.state = {app_id: {self.cursor_field: cursor_value}}
+        return not stream_state or stream_state.get(app_id, {}).get(self.cursor_field, 0) < record_value
 
-    def get_updated_state(
-        self,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any],
-    ) -> Mapping[str, Any]:
-        current_stream_state = current_stream_state or {}
-        current_stream_state_date = current_stream_state.get(self.cursor_field, self.start_date)
-        latest_record_date = latest_record.get(self.cursor_field, self.start_date)
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
 
-        return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state.update(value)
 
 
 class Apps(OnesignalStream):
@@ -165,19 +154,8 @@ class Apps(OnesignalStream):
     Docs: https://documentation.onesignal.com/reference/view-apps-apps
     """
 
-    # stream slices cache for child streams
-    _app_slices = []
-
     def path(self, **kwargs) -> str:
         return self.name
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # parse response and save to stream slice cache
-        self._app_slices = []
-        for app in super().parse_response(response, **kwargs):
-            slice = {"app_id": app["id"], "rest_api_key": app["basic_auth_key"]}
-            self._app_slices.append(slice)
-            yield app
 
 
 class Devices(IncrementalOnesignalStream):
@@ -185,7 +163,7 @@ class Devices(IncrementalOnesignalStream):
     Docs: https://documentation.onesignal.com/reference/view-devices
     """
 
-    cursor_field = "created_at"
+    cursor_field = "last_active"
     data_field = "players"
     page_size = 300  # page size limit set by OneSignal
 
@@ -206,7 +184,7 @@ class Notifications(IncrementalOnesignalStream):
         return self.name
 
 
-class Outcomes(ChildStreamMixin, OnesignalStream):
+class Outcomes(AppSlicesStream):
     """
     Docs: https://documentation.onesignal.com/reference/view-outcomes
     """

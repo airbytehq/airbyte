@@ -1,0 +1,29 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA",
+        "json_schema": {
+          "title": "FBA Monthly Inventory History Report",
+          "description": "",
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "month": { "type": ["null", "string"] },
+            "fnsku": { "type": ["null", "string"] },
+            "sku": { "type": ["null", "string"] },
+            "product-name": { "type": ["null", "string"] },
+            "average-quantity": { "type": ["null", "string"] },
+            "end-quantity": { "type": ["null", "string"] },
+            "fulfillment-center-id": { "type": ["null", "string"] },
+            "detailed-disposition": { "type": ["null", "string"] },
+            "country": { "type": ["null", "string"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

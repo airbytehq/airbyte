@@ -1,6 +1,6 @@
 # Spree Commerce
 
-[Spree Commerce](https://spreecommerce.org/) is an open source eCommerce platform for global brands.
+[Spree Commerce](https://spreecommerce.org) is an open source eCommerce platform for global brands.
 
 ## Sync overview
 

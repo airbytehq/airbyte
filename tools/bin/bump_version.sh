@@ -9,17 +9,39 @@ if ! test "$(tty)" == "not a tty"; then
 fi
 
 set -o xtrace
-PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+REPO=$(git ls-remote --get-url | xargs basename -s .git)
+echo $REPO
+if [ "$REPO" == "airbyte" ]; then
+  PREV_VERSION=$(grep -w 'VERSION=[0-9]\+\(\.[0-9]\+\)\+' run-ab-platform.sh | cut -d"=" -f2)
+  echo "Bumping version for Airbyte"
+else
+  PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+  echo "Bumping version for Airbyte Platform"
+fi
+
 GIT_REVISION=$(git rev-parse HEAD)
 
 pip install bumpversion
-bumpversion "$PART_TO_BUMP" # PART_TO_BUMP comes from the Github action (patch,major,minor)
+if [ -z "${OVERRIDE_VERSION:-}" ]; then
+  # No override, so bump the version normally
+  bumpversion "$PART_TO_BUMP"
+else
+  # We have an override version, so use it directly
+  bumpversion --current-version $PREV_VERSION --new-version $OVERRIDE_VERSION "$PART_TO_BUMP"
+fi
 
-NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+if [ "$REPO" == "airbyte" ]; then
+  NEW_VERSION=$(grep -w 'VERSION=[0-9]\+\(\.[0-9]\+\)\+' run-ab-platform.sh | cut -d"=" -f2)
+  echo "Bumped version for Airbyte"
+else
+  NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+  echo "Bumped version for Airbyte Platform"
+fi
+
 export VERSION=$NEW_VERSION # for safety, since lib.sh exports a VERSION that is now outdated
 
 set +o xtrace
 echo "Bumped version from ${PREV_VERSION} to ${NEW_VERSION}"
-echo ::set-output name=PREV_VERSION::${PREV_VERSION}
-echo ::set-output name=NEW_VERSION::${NEW_VERSION}
-echo ::set-output name=GIT_REVISION::${GIT_REVISION}
+echo "PREV_VERSION=${PREV_VERSION}" >> $GITHUB_OUTPUT
+echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_OUTPUT
+echo "GIT_REVISION=${GIT_REVISION}" >> $GITHUB_OUTPUT

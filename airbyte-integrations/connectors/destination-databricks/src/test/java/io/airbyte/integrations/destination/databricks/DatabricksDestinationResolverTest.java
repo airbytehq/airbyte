@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -24,30 +24,6 @@ public class DatabricksDestinationResolverTest {
   private static final ObjectMapper mapper = MoreMappers.initMapper();
 
   @Test
-  @DisplayName("When given S3 credentials should use S3")
-  public void useS3Test() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("s3_bucket_name", "fake-bucket");
-
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("data_source", stubLoadingMethod);
-
-    assertTrue(DatabricksDestinationResolver.isS3Copy(stubConfig));
-    assertFalse(DatabricksDestinationResolver.isAzureBlobCopy(stubConfig));
-  }
-
-  @Test
-  @DisplayName("When given Azure credentials should use Azure")
-  public void useAzureTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("azure_blob_storage_account_name", "fake-account");
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("data_source", stubLoadingMethod);
-    assertFalse(DatabricksDestinationResolver.isS3Copy(stubConfig));
-    assertTrue(DatabricksDestinationResolver.isAzureBlobCopy(stubConfig));
-  }
-
-  @Test
   @DisplayName("Storage credentials required")
   public void storageCredentialsRequiredTest() {
     final var stubLoadingMethod = mapper.createObjectNode();
@@ -66,7 +42,7 @@ public class DatabricksDestinationResolverTest {
 
   private static Stream<Arguments> destinationTypeToConfig() {
     return Stream.of(
-        arguments("config.json", DatabricksStorageType.S3),
+        arguments("config.json", DatabricksStorageType.S3_STORAGE),
         arguments("azure_config.json", DatabricksStorageType.AZURE_BLOB_STORAGE));
   }
 

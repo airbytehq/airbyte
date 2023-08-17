@@ -1,0 +1,47 @@
+{
+  "properties": {
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "chat_service_sid": {
+      "type": ["null", "string"]
+    },
+    "messaging_service_sid": {
+      "type": ["null", "string"]
+    },
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "unique_name": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "timers": {
+      "type": ["null", "object"]
+    },
+    "bindings": {
+      "type": ["null", "object"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": "object",
+  "additionalProperties": true
+}

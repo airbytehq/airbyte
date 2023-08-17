@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import click
@@ -92,9 +92,8 @@ class TestTelemetryClient:
     ):
         extra_info_name = "foo"
         mocker.patch.object(telemetry.os, "getenv", mocker.Mock(return_value=airbyte_role))
-        mocker.patch.object(telemetry.uuid, "uuid1", mocker.Mock(return_value="MY_UUID"))
         expected_user_id = workspace_id if workspace_id is not None and anonymous_data_collection is False else None
-        expected_anonymous_id = "MY_UUID" if expected_user_id is None else None
+        expected_anonymous_id = "anonymous" if expected_user_id is None else None
         mock_ctx = mocker.Mock(
             obj={
                 "OCTAVIA_VERSION": octavia_version,

@@ -47,6 +47,30 @@
       "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "survey_collectors",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "collectors",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
     }
   ]
 }

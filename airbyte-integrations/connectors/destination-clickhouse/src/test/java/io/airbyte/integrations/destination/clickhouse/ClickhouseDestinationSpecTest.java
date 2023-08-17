@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -14,7 +14,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.io.IOException;
@@ -88,6 +88,27 @@ public class ClickhouseDestinationSpecTest {
   void testJdbcAdditionalProperty() throws Exception {
     final ConnectorSpecification spec = new ClickhouseDestination().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+  }
+
+  @Test
+  void testHostMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("host");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("port");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testUsernameMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("username");
+    assertFalse(validator.test(schema, config));
   }
 
 }

@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -78,7 +78,7 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
         CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
-    this.cdcStateManager = new CdcStateManager(dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog));
+    this.cdcStateManager = new CdcStateManager(dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog), null);
     this.isCdc = dbState.getCdc();
     if (dbState.getCdc() == null) {
       this.isCdc = false;
@@ -91,12 +91,17 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
   }
 
   @Override
+  public List<AirbyteStateMessage> getRawStateMessages() {
+    throw new UnsupportedOperationException("Raw state retrieval not supported by global state manager.");
+  }
+
+  @Override
   public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
     final DbState dbState = StateGeneratorUtils.generateDbState(getPairToCursorInfoMap())
         .withCdc(isCdc)
         .withCdcState(getCdcStateManager().getCdcState());
 
-    LOGGER.info("Generated legacy state for {} streams", dbState.getStreams().size());
+    LOGGER.debug("Generated legacy state for {} streams", dbState.getStreams().size());
     return new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
   }
 

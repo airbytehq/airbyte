@@ -1,62 +1,99 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+
+import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
-import java.nio.file.Files;
+import io.airbyte.integrations.base.DestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
+import java.util.HashSet;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcceptanceTest {
+@TestInstance(PER_CLASS)
+public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestinationAcceptanceTest {
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  private AmazonS3 s3Client;
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
+  /**
+   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This function will be called before EACH test.
+   *
+   * @param testEnv      - information about the test environment.
+   * @param TEST_SCHEMAS
+   * @throws Exception - can throw any exception, test framework will handle.
+   * @see DestinationAcceptanceTest#setUpInternal()
+   */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
-    if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
-              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
-    }
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+    // use secrets file with GCS staging config
+    secretsFile = Path.of("secrets/credentials-gcs-staging.json");
+    setUpBigQuery();
 
-    final String fullConfigFromSecretFileAsString = Files.readString(CREDENTIALS_PATH);
+    DestinationConfig.initialize(config);
 
-    final JsonNode fullConfigFromSecretFileJson = Jsons.deserialize(fullConfigFromSecretFileAsString);
-    final JsonNode bigqueryConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final JsonNode gcsConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.GCS_CONFIG);
+    // the setup steps below are specific to GCS staging use case
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
+    this.s3Client = gcsDestinationConfig.getS3Client();
+  }
 
-    final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
-    final String datasetLocation = "US";
+  /**
+   * Removes data from bigquery and GCS This function will be called after EACH test
+   *
+   * @param testEnv      - information about the test environment.
+   * @param TEST_SCHEMAS
+   * @throws Exception - can throw any exception, test framework will handle.
+   * @see DestinationAcceptanceTest#tearDownInternal()
+   */
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+    tearDownBigQuery();
+    tearDownGcs();
+  }
 
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+  protected void tearDownGcs() {
+    BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
+  }
 
-    final JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
-    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CREDENTIAL_TYPE, gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
-        .build());
+  /*
+   * FileBuffer Default Tests
+   */
+  @Test
+  public void testGetFileBufferDefault() {
+    final BigQueryDestination destination = new BigQueryDestination();
+    assertEquals(destination.getNumberOfFileBuffers(config),
+        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
 
-    final JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
-        .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
-        .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
-        .put(BigQueryConsts.CREDENTIAL, credential)
-        .build());
+  @Test
+  public void testGetFileBufferMaxLimited() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    final BigQueryDestination destination = new BigQueryDestination();
+    assertEquals(FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER, destination.getNumberOfFileBuffers(defaultConfig));
+  }
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, bigqueryConfigFromSecretFile.toString())
-        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
-        .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
-        .build());
-
-    setupBigQuery(bigqueryConfigFromSecretFile);
+  @Test
+  public void testGetMinimumFileBufferCount() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
+    final BigQueryDestination destination = new BigQueryDestination();
+    // User cannot set number of file counts below the default file buffer count, which is existing
+    // behavior
+    assertEquals(FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER, destination.getNumberOfFileBuffers(defaultConfig));
   }
 
 }

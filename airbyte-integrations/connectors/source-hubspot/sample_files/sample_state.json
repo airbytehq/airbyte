@@ -17,13 +17,13 @@
   "engagements": {
     "lastUpdated": 1614038400000
   },
+  "goals": {
+    "updatedAt": "2021-02-23T00:00:00Z"
+  },
   "line_items": {
     "updatedAt": "2021-02-23T00:00:00Z"
   },
   "products": {
-    "updatedAt": "2021-02-23T00:00:00Z"
-  },
-  "quotes": {
     "updatedAt": "2021-02-23T00:00:00Z"
   },
   "subscription_changes": {
@@ -31,5 +31,8 @@
   },
   "tickets": {
     "updatedAt": "2021-02-23T00:00:00Z"
+  },
+  "forms": {
+    "updatedAt": ""
   }
 }

@@ -1,0 +1,24 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 59c5501b-9f95-411e-9269-7143c939adbd
+  dockerImageTag: 0.1.10
+  dockerRepository: airbyte/source-bigcommerce
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bigcommerce
+  githubIssueLabel: source-bigcommerce
+  icon: bigcommerce.svg
+  license: MIT
+  name: BigCommerce
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

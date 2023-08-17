@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db;
@@ -17,9 +17,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresUtils {
 
   public static PgLsn getLsn(final JdbcDatabase database) throws SQLException {
-    // pg version 10+.
+    // pg version >= 10. For versions < 10 use query select * from pg_current_xlog_location()
     final List<JsonNode> jsonNodes = database
-        .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("SELECT pg_current_wal_lsn()"),
+        .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("select * from pg_current_wal_lsn()"),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
 
     Preconditions.checkState(jsonNodes.size() == 1);
@@ -51,7 +51,7 @@ public class PostgresUtils {
     container.execInContainer("su", "-c",
         "echo \"hostssl    all    all    127.0.0.1/32    cert clientcert=verify-full\" >> /var/lib/postgresql/data/pg_hba.conf");
 
-    var caCert = container.execInContainer("su", "-c", "cat ca.crt").getStdout().trim();
+    final var caCert = container.execInContainer("su", "-c", "cat ca.crt").getStdout().trim();
 
     container.execInContainer("su", "-c", "openssl ecparam -name prime256v1 -genkey -noout -out client.key");
     container.execInContainer("su", "-c", "openssl req -new -sha256 -key client.key -out client.csr -subj \"/CN=postgres\"");
@@ -65,8 +65,8 @@ public class PostgresUtils {
 
     container.execInContainer("su", "-c", "psql -U test -c \"SELECT pg_reload_conf();\"");
 
-    var clientKey = container.execInContainer("su", "-c", "cat client.key").getStdout().trim();
-    var clientCert = container.execInContainer("su", "-c", "cat client.crt").getStdout().trim();
+    final var clientKey = container.execInContainer("su", "-c", "cat client.key").getStdout().trim();
+    final var clientCert = container.execInContainer("su", "-c", "cat client.crt").getStdout().trim();
     return new Certificate(caCert, clientCert, clientKey);
   }
 

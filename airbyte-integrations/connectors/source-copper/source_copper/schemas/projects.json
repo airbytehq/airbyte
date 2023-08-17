@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "related_resource": {
+      "type": ["string", "null"]
+    },
+    "assignee_id": {
+      "type": "integer"
+    },
+    "status": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    },
+    "date_created": {
+      "type": "integer"
+    },
+    "date_modified": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -16,25 +17,32 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.destination.record_buffer.BufferFlushType;
+import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +52,7 @@ public class BufferedStreamConsumerTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = STREAM_NAME + 2;
+  private static final int PERIODIC_BUFFER_FREQUENCY = 5;
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
@@ -64,18 +73,18 @@ public class BufferedStreamConsumerTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))));
 
   private BufferedStreamConsumer consumer;
-  private VoidCallable onStart;
+  private OnStartFunction onStart;
   private RecordWriter<AirbyteRecordMessage> recordWriter;
-  private CheckedConsumer<Boolean, Exception> onClose;
+  private OnCloseFunction onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws Exception {
-    onStart = mock(VoidCallable.class);
+    onStart = mock(OnStartFunction.class);
     recordWriter = mock(RecordWriter.class);
-    onClose = mock(CheckedConsumer.class);
+    onClose = mock(OnCloseFunction.class);
     isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
     consumer = new BufferedStreamConsumer(
@@ -199,7 +208,7 @@ public class BufferedStreamConsumerTest {
     assertThrows(IllegalStateException.class, () -> consumer.accept(expectedRecordsBatch3.get(0)));
     consumer.close();
 
-    verifyStartAndClose();
+    verifyStartAndCloseFailure();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
@@ -219,8 +228,7 @@ public class BufferedStreamConsumerTest {
     assertThrows(IllegalStateException.class, () -> consumer.accept(expectedRecordsBatch3.get(0)));
     consumer.close();
 
-    verify(onStart).call();
-    verify(onClose).accept(true);
+    verifyStartAndCloseFailure();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
@@ -244,7 +252,7 @@ public class BufferedStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
-    verifyNoInteractions(outputRecordCollector);
+    verify(outputRecordCollector).accept(STATE_MESSAGE1);
   }
 
   @Test
@@ -294,9 +302,218 @@ public class BufferedStreamConsumerTest {
     verify(outputRecordCollector, times(1)).accept(STATE_MESSAGE2);
   }
 
+  // Periodic Buffer Flush Tests
+  @Test
+  void testSlowStreamReturnsState() throws Exception {
+    // generate records less than the default maxQueueSizeInBytes to confirm periodic flushing occurs
+    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(500L);
+    final List<AirbyteMessage> expectedRecordsStream1Batch2 = generateRecords(200L);
+
+    // Overrides flush frequency for testing purposes to 5 seconds
+    final BufferedStreamConsumer flushConsumer = getConsumerWithFlushFrequency();
+    flushConsumer.start();
+    consumeRecords(flushConsumer, expectedRecordsStream1);
+    flushConsumer.accept(STATE_MESSAGE1);
+    // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
+    TimeUnit.SECONDS.sleep(PERIODIC_BUFFER_FREQUENCY);
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch2);
+    flushConsumer.close();
+
+    verifyStartAndClose();
+    // expects the records to be grouped because periodicBufferFlush occurs at the end of acceptTracked
+    verifyRecords(STREAM_NAME, SCHEMA_NAME,
+        Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()));
+    verify(outputRecordCollector).accept(STATE_MESSAGE1);
+  }
+
+  @Test
+  void testSlowStreamReturnsMultipleStates() throws Exception {
+    // generate records less than the default maxQueueSizeInBytes to confirm periodic flushing occurs
+    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(500L);
+    final List<AirbyteMessage> expectedRecordsStream1Batch2 = generateRecords(200L);
+    // creates records equal to size that triggers buffer flush
+    final List<AirbyteMessage> expectedRecordsStream1Batch3 = generateRecords(1_000L);
+
+    // Overrides flush frequency for testing purposes to 5 seconds
+    final BufferedStreamConsumer flushConsumer = getConsumerWithFlushFrequency();
+    flushConsumer.start();
+    consumeRecords(flushConsumer, expectedRecordsStream1);
+    flushConsumer.accept(STATE_MESSAGE1);
+    // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
+    TimeUnit.SECONDS.sleep(PERIODIC_BUFFER_FREQUENCY);
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch2);
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch3);
+    flushConsumer.accept(STATE_MESSAGE2);
+    flushConsumer.close();
+
+    verifyStartAndClose();
+    // expects the records to be grouped because periodicBufferFlush occurs at the end of acceptTracked
+    verifyRecords(STREAM_NAME, SCHEMA_NAME,
+        Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()));
+    verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1Batch3);
+    // expects two STATE messages returned since one will be flushed after periodic flushing occurs
+    // and the other after buffer has been filled
+    verify(outputRecordCollector).accept(STATE_MESSAGE1);
+    verify(outputRecordCollector).accept(STATE_MESSAGE2);
+  }
+
+  /**
+   * Verify that if we ack a state message for stream2 while stream1 has unflushed records+state, that
+   * we do _not_ ack stream1's state message.
+   */
+  @Test
+  void testStreamTail() throws Exception {
+    // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
+    final BufferingStrategy strategy = mock(BufferingStrategy.class);
+    // The first two records that we push will not trigger any flushes, but the third record _will_
+    // trigger a flush
+    when(strategy.addRecord(any(), any())).thenReturn(
+        Optional.empty(),
+        Optional.empty(),
+        Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM));
+    consumer = new BufferedStreamConsumer(
+        outputRecordCollector,
+        onStart,
+        strategy,
+        onClose,
+        CATALOG,
+        isValidRecord,
+        // Never periodic flush
+        Duration.ofHours(24),
+        null);
+    final List<AirbyteMessage> expectedRecordsStream1 = List.of(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)));
+    final List<AirbyteMessage> expectedRecordsStream2 = List.of(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME2)
+            .withNamespace(SCHEMA_NAME)));
+
+    final AirbyteMessage state1 = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()
+                .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME).withNamespace(SCHEMA_NAME))
+                .withStreamState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1)))));
+    final AirbyteMessage state2 = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()
+                .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME2).withNamespace(SCHEMA_NAME))
+                .withStreamState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2)))));
+
+    consumer.start();
+    consumeRecords(consumer, expectedRecordsStream1);
+    consumer.accept(state1);
+    // At this point, we have not yet flushed anything
+    consumeRecords(consumer, expectedRecordsStream2);
+    consumer.accept(state2);
+    consumeRecords(consumer, expectedRecordsStream2);
+    // Now we have flushed stream 2, but not stream 1
+    // Verify that we have only acked stream 2's state.
+    verify(outputRecordCollector).accept(state2);
+    verify(outputRecordCollector, never()).accept(state1);
+
+    consumer.close();
+    // Now we've closed the consumer, which flushes everything.
+    // Verify that we ack stream 1's pending state.
+    verify(outputRecordCollector).accept(state1);
+  }
+
+  /**
+   * Same idea as {@link #testStreamTail()} but with global state. We shouldn't emit any state
+   * messages until we close the consumer.
+   */
+  @Test
+  void testStreamTailGlobalState() throws Exception {
+    // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
+    final BufferingStrategy strategy = mock(BufferingStrategy.class);
+    // The first two records that we push will not trigger any flushes, but the third record _will_
+    // trigger a flush
+    when(strategy.addRecord(any(), any())).thenReturn(
+        Optional.empty(),
+        Optional.empty(),
+        Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM));
+    consumer = new BufferedStreamConsumer(
+        outputRecordCollector,
+        onStart,
+        strategy,
+        onClose,
+        CATALOG,
+        isValidRecord,
+        // Never periodic flush
+        Duration.ofHours(24),
+        null);
+    final List<AirbyteMessage> expectedRecordsStream1 = List.of(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)));
+    final List<AirbyteMessage> expectedRecordsStream2 = List.of(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME2)
+            .withNamespace(SCHEMA_NAME)));
+
+    final AirbyteMessage state1 = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+            .withGlobal(new AirbyteGlobalState()
+                .withSharedState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1)))));
+    final AirbyteMessage state2 = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+            .withGlobal(new AirbyteGlobalState()
+                .withSharedState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2)))));
+
+    consumer.start();
+    consumeRecords(consumer, expectedRecordsStream1);
+    consumer.accept(state1);
+    // At this point, we have not yet flushed anything
+    consumeRecords(consumer, expectedRecordsStream2);
+    consumer.accept(state2);
+    consumeRecords(consumer, expectedRecordsStream2);
+    // Now we have flushed stream 2, but not stream 1
+    // We should not have acked any state yet, because we haven't written stream1's records yet.
+    verify(outputRecordCollector, never()).accept(any());
+
+    consumer.close();
+    // Now we've closed the consumer, which flushes everything.
+    // Verify that we ack the final state.
+    // Note that we discard state1 entirely - this is OK. As long as we ack the last state message,
+    // the source can correctly resume from that point.
+    verify(outputRecordCollector).accept(state2);
+  }
+
+  private BufferedStreamConsumer getConsumerWithFlushFrequency() {
+    final BufferedStreamConsumer flushFrequencyConsumer = new BufferedStreamConsumer(
+        outputRecordCollector,
+        onStart,
+        new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
+        onClose,
+        CATALOG,
+        isValidRecord,
+        Duration.ofSeconds(PERIODIC_BUFFER_FREQUENCY),
+        null);
+    return flushFrequencyConsumer;
+  }
+
   private void verifyStartAndClose() throws Exception {
     verify(onStart).call();
     verify(onClose).accept(false);
+  }
+
+  /** Indicates that a failure occurred while consuming AirbyteMessages */
+  private void verifyStartAndCloseFailure() throws Exception {
+    verify(onStart).call();
+    verify(onClose).accept(true);
   }
 
   private static void consumeRecords(final BufferedStreamConsumer consumer, final Collection<AirbyteMessage> records) {
@@ -309,6 +526,7 @@ public class BufferedStreamConsumerTest {
     });
   }
 
+  // NOTE: Generates records at chunks of 160 bytes
   private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
     final List<AirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;

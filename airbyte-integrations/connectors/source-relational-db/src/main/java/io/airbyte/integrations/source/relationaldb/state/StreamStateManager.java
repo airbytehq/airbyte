@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
@@ -10,13 +10,13 @@ import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUt
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
+  private final List<AirbyteStateMessage> rawAirbyteStateMessages;
 
   /**
    * Constructs a new {@link StreamStateManager} that is seeded with the provided
@@ -50,11 +51,17 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
         CURSOR_FIELD_FUNCTION,
         CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
+    this.rawAirbyteStateMessages = airbyteStateMessages;
   }
 
   @Override
   public CdcStateManager getCdcStateManager() {
     throw new UnsupportedOperationException("CDC state management not supported by stream state manager.");
+  }
+
+  @Override
+  public List<AirbyteStateMessage> getRawStateMessages() {
+    return rawAirbyteStateMessages;
   }
 
   @Override

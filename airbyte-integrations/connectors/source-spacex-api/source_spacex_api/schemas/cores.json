@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "cores": {
+      "title": "cores",
+      "type": "object",
+      "properties": {
+        "serial": {
+          "type": "string"
+        },
+        "block": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "unknown",
+            "expended",
+            "lost",
+            "retired"
+          ]
+        },
+        "reuse_count": {
+          "type": "number",
+          "default": 0
+        },
+        "rtls_attempts": {
+          "type": "number",
+          "default": 0
+        },
+        "rtls_landings": {
+          "type": "number",
+          "default": 0
+        },
+        "asds_attempts": {
+          "type": "number",
+          "default": 0
+        },
+        "asds_landings": {
+          "type": "number",
+          "default": 0
+        },
+        "last_update": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "launches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["serial", "status"]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$"
+    }
+  }
+}

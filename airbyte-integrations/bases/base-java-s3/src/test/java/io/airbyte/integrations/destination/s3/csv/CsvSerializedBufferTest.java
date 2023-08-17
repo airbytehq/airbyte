@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
@@ -10,17 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.InMemoryBuffer;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class CsvSerializedBufferTest {
@@ -54,6 +56,11 @@ public class CsvSerializedBufferTest {
   private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
   private static final String CSV_FILE_EXTENSION = ".csv";
   private static final CSVFormat csvFormat = CSVFormat.newFormat(',');
+
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
+  }
 
   @Test
   public void testUncompressedDefaultCsvFormatWriter() throws Exception {

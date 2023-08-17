@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": ["null", "string"],
+      "description": "Article's URL."
+    },
+    "adx_keywords": {
+      "type": ["null", "string"],
+      "description": "Semicolon separated list of keywords."
+    },
+    "subsection": {
+      "type": ["null", "string"],
+      "description": "Article's subsection (e.g. Politics). Can be empty string."
+    },
+    "column": {
+      "type": ["null", "string"],
+      "description": "Deprecated. Set to null."
+    },
+    "eta_id": {
+      "type": ["null", "integer"],
+      "description": "Deprecated. Set to 0."
+    },
+    "section": {
+      "type": ["null", "string"],
+      "description": "Article's section (e.g. Sports)."
+    },
+    "id": {
+      "type": ["null", "integer"],
+      "description": "Asset ID number (e.g. 100000007772696)."
+    },
+    "asset_id": {
+      "type": ["null", "integer"],
+      "description": "Asset ID number (e.g. 100000007772696)."
+    },
+    "nytdsection": {
+      "type": ["null", "string"],
+      "description": "Article's section (e.g. sports)."
+    },
+    "byline": {
+      "type": ["null", "string"],
+      "description": "Article's byline (e.g. By Thomas L. Friedman)."
+    },
+    "type": {
+      "type": ["null", "string"],
+      "description": "Asset type (e.g. Article, Interactive, ...)."
+    },
+    "title": {
+      "type": ["null", "string"],
+      "description": "Article's headline (e.g. When the Cellos Play, the Cows Come Home)."
+    },
+    "abstract": {
+      "type": ["null", "string"],
+      "description": "Brief summary of the article."
+    },
+    "published_date": {
+      "type": ["null", "string"],
+      "description": "When the article was published on the web (e.g. 2021-04-19)."
+    },
+    "source": {
+      "type": ["null", "string"],
+      "description": "Publisher (e.g. New York Times)."
+    },
+    "updated": {
+      "type": ["null", "string"],
+      "description": "When the article was last updated (e.g. 2021-05-12 06:32:03)."
+    },
+    "des_facet": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "description": "Array of description facets (e.g. Quarantine (Life and Culture))."
+    },
+    "org_facet": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "description": "Array of organization facets (e.g. Sullivan Street Bakery)."
+    },
+    "per_facet": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "description": "Array of person facets (e.g. Bittman, Mark)."
+    },
+    "geo_facet": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "description": "Array of geographic facets (e.g. Canada)."
+    },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": ["null", "string"],
+            "description": "Asset type (e.g. image)."
+          },
+          "subtype": {
+            "type": ["null", "string"],
+            "description": "Asset subtype (e.g. photo)."
+          },
+          "caption": {
+            "type": ["null", "string"],
+            "description": "Media caption."
+          },
+          "copyright": {
+            "type": ["null", "string"],
+            "description": "Media credit."
+          },
+          "approved_for_syndication": {
+            "type": ["null", "integer"],
+            "description": "Whether media is approved for syndication."
+          },
+          "media-metadata": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": ["null", "string"],
+                  "description": "Image's URL."
+                },
+                "format": {
+                  "type": ["null", "string"],
+                  "description": "Image's crop name."
+                },
+                "height": {
+                  "type": ["null", "integer"],
+                  "description": "Image's height (e.g. 293)."
+                },
+                "width": {
+                  "type": ["null", "integer"],
+                  "description": "Image's width (e.g. 440)."
+                }
+              }
+            },
+            "description": "Media metadata (url, width, height, ...)."
+          }
+        }
+      },
+      "description": "Array of images."
+    },
+    "uri": {
+      "type": ["null", "string"],
+      "description": "An article's globally unique identifier."
+    }
+  }
+}

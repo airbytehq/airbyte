@@ -1,17 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 
 @dataclass
-class RecordTransformation(JsonSchemaMixin):
+class RecordTransformation:
     """
     Implementations of this class define transformations that can be applied to records of a stream.
     """
@@ -19,11 +18,11 @@ class RecordTransformation(JsonSchemaMixin):
     @abstractmethod
     def transform(
         self,
-        record: Record,
+        record: Mapping[str, Any],
         config: Optional[Config] = None,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
-    ) -> Record:
+    ) -> Mapping[str, Any]:
         """
         Transform a record by adding, deleting, or mutating fields.
 
@@ -34,5 +33,5 @@ class RecordTransformation(JsonSchemaMixin):
         :return: The transformed record
         """
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return other.__dict__ == self.__dict__

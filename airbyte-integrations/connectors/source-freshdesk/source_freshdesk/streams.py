@@ -1,8 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 import re
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -11,11 +11,15 @@ from urllib import parse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
+from source_freshdesk.availability_strategy import FreshdeskAvailabilityStrategy
 from source_freshdesk.utils import CallCredit
+
+logger = logging.getLogger("airbyte")
 
 
 class FreshdeskStream(HttpStream, ABC):
@@ -44,21 +48,15 @@ class FreshdeskStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2")
+        return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2/")
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return FreshdeskAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
             return float(response.headers.get("Retry-After", 0))
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if isinstance(response.json(), dict):
-            if response.status_code == requests.codes.FORBIDDEN and response.json().get("code") == "require_feature":
-                self.forbidden_stream = True
-                setattr(self, "raise_on_http_errors", False)
-                self.logger.warn(f"Stream `{self.name}` is not available. {response.json().get('message')}")
-            else:
-                return super().should_retry(response)
-        return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         link_header = response.headers.get("Link")
@@ -97,9 +95,19 @@ class FreshdeskStream(HttpStream, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         )
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()
-        return {} if self.forbidden_stream else data if data else []
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
+        if self.forbidden_stream:
+            return []
+        return response.json() or []
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.FORBIDDEN:
+            # Issue: https://github.com/airbytehq/airbyte/issues/26717
+            # we should skip the stream if subscription level had changed during sync
+            self.forbidden_stream = True
+            setattr(self, "raise_on_http_errors", False)
+            logger.warning(f"Stream `{self.name}` is not available. {response.text}")
+        return super().should_retry(response)
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
@@ -152,6 +160,11 @@ class Agents(FreshdeskStream):
 class BusinessHours(FreshdeskStream):
     def path(self, **kwargs) -> str:
         return "business_hours"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
+        for record in super().parse_response(response, **kwargs):
+            record["working_hours"] = record.pop("business_hours", None)
+            yield record
 
 
 class CannedResponseFolders(FreshdeskStream):

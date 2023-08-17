@@ -20,7 +20,7 @@
               "object": { "type": "string" },
               "name": { "type": "string" },
               "sku": { "type": "string" },
-              "price": { "type": "integer" },
+              "price": { "type": "number" },
               "quantity": { "type": "integer" }
             }
           }

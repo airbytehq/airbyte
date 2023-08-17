@@ -1,4 +1,4 @@
-# ConvertKit
+# Omnisend
 
 ## Sync overview
 

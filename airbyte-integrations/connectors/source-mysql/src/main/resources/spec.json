@@ -39,7 +39,8 @@
         "title": "Password",
         "type": "string",
         "airbyte_secret": true,
-        "order": 4
+        "order": 4,
+        "always_show": true
       },
       "jdbc_url_params": {
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-jdbc-url-format.html\">JDBC URL parameters</a>.",
@@ -56,48 +57,42 @@
       },
       "ssl_mode": {
         "title": "SSL modes",
-        "description": "SSL connection modes. <li><b>preferred</b> - Automatically attempt SSL connection. If the MySQL server does not support SSL, continue with a regular connection.</li><li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li><li><b>verify-ca</b> - Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.</li><li><b>Verify Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
+        "description": "SSL connection modes. Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
         "oneOf": [
           {
             "title": "preferred",
-            "description": "Preferred SSL mode.",
+            "description": "Automatically attempt SSL connection. If the MySQL server does not support SSL, continue with a regular connection.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "preferred",
-                "enum": ["preferred"],
-                "default": "preferred",
                 "order": 0
               }
             }
           },
           {
             "title": "required",
-            "description": "Require SSL mode.",
+            "description": "Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "required",
-                "enum": ["required"],
-                "default": "required",
                 "order": 0
               }
             }
           },
           {
             "title": "Verify CA",
-            "description": "Verify CA SSL mode.",
+            "description": "Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "verify_ca",
-                "enum": ["verify_ca"],
-                "default": "verify_ca",
                 "order": 0
               },
               "ca_certificate": {
@@ -114,7 +109,8 @@
                 "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 2
+                "order": 2,
+                "always_show": true
               },
               "client_key": {
                 "type": "string",
@@ -122,7 +118,8 @@
                 "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 3
+                "order": 3,
+                "always_show": true
               },
               "client_key_password": {
                 "type": "string",
@@ -135,14 +132,12 @@
           },
           {
             "title": "Verify Identity",
-            "description": "Verify-full SSL mode.",
+            "description": "Always connect with SSL. Verify both CA and Hostname.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "verify_identity",
-                "enum": ["verify_identity"],
-                "default": "verify_identity",
                 "order": 0
               },
               "ca_certificate": {
@@ -159,7 +154,8 @@
                 "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 2
+                "order": 2,
+                "always_show": true
               },
               "client_key": {
                 "type": "string",
@@ -167,7 +163,8 @@
                 "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 3
+                "order": 3,
+                "always_show": true
               },
               "client_key_password": {
                 "type": "string",
@@ -182,34 +179,19 @@
       },
       "replication_method": {
         "type": "object",
-        "title": "Replication Method",
-        "description": "Replication method to use for extracting data from the database.",
+        "title": "Update Method",
+        "description": "Configures how data is extracted from the database.",
         "order": 8,
+        "default": "CDC",
         "oneOf": [
           {
-            "title": "Standard",
-            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "STANDARD",
-                "enum": ["STANDARD"],
-                "default": "STANDARD",
-                "order": 0
-              }
-            }
-          },
-          {
-            "title": "Logical Replication (CDC)",
-            "description": "CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "title": "Read Changes using Binary Log (CDC)",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the MySQL <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">binary log</a>. This must be enabled on your database.",
             "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
                 "const": "CDC",
-                "enum": ["CDC"],
-                "default": "CDC",
                 "order": 0
               },
               "initial_waiting_seconds": {
@@ -219,13 +201,27 @@
                 "default": 300,
                 "min": 120,
                 "max": 1200,
-                "order": 1
+                "order": 1,
+                "always_show": true
               },
               "server_time_zone": {
                 "type": "string",
                 "title": "Configured server timezone for the MySQL source (Advanced)",
                 "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
-                "order": 2
+                "order": 2,
+                "always_show": true
+              }
+            }
+          },
+          {
+            "title": "Scan Changes with User Defined Cursor",
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "STANDARD",
+                "order": 0
               }
             }
           }

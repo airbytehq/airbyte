@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
@@ -15,6 +15,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestD
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
@@ -48,7 +49,7 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     jsonConfig = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
@@ -57,7 +58,7 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     redisCache.flushAll();
   }
 
@@ -73,7 +74,7 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
         .put("port", redisContainer.getExposedPorts().get(0))
         .put("username", jsonConfig.get("username"))
         .put("password", jsonConfig.get("password"))
-        .put("cache_type", jsonConfig.get("cache_type")));
+        .put("cache_type", jsonConfig.get("cache_type")), false);
   }
 
   @Override
@@ -84,11 +85,11 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
-    var key = redisNameTransformer.keyName(namespace, streamName);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
+    final var key = redisNameTransformer.keyName(namespace, streamName);
     return redisCache.getAll(key).stream()
         .sorted(Comparator.comparing(RedisRecord::getTimestamp))
         .map(RedisRecord::getData)

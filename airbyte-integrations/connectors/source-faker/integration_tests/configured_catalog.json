@@ -2,12 +2,12 @@
   "streams": [
     {
       "stream": {
-        "name": "Users",
+        "name": "users",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": { "type": "number" },
+            "id": { "type": "integer" },
             "created_at": {
               "type": "string",
               "format": "date-time",
@@ -37,7 +37,78 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["created_at"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "purchases",
+        "json_schema": {
+          "properties": {
+            "id": { "type": "integer" },
+            "user_id": { "type": "integer" },
+            "product_id": { "type": "integer" },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "added_to_cart_at": {
+              "type": ["null", "string"],
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "purchased_at": {
+              "type": ["null", "string"],
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "returned_at": {
+              "type": ["null", "string"],
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "products",
+        "json_schema": {
+          "properties": {
+            "id": { "type": "integer" },
+            "make": { "type": "string" },
+            "model": { "type": "string" },
+            "year": { "type": "integer" },
+            "price": { "type": "number" },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"]
+      },
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }
   ]

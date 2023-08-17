@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
 @VisibleForTesting
-public class MongodbNameTransformer extends ExtendedNameTransformer {
+public class MongodbNameTransformer extends StandardNameTransformer {
 
   @Override
   public String applyDefaultCase(final String input) {

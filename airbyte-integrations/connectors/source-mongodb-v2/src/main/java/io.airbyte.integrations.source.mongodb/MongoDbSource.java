@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -15,6 +15,7 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -26,8 +27,10 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,8 +59,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final var credentials = config.has(MongoDbSourceUtils.USER) && config.has(JdbcUtils.PASSWORD_KEY)
-        ? String.format("%s:%s@", config.get(MongoDbSourceUtils.USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
+    final var credentials = config.has(MongoUtils.USER) && config.has(JdbcUtils.PASSWORD_KEY)
+        ? String.format("%s:%s@", config.get(MongoUtils.USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
         : StringUtils.EMPTY;
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -67,10 +70,13 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
-    final var dbConfig = toDatabaseConfig(config);
-    return new MongoDatabase(dbConfig.get("connectionString").asText(),
+  protected MongoDatabase createDatabase(final JsonNode sourceConfig) throws Exception {
+    final var dbConfig = toDatabaseConfig(sourceConfig);
+    final MongoDatabase database = new MongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return database;
   }
 
   @Override
@@ -87,7 +93,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected JsonSchemaType getType(final BsonType fieldType) {
+  protected JsonSchemaType getAirbyteType(final BsonType fieldType) {
     return MongoUtils.getType(fieldType);
   }
 
@@ -111,7 +117,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
           .nameSpace(database.getName())
           .name(collectionName)
           .fields(fields)
-          .primaryKeys(List.of(MongoDbSourceUtils.PRIMARY_KEY))
+          .primaryKeys(List.of(MongoUtils.PRIMARY_KEY))
           .build();
 
       tableInfos.add(tableInfo);
@@ -171,7 +177,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final MongoDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
-                                                               final String tableName) {
+                                                               final String tableName,
+                                                               final SyncMode syncMode,
+                                                               final Optional<String> cursorField) {
     return queryTable(database, columnNames, tableName, null);
   }
 
@@ -192,50 +200,51 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     // when we have no cursor field here, at least id could be used as cursor here.
     // This logic will be used feather when we will implement part which will show only list of possible
     // cursor fields on UI
-    return MongoDbSourceUtils.ALLOWED_CURSOR_TYPES.contains(bsonType);
+    return MongoUtils.ALLOWED_CURSOR_TYPES.contains(bsonType);
   }
 
   private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,
                                                      final List<String> columnNames,
                                                      final String tableName,
                                                      final Bson filter) {
+    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, null);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.read(tableName, columnNames, Optional.ofNullable(filter));
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   private String buildConnectionString(final JsonNode config, final String credentials) {
     final StringBuilder connectionStrBuilder = new StringBuilder();
 
-    final JsonNode instanceConfig = config.get(MongoDbSourceUtils.INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoDbSourceUtils.INSTANCE).asText());
+    final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
+    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
     switch (instance) {
       case STANDALONE -> {
         connectionStrBuilder.append(
-            String.format(MongoDbSourceUtils.MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
+            String.format(MongoUtils.MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
                 instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(),
-                config.get(MongoDbSourceUtils.AUTH_SOURCE).asText(), MongoDbSourceUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)));
+                config.get(MongoUtils.AUTH_SOURCE).asText(), MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
-            String.format(MongoDbSourceUtils.MONGODB_REPLICA_URL, credentials, instanceConfig.get(MongoDbSourceUtils.SERVER_ADDRESSES).asText(),
+            String.format(MongoUtils.MONGODB_REPLICA_URL, credentials, instanceConfig.get(MongoUtils.SERVER_ADDRESSES).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(),
-                config.get(MongoDbSourceUtils.AUTH_SOURCE).asText()));
-        if (instanceConfig.has(MongoDbSourceUtils.REPLICA_SET)) {
-          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(MongoDbSourceUtils.REPLICA_SET).asText()));
+                config.get(MongoUtils.AUTH_SOURCE).asText()));
+        if (instanceConfig.has(MongoUtils.REPLICA_SET)) {
+          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(MongoUtils.REPLICA_SET).asText()));
         }
       }
       case ATLAS -> {
         connectionStrBuilder.append(
-            String.format(MongoDbSourceUtils.MONGODB_CLUSTER_URL, credentials,
-                instanceConfig.get(MongoDbSourceUtils.CLUSTER_URL).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(),
-                config.get(MongoDbSourceUtils.AUTH_SOURCE).asText()));
+            String.format(MongoUtils.MONGODB_CLUSTER_URL, credentials,
+                instanceConfig.get(MongoUtils.CLUSTER_URL).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(),
+                config.get(MongoUtils.AUTH_SOURCE).asText()));
       }
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }

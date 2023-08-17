@@ -1,34 +1,34 @@
 {
   "created_activities": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "opportunity_status_change_activities": {},
   "note_activities": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "meeting_activities": {},
   "call_activities": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "email_activities": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "email_thread_activities": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "lead_status_change_activities": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "sms_activities": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "task_completed_activities": {},
   "leads": {},
   "lead_tasks": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "incoming_email_tasks": {
-    "date_created": "2021-01-01"
+    "date_created": "2021-01-01T00:00:00.000000+00:00"
   },
   "email_followup_tasks": {
     "date_created": "2050-07-13T11:39:03.520000+00:00"
@@ -49,9 +49,9 @@
     "date_created": "2050-07-13T11:39:03.520000+00:00"
   },
   "events": {
-    "date_updated": "2021-01-01"
+    "date_updated": "2021-01-01T00:00:00.000000+00:00"
   },
   "opportunities": {
-    "date_updated": "2021-01-01"
+    "date_updated": "2021-01-01T00:00:00.000000+00:00"
   }
 }

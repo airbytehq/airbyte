@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -16,7 +16,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -36,6 +38,7 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  */
 public class JsonToAvroSchemaConverter {
 
+  private static final String REFERENCE_TYPE = "$ref";
   private static final String TYPE = "type";
   private static final String AIRBYTE_TYPE = "airbyte_type";
   private static final Schema UUID_SCHEMA = LogicalTypes.uuid()
@@ -54,7 +57,7 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * When no type is specified, it will default to string.
+   * When no type or $ref are specified, it will default to string.
    */
   static List<JsonSchemaType> getTypes(final String fieldName, final JsonNode fieldDefinition) {
     final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
@@ -63,25 +66,31 @@ public class JsonToAvroSchemaConverter {
     }
 
     final JsonNode typeProperty = fieldDefinition.get(TYPE);
+    final JsonNode referenceType = fieldDefinition.get(REFERENCE_TYPE);
+
     final JsonNode airbyteTypeProperty = fieldDefinition.get(AIRBYTE_TYPE);
     final String airbyteType = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
-    if (typeProperty == null || typeProperty.isNull()) {
-      LOGGER.warn("Field \"{}\" has no type specification. It will default to string", fieldName);
-      return Collections.singletonList(JsonSchemaType.STRING);
-    }
 
-    if (typeProperty.isArray()) {
+    if (typeProperty != null && typeProperty.isArray()) {
       return MoreIterators.toList(typeProperty.elements()).stream()
           .map(s -> JsonSchemaType.fromJsonSchemaType(s.asText()))
           .collect(Collectors.toList());
     }
 
-    if (typeProperty.isTextual()) {
+    if (hasTextValue(typeProperty)) {
       return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText(), airbyteType));
     }
 
-    LOGGER.warn("Field \"{}\" has unexpected type {}. It will default to string.", fieldName, typeProperty);
-    return Collections.singletonList(JsonSchemaType.STRING);
+    if (hasTextValue(referenceType)) {
+      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(referenceType.asText(), airbyteType));
+    }
+
+    LOGGER.warn("Field \"{}\" has unexpected type {}. It will default to string.", fieldName, referenceType);
+    return Collections.singletonList(JsonSchemaType.STRING_V1);
+  }
+
+  private static boolean hasTextValue(JsonNode value) {
+    return value != null && !value.isNull() && value.isTextual();
   }
 
   static Optional<JsonNode> getCombinedRestriction(final JsonNode fieldDefinition) {
@@ -218,8 +227,15 @@ public class JsonToAvroSchemaConverter {
 
     final Schema fieldSchema;
     switch (fieldType) {
-      case INTEGER, NUMBER, NUMBER_INT, NUMBER_BIGINT, NUMBER_FLOAT, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
-      case STRING -> {
+      case INTEGER_V1, NUMBER_V1, BOOLEAN_V1, STRING_V1, TIME_WITH_TIMEZONE_V1, BINARY_DATA_V1 -> fieldSchema =
+          Schema.create(fieldType.getAvroType());
+      case DATE_V1 -> fieldSchema = LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
+      case TIMESTAMP_WITH_TIMEZONE_V1, TIMESTAMP_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timestampMicros()
+          .addToSchema(Schema.create(Schema.Type.LONG));
+      case TIME_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
+      case INTEGER_V0, NUMBER_V0, NUMBER_INT_V0, NUMBER_BIGINT_V0, NUMBER_FLOAT_V0, BOOLEAN_V0 -> fieldSchema =
+          Schema.create(fieldType.getAvroType());
+      case STRING_V0 -> {
         if (fieldDefinition.has("format")) {
           final String format = fieldDefinition.get("format").asText();
           fieldSchema = switch (format) {
@@ -236,7 +252,7 @@ public class JsonToAvroSchemaConverter {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
         final List<Schema> unionTypes =
             parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
-        fieldSchema = Schema.createUnion(unionTypes);
+        fieldSchema = createUnionAndCheckLongTypesDuplications(unionTypes);
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
@@ -244,13 +260,14 @@ public class JsonToAvroSchemaConverter {
           LOGGER.warn("Array field \"{}\" does not specify the items type. It will default to an array of strings", fieldName);
           fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
         } else if (items.isObject()) {
-          if (!items.has("type") || items.get("type").isNull()) {
-            LOGGER.warn("Array field \"{}\" does not specify the items type. it will default to an array of strings", fieldName);
-            fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
-          } else {
+          if ((items.has("type") && !items.get("type").isNull()) ||
+              items.has("$ref") && !items.get("$ref").isNull()) {
             // Objects inside Json array has no names. We name it with the ".items" suffix.
             final String elementFieldName = fieldName + ".items";
             fieldSchema = Schema.createArray(parseJsonField(elementFieldName, fieldNamespace, items, appendExtraProps, addStringToLogicalTypes));
+          } else {
+            LOGGER.warn("Array field \"{}\" does not specify the items type. it will default to an array of strings", fieldName);
+            fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
           }
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes =
@@ -454,6 +471,26 @@ public class JsonToAvroSchemaConverter {
       }
       return Schema.createUnion(nonNullFieldTypes);
     }
+  }
+
+  /**
+   * Method checks unionTypes list for content. If we have both "long" and "long-timestamp" types then
+   * it keeps the "long" only. Need to do it for Schema creation otherwise it would fail with a
+   * duplicated types exception.
+   *
+   * @param unionTypes - list of union types
+   * @return new Schema
+   */
+  private Schema createUnionAndCheckLongTypesDuplications(List<Schema> unionTypes) {
+    Predicate<Schema> isALong = type -> type.getType() == Schema.Type.LONG;
+    Predicate<Schema> isPlainLong = isALong.and(type -> Objects.isNull(type.getLogicalType()));
+    Predicate<Schema> isTimestampMicrosLong =
+        isALong.and(type -> Objects.nonNull(type.getLogicalType()) && "timestamp-micros".equals(type.getLogicalType().getName()));
+
+    boolean hasPlainLong = unionTypes.stream().anyMatch(isPlainLong);
+    boolean hasTimestampMicrosLong = unionTypes.stream().anyMatch(isTimestampMicrosLong);
+    Predicate<Schema> removeTimestampType = type -> !(hasPlainLong && hasTimestampMicrosLong && isTimestampMicrosLong.test(type));
+    return Schema.createUnion(unionTypes.stream().filter(removeTimestampType).collect(Collectors.toList()));
   }
 
 }

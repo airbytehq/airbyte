@@ -1,43 +1,43 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_lang": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_shop": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_customer": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_product": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_contact": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "token": {
       "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "date_upd": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "associations": {
@@ -49,7 +49,7 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }

@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trunks Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "domain_name": {
+      "type": ["null", "string"]
+    },
+    "disaster_recovery_method": {
+      "type": ["null", "string"]
+    },
+    "disaster_recovery_url": {
+      "type": ["null", "string"]
+    },
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "secure": {
+      "type": ["null", "boolean"]
+    },
+    "cnam_lookup_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "recording": {
+      "type": ["null", "object"],
+      "properties": {
+        "mode": {
+          "type": ["null", "string"]
+        },
+        "trim": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "transfer_mode": {
+      "type": ["null", "string"]
+    },
+    "transfer_caller_id": {
+      "type": ["null", "string"]
+    },
+    "auth_type": {
+      "type": ["null", "string"]
+    },
+    "auth_type_set": {
+      "type": ["null", "array"],
+      "items": {
+        "auth_type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "date_created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_updated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "origination_urls": {
+          "type": ["null", "string"]
+        },
+        "credential_lists": {
+          "type": ["null", "string"]
+        },
+        "ip_access_control_lists": {
+          "type": ["null", "string"]
+        },
+        "phone_numbers": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

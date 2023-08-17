@@ -35,7 +35,19 @@
     "BidMatchType": {
       "type": ["null", "string"]
     },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
     "CampaignStatus": {
+      "type": ["null", "string"]
+    },
+    "CampaignLabels": {
       "type": ["null", "string"]
     },
     "Impressions": {
@@ -94,6 +106,9 @@
     },
     "AllConversions": {
       "type": ["null", "integer"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
     },
     "AllConversionRate": {
       "type": ["null", "number"]

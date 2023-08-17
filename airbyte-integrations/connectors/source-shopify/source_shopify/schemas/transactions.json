@@ -66,6 +66,10 @@
       },
       "type": ["null", "object"]
     },
+    "processed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "gateway": {
       "type": ["null", "string"]
     },

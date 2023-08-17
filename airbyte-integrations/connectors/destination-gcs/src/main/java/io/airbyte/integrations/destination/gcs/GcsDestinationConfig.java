@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -17,6 +17,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfigs;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
 
 /**
  * Currently we always reuse the S3 client for GCS. So the GCS config extends from the S3 config.
@@ -33,6 +34,7 @@ public class GcsDestinationConfig extends S3DestinationConfig {
                               final String bucketRegion,
                               final GcsCredentialConfig credentialConfig,
                               final S3FormatConfig formatConfig) {
+
     super(GCS_ENDPOINT,
         bucketName,
         bucketPath,
@@ -40,7 +42,10 @@ public class GcsDestinationConfig extends S3DestinationConfig {
         S3DestinationConstants.DEFAULT_PATH_FORMAT,
         credentialConfig.getS3CredentialConfig().orElseThrow(),
         formatConfig,
-        null);
+        null,
+        null,
+        false,
+        S3StorageOperations.DEFAULT_UPLOAD_THREADS);
 
     this.credentialConfig = credentialConfig;
   }

@@ -4,7 +4,7 @@ description: Using Airbyte and Tableau
 
 # Visualizing the Time Spent by Your Team in Zoom Calls
 
-In this article, we will show you how you can understand how much your team leverages Zoom, or spends time in meetings, in a couple of minutes. We will be using [Airbyte](https://airbyte.io) \(an open-source data integration platform\) and [Tableau](https://www.tableau.com) \(a business intelligence and analytics software\) for this tutorial.
+In this article, we will show you how you can understand how much your team leverages Zoom, or spends time in meetings, in a couple of minutes. We will be using [Airbyte](https://airbyte.com) \(an open-source data integration platform\) and [Tableau](https://www.tableau.com) \(a business intelligence and analytics software\) for this tutorial.
 
 Here is what we will cover:
 
@@ -28,11 +28,11 @@ Let’s get started by replicating Zoom data using Airbyte.
 
 ### Launching Airbyte
 
-In order to replicate Zoom data, we will need to use [Airbyte’s Zoom connector](https://docs.airbyte.io/integrations/sources/zoom). To do this, you need to start off Airbyte’s web app by opening up your terminal and navigating to Airbyte and running:
+In order to replicate Zoom data, we will need to use [Airbyte’s Zoom connector](https://docs.airbyte.com/integrations/sources/zoom). To do this, you need to start off Airbyte’s web app by opening up your terminal and navigating to Airbyte and running:
 
 `docker-compose up`
 
-You can find more details about this in the [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse Forum.
+You can find more details about this in the [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 This will start up Airbyte on `localhost:8000`; open that address in your browser to access the Airbyte dashboard.
 

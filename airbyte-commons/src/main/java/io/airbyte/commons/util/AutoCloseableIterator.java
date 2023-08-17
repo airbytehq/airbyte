@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.util;
@@ -12,4 +12,4 @@ import java.util.Iterator;
  *
  * @param <T> type
  */
-public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {}
+public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable, AirbyteStreamAware {}

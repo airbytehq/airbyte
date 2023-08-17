@@ -1,8 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 from abc import ABC
 from base64 import b64encode
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -13,6 +13,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+
+logger = logging.getLogger("airbyte")
 
 
 # Basic full refresh stream
@@ -66,6 +68,9 @@ class BaseContentStream(ConfluenceStream, ABC):
         "restrictions.read.restrictions.user",
         "version",
         "descendants.comment",
+        "body",
+        "body.storage",
+        "body.view",
     ]
     limit = 25
     content_type = None
@@ -140,7 +145,23 @@ class SourceConfluence(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
+    def account_plan_validation(self, config, auth):
+        # stream Audit requires Premium or Standard Plan
+        url = f"https://{config['domain_name']}/wiki/rest/api/audit?limit=1"
+        is_premium_or_standard_plan = False
+        try:
+            response = requests.get(url, headers=auth.get_auth_header())
+            response.raise_for_status()
+            is_premium_or_standard_plan = True
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"An exception occurred while trying to access Audit stream: {str(e)}. Skipping this stream.")
+        finally:
+            return is_premium_or_standard_plan
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = HttpBasicAuthenticator(config["email"], config["api_token"], auth_method="Basic")
         config["authenticator"] = auth
-        return [Pages(config), BlogPosts(config), Space(config), Group(config), Audit(config)]
+        streams = [Pages(config), BlogPosts(config), Space(config), Group(config)]
+        if self.account_plan_validation(config, auth):
+            streams.append(Audit(config))
+        return streams

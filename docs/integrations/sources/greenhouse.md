@@ -4,80 +4,76 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-Please follow the [Greenhouse documentation for generating an API key](https://developers.greenhouse.io/harvest.html#authentication).
+To set up the Greenhouse source connector, you'll need the [Harvest API key](https://developers.greenhouse.io/harvest.html#authentication) with permissions to the resources Airbyte should be able to access.
 
 ## Set up the Greenhouse connector in Airbyte
 
-### For Airbyte Cloud:
-
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Source**. In the top-right corner, click **+New source**.
-3. On the Set up the source page, enter the name for the Greenhouse connector and select **Greenhouse** from the Source type dropdown. 
-4. Enter your `api_key`
-5. Click **Set up source**
-
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source 
-3. Enter your `api_key`
-4. Click **Set up source**
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
+4. Enter the name for the Greenhouse connector.
+5. Enter your [**Harvest API Key**](https://developers.greenhouse.io/harvest.html#authentication) that you obtained from Greenhouse.
+6. Click **Set up source**.
 
 ## Supported sync modes
 
 The Greenhouse source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                       | Supported?  |
-|:------------------------------|:------------|
-| Full Refresh Sync             | Yes         |
-| Incremental Sync              | Yes         |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
-* [Applications](https://developers.greenhouse.io/harvest.html#get-list-applications)
-* [Applications Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application)
-* [Candidates](https://developers.greenhouse.io/harvest.html#get-list-candidates)
-* [Close Reasons](https://developers.greenhouse.io/harvest.html#get-list-close-reasons)
-* [Custom Fields](https://developers.greenhouse.io/harvest.html#get-list-custom-fields)
-* [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
-* [Departments](https://developers.greenhouse.io/harvest.html#get-list-departments)
-* [Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews)
-* [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts)
-* [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages)
-* [Jobs](https://developers.greenhouse.io/harvest.html#get-list-jobs)
-* [Job Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
-* [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job)
-* [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers)
-* [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)
-* [Scorecards](https://developers.greenhouse.io/harvest.html#get-list-scorecards)
-* [Sources](https://developers.greenhouse.io/harvest.html#get-list-sources)
-* [Users](https://developers.greenhouse.io/harvest.html#get-list-users)
-
-## Setting permissions for API Keys
-You can specify which API endpoints your API keys have access to from the Greenhouse Dev Center. This will allow you to permit or deny access to each endpoint individually. Any API keys created before January 18th, 2017 will have full permissions to all API endpoints that existed at that time, but any new API keys created after that point will need the required endpoint permissions to be explicitly granted.
-To add or remove endpoint permissions on an API key, go to the Dev Center in Greenhouse, click “API Credential Management”, then click “Manage Permissions” next to your Harvest API Key. From there, check or uncheck permissions for any endpoints.
-
-**Important Note**: Users with Harvest API keys may access all the data in the endpoint. Access to data in Harvest is binary: everything or nothing. Harvest API keys should be given to internal developers with this understanding and to third parties with caution. Each key should only be allowed to access the endpoints it absolutely needs.
-See more on this [here](https://developers.greenhouse.io/harvest.html#authentication).
+- [Activity Feed](https://developers.greenhouse.io/harvest.html#get-retrieve-activity-feed)
+- [Applications](https://developers.greenhouse.io/harvest.html#get-list-applications)
+- [Applications Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application)
+- [Approvals](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
+- [Candidates](https://developers.greenhouse.io/harvest.html#get-list-candidates)
+- [Close Reasons](https://developers.greenhouse.io/harvest.html#get-list-close-reasons)
+- [Custom Fields](https://developers.greenhouse.io/harvest.html#get-list-custom-fields)
+- [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
+- [Departments](https://developers.greenhouse.io/harvest.html#get-list-departments)
+- [Disciplines](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
+- [EEOC](https://developers.greenhouse.io/harvest.html#get-list-eeoc)
+- [Email Templates](https://developers.greenhouse.io/harvest.html#get-list-email-templates)
+- [Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews)
+- [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts)
+- [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages)
+- [Jobs](https://developers.greenhouse.io/harvest.html#get-list-jobs)
+- [Job Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
+- [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job)
+- [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers)
+- [Offices](https://developers.greenhouse.io/harvest.html#get-list-offices)
+- [Prospect Pools](https://developers.greenhouse.io/harvest.html#get-list-prospect-pools)
+- [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)
+- [Schools](https://developers.greenhouse.io/harvest.html#get-list-schools)
+- [Scorecards](https://developers.greenhouse.io/harvest.html#get-list-scorecards)
+- [Sources](https://developers.greenhouse.io/harvest.html#get-list-sources)
+- [Tags](https://developers.greenhouse.io/harvest.html#get-list-candidate-tags)
+- [Users](https://developers.greenhouse.io/harvest.html#get-list-users)
+- [User Permissions](https://developers.greenhouse.io/harvest.html#get-list-job-permissions)
+- [User Roles](https://developers.greenhouse.io/harvest.html#the-user-role-object)
 
 ## Performance considerations
 
-The Greenhouse connector should not run into Greenhouse API limitations under normal usage. 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.3.0   | 2022-10-19 | [18154](https://github.com/airbytehq/airbyte/pull/18154) | Extend `Users` stream schema                                                   |
-| 0.2.11  | 2022-09-27 | [17239](https://github.com/airbytehq/airbyte/pull/17239) | Always install the latest version of Airbyte CDK                               |
-| 0.2.10  | 2022-09-05 | [16338](https://github.com/airbytehq/airbyte/pull/16338) | Implement incremental syncs & fix SATs                                         |
-| 0.2.9   | 2022-08-22 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml and schemas at runtime                     |
-| 0.2.8   | 2022-08-10 | [15344](https://github.com/airbytehq/airbyte/pull/15344) | Migrate connector to config-based framework                                    |
-| 0.2.7   | 2022-04-15 | [11941](https://github.com/airbytehq/airbyte/pull/11941) | Correct Schema data type for Applications, Candidates, Scorecards and Users    |
-| 0.2.6   | 2021-11-08 | [7607](https://github.com/airbytehq/airbyte/pull/7607)   | Implement demographics streams support. Update SAT for demographics streams    |
-| 0.2.5   | 2021-09-22 | [6377](https://github.com/airbytehq/airbyte/pull/6377)   | Refactor the connector to use CDK. Implement additional stream support         |
-| 0.2.4   | 2021-09-15 | [6238](https://github.com/airbytehq/airbyte/pull/6238)   | Add identification of accessible streams for API keys with limited permissions |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                              |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.2   | 2023-08-02 | [28969](https://github.com/airbytehq/airbyte/pull/28969) | Update CDK version                                                                                                                                                   |
+| 0.4.1   | 2023-06-28 | [27773](https://github.com/airbytehq/airbyte/pull/27773) | Update following state breaking changes                                                                                                                              |
+| 0.4.0   | 2023-04-26 | [25332](https://github.com/airbytehq/airbyte/pull/25332) | Add new streams: `ActivityFeed`, `Approvals`, `Disciplines`, `Eeoc`, `EmailTemplates`, `Offices`, `ProspectPools`, `Schools`, `Tags`, `UserPermissions`, `UserRoles` |
+| 0.3.1   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                                                                                                                              |
+| 0.3.0   | 2022-10-19 | [18154](https://github.com/airbytehq/airbyte/pull/18154) | Extend `Users` stream schema                                                                                                                                         |
+| 0.2.11  | 2022-09-27 | [17239](https://github.com/airbytehq/airbyte/pull/17239) | Always install the latest version of Airbyte CDK                                                                                                                     |
+| 0.2.10  | 2022-09-05 | [16338](https://github.com/airbytehq/airbyte/pull/16338) | Implement incremental syncs & fix SATs                                                                                                                               |
+| 0.2.9   | 2022-08-22 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml and schemas at runtime                                                                                                           |
+| 0.2.8   | 2022-08-10 | [15344](https://github.com/airbytehq/airbyte/pull/15344) | Migrate connector to config-based framework                                                                                                                          |
+| 0.2.7   | 2022-04-15 | [11941](https://github.com/airbytehq/airbyte/pull/11941) | Correct Schema data type for Applications, Candidates, Scorecards and Users                                                                                          |
+| 0.2.6   | 2021-11-08 | [7607](https://github.com/airbytehq/airbyte/pull/7607)   | Implement demographics streams support. Update SAT for demographics streams                                                                                          |
+| 0.2.5   | 2021-09-22 | [6377](https://github.com/airbytehq/airbyte/pull/6377)   | Refactor the connector to use CDK. Implement additional stream support                                                                                               |
+| 0.2.4   | 2021-09-15 | [6238](https://github.com/airbytehq/airbyte/pull/6238)   | Add identification of accessible streams for API keys with limited permissions                                                                                       |

@@ -5,6 +5,9 @@
     "author": {
       "type": ["null", "string"]
     },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
     "body_html": {
       "body_html": ["null", "string"]
     },

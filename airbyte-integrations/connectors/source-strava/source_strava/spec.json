@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/strava",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Strava Spec",
     "type": "object",
     "required": [
@@ -11,7 +11,7 @@
       "athlete_id",
       "start_date"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "auth_type": {
         "type": "string",
@@ -24,7 +24,8 @@
         "description": "The Client ID of your Strava developer application.",
         "title": "Client ID",
         "pattern": "^[0-9_\\-]+$",
-        "examples": ["12345"]
+        "examples": ["12345"],
+        "order": 0
       },
       "client_secret": {
         "type": "string",
@@ -32,7 +33,8 @@
         "title": "Client Secret",
         "pattern": "^[0-9a-fA-F]+$",
         "examples": ["fc6243f283e51f6ca989aab298b17da125496f50"],
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 1
       },
       "refresh_token": {
         "type": "string",
@@ -40,20 +42,24 @@
         "title": "Refresh Token",
         "pattern": "^[0-9a-fA-F]+$",
         "examples": ["fc6243f283e51f6ca989aab298b17da125496f50"],
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 2
       },
       "athlete_id": {
         "type": "integer",
         "description": "The Athlete ID of your Strava developer application.",
         "title": "Athlete ID",
         "pattern": "^[0-9_\\-]+$",
-        "examples": ["17831421"]
+        "examples": ["17831421"],
+        "order": 3
       },
       "start_date": {
         "type": "string",
         "description": "UTC date and time. Any data before this date will not be replicated.",
         "title": "Start Date",
-        "examples": ["2016-12-31 23:59:59"]
+        "examples": ["2021-03-01T00:00:00Z"],
+        "format": "date-time",
+        "order": 4
       }
     }
   },
@@ -64,7 +70,7 @@
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "refresh_token": {
             "type": "string",
@@ -74,7 +80,7 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string"

@@ -12,6 +12,9 @@
     "customer_id": {
       "type": "string"
     },
+    "external_customer_id": {
+      "type": ["null", "string"]
+    },
     "start_date": {
       "type": ["null", "string"],
       "format": "date-time"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Iterator, MutableMapping
@@ -28,6 +28,14 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
         if hasattr(stream_instance, "state"):
             stream_state.clear()
             stream_state.update(stream_instance.state)
+
+
+def read_full_refresh(stream_instance: Stream):
+    slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
+    for _slice in slices:
+        records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
+        for record in records:
+            yield record
 
 
 def command_check(source: Source, config):

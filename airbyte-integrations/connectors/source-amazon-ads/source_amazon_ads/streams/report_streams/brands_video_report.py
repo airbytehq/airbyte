@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from .report_streams import ReportStream
@@ -11,18 +11,11 @@ METRICS_MAP = {
         "campaignStatus",
         "campaignBudget",
         "campaignBudgetType",
-        "campaignRuleBasedBudget",
-        "applicableBudgetRuleId",
-        "applicableBudgetRuleName",
         "adGroupName",
         "adGroupId",
         "keywordText",
         "keywordBid",
         "keywordStatus",
-        "targetId",
-        "targetingExpression",
-        "targetingText",
-        "targetingType",
         "matchType",
         "impressions",
         "clicks",
@@ -31,6 +24,27 @@ METRICS_MAP = {
         "attributedSales14dSameSKU",
         "attributedConversions14d",
         "attributedConversions14dSameSKU",
+        "attributedBrandedSearches14d",
+        "attributedDetailPageViewsClicks14d",
+        "attributedOrderRateNewToBrand14d",
+        "attributedOrdersNewToBrand14d",
+        "attributedOrdersNewToBrandPercentage14d",
+        "attributedSalesNewToBrand14d",
+        "attributedSalesNewToBrandPercentage14d",
+        "attributedUnitsOrderedNewToBrand14d",
+        "attributedUnitsOrderedNewToBrandPercentage14d",
+        "dpv14d",
+        "keywordId",
+        "vctr",
+        "video5SecondViewRate",
+        "video5SecondViews",
+        "videoCompleteViews",
+        "videoFirstQuartileViews",
+        "videoMidpointViews",
+        "videoThirdQuartileViews",
+        "videoUnmutes",
+        "viewableImpressions",
+        "vtr",
     ],
     "adGroups": [
         "campaignName",
@@ -47,6 +61,26 @@ METRICS_MAP = {
         "attributedSales14dSameSKU",
         "attributedConversions14d",
         "attributedConversions14dSameSKU",
+        "vctr",
+        "video5SecondViewRate",
+        "video5SecondViews",
+        "videoCompleteViews",
+        "videoFirstQuartileViews",
+        "videoMidpointViews",
+        "videoThirdQuartileViews",
+        "videoUnmutes",
+        "viewableImpressions",
+        "vtr",
+        "dpv14d",
+        "attributedDetailPageViewsClicks14d",
+        "attributedOrderRateNewToBrand14d",
+        "attributedOrdersNewToBrand14d",
+        "attributedOrdersNewToBrandPercentage14d",
+        "attributedSalesNewToBrand14d",
+        "attributedSalesNewToBrandPercentage14d",
+        "attributedUnitsOrderedNewToBrand14d",
+        "attributedUnitsOrderedNewToBrandPercentage14d",
+        "attributedBrandedSearches14d",
     ],
     "campaigns": [
         "campaignName",
@@ -54,9 +88,6 @@ METRICS_MAP = {
         "campaignStatus",
         "campaignBudget",
         "campaignBudgetType",
-        "campaignRuleBasedBudget",
-        "applicableBudgetRuleId",
-        "applicableBudgetRuleName",
         "impressions",
         "clicks",
         "cost",
@@ -64,7 +95,34 @@ METRICS_MAP = {
         "attributedSales14dSameSKU",
         "attributedConversions14d",
         "attributedConversions14dSameSKU",
+        "attributedSalesNewToBrand14d",
+        "attributedSalesNewToBrandPercentage14d",
+        "attributedUnitsOrderedNewToBrand14d",
+        "attributedUnitsOrderedNewToBrandPercentage14d",
+        "attributedBrandedSearches14d",
+        "attributedDetailPageViewsClicks14d",
+        "attributedOrderRateNewToBrand14d",
+        "attributedOrdersNewToBrand14d",
+        "attributedOrdersNewToBrandPercentage14d",
+        "dpv14d",
+        "vctr",
+        "video5SecondViewRate",
+        "video5SecondViews",
+        "videoCompleteViews",
+        "videoFirstQuartileViews",
+        "videoMidpointViews",
+        "videoThirdQuartileViews",
+        "videoUnmutes",
+        "viewableImpressions",
+        "vtr",
     ],
+}
+
+
+METRICS_TYPE_TO_ID_MAP = {
+    "keywords": "keywordBid",
+    "adGroups": "adGroupId",
+    "campaigns": "campaignId",
 }
 
 
@@ -77,6 +135,7 @@ class SponsoredBrandsVideoReportStream(ReportStream):
         return f"/v2/hsa/{record_type}/report"
 
     metrics_map = METRICS_MAP
+    metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         metrics_list = self.metrics_map[record_type]
@@ -84,4 +143,4 @@ class SponsoredBrandsVideoReportStream(ReportStream):
             "reportDate": report_date,
             "creativeType": "video",
         }
-        return {**body, "metrics": ",".join(metrics_list)}
+        yield {**body, "metrics": ",".join(metrics_list)}

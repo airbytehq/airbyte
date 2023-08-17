@@ -1,9 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import logging
 import os
 import shutil
 import sys
@@ -12,14 +13,13 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import jsonref
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, FailureType
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 from pytest import raises as pytest_raises
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 MODULE = sys.modules[__name__]

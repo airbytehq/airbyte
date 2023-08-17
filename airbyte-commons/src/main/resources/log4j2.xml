@@ -209,6 +209,11 @@
         If a database has tons of DDL queries, the logs would be filled with such messages-->
         <Logger name="io.debezium.relational.history" level="OFF" />
 
+        <!--Uncomment the following to debug JOOQ generated SQL queries.-->
+        <!--<Logger name="org.jooq.tools.LoggerListener" level="debug">-->
+        <!--  <AppenderRef ref="Console"/>-->
+        <!--</Logger>-->
+
     </Loggers>
 
 </Configuration>

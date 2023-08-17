@@ -1,0 +1,38 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/RegistryOverrides.yml
+title: RegistryOverrides
+description: describes the overrides per registry of a connector
+type: object
+additionalProperties: false
+required:
+  - enabled
+properties:
+  enabled:
+    type: boolean
+    default: false
+  name:
+    type: string
+  dockerRepository:
+    type: string
+  dockerImageTag:
+    type: string
+  supportsDbt:
+    type: boolean
+  supportsNormalization:
+    type: boolean
+  license:
+    type: string
+  documentationUrl:
+    type: string
+    format: uri
+  connectorSubtype:
+    type: string
+  allowedHosts:
+    $ref: AllowedHosts.yaml
+  normalizationConfig:
+    "$ref": NormalizationDestinationDefinitionConfig.yaml
+  suggestedStreams:
+    $ref: SuggestedStreams.yaml
+  resourceRequirements:
+    $ref: ActorDefinitionResourceRequirements.yaml

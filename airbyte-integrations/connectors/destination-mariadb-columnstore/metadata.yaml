@@ -1,0 +1,24 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 294a4790-429b-40ae-9516-49826b9702e1
+  dockerImageTag: 0.1.7
+  dockerRepository: airbyte/destination-mariadb-columnstore
+  githubIssueLabel: destination-mariadb-columnstore
+  icon: mariadb.svg
+  license: MIT
+  name: MariaDB ColumnStore
+  registries:
+    cloud:
+      enabled: false # hide MariaDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2611
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mariadb-columnstore
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

@@ -1,0 +1,25 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/mailersend
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Mailersend Spec
+  type: object
+  required:
+    - api_token
+    - domain_id
+  additionalProperties: true
+  properties:
+    api_token:
+      type: string
+      description: Your API Token. See <a href="https://www.mailersend.com/help/managing-api-tokens">here</a>.
+      airbyte_secret: true
+    domain_id:
+      type: string
+      description: The domain entity in mailersend
+      examples:
+        - airbyte.com
+        - linkana.com
+    start_date:
+      type: number
+      description: Timestamp is assumed to be UTC.
+      examples:
+        - 123131321

@@ -22,7 +22,7 @@ Just pass the generated API key and optional parameters for establishing the con
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Google-webfonts connector and select **Google-webfonts** from the Source type dropdown.
 4. Enter your `api_key`.
@@ -55,7 +55,7 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 
 ## API method example
 
-GET https://webfonts.googleapis.com/v1/webfonts?key=<1234567>&sort=SORT_UNDEFINED&prettyPrint=true&alt=json
+`GET https://webfonts.googleapis.com/v1/webfonts?key=<1234567>&sort=SORT_UNDEFINED&prettyPrint=true&alt=json`
 
 ## Performance considerations
 

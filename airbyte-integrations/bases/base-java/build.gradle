@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-config:config-models')
+    implementation libs.airbyte.protocol
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-json-validation')
 
@@ -21,6 +21,7 @@ dependencies {
     implementation libs.jackson.annotations
     implementation libs.connectors.testcontainers
     implementation libs.connectors.testcontainers.jdbc
+    implementation libs.bundles.datadog
 
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 

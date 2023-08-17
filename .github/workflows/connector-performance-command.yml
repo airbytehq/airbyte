@@ -1,0 +1,222 @@
+name: Connector Performance Harness
+on:
+  workflow_dispatch:
+    inputs:
+      connector:
+        description: "Airbyte Connector"
+        required: true
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+        default: master
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      uuid:
+        description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
+        required: false
+      dataset:
+        description: "Name of dataset to use for performance measurement. Currently supports 1m, 10m, 20m."
+        required: false
+        default: "1m"
+      stream-number:
+        description: "Number of streams to use for destination performance measurement."
+        required: false
+        default: "1"
+      sync-mode:
+        description: "Sync mode to use for destination performance measurement."
+        required: false
+        default: "full_refresh"
+jobs:
+  uuid:
+    name: "Custom UUID of workflow run"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: UUID ${{ github.event.inputs.uuid }}
+        run: true
+  start-test-runner:
+    name: Start Build EC2 Runner
+    needs: uuid
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+  performance-test:
+    timeout-minutes: 240
+    needs: start-test-runner
+    runs-on: ${{ needs.start-test-runner.outputs.label }}
+    steps:
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`,
+            `bottleneck_stream1`, `bottleneck_stream_randomseed. For destinations only: you can also use `stream-numbers=N`
+            to simulate N number of parallel streams. Additionally, `sync-mode=incremental` is supported for destinations.
+            For example: `dataset=1m stream-numbers=2 sync-mode=incremental`
+            > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
+      - name: Search for valid connector name format
+        id: regex
+        uses: AsasInnab/regex-action@v1
+        with:
+          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
+          regex_flags: "i" # required to be set for this plugin
+          search_string: ${{ github.event.inputs.connector }}
+      - name: Validate input workflow format
+        if: steps.regex.outputs.first_match != github.event.inputs.connector
+        run: echo "The connector provided has an invalid format!" && exit 1
+      - name: Filter supported connectors
+        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' &&
+              github.event.inputs.connector != 'connectors/source-mysql' &&
+              github.event.inputs.connector != 'connectors/destination-snowflake' }}"
+        run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install CI scripts
+        run: |
+          pip install pipx
+          pipx ensurepath
+          pipx install airbyte-ci/connectors/ci_credentials
+          pipx install airbyte-ci/connectors/connector_ops
+      - name: Source or Destination harness
+        id: which-harness
+        run: |
+          the_harness="$(echo ${{github.event.inputs.connector}} | sed 's/.*\///; s/-.*//')"-harness
+          echo "harness_type=$the_harness" >> "$GITHUB_OUTPUT"
+      - name: Write harness credentials
+        run: |
+          ci_credentials connectors-performance/$HARNESS_TYPE write-to-storage
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
+      - name: build harness
+        shell: bash
+        run: |
+          echo "Building... ${{ steps.which-harness.outputs.harness_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ./gradlew :airbyte-integrations:connectors-performance:$HARNESS_TYPE:build -x check
+        env:
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
+      - name: build connector
+        shell: bash
+        run: |
+          echo "Building... ${{github.event.inputs.connector}}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
+          connector_name=$(echo ${{ github.event.inputs.connector }} | cut -d / -f 2)
+          echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check"
+          ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check
+      - name: KIND Kubernetes Cluster Setup
+        uses: helm/kind-action@v1.4.0
+        with:
+          config: "./tools/bin/${{ steps.which-harness.outputs.harness_type }}-kind-cluster-config.yaml"
+      - name: Run harness
+        id: run-harness
+        shell: bash
+        env:
+          CONN: ${{ github.event.inputs.connector }}
+          DS: ${{ github.event.inputs.dataset }}
+          STREAM_NUMBER: ${{ github.event.inputs.stream-number }}
+          SYNC_MODE: ${{ github.event.inputs.sync-mode }}
+          PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
+          SUFFIX: '"}}'
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
+        run: |
+          kubectl apply -f ./tools/bin/admin-service-account.yaml
+          connector_name=$(echo $CONN | cut -d / -f 2)
+          kind load docker-image airbyte/$connector_name:dev --name chart-testing
+          kind load docker-image airbyte/$HARNESS_TYPE:dev --name chart-testing
+          # envsubst requires variables to be exported
+          export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
+          export DATASET=$DS
+          export STREAM_NUMBER=$STREAM_NUMBER
+          export SYNC_MODE=$SYNC_MODE
+          export HARNESS=$HARNESS_TYPE
+          envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
+          echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
+          POD=$(kubectl get pod -l app=performance-harness -o jsonpath="{.items[0].metadata.name}")
+          kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
+          kubectl logs --follow $POD
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
+          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$PREFIX"}; line=${line%"$SUFFIX"}; echo $line >> $GITHUB_OUTPUT ; done
+          echo "$EOF" >> $GITHUB_OUTPUT
+      - name: Link comment to workflow run
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          reactions: '+1'
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            ## Performance test Result:
+            ```
+            ${{ steps.run-harness.outputs.RUN_RESULT }}
+            ```
+      # need to add credentials here
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-test-runner:
+    name: Stop Build EC2 Runner
+    timeout-minutes: 10
+    needs:
+      - start-test-runner # required to get output from the start-runner job
+      - performance-test # required to wait when the main job is done
+      - uuid
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Stop EC2 runner
+        uses: supertopher/ec2-github-runner@base64v1.0.10
+        with:
+          mode: stop
+          github-token: ${{ env.PAT }}
+          label: ${{ needs.start-test-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-test-runner.outputs.ec2-instance-id }}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -17,6 +17,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.JDBCType;
+import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
@@ -50,9 +51,10 @@ public class MssqlStressTest extends JdbcStressTest {
         configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d",
+        String.format("jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
+        Map.of("encrypt", "false"));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -63,6 +65,7 @@ public class MssqlStressTest extends JdbcStressTest {
 
       config = Jsons.clone(configWithoutDbName);
       ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+      ((ObjectNode) config).put("is_test", true);
 
       super.setup();
     } finally {

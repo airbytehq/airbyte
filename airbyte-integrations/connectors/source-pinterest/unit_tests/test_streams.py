@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_pinterest.source import (
+from source_pinterest.streams import (
     AdAccountAnalytics,
     AdAccounts,
     AdAnalytics,

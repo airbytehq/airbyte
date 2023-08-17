@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -15,9 +15,10 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -37,7 +38,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestinationAcceptanceTest.class);
   private static final Network network = Network.newNetwork();
 
-  private final ExtendedNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
+  private final StandardNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
 
   private JsonNode configJson;
 
@@ -59,7 +60,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db), false);
   }
 
   @Override
@@ -129,7 +130,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     bastion.initAndStartBastion(network);
     startAndInitJdbcContainer();
   }
@@ -147,7 +148,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     bastion.stopAndCloseContainers(db);
   }
 

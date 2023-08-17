@@ -1,0 +1,24 @@
+data:
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/destination-pubsub
+  githubIssueLabel: destination-pubsub
+  icon: googlepubsub.svg
+  license: MIT
+  name: Google PubSub
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

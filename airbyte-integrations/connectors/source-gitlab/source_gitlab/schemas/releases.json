@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "name": {
@@ -65,8 +65,16 @@
     "_links": {
       "type": ["null", "object"]
     },
+    "author": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "author_id": {
       "type": ["null", "integer"]
+    },
+    "commit": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "commit_id": {
       "type": ["null", "string"]

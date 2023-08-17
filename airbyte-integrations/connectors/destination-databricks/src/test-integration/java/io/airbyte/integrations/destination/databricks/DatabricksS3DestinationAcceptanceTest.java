@@ -1,8 +1,13 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
+
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
@@ -16,6 +21,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -34,33 +40,31 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
   protected JsonNode getFailCheckConfig() {
     final JsonNode failCheckJson = Jsons.clone(configJson);
     // set invalid credential
-    ((ObjectNode) failCheckJson.get("data_source"))
-        .put("s3_access_key_id", "fake-key")
-        .put("s3_secret_access_key", "fake-secret");
+    ((ObjectNode) failCheckJson.get(DATABRICKS_DATA_SOURCE_KEY))
+        .put(S_3_ACCESS_KEY_ID, "fake-key")
+        .put(S_3_SECRET_ACCESS_KEY, "fake-secret");
     return failCheckJson;
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
 
     // Set a random s3 bucket path and database schema for each integration test
     final String randomString = RandomStringUtils.randomAlphanumeric(5);
     final JsonNode configJson = Jsons.clone(baseConfigJson);
-    ((ObjectNode) configJson).put("database_schema", "integration_test_" + randomString);
-    final JsonNode dataSource = configJson.get("data_source");
-    ((ObjectNode) dataSource).put("s3_bucket_path", "test_" + randomString);
+    ((ObjectNode) configJson).put(DATABRICKS_SCHEMA_KEY, "integration_test_" + randomString);
 
     this.configJson = configJson;
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
-    this.s3Config = databricksConfig.getStorageConfig().getS3DestinationConfigOrThrow();
+    this.s3Config = databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
     LOGGER.info("Test full path: s3://{}/{}", s3Config.getBucketName(), s3Config.getBucketPath());
 
     this.s3Client = s3Config.getS3Client();
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
     // clean up s3
     final List<KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
@@ -79,7 +83,7 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
     }
     s3Client.shutdown();
 
-    super.tearDown(testEnv);
+    super.tearDown(testEnv, TEST_SCHEMAS);
   }
 
 }

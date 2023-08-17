@@ -1,71 +1,47 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+import logging
+from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk.models import SyncMode
+import pendulum
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .fields import HitsFields, VisitsFields
-from .streams import Evaluate, Sessions, Views, YandexMetricaStream
+from .streams import Sessions, Views, YandexMetricaStream
+
+logger = logging.getLogger("airbyte")
 
 
-# Source
 class SourceYandexMetrica(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        try:
-            # Check connectivity
-            evaluate_views_stream = Evaluate(
-                **{
-                    "counter_id": config["counter_id"],
-                    "params": {
-                        "fields": HitsFields.get_all_fields_keys(),
-                        "start_date": config["start_date"],
-                        "end_date": config["end_date"],
-                    },
-                    "source": "hits",
-                    "authenticator": TokenAuthenticator(token=config["auth_token"]),
-                }
-            )
-            evaluate_sessions_stream = Evaluate(
-                **{
-                    "counter_id": config["counter_id"],
-                    "params": {
-                        "fields": VisitsFields.get_all_fields_keys(),
-                        "start_date": config["start_date"],
-                        "end_date": config["end_date"],
-                    },
-                    "source": "visits",
-                    "authenticator": TokenAuthenticator(token=config["auth_token"]),
-                }
-            )
-            next(evaluate_views_stream.read_records(sync_mode=SyncMode.full_refresh))
-            next(evaluate_sessions_stream.read_records(sync_mode=SyncMode.full_refresh))
-
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        authenticator = TokenAuthenticator(token=config.get("auth_token"))
+        config["end_date"] = self.get_end_date(config=config)
+        session = Sessions(authenticator=authenticator, config=config)
+        views = Views(authenticator=authenticator, config=config)
+        results = []
+        for stream in (session, views):
+            results.append(stream.evaluate_logrequest())
+        if all(results):
             return True, None
-        except Exception as e:
-            return False, e
+        return False, "Please check provided credentials"
+
+    def get_end_date(self, config) -> str:
+        """Check if end date can be used, if not change to most recent date: yesterday"""
+        start_date = pendulum.parse(config["start_date"]).date()
+        end_date = pendulum.parse(config["end_date"]).date() if config.get("end_date") else None
+        if end_date:
+            if end_date < start_date:
+                raise Exception("Start date cannot be later than end_date")
+            if end_date > pendulum.yesterday().date():
+                raise Exception("End date cannot be set later than yesterday")
+        else:
+            logger.info("Setting end date to yesterday")
+            end_date = pendulum.yesterday().date()
+        return str(end_date)
 
     def streams(self, config: Mapping[str, Any]) -> List[YandexMetricaStream]:
-        authenticator = TokenAuthenticator(token=config["auth_token"])
-        views_stream_args = {
-            "counter_id": config["counter_id"],
-            "params": {
-                "fields": HitsFields.get_all_fields_keys(),
-                "start_date": config["start_date"],
-                "end_date": config["end_date"],
-            },
-            "authenticator": authenticator,
-        }
-        sessions_stream_args = {
-            "counter_id": config["counter_id"],
-            "params": {
-                "fields": VisitsFields.get_all_fields_keys(),
-                "start_date": config["start_date"],
-                "end_date": config["end_date"],
-            },
-            "authenticator": authenticator,
-        }
-        return [Sessions(**sessions_stream_args), Views(**views_stream_args)]
+        authenticator = TokenAuthenticator(token=config.get("auth_token"))
+        config["end_date"] = self.get_end_date(config=config)
+        return [Sessions(authenticator=authenticator, config=config), Views(authenticator=authenticator, config=config)]

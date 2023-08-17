@@ -1,16 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
+import enum
 from functools import wraps
 from time import sleep
-from typing import Dict
+from typing import Any, Dict, List, Mapping, Optional
 
 import requests
 
 SCOPES_MAPPING = {
-    "read_customers": ["Customers", "MetafieldCustomers"],
+    "read_customers": ["Customers", "MetafieldCustomers", "CustomerSavedSearch", "CustomerAddress"],
     "read_orders": [
         "Orders",
         "AbandonedCheckouts",
@@ -24,6 +25,7 @@ SCOPES_MAPPING = {
     "read_draft_orders": ["DraftOrders", "MetafieldDraftOrders"],
     "read_products": [
         "Products",
+        "ProductsGraphQl",
         "MetafieldProducts",
         "ProductImages",
         "MetafieldProductImages",
@@ -42,9 +44,70 @@ SCOPES_MAPPING = {
     "read_locations": ["Locations", "MetafieldLocations"],
     "read_inventory": ["InventoryItems", "InventoryLevels"],
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
-    "read_shopify_payments_payouts": ["BalanceTransactions"],
+    "read_shopify_payments_payouts": ["BalanceTransactions", "Disputes"],
     "read_online_store_pages": ["Articles", "MetafieldArticles", "Blogs", "MetafieldBlogs"],
 }
+
+
+class ShopifyNonRetryableErrors:
+    """Holds the errors clasification and messaging scenarios."""
+
+    def __new__(self, stream: str) -> Mapping[str, Any]:
+        return {
+            401: f"Stream `{stream}`. Failed to access the Shopify store with provided API token. Verify your API token is valid.",
+            402: f"Stream `{stream}`. The shop's plan does not have access to this feature. Please upgrade your plan to be  able to access this stream.",
+            403: f"Stream `{stream}`. Unable to access Shopify endpoint for {stream}. Check that you have the appropriate access scopes to read data from this endpoint.",
+            404: f"Stream `{stream}`. Not available or missing.",
+            500: f"Stream `{stream}`. Entity might not be available or missing."
+            # extend the mapping with more handable errors, if needed.
+        }
+
+
+class ShopifyAccessScopesError(Exception):
+    """Raises the error if authenticated user doesn't have access to verify the grantted scopes."""
+
+    help_url = "https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes"
+
+    def __init__(self, response):
+        super().__init__(
+            f"Reason: Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {response}. More info about: {self.help_url}"
+        )
+
+
+class ShopifyBadJsonError(ShopifyAccessScopesError):
+    """Raises the error when Shopify replies with broken json for `access_scopes` request"""
+
+    def __init__(self, message):
+        super().__init__(f"Reason: Bad JSON Response from the Shopify server. Details: {message}.")
+
+
+class ShopifyConnectionError(ShopifyAccessScopesError):
+    """Raises the error when Shopify replies with broken connection error for `access_scopes` request"""
+
+    def __init__(self, details):
+        super().__init__(f"Invalid `Shopify Store` name used or `host` couldn't be verified by Shopify. Details: {details}")
+
+
+class ShopifyWrongShopNameError(Exception):
+    """Raises the error when `Shopify Store` name is incorrect or couldn't be verified by the Shopify"""
+
+    def __init__(self, url):
+        super().__init__(
+            f"Reason: The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}"
+        )
+
+
+class UnrecognisedApiType(Exception):
+    pass
+
+
+class ApiTypeEnum(enum.Enum):
+    rest = "rest"
+    graphql = "graphql"
+
+    @classmethod
+    def api_types(cls) -> List:
+        return [api_type.value for api_type in ApiTypeEnum]
 
 
 class ShopifyRateLimiter:
@@ -63,9 +126,33 @@ class ShopifyRateLimiter:
     on_high_load: float = 5.0
 
     @staticmethod
-    def get_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
+    def _convert_load_to_time(load: Optional[float], threshold: float) -> float:
         """
-        To avoid reaching Shopify API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
+        Define wait_time based on load conditions.
+
+        :: load - represents how close we are to being throttled
+                - 0.5 is half way through our allowance
+                - 1 indicates that all of the allowance is used and the api will start rejecting calls
+        :: threshold - is the % cutoff for the rate_limits/load
+        :: wait_time - time to wait between each request in seconds
+
+        """
+        mid_load = threshold / 2  # average load based on threshold
+        if not load:
+            # when there is no rate_limits from header, use the `sleep_on_unknown_load`
+            wait_time = ShopifyRateLimiter.on_unknown_load
+        elif load >= threshold:
+            wait_time = ShopifyRateLimiter.on_high_load
+        elif load >= mid_load:
+            wait_time = ShopifyRateLimiter.on_mid_load
+        elif load < mid_load:
+            wait_time = ShopifyRateLimiter.on_low_load
+        return wait_time
+
+    @staticmethod
+    def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
+        """
+        To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
         Recomended wait_time between each request is 1 sec, we would handle this dynamicaly.
 
@@ -79,8 +166,6 @@ class ShopifyRateLimiter:
 
         More information: https://shopify.dev/api/usage/rate-limits
         """
-        # average load based on threshold
-        mid_load = threshold / 2
         # find the requests.Response inside args list
         for arg in args:
             response = arg if isinstance(arg, requests.models.Response) else None
@@ -92,34 +177,83 @@ class ShopifyRateLimiter:
             load = int(current_rate) / int(max_rate_limit)
         else:
             load = None
-        # define wait_time based on load conditions
-        if not load:
-            # when there is no rate_limits from header, use the `sleep_on_unknown_load`
-            wait_time = ShopifyRateLimiter.on_unknown_load
-        elif load >= threshold:
-            wait_time = ShopifyRateLimiter.on_high_load
-        elif load >= mid_load:
-            wait_time = ShopifyRateLimiter.on_mid_load
-        elif load < mid_load:
-            wait_time = ShopifyRateLimiter.on_low_load
+        wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
+        return wait_time
+
+    @staticmethod
+    def get_graphql_api_wait_time(*args, threshold: float = 0.9):
+        """
+        To avoid reaching Shopify Graphql API Rate Limits, use the extensions dict in the response.
+
+        :: threshold - is the % cutoff for the % load, if this cutoff is crossed,
+                        the connector waits `sleep_on_high_load` amount of time
+
+        Body example:
+        In this example we are 75% through our allowance.
+        This is calculated as: ((2000 - 500)/2000)*100= 75
+        {
+            "data": {...}
+            "extensions": {
+                "cost": {
+                    "requestedQueryCost": 72,
+                    "actualQueryCost": 3,
+                    "throttleStatus": {
+                        "maximumAvailable": 2000.0,
+                        "currentlyAvailable": 500,
+                        "restoreRate": 100.0
+                    }
+                }
+            }
+        }
+
+        More information: https://shopify.dev/api/usage/rate-limits
+        """
+        # find the requests.Response inside args list
+        for arg in args:
+            response = arg if isinstance(arg, requests.models.Response) else None
+
+        # Get the rate limit info from response
+        if response:
+            try:
+                throttle_status = response.json()["extensions"]["cost"]["throttleStatus"]
+                max_available = throttle_status["maximumAvailable"]
+                currently_available = throttle_status["currentlyAvailable"]
+                if max_available and currently_available:
+                    load = (int(max_available) - int(currently_available)) / int(max_available)
+            except KeyError:
+                load = None
+        else:
+            load = None
+
+        wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
         return wait_time
 
     @staticmethod
     def wait_time(wait_time: float):
         return sleep(wait_time)
 
-    def balance_rate_limit(threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
+    @staticmethod
+    def balance_rate_limit(
+        threshold: float = 0.9,
+        rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit",
+        api_type: ApiTypeEnum = ApiTypeEnum.rest.value,
+    ):
         """
         The decorator function.
-        Adjust `threshold` and `rate_limit_header` if needed.
+        Adjust `threshold`, `rate_limit_header` and `api_type` if needed.
         """
 
         def decorator(func):
             @wraps(func)
             def wrapper_balance_rate_limit(*args, **kwargs):
-                ShopifyRateLimiter.wait_time(
-                    ShopifyRateLimiter.get_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
-                )
+                if api_type == ApiTypeEnum.rest.value:
+                    ShopifyRateLimiter.wait_time(
+                        ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
+                    )
+                elif api_type == ApiTypeEnum.graphql.value:
+                    ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(*args, threshold=threshold))
+                else:
+                    raise UnrecognisedApiType(f"unrecognised api type: {api_type}. valid values are: {ApiTypeEnum.api_types()}")
                 return func(*args, **kwargs)
 
             return wrapper_balance_rate_limit

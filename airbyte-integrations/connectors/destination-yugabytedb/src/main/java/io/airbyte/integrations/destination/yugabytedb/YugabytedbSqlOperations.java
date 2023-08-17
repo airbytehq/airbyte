@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.yugabytedb;
@@ -8,7 +8,7 @@ import com.yugabyte.copy.CopyManager;
 import com.yugabyte.core.BaseConnection;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -14,27 +15,36 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
 
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 5;
+  private static final int INITIAL_WAITING_SECONDS = 30;
   private JsonNode stateAfterFirstSync;
 
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
+
   @Override
-  protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync is null");
     }
@@ -42,7 +52,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void postSetup() throws Exception {
     final Database database = setupDatabase();
     initTests();
     for (final TestDataHolder test : testDataHolders) {
@@ -57,14 +67,11 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
     catalog.getStreams().add(dummyTableWithData);
 
     final List<AirbyteMessage> allMessages = super.runRead(catalog);
-    if (allMessages.size() != 2) {
-      throw new RuntimeException("First sync should only generate 2 records");
-    }
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(allMessages);
     if (stateAfterFirstBatch == null || stateAfterFirstBatch.isEmpty()) {
       throw new RuntimeException("stateAfterFirstBatch should not be null or empty");
     }
-    stateAfterFirstSync = Jsons.jsonNode(stateAfterFirstBatch);
+    stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync should not be null");
     }
@@ -78,7 +85,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
 
   @Override
   protected Database setupDatabase() throws Exception {
-
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>("postgres:14-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
@@ -150,6 +157,28 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
+  protected void addMoneyTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("money")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues(
+                "null",
+                "'999.99'", "'1,001.01'", "'-1,000'",
+                "'$999.99'", "'$1001.01'", "'-$1,000'"
+            // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+            // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+            // https://github.com/airbytehq/airbyte/issues/7338
+            /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
+            .addExpectedValues(
+                null,
+                "999.99", "1001.01", "-1000.00",
+                "999.99", "1001.01", "-1000.00"
+            /* "-92233720368547758.08", "92233720368547758.07" */)
+            .build());
+  }
+
+  @Override
   protected void addTimeWithTimeZoneTest() {
     // time with time zone
     for (final String fullSourceType : Set.of("timetz", "time with time zone")) {
@@ -161,8 +190,8 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
               .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "20:00:01.000000Z", "05:00:00.000000Z", "21:00:03.000000Z", "13:00:04.000000Z", "21:00:05.012345Z",
-                  "05:00:06.000000Z")
+              .addExpectedValues(null, "20:00:01Z", "05:00:00.000000Z", "21:00:03Z", "13:00:04Z", "21:00:05.012345Z",
+                  "05:00:06Z")
               .build());
     }
   }

@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:standard-source-test')
 
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'

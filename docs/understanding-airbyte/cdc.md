@@ -14,10 +14,10 @@ The Airbyte Protocol outputs records from sources. Records from `UPDATE` stateme
 
 We add some metadata columns for CDC sources:
 
-* `ab_cdc_lsn` \(postgres and sql server sources\) is the point in the log where the record was retrieved
-* `ab_cdc_log_file` & `ab_cdc_log_pos` \(specific to mysql source\) is the file name and position in the file where the record was retrieved
-* `ab_cdc_updated_at` is the timestamp for the database transaction that resulted in this record change and is present for records from `DELETE`/`INSERT`/`UPDATE` statements 
-* `ab_cdc_deleted_at` is the timestamp for the database transaction that resulted in this record change and is only present for records from `DELETE` statements
+* `_ab_cdc_lsn` \(postgres and sql server sources\) is the point in the log where the record was retrieved
+* `_ab_cdc_log_file` & `_ab_cdc_log_pos` \(specific to mysql source\) is the file name and position in the file where the record was retrieved
+* `_ab_cdc_updated_at` is the timestamp for the database transaction that resulted in this record change and is present for records from `DELETE`/`INSERT`/`UPDATE` statements 
+* `_ab_cdc_deleted_at` is the timestamp for the database transaction that resulted in this record change and is only present for records from `DELETE` statements
 
 ## Limitations
 

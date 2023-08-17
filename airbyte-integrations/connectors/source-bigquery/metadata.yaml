@@ -1,0 +1,25 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: database
+  connectorType: source
+  definitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-bigquery
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
+  githubIssueLabel: source-bigquery
+  icon: bigquery.svg
+  license: ELv2
+  name: BigQuery
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+    - language:python
+metadataSpecVersion: "1.0"

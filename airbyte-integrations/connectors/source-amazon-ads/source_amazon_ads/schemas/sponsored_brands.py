@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from decimal import Decimal
@@ -19,7 +19,7 @@ class BrandsCampaign(CatalogModel):
     state: str
     servingStatus: str
     brandEntityId: str
-    portfolioId: Decimal
+    portfolioId: int
     bidOptimization: bool = None
     bidMultiplier: Decimal = None
     adFormat: str

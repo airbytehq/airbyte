@@ -31,6 +31,12 @@
     "BidMatchType": {
       "type": ["null", "string"]
     },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
     "PhoneImpressions": {
       "type": ["null", "integer"]
     },
@@ -74,6 +80,9 @@
       "type": ["null", "number"]
     },
     "Conversions": {
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified":{
       "type": ["null", "number"]
     },
     "ConversionRate": {

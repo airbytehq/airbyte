@@ -1,26 +1,25 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedBiConsumer;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
+import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -40,7 +39,7 @@ public class S3ConsumerFactory {
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BlobStorageOperations storageOperations,
                                        final NamingConventionTransformer namingResolver,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+                                       final BufferCreateFunction onCreateBuffer,
                                        final S3DestinationConfig s3Config,
                                        final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, namingResolver, s3Config, catalog);
@@ -66,8 +65,7 @@ public class S3ConsumerFactory {
         .collect(Collectors.toList());
   }
 
-  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
-                                                                              final BlobStorageOperations storageOperations,
+  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final BlobStorageOperations storageOperations,
                                                                               final NamingConventionTransformer namingResolver,
                                                                               final S3DestinationConfig s3Config) {
     return stream -> {
@@ -109,9 +107,9 @@ public class S3ConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
-  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(final BlobStorageOperations storageOperations,
-                                                                                                               final List<WriteConfig> writeConfigs,
-                                                                                                               final ConfiguredAirbyteCatalog catalog) {
+  private FlushBufferFunction flushBufferFunction(final BlobStorageOperations storageOperations,
+                                                  final List<WriteConfig> writeConfigs,
+                                                  final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
         writeConfigs.stream()
             .collect(Collectors.toUnmodifiableMap(

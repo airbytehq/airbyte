@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +52,19 @@ public abstract class AbstractStateManager<T, S> implements StateManager<T, S> {
                               final Function<S, List<String>> cursorFieldFunction,
                               final Function<S, Long> cursorRecordCountFunction,
                               final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
-    cursorManager = new CursorManager(catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction);
+    this(catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, false);
   }
+
+  public AbstractStateManager(final ConfiguredAirbyteCatalog catalog,
+      final Supplier<Collection<S>> streamSupplier,
+      final Function<S, String> cursorFunction,
+      final Function<S, List<String>> cursorFieldFunction,
+      final Function<S, Long> cursorRecordCountFunction,
+      final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
+      final boolean onlyIncludeIncrementalStreams) {
+    cursorManager = new CursorManager(catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, onlyIncludeIncrementalStreams);
+  }
+
 
   @Override
   public Map<AirbyteStreamNameNamespacePair, CursorInfo> getPairToCursorInfoMap() {

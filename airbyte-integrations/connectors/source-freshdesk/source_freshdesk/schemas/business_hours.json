@@ -17,7 +17,7 @@
     "time_zone": {
       "type": ["null", "string"]
     },
-    "business_hours": {
+    "working_hours": {
       "type": ["null", "object"],
       "properties": {
         "monday": {

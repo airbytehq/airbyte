@@ -207,7 +207,7 @@
     },
     "leadgen_tos_acceptance_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "leadgen_tos_accepted": {
       "type": ["boolean", "null"]

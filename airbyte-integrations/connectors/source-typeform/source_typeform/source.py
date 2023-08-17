@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -16,7 +16,9 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from pendulum.datetime import DateTime
+from requests.auth import AuthBase
 
 
 class TypeformStream(HttpStream, ABC):
@@ -28,7 +30,10 @@ class TypeformStream(HttpStream, ABC):
     def __init__(self, **kwargs: Mapping[str, Any]):
         super().__init__(authenticator=kwargs["authenticator"])
         self.config: Mapping[str, Any] = kwargs
-        self.start_date: DateTime = pendulum.from_format(kwargs["start_date"], self.date_format)
+        # if start_date is not provided during setup, use date from a year ago instead
+        self.start_date: DateTime = pendulum.today().subtract(years=1)
+        if kwargs.get("start_date"):
+            self.start_date: DateTime = pendulum.from_format(kwargs["start_date"], self.date_format)
 
         # changes page limit, this param is using for development and debugging
         if kwargs.get("page_size"):
@@ -145,6 +150,13 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
         referer = record.get("metadata", {}).get("referer")
         return urlparse.urlparse(referer).path.split("/")[-1] if referer else None
 
+    def current_state_value_int(self, current_stream_state: MutableMapping[str, Any], form_id: str) -> int:
+        # state used to be stored as int, now we store it as str, so need to handle both cases
+        value = current_stream_state.get(form_id, {}).get(self.cursor_field, self.start_date.int_timestamp)
+        if isinstance(value, str):
+            value = pendulum.from_format(value, self.date_format).int_timestamp
+        return value
+
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
@@ -155,10 +167,11 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
             return current_stream_state
 
         current_stream_state[form_id] = current_stream_state.get(form_id, {})
-        current_stream_state[form_id][self.cursor_field] = max(
+        new_state_value = max(
             pendulum.from_format(latest_record[self.cursor_field], self.date_format).int_timestamp,
-            current_stream_state[form_id].get(self.cursor_field, 1),
+            self.current_state_value_int(current_stream_state, form_id),
         )
+        current_stream_state[form_id][self.cursor_field] = pendulum.from_timestamp(new_state_value).format(self.date_format)
         return current_stream_state
 
     def request_params(
@@ -174,7 +187,7 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
             # use state for first request in incremental sync
             params["sort"] = "submitted_at,asc"
             # start from last state or from start date
-            since = max(self.start_date.int_timestamp, stream_state.get(stream_slice["form_id"], {}).get(self.cursor_field, 1))
+            since = max(self.start_date.int_timestamp, self.current_state_value_int(stream_state, stream_slice["form_id"]))
             if since:
                 params["since"] = pendulum.from_timestamp(since).format(self.date_format)
         else:
@@ -183,6 +196,12 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
             params["after"] = next_page_token
 
         return params
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        responses = response.json()["items"]
+        for response in responses:
+            response["form_id"] = stream_slice["form_id"]
+        return responses
 
 
 class Webhooks(TrimFormsMixin, TypeformStream):
@@ -237,13 +256,20 @@ class Themes(PaginatedStream):
 
 
 class SourceTypeform(AbstractSource):
+    def get_auth(self, config: MutableMapping) -> AuthBase:
+        credentials = config.get("credentials")
+        if credentials and credentials.get("access_token"):
+            return TokenAuthenticator(token=credentials["access_token"])
+        return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint="https://api.typeform.com/oauth/token")
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             form_ids = config.get("form_ids", []).copy()
+            auth = self.get_auth(config)
             # verify if form inputted by user is valid
             try:
                 url = urlparse.urljoin(TypeformStream.url_base, "me")
-                auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                auth_headers = auth.get_auth_header()
                 session = requests.get(url, headers=auth_headers)
                 session.raise_for_status()
             except Exception as e:
@@ -252,7 +278,6 @@ class SourceTypeform(AbstractSource):
                 for form in form_ids:
                     try:
                         url = urlparse.urljoin(TypeformStream.url_base, f"forms/{form}")
-                        auth_headers = {"Authorization": f"Bearer {config['token']}"}
                         response = requests.get(url, headers=auth_headers)
                         response.raise_for_status()
                     except Exception as e:
@@ -268,7 +293,7 @@ class SourceTypeform(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config["token"])
+        auth = self.get_auth(config)
         return [
             Forms(authenticator=auth, **config),
             Responses(authenticator=auth, **config),

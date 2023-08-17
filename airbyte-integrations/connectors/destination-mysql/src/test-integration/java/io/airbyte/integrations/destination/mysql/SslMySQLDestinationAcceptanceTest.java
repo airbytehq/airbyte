@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
@@ -14,9 +14,10 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -28,7 +29,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   private MySQLContainer<?> db;
   private DSLContext dslContext;
-  private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+  private final StandardNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override
   protected JsonNode getConfig() {
@@ -84,7 +85,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
 
@@ -104,7 +105,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     dslContext.close();
     db.stop();
     db.close();

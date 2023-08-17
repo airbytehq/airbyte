@@ -1,0 +1,143 @@
+{
+  "streams": [
+    {
+      "name": "streamWithCamelCase",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+
+    {
+      "name": "stream_with_underscores",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "STREAM_WITH_ALL_CAPS",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_edge_case_field_names",
+      "json_schema": {
+        "properties": {
+          "fieldWithCamelCase": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          },
+          "field_with_underscore": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          },
+          "FIELD_WITH_ALL_CAPS": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream-with:spécial:character_names",
+      "json_schema": {
+        "properties": {
+          "field_with_spécial_character": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "CapitalCase",
+      "json_schema": {
+        "properties": {
+          "deleted": {
+            "$ref": "WellKnownTypes.json#/definitions/Boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "reserved_keywords",
+      "json_schema": {
+        "properties": {
+          "order": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "groups",
+      "json_schema": {
+        "properties": {
+          "authorization": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "ProperCase",
+      "json_schema": {
+        "properties": {
+          "ProperCase": {
+            "$ref": "WellKnownTypes.json#/definitions/Boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_name",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
+          },
+          "some_field": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          },
+          "some_next_field": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_name_next",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
+          },
+          "next_field_name": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_binary_data",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
+          },
+          "binary_field_name": {
+            "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+          }
+        }
+      }
+    }
+  ]
+}

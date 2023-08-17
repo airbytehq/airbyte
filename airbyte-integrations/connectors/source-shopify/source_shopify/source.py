@@ -1,9 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
+import logging
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
@@ -12,12 +14,16 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
 
 from .auth import ShopifyAuthenticator
+from .graphql import get_query_products
 from .transform import DataTypeEnforcer
-from .utils import SCOPES_MAPPING
+from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
+from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyNonRetryableErrors
 from .utils import ShopifyRateLimiter as limiter
+from .utils import ShopifyWrongShopNameError
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -30,7 +36,11 @@ class ShopifyStream(HttpStream, ABC):
     order_field = "updated_at"
     filter_field = "updated_at_min"
 
+    # define default logger
+    logger = logging.getLogger("airbyte")
+
     raise_on_http_errors = True
+    max_retries = 5
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
@@ -68,29 +78,39 @@ class ShopifyStream(HttpStream, ABC):
     @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
-            json_response = response.json()
-            records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-            # transform method was implemented according to issue 4841
-            # Shopify API returns price fields as a string and it should be converted to number
-            # this solution designed to convert string into number, but in future can be modified for general purpose
-            if isinstance(records, dict):
-                # for cases when we have a single record as dict
+            try:
+                json_response = response.json()
+                records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+                yield from self.produce_records(records)
+            except RequestException as e:
+                self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                yield {}
+
+    def produce_records(self, records: Union[Iterable[Mapping[str, Any]], Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        # transform method was implemented according to issue 4841
+        # Shopify API returns price fields as a string and it should be converted to number
+        # this solution designed to convert string into number, but in future can be modified for general purpose
+        if isinstance(records, dict):
+            # for cases when we have a single record as dict
+            # add shop_url to the record to make querying easy
+            records["shop_url"] = self.config["shop"]
+            yield self._transformer.transform(records)
+        else:
+            # for other cases
+            for record in records:
                 # add shop_url to the record to make querying easy
-                records["shop_url"] = self.config["shop"]
-                yield self._transformer.transform(records)
-            else:
-                # for other cases
-                for record in records:
-                    # add shop_url to the record to make querying easy
-                    record["shop_url"] = self.config["shop"]
-                    yield self._transformer.transform(record)
+                record["shop_url"] = self.config["shop"]
+                yield self._transformer.transform(record)
 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 404:
-            self.logger.warn(f"Stream `{self.name}` is not available, skipping...")
+        known_errors = ShopifyNonRetryableErrors(self.name)
+        status = response.status_code
+        if status in known_errors.keys():
             setattr(self, "raise_on_http_errors", False)
+            self.logger.warning(known_errors.get(status))
             return False
-        return super().should_retry(response)
+        else:
+            return super().should_retry(response)
 
     @property
     @abstractmethod
@@ -115,12 +135,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return 0 if self.cursor_field == "id" else ""
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.default_state_comparison_value),
-                current_stream_state.get(self.cursor_field, self.default_state_comparison_value),
-            )
-        }
+        last_record_value = latest_record.get(self.cursor_field) or self.default_state_comparison_value
+        current_state_value = current_stream_state.get(self.cursor_field) or self.default_state_comparison_value
+        return {self.cursor_field: max(last_record_value, current_state_value)}
 
     @stream_state_cache.cache_stream_state
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
@@ -147,13 +164,13 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                             yield record
                     else:
                         # old entities could have cursor field in place, but set to null
-                        self.logger.warn(
+                        self.logger.warning(
                             f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` cursor value is: {record_value}, record is emitted without state comparison"
                         )
                         yield record
                 else:
                     # old entities could miss the cursor field
-                    self.logger.warn(
+                    self.logger.warning(
                         f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor field: {self.cursor_field}, record is emitted without state comparison"
                     )
                     yield record
@@ -184,7 +201,7 @@ class ShopifySubstream(IncrementalShopifyStream):
     nested_substream = None
     nested_substream_list_field_id = None
 
-    @property
+    @cached_property
     def parent_stream(self) -> object:
         """
         Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
@@ -360,6 +377,16 @@ class Orders(IncrementalShopifyStream):
         return params
 
 
+class Disputes(IncrementalShopifyStream):
+    data_field = "disputes"
+    filter_field = "since_id"
+    cursor_field = "id"
+    order_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"shopify_payments/{self.data_field}.json"
+
+
 class MetafieldOrders(MetafieldShopifySubstream):
     parent_stream_class: object = Orders
 
@@ -381,6 +408,59 @@ class Products(IncrementalShopifyStream):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+
+class ProductsGraphQl(IncrementalShopifyStream):
+    filter_field = "updatedAt"
+    cursor_field = "updatedAt"
+    data_field = "graphql"
+    http_method = "POST"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping]:
+        state_value = stream_state.get(self.filter_field)
+        if state_value:
+            filter_value = state_value
+        else:
+            filter_value = self.default_filter_field_value
+        query = get_query_products(
+            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token
+        )
+        return {"query": query}
+
+    @staticmethod
+    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
+        page_info = response.json()["data"]["products"]["pageInfo"]
+        has_next_page = page_info["hasNextPage"]
+        if has_next_page:
+            return page_info["endCursor"]
+        else:
+            return None
+
+    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code is requests.codes.OK:
+            try:
+                json_response = response.json()["data"]["products"]["nodes"]
+                yield from self.produce_records(json_response)
+            except RequestException as e:
+                self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                yield {}
 
 
 class MetafieldProducts(MetafieldShopifySubstream):
@@ -684,29 +764,93 @@ class MetafieldShops(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
+class CustomerSavedSearch(IncrementalShopifyStream):
+    api_version = "2022-01"
+    cursor_field = "id"
+    order_field = "id"
+    data_field = "customer_saved_searches"
+    filter_field = "since_id"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class CustomerAddress(ShopifySubstream):
+    parent_stream_class: object = Customers
+    slice_key = "id"
+    data_field = "addresses"
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        customer_id = stream_slice[self.slice_key]
+        return f"customers/{customer_id}/{self.data_field}.json"
+
+
+class Countries(ShopifyStream):
+    data_field = "countries"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class ConnectionCheckTest:
+    def __init__(self, config: Mapping[str, Any]):
+        self.config = config
+        # use `Shop` as a test stream for connection check
+        self.test_stream = Shop(self.config)
+        # setting `max_retries` to 0 for the stage of `check connection`,
+        # because it keeps retrying for wrong shop names,
+        # but it should stop immediately
+        self.test_stream.max_retries = 0
+
+    def describe_error(self, pattern: str, shop_name: str = None, details: Any = None, **kwargs) -> str:
+        connection_check_errors_map: Mapping[str, Any] = {
+            "connection_error": f"Connection could not be established using `Shopify Store`: {shop_name}. Make sure it's valid and try again.",
+            "request_exception": f"Request was not successfull, check your `input configuation` and try again. Details: {details}",
+            "index_error": f"Failed to access the Shopify store `{shop_name}`. Verify the entered Shopify store or API Key in `input configuration`.",
+            # add the other patterns and description, if needed...
+        }
+        return connection_check_errors_map.get(pattern)
+
+    def test_connection(self) -> tuple[bool, str]:
+        shop_name = self.config.get("shop")
+        if not shop_name:
+            return False, "The `Shopify Store` name is missing. Make sure it's entered and valid."
+
+        try:
+            response = list(self.test_stream.read_records(sync_mode=None))
+            # check for the shop_id is present in the response
+            shop_id = response[0].get("id")
+            if shop_id is not None:
+                return True, None
+            else:
+                return False, f"The `shop_id` is invalid: {shop_id}"
+        except (SSLError, ConnectionError):
+            return False, self.describe_error("connection_error", shop_name)
+        except RequestException as req_error:
+            return False, self.describe_error("request_exception", details=req_error)
+        except IndexError:
+            return False, self.describe_error("index_error", shop_name, response)
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """
+        config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
-        try:
-            response = list(Shop(config).read_records(sync_mode=None))
-            # check for the shop_id is present in the response
-            shop_id = response[0].get("id")
-            if shop_id is not None:
-                return True, None
-        except (requests.exceptions.RequestException, IndexError) as e:
-            return False, e
+        return ConnectionCheckTest(config).test_connection()
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
+        config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         user_scopes = self.get_user_scopes(config)
-        always_permitted_streams = ["MetafieldShops", "Shop"]
+        always_permitted_streams = ["MetafieldShops", "Shop", "Countries"]
         permitted_streams = [
             stream
             for user_scope in user_scopes
@@ -725,6 +869,7 @@ class SourceShopify(AbstractSource):
             CustomCollections(config),
             Customers(config),
             DiscountCodes(config),
+            Disputes(config),
             DraftOrders(config),
             FulfillmentOrders(config),
             Fulfillments(config),
@@ -751,11 +896,15 @@ class SourceShopify(AbstractSource):
             PriceRules(config),
             ProductImages(config),
             Products(config),
+            ProductsGraphQl(config),
             ProductVariants(config),
             Shop(config),
             SmartCollections(config),
             TenderTransactions(config),
             Transactions(config),
+            CustomerSavedSearch(config),
+            CustomerAddress(config),
+            Countries(config),
         ]
 
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
@@ -763,9 +912,29 @@ class SourceShopify(AbstractSource):
     @staticmethod
     def get_user_scopes(config):
         session = requests.Session()
+        url = f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json"
         headers = config["authenticator"].get_auth_header()
-        response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
-        return response["access_scopes"]
+
+        try:
+            response = session.get(url, headers=headers).json()
+            access_scopes = response.get("access_scopes")
+        except InvalidURL:
+            raise ShopifyWrongShopNameError(url)
+        except JSONDecodeError as json_error:
+            raise ShopifyBadJsonError(json_error)
+        except (SSLError, ConnectionError) as con_error:
+            raise ShopifyConnectionError(con_error)
+
+        if access_scopes:
+            return access_scopes
+        else:
+            raise ShopifyAccessScopesError(response)
+
+    @staticmethod
+    def get_shop_name(config):
+        split_pattern = ".myshopify.com"
+        shop_name = config.get("shop")
+        return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
 
     @staticmethod
     def format_name(name):

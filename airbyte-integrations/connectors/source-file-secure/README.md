@@ -60,7 +60,7 @@ python -m pytest unit_tests
 First, make sure you build the latest Docker image:
 ```
 docker build . -t airbyte/source-file-secure:dev \
-&& python -m pytest -p source_acceptance_test.plugin
+&& python -m pytest -p connector_acceptance_test.plugin
 ```
 
 You can also build the connector image via Gradle:

@@ -1,35 +1,79 @@
-{
-  "adaccounts": {
-    "updated_at": "2221-01-01T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2221-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "adaccounts"
+      }
+    }
   },
-  "creatives": {
-    "updated_at": "2221-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2221-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "creatives"
+      }
+    }
   },
-  "media": {
-    "updated_at": "2221-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2221-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "media"
+      }
+    }
   },
-  "campaigns": {
-    "updated_at": "2221-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2221-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "campaigns"
+      }
+    }
   },
-  "ads": {
-    "updated_at": "2221-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2221-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "ads"
+      }
+    }
   },
-  "adsquads": {
-    "updated_at": "2221-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2221-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "adsquads"
+      }
+    }
   },
-  "segments": {
-    "updated_at": "2221-01-01T00:00:00Z"
-  },
-  "adaccounts_stats_daily": {
-    "start_time": "2221-07-05"
-  },
-  "ads_stats_daily": {
-    "start_time": "2221-07-05"
-  },
-  "adsquads_stats_daily": {
-    "start_time": "2221-07-05"
-  },
-  "campaigns_stats_daily": {
-    "start_time": "2221-07-05"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2221-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "segments"
+      }
+    }
   }
-}
+]

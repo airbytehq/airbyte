@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import codecs
 import csv
 import json
 import tempfile
@@ -10,7 +11,10 @@ from typing import Any, BinaryIO, Callable, Iterator, Mapping, Optional, TextIO,
 import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pyarrow import csv as pa_csv
+from pyarrow.lib import ArrowInvalid
 from source_s3.exceptions import S3Exception
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.utils import get_value_or_json_if_empty_string, run_in_external_process
@@ -49,6 +53,61 @@ class CsvParser(AbstractFileParser):
         if self.format_model is None:
             self.format_model = CsvFormat.parse_obj(self._format)
         return self.format_model
+
+    @staticmethod
+    def _validate_field(
+        format_: Mapping[str, Any], field_name: str, allow_empty: bool = False, disallow_values: Optional[Tuple[Any, ...]] = None
+    ) -> Optional[str]:
+        disallow_values = disallow_values or ()
+        field_value = format_.get(field_name)
+        if not field_value and allow_empty:
+            return
+        if field_value and len(field_value) != 1:
+            return f"{field_name} should contain 1 character only"
+        if field_value in disallow_values:
+            return f"{field_name} can not be {field_value}"
+
+    @staticmethod
+    def _validate_encoding(encoding: str) -> None:
+        try:
+            codecs.lookup(encoding)
+        except LookupError as e:
+            # UTF8 is the default encoding value, so there is no problem if `encoding` is not set manually
+            if encoding != "":
+                raise AirbyteTracedException(str(e), str(e), failure_type=FailureType.config_error)
+
+    @classmethod
+    def _validate_options(cls, validator: Callable, options_name: str, format_: Mapping[str, Any]) -> Optional[str]:
+        options = format_.get(options_name, "{}")
+        try:
+            options = json.loads(options)
+            validator(**options)
+        except json.decoder.JSONDecodeError:
+            return "Malformed advanced read options!"
+        except TypeError as e:
+            return f"One or more read options are invalid: {str(e)}"
+
+    @classmethod
+    def _validate_read_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
+        return cls._validate_options(pa.csv.ReadOptions, "advanced_options", format_)
+
+    @classmethod
+    def _validate_convert_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
+        return cls._validate_options(pa.csv.ConvertOptions, "additional_reader_options", format_)
+
+    def _validate_config(self, config: Mapping[str, Any]):
+        format_ = config.get("format", {})
+        for error_message in (
+            self._validate_field(format_, "delimiter", disallow_values=("\r", "\n")),
+            self._validate_field(format_, "quote_char"),
+            self._validate_field(format_, "escape_char", allow_empty=True),
+            self._validate_read_options(format_),
+            self._validate_convert_options(format_),
+        ):
+            if error_message:
+                raise AirbyteTracedException(error_message, error_message, failure_type=FailureType.config_error)
+
+        self._validate_encoding(format_.get("encoding", ""))
 
     def _read_options(self) -> Mapping[str, str]:
         """
@@ -160,6 +219,7 @@ class CsvParser(AbstractFileParser):
         quote_char = self.format.quote_char
         reader = csv.reader([six.ensure_text(file.readline())], delimiter=delimiter, quotechar=quote_char)
         field_names = next(reader)
+        file.seek(0)  # the file may be reused later so return the cursor to the very beginning of the file as if nothing happened here
         return {field_name.strip(): pyarrow.string() for field_name in field_names}
 
     @wrap_exception((ValueError,))
@@ -168,16 +228,30 @@ class CsvParser(AbstractFileParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         PyArrow returns lists of values for each column so we zip() these up into records which we then yield
         """
+        # In case master_schema is a user defined schema, it may miss some columns.
+        # We set their type to `string` as a default type in order to pass a schema with all the file columns to pyarrow
+        # so that pyarrow wouldn't need to infer data types of missing columns. Type inference may often break syncs:
+        # it reads a block of data and makes suggestions of its type based on that block. So if the next block contains data
+        # of different type, things get broken. To fix it you either have to increase block size or pass a predefined schema.
+        # Even if actual data type is changed because of this hack, it will not break sync because this data is written
+        # to `_ab_additional_properties` column which is not strictly typed ({'type': 'object'}). That's why this is helpful
+        # when a schema is defined by user and there's no space to increase a block size.
+        schema = self._get_schema_dict_without_inference(file)
+        schema.update(self._master_schema)
+
         streaming_reader = pa_csv.open_csv(
             file,
             pa.csv.ReadOptions(**self._read_options()),
             pa.csv.ParseOptions(**self._parse_options()),
-            pa.csv.ConvertOptions(**self._convert_options(self._master_schema)),
+            pa.csv.ConvertOptions(**self._convert_options(schema)),
         )
         still_reading = True
         while still_reading:
             try:
                 batch = streaming_reader.read_next_batch()
+            except ArrowInvalid as e:
+                error_message = "Possibly too small block size used. Please try to increase it"
+                raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error) from e
             except StopIteration:
                 still_reading = False
             else:
@@ -190,3 +264,7 @@ class CsvParser(AbstractFileParser):
                 for record_values in zip(*columnwise_record_values):
                     # create our record of {col: value, col: value} by dict comprehension, iterating through all cols in batch_columns
                     yield {batch_columns[i]: record_values[i] for i in range(len(batch_columns))}
+
+    @classmethod
+    def set_minimal_block_size(cls, format: Mapping[str, Any]):
+        pass

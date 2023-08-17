@@ -1,13 +1,23 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import abstractmethod
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import backoff
 import pendulum
 import requests
+from airbyte_cdk.models import Level
+from airbyte_cdk.sources.http_logger import format_http_message
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from requests.auth import AuthBase
+
+from ..exceptions import DefaultBackoffException
+
+logger = logging.getLogger("airbyte")
+_NOOP_MESSAGE_REPOSITORY = NoopMessageRepository()
 
 
 class AbstractOauth2Authenticator(AuthBase):
@@ -16,6 +26,8 @@ class AbstractOauth2Authenticator(AuthBase):
     is designed to generically perform the refresh flow without regard to how config fields are get/set by
     delegating that behavior to the classes implementing the interface.
     """
+
+    _NO_STREAM_NAME = None
 
     def __call__(self, request: requests.Request) -> requests.Request:
         """Attach the HTTP headers required to authenticate on the HTTP request"""
@@ -29,10 +41,9 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_access_token(self) -> str:
         """Returns the access token"""
         if self.token_has_expired():
-            t0 = pendulum.now()
             token, expires_in = self.refresh_access_token()
             self.access_token = token
-            self.set_token_expiry_date(t0.add(seconds=expires_in))
+            self.set_token_expiry_date(expires_in)
 
         return self.access_token
 
@@ -47,7 +58,7 @@ class AbstractOauth2Authenticator(AuthBase):
         Override to define additional parameters
         """
         payload: MutableMapping[str, Any] = {
-            "grant_type": "refresh_token",
+            "grant_type": self.get_grant_type(),
             "client_id": self.get_client_id(),
             "client_secret": self.get_client_secret(),
             "refresh_token": self.get_refresh_token(),
@@ -64,19 +75,35 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        max_time=300,
+    )
+    def _get_refresh_access_token_response(self):
+        try:
+            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            self._log_response(response)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            if e.response.status_code == 429 or e.response.status_code >= 500:
+                raise DefaultBackoffException(request=e.response.request, response=e.response)
+            raise
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
+
     def refresh_access_token(self) -> Tuple[str, int]:
         """
         Returns the refresh token and its lifespan in seconds
 
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
-        try:
-            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
-            response.raise_for_status()
-            response_json = response.json()
-            return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+        response_json = self._get_refresh_access_token_response()
+        return response_json[self.get_access_token_name()], int(response_json[self.get_expires_in_name()])
 
     @abstractmethod
     def get_token_refresh_endpoint(self) -> str:
@@ -91,7 +118,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """The client secret to authenticate"""
 
     @abstractmethod
-    def get_refresh_token(self) -> str:
+    def get_refresh_token(self) -> Optional[str]:
         """The token used to refresh the access token when it expires"""
 
     @abstractmethod
@@ -99,11 +126,11 @@ class AbstractOauth2Authenticator(AuthBase):
         """List of requested scopes"""
 
     @abstractmethod
-    def get_token_expiry_date(self) -> pendulum.datetime:
+    def get_token_expiry_date(self) -> pendulum.DateTime:
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, value: pendulum.datetime):
+    def set_token_expiry_date(self, value: Union[str, int]):
         """Setter for access token expiration date"""
 
     @abstractmethod
@@ -118,6 +145,10 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         """Returns the request body to set on the refresh request"""
 
+    @abstractmethod
+    def get_grant_type(self) -> str:
+        """Returns grant_type specified for requesting access_token"""
+
     @property
     @abstractmethod
     def access_token(self) -> str:
@@ -127,3 +158,22 @@ class AbstractOauth2Authenticator(AuthBase):
     @abstractmethod
     def access_token(self, value: str) -> str:
         """Setter for the access token"""
+
+    @property
+    def _message_repository(self) -> Optional[MessageRepository]:
+        """
+        The implementation can define a message_repository if it wants debugging logs for HTTP requests
+        """
+        return _NOOP_MESSAGE_REPOSITORY
+
+    def _log_response(self, response: requests.Response):
+        self._message_repository.log_message(
+            Level.DEBUG,
+            lambda: format_http_message(
+                response,
+                "Refresh token",
+                "Obtains access token",
+                self._NO_STREAM_NAME,
+                is_auxiliary=True,
+            ),
+        )

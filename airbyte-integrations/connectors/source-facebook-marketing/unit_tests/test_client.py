@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -9,7 +9,7 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.streams import AdAccount, AdCreatives, Campaigns
+from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives, Campaigns, Videos
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -35,6 +35,18 @@ def fb_call_rate_response_fixture():
         },
         "status_code": 400,
         "headers": headers,
+    }
+
+
+@pytest.fixture(name="fb_call_amount_data_response")
+def fb_call_amount_data_response_fixture():
+    error = {"message": "Please reduce the amount of data you're asking for, then retry your request", "code": 1}
+
+    return {
+        "json": {
+            "error": error,
+        },
+        "status_code": 500,
     }
 
 
@@ -132,3 +144,77 @@ class TestBackoff:
         accounts = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
         assert accounts == [account_data]
+
+    def test_limit_error_retry(self, fb_call_amount_data_response, requests_mock, api, account_id):
+        """Error every time, check limit parameter decreases by 2 times every new call"""
+
+        res = requests_mock.register_uri(
+            "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", [fb_call_amount_data_response]
+        )
+
+        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        try:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        except FacebookRequestError:
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]
+
+    def test_limit_error_retry_revert_page_size(self, requests_mock, api, account_id):
+        """Error every time, check limit parameter decreases by 2 times every new call"""
+
+        error = {
+            "json": {
+                "error": {
+                    "message": "An unknown error occurred",
+                    "code": 1,
+                }
+            },
+            "status_code": 500,
+        }
+        success = {
+            "json": {
+                'data': [],
+                "paging": {
+                    "cursors": {
+                        "after": "test",
+                    },
+                    "next": f"https://graph.facebook.com/{FB_API_VERSION}/act_{account_id}/activities?limit=31&after=test"
+                }
+            },
+            "status_code": 200,
+        }
+
+        res = requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities",
+            [error, success, error, success],
+        )
+
+        stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        try:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        except FacebookRequestError:
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ['100', '50', '100', '50']
+
+    def test_limit_error_retry_next_page(self, fb_call_amount_data_response, requests_mock, api, account_id):
+        """Unlike the previous test, this one tests the API call fail on the second or more page of a request."""
+        base_url = FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/advideos"
+
+        res = requests_mock.register_uri(
+            "GET", base_url,
+            [
+                {
+                    "json": {
+                        "data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}],
+                        "paging": {"next": f"{base_url}?after=after_page_1&limit=100"}
+                    },
+                    "status_code": 200
+                },
+                fb_call_amount_data_response
+            ]
+        )
+
+        stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        try:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        except FacebookRequestError:
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "100", "50", "25", "12", "6"]

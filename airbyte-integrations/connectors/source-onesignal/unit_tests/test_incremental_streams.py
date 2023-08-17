@@ -1,14 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
-from unittest.mock import MagicMock
 
 import requests
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_onesignal.streams import Apps, Devices, IncrementalOnesignalStream, Notifications
+from source_onesignal.streams import Devices, IncrementalOnesignalStream, Notifications
 
 
 @fixture
@@ -21,17 +18,21 @@ def patch_incremental_base_class(mocker):
 
 @fixture
 def args():
-    return {"authenticator": None, "config": {"user_auth_key": "", "start_date": "2021-01-01T00:00:00Z", "outcome_names": ""}}
+    return {"authenticator": None,
+            "config": {"user_auth_key": "",
+                       "start_date": "2021-01-01T00:00:00Z",
+                       "outcome_names": "",
+                       "applications": [
+                           {"app_id": "fake_id",
+                            "app_api_key": "fake_api_key"}
+                       ]
+                       }
+            }
 
 
 @fixture
-def parent(args):
-    return Apps(**args)
-
-
-@fixture
-def stream(patch_incremental_base_class, parent, args):
-    return IncrementalOnesignalStream(parent=parent, **args)
+def stream(patch_incremental_base_class, args):
+    return IncrementalOnesignalStream(**args)
 
 
 def test_cursor_field(stream):
@@ -39,69 +40,14 @@ def test_cursor_field(stream):
     assert stream.cursor_field == expected_cursor_field
 
 
-def test_get_updated_state(stream):
-    inputs = {"current_stream_state": {"updated_at": 42}, "latest_record": {"updated_at": 90}}
-    expected_state = 90
-    state = stream.get_updated_state(**inputs)
-    assert state["updated_at"] == expected_state
-
-    inputs = {"current_stream_state": state, "latest_record": {"updated_at": 100}}
-    expected_state = 100
-    state = stream.get_updated_state(**inputs)
-    assert state["updated_at"] == expected_state
-
-    # after stream sync is finished, state should output the max cursor time
-    stream.is_finished = True
-    inputs = {"current_stream_state": state, "latest_record": {"updated_at": 80}}
-    expected_state = 100
-    state = stream.get_updated_state(**inputs)
-    assert state["updated_at"] == expected_state
-
-
 def test_stream_slices(stream, requests_mock):
-    requests_mock.get(
-        "https://onesignal.com/api/v1/apps", json=[{"id": "abc", "basic_auth_key": "key 1"}, {"id": "def", "basic_auth_key": "key 2"}]
-    )
-
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    expected_stream_slice = [{"app_id": "abc", "rest_api_key": "key 1"}, {"app_id": "def", "rest_api_key": "key 2"}]
-    assert list(stream.stream_slices(**inputs)) == expected_stream_slice
+    expected_stream_slice = [{'app_api_key': 'fake_api_key', 'app_id': 'fake_id'}]
+    assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected_stream_slice
 
 
-def test_end_of_stream_state(parent, args, requests_mock):
-    requests_mock.get(
-        "https://onesignal.com/api/v1/apps",
-        json=[{"id": "abc", "basic_auth_key": "key 1"}, {"id": "def", "basic_auth_key": "key 2"}, {"id": "ghi", "basic_auth_key": "key 3"}],
-    )
-    requests_mock.get(
-        "https://onesignal.com/api/v1/notifications?app_id=abc",
-        json={"total_count": 1, "offset": 0, "limit": 1, "notifications": [{"id": "notification 1", "queued_at": 90}]},
-    )
-    requests_mock.get(
-        "https://onesignal.com/api/v1/notifications?app_id=def",
-        json={"total_count": 1, "offset": 0, "limit": 1, "notifications": [{"id": "notification 2", "queued_at": 80}]},
-    )
-    requests_mock.get(
-        "https://onesignal.com/api/v1/notifications?app_id=ghi",
-        json={"total_count": 1, "offset": 0, "limit": 1, "notifications": [{"id": "notification 3", "queued_at": 70}]},
-    )
-
-    stream = Notifications(parent=parent, **args)
-    state = {"queued_at": 50}
-    sync_mode = SyncMode.incremental
-
-    for idx, app_slice in enumerate(stream.stream_slices(sync_mode, **MagicMock())):
-        for record in stream.read_records(sync_mode, stream_slice=app_slice):
-            state = stream.get_updated_state(state, record)
-            if idx == 2:  # the last slice
-                assert state["queued_at"] == 90
-            else:
-                assert state["queued_at"] == 90
-
-
-def test_supports_incremental(patch_incremental_base_class, mocker, parent, args):
+def test_supports_incremental(patch_incremental_base_class, mocker, args):
     mocker.patch.object(IncrementalOnesignalStream, "cursor_field", "dummy_field")
-    stream = IncrementalOnesignalStream(parent=parent, **args)
+    stream = IncrementalOnesignalStream(**args)
     assert stream.supports_incremental
 
 
@@ -126,7 +72,7 @@ def test_next_page_token(stream, requests_mock):
     assert stream.next_page_token(resp) == expected_next_page_token
 
 
-def test_request_params(stream, parent, args):
+def test_request_params(stream, args):
     inputs = {"stream_state": {}, "stream_slice": {"app_id": "abc"}}
     inputs2 = {"stream_state": {}, "stream_slice": {"app_id": "abc"}, "next_page_token": {"offset": 42}}
     expected_request_params = {"app_id": "abc", "limit": None}
@@ -135,13 +81,13 @@ def test_request_params(stream, parent, args):
     assert stream.request_params(**inputs) == expected_request_params
     assert stream.request_params(**inputs2) == expected_request_params2
 
-    stream2 = Devices(parent=parent, **args)
+    stream2 = Devices(**args)
     expected_request_params["limit"] = 300
     expected_request_params2["limit"] = 300
     assert stream2.request_params(**inputs) == expected_request_params
     assert stream2.request_params(**inputs2) == expected_request_params2
 
-    stream3 = Notifications(parent=parent, **args)
+    stream3 = Notifications(**args)
     expected_request_params["limit"] = 50
     expected_request_params2["limit"] = 50
     assert stream3.request_params(**inputs) == expected_request_params
@@ -149,10 +95,18 @@ def test_request_params(stream, parent, args):
 
 
 def test_filter_by_state(stream):
-    inputs = {"stream_state": {"updated_at": 1580510247}, "record": {"updated_at": 1580510248}}
+    inputs = {
+        "stream_state": {"fake_id": {"updated_at": 100}},
+        "record": {"updated_at": 200},
+        "stream_slice": {'app_id': "fake_id"}
+    }
     expected_filter_by_state = True
     assert stream.filter_by_state(**inputs) == expected_filter_by_state
 
-    inputs = {"stream_state": {"updated_at": 1580510248}, "record": {"updated_at": 1580510247}}
+    inputs = {
+        "stream_state": {"fake_id": {"updated_at": 200}},
+        "record": {"updated_at": 100},
+        "stream_slice": {'app_id': "fake_id"}
+    }
     expected_filter_by_state = False
     assert stream.filter_by_state(**inputs) == expected_filter_by_state

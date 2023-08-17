@@ -1,39 +1,85 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "campaignId": { "type": "string" },
-    "trend": {
-      "type": "array",
+    "campaignId": {
+      "type": ["null", "string"]
+    },
+    "questionsStats": {
+      "type": ["null","array"],
       "items": {
         "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "trend": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
-          "day": { "type": "string" },
-          "promoters": { "type": "number" },
-          "passives": { "type": "number" },
-          "detractors": { "type": "number" },
-          "total": { "type": "number" },
-          "score": { "type": "number" }
+          "day": {
+            "type": ["null", "string"]
+          },
+          "promoters": {
+            "type": ["null", "number"]
+          },
+          "passives": {
+            "type": ["null", "number"]
+          },
+          "detractors": {
+            "type": ["null", "number"]
+          },
+          "total": {
+            "type": ["null", "number"]
+          },
+          "score": {
+            "type": ["null", "number"]
+          }
         }
       }
     },
     "last": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
-        "promoters": { "type": "number" },
-        "passives": { "type": "number" },
-        "detractors": { "type": "number" },
-        "total": { "type": "number" },
-        "score": { "type": "number" }
+        "promoters": {
+          "type": ["null", "number"]
+        },
+        "passives": {
+          "type": ["null", "number"]
+        },
+        "detractors": {
+          "type": ["null", "number"]
+        },
+        "total": {
+          "type": ["null", "number"]
+        },
+        "score": {
+          "type": ["null", "number"]
+        }
       }
     },
     "deliveryStats": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
-        "totalCount": { "type": "number" },
-        "opened": { "type": "number" },
-        "responded": { "type": "number" },
-        "optedOut": { "type": "number" },
-        "isBounced": { "type": "number" }
+        "totalCount": {
+          "type": ["null", "number"]
+        },
+        "opened": {
+          "type": ["null", "number"]
+        },
+        "responded": {
+          "type": ["null", "number"]
+        },
+        "optedOut": {
+          "type": ["null", "number"]
+        },
+        "isBounced": {
+          "type": ["null", "number"]
+        }
       }
     }
   }

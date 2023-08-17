@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
@@ -178,11 +178,17 @@ class IncrementalInsightlyStream(InsightlyStream, ABC):
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         start_datetime = pendulum.parse(self.start_date)
-        if stream_state.get(self.cursor_field):
-            start_datetime = pendulum.parse(stream_state[self.cursor_field])
+        cursor_datetime = stream_state.get(self.cursor_field)
+        if cursor_datetime:
+            if isinstance(cursor_datetime, datetime):
+                start_datetime = cursor_datetime
+            else:
+                start_datetime = pendulum.parse(cursor_datetime)
 
-        # Add one second to avoid duplicate records and ensure greater than
-        params.update({"updated_after_utc": (start_datetime + timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")})
+            # subtract 1 second to make the incremental request inclusive
+            start_datetime = start_datetime.subtract(seconds=1)
+
+        params.update({"updated_after_utc": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")})
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:

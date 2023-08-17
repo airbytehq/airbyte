@@ -3,7 +3,7 @@
 The primary way to set request parameters and headers is to define them as key-value pairs using a `RequestOptionsProvider`.
 Other components, such as an `Authenticator` can also set additional request params or headers as needed.
 
-Additionally, some stateful components use a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [Stream slicers](./stream-slicers.md).
+Additionally, some stateful components use a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [DatetimeBasedCursors](./incremental-syncs.md#DatetimeBasedCursor).
 
 ## Request Options Provider
 
@@ -21,8 +21,8 @@ Schema:
     type: object
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       request_parameters:
         "$ref": "#/definitions/RequestInput"
       request_headers:
@@ -38,7 +38,6 @@ Example:
 ```yaml
 requester:
   type: HttpRequester
-  name: "{{ options['name'] }}"
   url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
   request_options_provider:
@@ -55,7 +54,6 @@ It is also possible to configure add a json-encoded body to outgoing requests.
 ```yaml
 requester:
   type: HttpRequester
-  name: "{{ options['name'] }}"
   url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
   request_options_provider:
@@ -71,23 +69,43 @@ Schema:
 
 ```yaml
   RequestOption:
+    description: A component that specifies the key field and where in the request a component's value should be inserted into.
     type: object
-    additionalProperties: true
     required:
+      - type
+      - field_name
       - inject_into
     properties:
-      inject_into:
-        "$ref": "#/definitions/RequestOptionType"
+      type:
+        type: string
+        enum: [RequestOption]
       field_name:
         type: string
-  RequestOptionType:
-    type: string
-    enum:
-      - request_parameter
-      - header
-      - path
-      - body_data
-      - body_json
+      inject_into:
+        enum:
+          - request_parameter
+          - header
+          - body_data
+          - body_json
+```
+
+### Request Path
+
+As an alternative to adding various options to the request being sent, some components can be configured to
+modify the HTTP path of the API endpoint being accessed.
+
+Schema:
+
+```yaml
+  RequestPath:
+    description: A component that specifies where in the request path a component's value should be inserted into.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [RequestPath]
 ```
 
 ## Authenticators
@@ -108,42 +126,47 @@ The following example will set the "page" request parameter value to the page to
 paginator:
   type: "DefaultPaginator"
   page_size_option:
+    type: "RequestOption"
     inject_into: request_parameter
     field_name: page_size
   pagination_strategy:
     type: "PageIncrement"
     page_size: 5
   page_token:
+    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page"
 ```
 
 More details on paginators can be found in the [pagination section](./pagination.md).
 
-## Stream slicers
+## Incremental syncs
 
-The `DatetimeStreamSlicer` can optionally set request options through the `start_time_option` and `end_time_option` fields.
+The `DatetimeBasedCursor` can optionally set request options through the `start_time_option` and `end_time_option` fields.
 The respective values can be set on the outgoing HTTP requests by specifying where it should be injected.
 
 The following example will set the "created[gte]" request parameter value to the start of the time window, and "created[lte]" to the end of the time window.
 
 ```yaml
-stream_slicer:
+incremental_sync:
+  type: DatetimeBasedCursor
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",
-  step: "1d"
+  step: "P1D"
   start_time_option:
+    type: "RequestOption"
     field_name: "created[gte]"
     inject_into: "request_parameter"
   end_time_option:
+    type: "RequestOption"
     field_name: "created[lte]"
     inject_into: "request_parameter"
 ```
 
-More details on the stream slicers can be found in the [stream-slicers section](./stream-slicers.md).
+More details on incremental syncs can be found in the [incremental syncs section](./incremental-syncs.md).
 
 ## More readings
 
 - [Requester](./requester.md)
 - [Pagination](./pagination.md)
-- [Stream slicers](./stream-slicers.md)
+- [Incremental Syncs](./incremental-syncs.md)

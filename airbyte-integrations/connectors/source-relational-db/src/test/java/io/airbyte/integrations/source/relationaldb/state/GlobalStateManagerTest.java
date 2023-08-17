@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
@@ -17,18 +17,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.protocol.models.AirbyteGlobalState;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -90,6 +90,7 @@ public class GlobalStateManagerTest {
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
     final StateManager stateManager = new GlobalStateManager(new AirbyteStateMessage().withData(Jsons.jsonNode(dbState)), catalog);
 
+    final long expectedRecordCount = 19L;
     final DbState expectedDbState = new DbState()
         .withCdc(true)
         .withCdcState(cdcState)
@@ -98,7 +99,8 @@ public class GlobalStateManagerTest {
                 .withStreamName(STREAM_NAME1)
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a"),
+                .withCursor("a")
+                .withCursorRecordCount(expectedRecordCount),
             new DbStreamState()
                 .withStreamName(STREAM_NAME2)
                 .withStreamNamespace(NAMESPACE)
@@ -117,7 +119,8 @@ public class GlobalStateManagerTest {
                     .withStreamName(STREAM_NAME1)
                     .withStreamNamespace(NAMESPACE)
                     .withCursorField(List.of(CURSOR_FIELD1))
-                    .withCursor("a"))),
+                    .withCursor("a")
+                    .withCursorRecordCount(expectedRecordCount))),
             new AirbyteStreamState()
                 .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()
@@ -135,7 +138,7 @@ public class GlobalStateManagerTest {
         .withGlobal(expectedGlobalState)
         .withType(AirbyteStateType.GLOBAL);
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1L);
+    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", expectedRecordCount);
     assertEquals(expected, actualFirstEmission);
   }
 
@@ -187,7 +190,8 @@ public class GlobalStateManagerTest {
                     .withStreamName(STREAM_NAME1)
                     .withStreamNamespace(NAMESPACE)
                     .withCursorField(List.of(CURSOR_FIELD1))
-                    .withCursor("a"))),
+                    .withCursor("a")
+                    .withCursorRecordCount(1L))),
             new AirbyteStreamState()
                 .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()

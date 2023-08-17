@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3d15163b-11d8-412f-b808-795c9b2c3a3a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-intruder
+  githubIssueLabel: source-intruder
+  icon: intruder.svg
+  license: MIT
+  name: Intruder
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/intruder
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

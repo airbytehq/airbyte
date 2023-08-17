@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -14,12 +14,13 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -30,23 +31,13 @@ import org.testcontainers.containers.MSSQLServerContainer;
 public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static MSSQLServerContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private JsonNode config;
   private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
     return "airbyte/destination-mssql:dev";
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
   }
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
@@ -140,7 +131,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   // 1. exec into mssql container (not the test container container)
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     dslContext = getDslContext(configWithoutDbName);
@@ -159,7 +150,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     dslContext.close();
   }
 

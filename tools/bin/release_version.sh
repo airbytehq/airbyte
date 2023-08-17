@@ -29,8 +29,8 @@ docker login -u "${DOCKER_HUB_USERNAME}" -p "${DOCKER_HUB_PASSWORD}"
 source ./tools/bin/bump_version.sh
 
 echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
-VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
-VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish
+VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build --scan
+VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish --scan
 
 # Container should be running before build starts
 # It generates binaries to build images for different CPU architecture

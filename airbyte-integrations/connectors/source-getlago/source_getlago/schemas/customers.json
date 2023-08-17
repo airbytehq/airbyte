@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "lago_id": {
+      "type": ["null", "string"]
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "sequential_id": {
+      "type": ["null", "integer"]
+    },
+    "slug": {
+      "type": ["null", "string"]
+    },
+    "vat_rate": {
+      "type": ["null", "number"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "address_line1": {
+      "type": ["null", "string"]
+    },
+    "address_line2": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "logo_url": {
+      "type": ["null", "string"]
+    },
+    "legal_name": {
+      "type": ["null", "string"]
+    },
+    "legal_number": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "billing_configuration": {
+      "type": ["null", "object"]
+    }
+  }
+}

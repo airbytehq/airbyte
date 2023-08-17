@@ -1,0 +1,24 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8d7ef552-2c0f-11ec-8d3d-0242ac130003
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-search-metrics
+  githubIssueLabel: source-search-metrics
+  icon: searchmetrics.svg
+  license: MIT
+  name: SearchMetrics
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/search-metrics
+  tags:
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

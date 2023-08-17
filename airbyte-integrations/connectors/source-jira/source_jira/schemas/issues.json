@@ -18,7 +18,6 @@
     "self": {
       "type": "string",
       "description": "The URL of the issue details.",
-      "format": "uri",
       "readOnly": true
     },
     "key": {
@@ -55,14 +54,17 @@
       "readOnly": true
     },
     "operations": {
+      "type": ["object", "null"],
       "description": "The operations that can be performed on the issue.",
       "readOnly": true
     },
     "editmeta": {
+      "type": ["object", "null"],
       "description": "The metadata for the fields on the issue that can be amended.",
       "readOnly": true
     },
     "changelog": {
+      "type": ["object", "null"],
       "description": "Details of changelogs associated with the issue.",
       "readOnly": true
     },
@@ -99,6 +101,18 @@
     "projectKey": {
       "type": "string",
       "description": "The key of the project containing the issue.",
+      "readOnly": true
+    },
+    "created": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "This field transformed from fields attr",
+      "readOnly": true
+    },
+    "updated": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "This field transformed from fields attr",
       "readOnly": true
     }
   },

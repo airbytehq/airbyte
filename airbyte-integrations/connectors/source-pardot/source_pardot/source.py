@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -34,8 +34,6 @@ class SourcePardot(AbstractSource):
         auth = TokenAuthenticator(pardot.access_token)
         args = {"authenticator": auth, "config": config}
 
-        visitors = Visitors(**args)
-
         return [
             EmailClicks(**args),
             Campaigns(**args),
@@ -45,6 +43,6 @@ class SourcePardot(AbstractSource):
             Prospects(**args),
             Users(**args),
             VisitorActivities(**args),
-            visitors,
-            Visits(parent_stream=visitors, **args),
+            Visitors(**args),
+            Visits(parent_stream=Visitors(**args), **args),
         ]

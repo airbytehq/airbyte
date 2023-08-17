@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -35,7 +35,7 @@ def before_tests(request):
         "nested_catalog",  # sample catalog from facebook
     ],
 )
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_resolve_names(destination_type: DestinationType, catalog_file: str):
     """
     For a given catalog.json and destination, multiple cases can occur where naming becomes tricky.

@@ -148,12 +148,12 @@
       "stream": {
         "name": "orders",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["id"]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
-      "cursor_field": ["id"],
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
     }
   ]

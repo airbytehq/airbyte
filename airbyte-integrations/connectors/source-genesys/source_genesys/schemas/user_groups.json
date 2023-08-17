@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "dateModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "memberCount": {
+      "type": ["null", "number"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "addresses": {
+      "type": "array",
+      "properties": {
+        "address": {
+          "type": ["null", "string"]
+        },
+        "display": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "mediaType": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "rulesVisible": {
+      "type": ["null", "boolean"]
+    },
+    "visibility": {
+      "type": ["null", "string"]
+    },
+    "chat": {
+      "type": "object",
+      "properties": {
+        "jabberId": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "selfUri": {
+      "type": ["null", "string"]
+    }
+  }
+}

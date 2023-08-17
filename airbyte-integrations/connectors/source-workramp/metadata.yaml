@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 05b0bce2-4ec4-4534-bb1a-5d0127bd91b7
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-workramp
+  githubIssueLabel: source-workramp
+  icon: workramp.svg
+  license: MIT
+  name: WorkRamp
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/workramp
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

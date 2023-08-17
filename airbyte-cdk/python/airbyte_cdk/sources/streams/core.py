@@ -1,24 +1,42 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import inspect
 import logging
+import typing
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from functools import lru_cache
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+
+# list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
+if typing.TYPE_CHECKING:
+    from airbyte_cdk.sources import Source
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+
+# A stream's read method can return one of the following types:
+# Mapping[str, Any]: The content of an AirbyteRecordMessage
+# AirbyteMessage: An AirbyteMessage. Could be of any type
+StreamData = Union[Mapping[str, Any], AirbyteMessage]
+
+JsonSchema = Mapping[str, Any]
+
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
-    module: Any = inspect.getmodule(cls)
-    return module.__name__.split(".")[0]
+    module = inspect.getmodule(cls)
+    if module is not None:
+        return module.__name__.split(".")[0]
+    else:
+        raise ValueError(f"Could not find package name for class {cls}")
 
 
 class IncrementalMixin(ABC):
@@ -51,7 +69,7 @@ class IncrementalMixin(ABC):
 
     @state.setter
     @abstractmethod
-    def state(self, value: MutableMapping[str, Any]):
+    def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
 
 
@@ -62,7 +80,7 @@ class Stream(ABC):
 
     # Use self.logger in subclasses to log any messages
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         return logging.getLogger(f"airbyte.streams.{self.name}")
 
     # TypeTransformer object to perform output data transformation
@@ -91,14 +109,15 @@ class Stream(ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
         """
         This method should be overridden by subclasses to read records based on the inputs
         """
 
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -159,6 +178,28 @@ class Stream(ABC):
         """
         return True
 
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+        """
+        Checks whether this stream is available.
+
+        :param logger: source logger
+        :param source: (optional) source
+        :return: A tuple of (boolean, str). If boolean is true, then this stream
+          is available, and no str is required. Otherwise, this stream is unavailable
+          for some reason and the str should describe what went wrong and how to
+          resolve the unavailability, if possible.
+        """
+        if self.availability_strategy:
+            return self.availability_strategy.check_availability(self, logger, source)
+        return True, None
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        """
+        :return: The AvailabilityStrategy used to check whether this stream is available.
+        """
+        return None
+
     @property
     @abstractmethod
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -168,7 +209,7 @@ class Stream(ABC):
         """
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
@@ -195,7 +236,9 @@ class Stream(ABC):
         return None
 
     @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
         """Override to extract state from the latest record. Needed to implement incremental sync.
 
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -14,10 +14,11 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.testcontainers.containers.MariaDBContainer;
@@ -25,7 +26,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private final ExtendedNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
+  private final StandardNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
 
   private MariaDBContainer db;
 
@@ -116,7 +117,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     final DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer(mcsImage);
     db.start();
@@ -128,7 +129,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db.stop();
     db.close();
   }

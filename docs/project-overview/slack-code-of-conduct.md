@@ -13,7 +13,7 @@ All of the guidelines we provide below are important, but there’s a reason res
 
 ## Rule 2: Use the most relevant channels.
 
-We deliberately use topic-specific Slack channels so members of the community can opt-in on various types of conversations. Our members take care to post their messages in the most relevant channel, and you’ll often see reminders about the best place to post a message (respectfully written, of course!).
+We deliberately use topic-specific Slack channels so members of the community can opt-in on various types of conversations. Our members take care to post their messages in the most relevant channel, and you’ll often see reminders about the best place to post a message (respectfully written, of course!). If you're looking for help directly from the Community Assistance Team or other Airbyte employees, please stick to posting in the airbyte-help channel, so we know you're asking us specifically!
 
 ## Rule 3: Don’t double-post.
 

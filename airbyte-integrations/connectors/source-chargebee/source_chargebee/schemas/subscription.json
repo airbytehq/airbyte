@@ -38,27 +38,13 @@
       "maxLength": 50
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": [
-        "future",
-        "in_trial",
-        "active",
-        "non_renewing",
-        "paused",
-        "cancelled"
-      ]
+      "type": ["string", "null"]
     },
     "trial_start": {
       "type": ["integer", "null"]
     },
     "trial_end_action": {
-      "type": ["string", "null"],
-      "enum": [
-        "site_default",
-        "plan_default",
-        "activate_subscription",
-        "cancel_subscription"
-      ]
+      "type": ["string", "null"]
     },
     "current_term_start": {
       "type": ["integer", "null"]
@@ -79,9 +65,7 @@
       "type": ["integer", "null"]
     },
     "contract_term_billing_cycle_on_renewal": {
-      "type": ["integer", "null"],
-      "minimum": 0,
-      "maximum": 100
+      "type": ["integer", "null"]
     },
     "override_relationship": {
       "type": ["boolean", "null"]
@@ -96,16 +80,7 @@
       "type": ["integer", "null"]
     },
     "cancel_reason": {
-      "type": ["string", "null"],
-      "enum": [
-        "not_paid",
-        "no_card",
-        "fraud_review_failed",
-        "non_compliant_eu_customer",
-        "tax_calculation_failed",
-        "currency_incompatible_with_gateway",
-        "non_compliant_customer"
-      ]
+      "type": ["string", "null"]
     },
     "created_from_ip": {
       "type": ["string", "null"],
@@ -153,9 +128,7 @@
       "minimum": 0
     },
     "exchange_rate": {
-      "type": ["number", "null"],
-      "minimum": 0.000000001,
-      "maximum": 999999999.999999999
+      "type": ["number", "null"]
     },
     "base_currency_code": {
       "type": ["string", "null"],
@@ -172,6 +145,12 @@
     "deleted": {
       "type": ["boolean", "null"]
     },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "coupon": {
+      "type": ["string", "null"]
+    },
     "cancel_reason_code": {
       "type": ["string", "null"],
       "maxLength": 100
@@ -180,8 +159,7 @@
       "type": ["integer", "null"]
     },
     "free_period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "week", "month", "year"]
+      "type": ["string", "null"]
     },
     "create_pending_invoices": {
       "type": ["boolean", "null"]
@@ -267,8 +245,7 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": ["string", "null"],
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
+          "type": ["string", "null"]
         }
       }
     },
@@ -292,12 +269,10 @@
           "maxLength": 50
         },
         "reward_status": {
-          "type": ["string", "null"],
-          "enum": ["pending", "paid", "invalid"]
+          "type": ["string", "null"]
         },
         "referral_system": {
-          "type": ["string", "null"],
-          "enum": ["referral_candy", "referral_saasquatch", "friendbuy"]
+          "type": ["string", "null"]
         },
         "account_id": {
           "type": ["string", "null"],
@@ -312,21 +287,13 @@
           "maxLength": 100
         },
         "friend_offer_type": {
-          "type": ["string", "null"],
-          "enum": ["none", "coupon", "coupon_code"]
+          "type": ["string", "null"]
         },
         "referrer_reward_type": {
-          "type": ["string", "null"],
-          "enum": [
-            "none",
-            "referral_direct_reward",
-            "custom_promotional_credit",
-            "custom_revenue_percent_based"
-          ]
+          "type": ["string", "null"]
         },
         "notify_referral_system": {
-          "type": ["string", "null"],
-          "enum": ["none", "first_paid_conversion", "all_invoices"]
+          "type": ["string", "null"]
         },
         "destination_url": {
           "type": ["string", "null"],
@@ -345,8 +312,7 @@
           "maxLength": 50
         },
         "status": {
-          "type": ["string", "null"],
-          "enum": ["active", "completed", "cancelled", "terminated"]
+          "type": ["string", "null"]
         },
         "contract_start": {
           "type": ["integer", "null"]
@@ -359,8 +325,7 @@
           "minimum": 0
         },
         "action_at_term_end": {
-          "type": ["string", "null"],
-          "enum": ["renew", "rgreen", "cancel", "renew_once"]
+          "type": ["string", "null"]
         },
         "total_contract_value": {
           "type": ["integer", "null"],
@@ -393,8 +358,7 @@
             "maxLength": 100
           },
           "item_type": {
-            "type": ["string", "null"],
-            "enum": ["plan", "addon", "charge"]
+            "type": ["string", "null"]
           },
           "quantity": {
             "type": ["integer", "null"],
@@ -441,21 +405,13 @@
             "maximum": 730
           },
           "charge_on_event": {
-            "type": ["string", "null"],
-            "enum": [
-              "subscription_creation",
-              "subscription_trial_start",
-              "plan_activation",
-              "subscription_activation",
-              "contract_termination"
-            ]
+            "type": ["string", "null"]
           },
           "charge_once": {
             "type": ["boolean", "null"]
           },
           "charge_on_option": {
-            "type": ["string", "null"],
-            "enum": ["immediately", "on_event"]
+            "type": ["string", "null"]
           }
         }
       }
@@ -532,12 +488,10 @@
       "minimum": 1
     },
     "billing_period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "week", "month", "year"]
+      "type": ["string", "null"]
     },
     "auto_collection": {
-      "type": ["string", "null"],
-      "enum": ["on", "off"]
+      "type": ["string", "null"]
     },
     "plan_amount": {
       "type": ["integer", "null"],
@@ -556,15 +510,7 @@
       "maxLength": 250
     },
     "offline_payment_method": {
-      "type": ["string", "null"],
-      "enum": [
-        "no_preference",
-        "cash",
-        "check",
-        "bank_transfer",
-        "ach_credit",
-        "sepa_credit"
-      ]
+      "type": ["string", "null"]
     },
     "meta_data": {
       "type": ["object", "null"],
@@ -631,14 +577,7 @@
             "minimum": 0
           },
           "on_event": {
-            "type": ["string", "null"],
-            "enum": [
-              "subscription_creation",
-              "subscription_trial_start",
-              "plan_activation",
-              "subscription_activation",
-              "contract_termination"
-            ]
+            "type": ["string", "null"]
           },
           "charge_once": {
             "type": ["boolean", "null"]
@@ -664,6 +603,69 @@
             "maxLength": 100
           },
           "last_charged_at": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "discounts": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"]
+          },
+          "invoice_name": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": ["string", "null"],
+            "enum": ["fixed_amount", "percentage"]
+          },
+          "percentage": {
+            "type": ["number", "null"]
+          },
+          "amount": {
+            "type": ["integer", "null"]
+          },
+          "currency_code": {
+            "type": ["string", "null"]
+          },
+          "duration_type": {
+            "type": ["string", "null"],
+            "enum": ["one_time", "forever", "limited_period"]
+          },
+          "period": {
+            "type": ["integer", "null"]
+          },
+          "period_unit": {
+            "type": ["string", "null"],
+            "enum": ["day", "week", "month", "year"]
+          },
+          "included_in_mrr": {
+            "type": ["boolean", "null"]
+          },
+          "apply_on": {
+            "type": ["string", "null"],
+            "enum": ["invoice_amount", "specific_item_price"]
+          },
+          "item_price_id": {
+            "type": ["string", "null"]
+          },
+          "created_at": {
+            "type": ["integer", "null"]
+          },
+          "apply_till": {
+            "type": ["integer", "null"]
+          },
+          "applied_count": {
+            "type": ["integer", "null"]
+          },
+          "coupon_id": {
+            "type": ["string", "null"]
+          },
+          "index": {
             "type": ["integer", "null"]
           }
         }

@@ -1,0 +1,36 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-datadog:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_datadog/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "incident_teams"
+            bypass_reason: "Test account does not have data for this stream"
+          - name: "logs"
+            bypass_reason: "Test account does not have data for this stream"
+  # TODO: logs stream currently has no data. This will need to be added to test incremental.
+  # incremental:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       configured_catalog_path: "integration_tests/inc_configured_catalog.json"
+  #       future_state:
+  #         future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
@@ -22,14 +22,16 @@ import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter.Builder;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.integrations.destination.s3.util.Flattening;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -246,6 +248,7 @@ class S3CsvWriterTest {
    */
   @Test
   public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
+    DestinationConfig.initialize(Jsons.emptyObject());
     final S3DestinationConfig s3Config = S3DestinationConfig.create(
         "fake-bucket",
         "fake-bucketPath",

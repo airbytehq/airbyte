@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "lago_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "coupon_type": {
+      "type": ["null", "string"]
+    },
+    "amount_cents": {
+      "type": ["null", "integer"]
+    },
+    "amount_currency": {
+      "type": ["null", "string"]
+    },
+    "percentage_rate": {
+      "type": ["null", "string"]
+    },
+    "frequency": {
+      "type": ["null", "string"]
+    },
+    "frequency_duration": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "expiration": {
+      "type": ["null", "string"]
+    },
+    "expiration_date": {
+      "type": ["null", "string"]
+    }
+  }
+}

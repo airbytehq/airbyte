@@ -1,0 +1,48 @@
+{
+  "startAt": 0,
+  "maxResults": 1,
+  "total": 1,
+  "worklogs": [
+    {
+      "self": "https://your-domain.atlassian.net/rest/api/3/issue/10010/worklog/10000",
+      "author": {
+        "self": "https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+        "accountId": "5b10a2844c20165700ede21g",
+        "displayName": "Mia Krystof",
+        "active": false
+      },
+      "updateAuthor": {
+        "self": "https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+        "accountId": "5b10a2844c20165700ede21g",
+        "displayName": "Mia Krystof",
+        "active": false
+      },
+      "comment": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "I did some work here."
+              }
+            ]
+          }
+        ]
+      },
+      "updated": "2021-01-18T23:45:00.000+0000",
+      "visibility": {
+        "type": "group",
+        "value": "jira-developers",
+        "identifier": "276f955c-63d7-42c8-9520-92d01dca0625"
+      },
+      "started": "2021-01-17T12:34:00.000+0000",
+      "timeSpent": "3h 20m",
+      "timeSpentSeconds": 12000,
+      "id": "100028",
+      "issueId": "10002"
+    }
+  ]
+}

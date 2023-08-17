@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,7 +9,7 @@ import re
 from typing import Any, Dict, List, Set
 
 import yaml
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode  # type: ignore
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
@@ -69,7 +69,11 @@ class CatalogProcessor:
             )
         for stream_processor in stream_processors:
             # MySQL table names need to be manually truncated, because it does not do it automatically
-            truncate = self.destination_type == DestinationType.MYSQL or self.destination_type == DestinationType.TIDB
+            truncate = (
+                self.destination_type == DestinationType.MYSQL
+                or self.destination_type == DestinationType.TIDB
+                or self.destination_type == DestinationType.DUCKDB
+            )
             raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=truncate)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
@@ -116,7 +120,11 @@ class CatalogProcessor:
 
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
-            truncate = destination_type == DestinationType.MYSQL or destination_type == DestinationType.TIDB
+            truncate = (
+                destination_type == DestinationType.MYSQL
+                or destination_type == DestinationType.TIDB
+                or destination_type == DestinationType.DUCKDB
+            )
             raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=truncate)
 
             source_sync_mode = get_source_sync_mode(configured_stream, stream_name)

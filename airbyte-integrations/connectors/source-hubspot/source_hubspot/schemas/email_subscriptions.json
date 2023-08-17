@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["null", "object"],
+        "additionalProperties": true,
+            "properties": {
+                "active": {
+                    "type": ["null", "boolean"]
+                },
+                "portalId":{
+                    "type": ["null", "integer"]
+                },
+                "description": {
+                    "type": ["null", "string"]
+                },
+                "id": {
+                    "type": ["null", "integer"]
+                },
+                "name": {
+                    "type": ["null", "string" ]
+                },
+                "order": {
+                    "type": ["null", "integer"]
+                },
+                "businessUnitId": {
+                    "type": ["null", "integer"]
+                },
+                "internal": {
+                    "type": ["null", "boolean"]
+                },
+                "internalName": {
+                    "type": ["null", "string"]
+                },
+                "category": {
+                    "type": ["null", "string"]
+                },
+                "channel": {
+                    "type": ["null", "string"]
+                }
+    }
+}

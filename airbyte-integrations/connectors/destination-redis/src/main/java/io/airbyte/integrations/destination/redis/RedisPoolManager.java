@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
@@ -21,13 +21,13 @@ class RedisPoolManager {
     final String host = jsonConfig.get(PARAM_HOST).asText();
     final int port = jsonConfig.get(PARAM_PORT).asInt(6379);
     final String username = jsonConfig.has(PARAM_USERNAME) ? jsonConfig.get(PARAM_USERNAME).asText() : "";
-    final String password = jsonConfig.has(PARAM_PASSWORD)? jsonConfig.get(PARAM_PASSWORD).asText() : "";
+    final String password = jsonConfig.has(PARAM_PASSWORD) ? jsonConfig.get(PARAM_PASSWORD).asText() : "";
     try {
       if (RedisSslUtil.isSsl(jsonConfig)) {
         RedisSslUtil.setupCertificates(jsonConfig.get(PARAM_SSL_MODE));
-        jedis = new Jedis(host ,port, CONNECTION_TIMEOUT,  true);
+        jedis = new Jedis(host, port, CONNECTION_TIMEOUT, true);
       } else {
-        jedis = new Jedis(host ,port ,CONNECTION_TIMEOUT,  false);
+        jedis = new Jedis(host, port, CONNECTION_TIMEOUT, false);
       }
       jedis.auth(username, password);
       return jedis;

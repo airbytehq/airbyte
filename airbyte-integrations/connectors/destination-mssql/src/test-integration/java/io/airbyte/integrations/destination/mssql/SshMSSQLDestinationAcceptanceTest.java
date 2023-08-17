@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -15,9 +15,10 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -31,7 +32,7 @@ import org.testcontainers.containers.Network;
  */
 public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
   private static final String database = "test";
@@ -48,7 +49,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName), false);
   }
 
   @Override
@@ -78,17 +79,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
     return true;
   }
 
@@ -124,7 +115,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     startTestContainers();
 
     SshTunnel.sshWrap(
@@ -136,7 +127,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
             ctx.fetch(String.format("CREATE DATABASE %s;", database));
             ctx.fetch(String.format("USE %s;", database));
             ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName));
-
+            TEST_SCHEMAS.add(schemaName);
             return null;
           });
         });
@@ -156,7 +147,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     bastion.stopAndCloseContainers(db);
   }
 

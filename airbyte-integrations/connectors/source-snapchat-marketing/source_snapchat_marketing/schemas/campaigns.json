@@ -33,6 +33,9 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "creation_state": {
+      "type": ["null", "string"]
     }
   }
 }

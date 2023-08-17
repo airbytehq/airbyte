@@ -13,7 +13,7 @@ Several new pieces are essential to understand how incrementality works with the
 
 ### `AirbyteStateMessage`
 
-The `AirbyteStateMessage` persists state between syncs, and allows a new sync to pick up from where the previous sync last finished. See the [incremental sync guide](https://docs.airbyte.io/understanding-airbyte/connections/incremental-append) for more information.
+The `AirbyteStateMessage` persists state between syncs, and allows a new sync to pick up from where the previous sync last finished. See the [incremental sync guide](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) for more information.
 
 ### Cursor fields
 

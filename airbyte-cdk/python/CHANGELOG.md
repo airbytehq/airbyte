@@ -1,5 +1,385 @@
 # Changelog
 
+## 0.51.0
+File-based CDK: handle legacy options
+
+## 0.50.2
+Fix title and description of datetime_format fields
+
+## 0.50.1
+File-based CDK cursor and entrypoint updates
+
+## 0.50.0
+Low code CDK: Decouple SimpleRetriever and HttpStream
+
+## 0.49.0
+Add utils for embedding sources in other Python applications
+
+## 0.48.0
+Relax pydantic version requirement and update to protocol models version 0.4.0
+
+## 0.47.5
+Support many format for cursor datetime
+
+## 0.47.4
+File-based CDK updates
+
+## 0.47.3
+Connector Builder: Ensure we return when there are no slices
+
+## 0.47.2
+low-code: deduplicate query params if they are already encoded in the URL
+
+## 0.47.1
+Fix RemoveFields transformation issue
+
+## 0.47.0
+Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
+
+## 0.46.1
+Connector builder: warn if the max number of records was reached
+
+## 0.46.0
+Remove pyarrow from main dependency and add it to extras
+
+## 0.45.0
+Fix pyyaml and cython incompatibility
+
+## 0.44.4
+Connector builder: Show all request/responses as part of the testing panel
+
+## 0.44.3
+[ISSUE #27494] allow for state to rely on transformed field
+
+## 0.44.2
+Ensuring the state value format matches the cursor value from the record
+
+## 0.44.1
+Fix issue with incremental sync following data feed release
+
+## 0.44.0
+Support data feed like incremental syncs
+
+## 0.43.3
+Fix return type of RecordFilter: changed from generator to list
+
+## 0.43.2
+Connector builder module: serialize request body as string
+
+## 0.43.1
+Fix availability check to handle HttpErrors which happen during slice extraction
+
+## 0.43.0
+Refactoring declarative state management
+
+## 0.42.1
+Error message on state per partition state discrepancy
+
+## 0.42.0
+Supporting state per partition given incremental sync and partition router
+
+## 0.41.0
+Use x-www-urlencoded for access token refresh requests
+
+## 0.40.5
+Replace  with  when making oauth calls
+
+## 0.40.4
+Emit messages using message repository
+
+## 0.40.3
+Add utils for inferring datetime formats
+
+## 0.40.2
+Add a metadata field to the declarative component schema
+
+## 0.40.1
+make DatetimeBasedCursor.end_datetime optional
+
+## 0.40.0
+Remove SingleUseRefreshTokenOAuthAuthenticator from low code CDK and add generic injection capabilities to ApiKeyAuthenticator
+
+## 0.39.4
+Connector builder: add latest connector config control message to read calls
+
+## 0.39.3
+Add refresh token update capabilities to OAuthAuthenticator
+
+## 0.39.2
+Make step and cursor_granularity optional
+
+## 0.39.1
+Improve connector builder error messages
+
+## 0.39.0
+Align schema generation in SchemaInferrer with Airbyte platform capabilities
+
+## 0.38.0
+Allow nested objects in request_body_json
+
+## 0.37.0
+low-code: Make refresh token in oauth authenticator optional
+
+## 0.36.5
+Unfreeze requests version and test new pipeline
+
+## 0.36.4
+low-code: use jinja sandbox and restrict some methods
+
+## 0.36.3
+pin the version of the requests library
+
+## 0.36.2
+Support parsing non UTC dates and Connector Builder set slice descriptor
+
+## 0.36.1
+low-code: fix add field transformation when running from the connector builder
+
+## 0.36.0
+Emit stream status messages
+
+## 0.35.4
+low-code: remove now_local() macro because it's too unpredictable
+
+## 0.35.3
+low-code: alias stream_interval and stream_partition to stream_slice in jinja context
+
+## 0.35.2
+Connector builder scrubs secrets from raw request and response
+
+## 0.35.1
+low-code: Add title, description, and examples for all fields in the manifest schema
+
+## 0.35.0
+low-code: simplify session token authenticator interface
+
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
+## 0.34.2
+Emit slice log messages when running the connector builder
+
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
+## 0.34.0
+Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
+
+## 0.33.2
+low-code: fix duplicate stream slicer update
+
+## 0.33.1
+Low-Code CDK: make RecordFilter.filter_records as generator
+
+## 0.33.0
+Enable oauth flow for low-code connectors
+
+## 0.32.0
+Remove unexpected error swallowing on abstract source's check method
+
+## 0.31.1
+connector builder: send stacktrace when error on read
+
+## 0.31.0
+Add connector builder module for handling Connector Builder server requests
+
+## 0.30.4
+CDK's read command handler supports Connector Builder list_streams requests
+
+## 0.30.3
+Fix reset pagination issue on test reads
+
+## 0.30.2
+* Low-code CDK: Override refresh_access_token logic DeclarativeOAuthAuthenticator
+
+## 0.30.1
+Releasing using the new release flow. No change to the CDK per se
+
+## 0.30.0
+OAuth: retry refresh access token requests
+
+## 0.29.3
+Low-Code CDK: duration macro added
+
+## 0.29.2
+support python3.8
+
+## 0.29.1
+Publishing Docker image for source-declarative-manifest
+
+## 0.29.0
+**Breaking changes: We have promoted the low-code CDK to Beta. This release contains a number of breaking changes intended to improve the overall usability of the language by reorganizing certain concepts, renaming, reducing some field duplication, and removal of fields that are seldom used.**
+
+The changes are: 
+* Deprecated the concept of Stream Slicers in favor of two individual concepts: Incremental Syncs, and Partition Routers: 
+  * Stream will define an `incremental_sync` field which is responsible for defining how the connector should support incremental syncs using a cursor field. `DatetimeStreamSlicer` has been renamed to `DatetimeBasedCursor` and can be used for this field.
+  * `Retriever`s will now define a `partition_router` field. The remaining slicers are now called `SubstreamPartitionRouter` and `ListPartitionRouter`, both of which can be used here as they already have been.
+  * The `CartesianProductStreamSlicer` because `partition_router` can accept a list of values and will generate that same cartesian product by default.
+* `$options` have been renamed to `$parameters`
+* Changed the notation for component references to the JSON schema notation (`$ref: "#/definitions/requester"`)
+* `DefaultPaginator` no longer has a `url_base` field. Moving forward, paginators will derive the `url_base` from the `HttpRequester`. There are some unique cases for connectors that implement a custom `Retriever`.
+* `primary_key` and `name` no longer need to be defined on `Retriever`s or `Requester`s. They will be derived from the stream’s definition
+* Streams no longer define a `stream_cursor_field` and will derive it from the `incremental_sync` component. `checkpoint_interval` has also been deprecated
+* DpathExtractor `field_pointer` has been renamed to `field_path`
+* `RequestOption` can no longer be used with with `inject_into` set to `path`. There is now a dedicated `RequestPath` component moving forward.
+
+## 0.28.1
+Low-Code CDK: fix signature _parse_records_and_emit_request_and_responses
+
+## 0.28.0
+Low-Code: improve day_delta macro and MinMaxDatetime component
+
+## 0.27.0
+Make HttpAvailabilityStrategy default for HttpStreams
+
+## 0.26.0
+Low-Code CDK: make DatetimeStreamSlicer.step as InterpolatedString
+
+## 0.25.2
+Low-Code: SubstreamSlicer.parent_key - dpath support added
+
+## 0.25.1
+Fix issue when trying to log stream slices that are non-JSON-serializable
+
+## 0.25.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.24.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.23.0
+Limiting the number of HTTP requests during a test read
+
+## 0.22.0
+Surface the resolved manifest in the CDK
+
+## 0.21.0
+Add AvailabilityStrategy concept and use check_availability within CheckStream
+
+## 0.20.2
+Add missing package in previous patch release
+
+## 0.20.1
+Handle edge cases for CheckStream - checking connection to empty stream, and checking connection to substream with no parent records
+
+## 0.20.0
+Low-Code: Refactor low-code to use Pydantic model based manifest parsing and component creation
+
+## 0.19.1
+Low-code: Make documentation_url in the Spec be optional
+
+## 0.19.0
+Low-Code: Handle forward references in manifest
+
+## 0.18.1
+Allow for CustomRequester to be defined within declarative manifests
+
+## 0.18.0
+Adding `cursor_granularity` to the declarative API of DatetimeStreamSlicer
+
+## 0.17.0
+Add utility class to infer schemas from real records
+
+## 0.16.3
+Do not eagerly refresh access token in `SingleUseRefreshTokenOauth2Authenticator` [#20923](https://github.com/airbytehq/airbyte/pull/20923)
+
+## 0.16.2
+Fix the naming of OAuthAuthenticator
+
+## 0.16.1
+Include declarative_component_schema.yaml in the publish to PyPi
+
+## 0.16.0
+Start validating low-code manifests using the declarative_component_schema.yaml file
+
+## 0.15.0
+Reverts additions from versions 0.13.0 and 0.13.3.
+
+## 0.14.0
+Low-code: Add token_expiry_date_format to OAuth Authenticator. Resolve ref schema
+
+## 0.13.3
+Fixed `StopIteration` exception for empty streams while `check_availability` runs.
+
+## 0.13.2
+Low-code: Enable low-code CDK users to specify schema inline in the manifest
+
+## 0.13.1
+Low-code: Add `SessionTokenAuthenticator`
+
+## 0.13.0
+Add `Stream.check_availability` and `Stream.AvailabilityStrategy`. Make `HttpAvailabilityStrategy` the default `HttpStream.AvailabilityStrategy`.
+
+## 0.12.4
+Lookback window should applied when a state is supplied as well
+
+## 0.12.3
+Low-code: Finally, make `OffsetIncrement.page_size` interpolated string or int
+
+## 0.12.2
+Revert breaking change on `read_config` while keeping the improvement on the error message
+
+## 0.12.0
+Improve error readability when reading JSON config files
+
+## 0.11.3
+Low-code: Log response error message on failure
+
+## 0.11.2
+Low-code: Include the HTTP method used by the request in logging output of the `airbyte-cdk`
+
+## 0.11.1
+Low-code: Fix the component manifest schema to and validate check instead of checker
+
+## 0.11.0
+Declare a new authenticator `SingleUseRefreshTokenOauth2Authenticator` that can perform connector configuration mutation and emit `AirbyteControlMessage.ConnectorConfig`.
+
+## 0.10.0
+Low-code: Add `start_from_page` option to a PageIncrement class
+
+## 0.9.5
+Low-code: Add jinja macro `format_datetime`
+
+## 0.9.4
+Low-code: Fix reference resolution for connector builder
+
+## 0.9.3
+Low-code: Avoid duplicate HTTP query in `simple_retriever`
+
+## 0.9.2
+Low-code: Make `default_paginator.page_token_option` optional
+
+## 0.9.1
+Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
+
+## 0.9.0
+Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
+
+## 0.8.1
+Low-code: Don't update cursor for non-record messages and fix default loader for connector builder manifests
+
+## 0.8.0
+Low-code: Allow for request and response to be emitted as log messages
+
+## 0.7.1
+Low-code: Decouple yaml manifest parsing from the declarative source implementation
+
+## 0.7.0
+Low-code: Allow connector specifications to be defined in the manifest
+
+## 0.6.0
+Low-code: Add support for monthly and yearly incremental updates for `DatetimeStreamSlicer`
+
+## 0.5.4
+Low-code: Get response.json in a safe way
+
+## 0.5.3
+Low-code: Replace EmptySchemaLoader with DefaultSchemaLoader to retain backwards compatibility
+Low-code: Evaluate backoff strategies at runtime
+
+## 0.5.2
+Low-code: Allow for read even when schemas are not defined for a connector yet
+
 ## 0.4.2
 Low-code: Fix off by one error with the stream slicers
 

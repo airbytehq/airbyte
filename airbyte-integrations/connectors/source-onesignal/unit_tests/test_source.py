@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -31,5 +31,5 @@ def test_check_connection(mocker, requests_mock, config):
 def test_streams(mocker, config):
     source = SourceOnesignal()
     streams = source.streams(**config)
-    expected_streams_number = 4
+    expected_streams_number = 1
     assert len(streams) == expected_streams_number

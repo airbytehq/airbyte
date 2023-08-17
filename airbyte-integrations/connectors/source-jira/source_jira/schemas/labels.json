@@ -1,24 +1,8 @@
 {
   "type": ["object", "null"],
   "properties": {
-    "id": {
-      "type": ["string", "null"]
-    },
-    "key": {
-      "type": ["string", "null"]
-    },
-    "value": {
-      "type": ["string", "null"]
-    },
-    "name": {
-      "type": ["string", "null"]
-    },
-    "desc": {
-      "type": ["string", "null"]
-    },
-    "type": {
+    "label": {
       "type": ["string", "null"]
     }
-  },
-  "additionalProperties": true
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.alloydb;
@@ -8,7 +8,7 @@ import static io.airbyte.integrations.source.relationaldb.state.StateManager.LOG
 
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.postgres.PostgresSourceStrictEncrypt;
+import io.airbyte.integrations.source.postgres_strict_encrypt.PostgresSourceStrictEncrypt;
 
 public class AlloyDbStrictEncryptSource {
 

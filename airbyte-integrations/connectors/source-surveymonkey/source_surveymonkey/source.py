@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from itertools import groupby
@@ -13,14 +13,33 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import SurveyPages, SurveyQuestions, SurveyResponses, Surveys
+from .streams import Collectors, SurveyCollectors, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 
 class SourceSurveymonkey(AbstractSource):
-
     SCOPES = {"responses_read_detail", "surveys_read", "users_read"}
 
+    @classmethod
+    def _check_credentials(cls, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        # check if the credentials are provided correctly, because for now these value are not required in spec
+        if not config.get("access_token"):
+            credentials = config.get("credentials", {})
+            if not credentials:
+                return False, "credentials fields are not provided"
+            else:
+                if not credentials.get("auth_method"):
+                    return False, "auth_method in credentials is not provided"
+
+                if not credentials.get("access_token"):
+                    return False, "access_token in credentials is not provided"
+
+        return True, None
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        is_valid_credentials, msg = self._check_credentials(config)
+        if not is_valid_credentials:
+            return is_valid_credentials, msg
+
         authenticator = self.get_authenticator(config)
         if "survey_ids" in config:
             # Check whether survey id exists and collect errors
@@ -55,11 +74,20 @@ class SourceSurveymonkey(AbstractSource):
         start_date = pendulum.parse(config["start_date"])
         survey_ids = config.get("survey_ids", [])
         args = {"authenticator": authenticator, "start_date": start_date, "survey_ids": survey_ids}
-        return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args)]
+        return [
+            Collectors(**args),
+            Surveys(**args),
+            SurveyCollectors(**args),
+            SurveyPages(**args),
+            SurveyQuestions(**args),
+            SurveyResponses(**args),
+        ]
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
-        token = config["access_token"]
+        token = config.get("credentials", {}).get("access_token")
+        if not token:
+            token = config["access_token"]
         return TokenAuthenticator(token=token)
 
     @classmethod

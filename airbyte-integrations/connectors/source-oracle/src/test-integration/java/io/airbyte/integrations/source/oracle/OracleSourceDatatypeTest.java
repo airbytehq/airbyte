@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -146,7 +146,13 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("NUMBER")
             .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "1", "123.45", "power(10, -130)", "9.99999999999999999999 * power(10, 125)")
-            .addExpectedValues(null, "1", "123.45", String.valueOf(Math.pow(10, -130)), String.valueOf(9.99999999999999999999 * Math.pow(10, 125)))
+            /* The 999990000… below is the plain string representation of 9.999 * power(10, 125) */
+            /*
+             * because normalization expects a plain integer strings whereas `Math.pow(10, 125)` returns a
+             * scientific notation
+             */
+            .addExpectedValues(null, "1", "123.45", String.valueOf(Math.pow(10, -130)),
+                "999999999999999999999000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
             .build());
 
     addDataTypeTestData(
@@ -155,7 +161,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("NUMBER(6,-2)")
             .addInsertValues("123.89")
-            .addExpectedValues("100.0")
+            .addExpectedValues("100")
             .build());
 
     addDataTypeTestData(
@@ -164,7 +170,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("FLOAT(5)")
             .addInsertValues("1.34", "126.45")
-            .addExpectedValues("1.3", "130.0")
+            .addExpectedValues("1.3", "130")
             .build());
 
     addDataTypeTestData(
@@ -197,7 +203,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("to_date('-4700/01/01','syyyy/mm/dd')",
                 "to_date('9999/12/31 23:59:59','yyyy/mm/dd hh24:mi:ss')", "null")
-            .addExpectedValues("4700-01-01T00:00:00.000000Z", "9999-12-31T23:59:59.000000Z", null)
+            .addExpectedValues("4700-01-01T00:00:00.000000 BC", "9999-12-31T23:59:59", null)
             // @TODO stream fails when gets Zero date value
             // .addInsertValues("'2021/01/00'", "'2021/00/00'", "'0000/00/00'")
             .build());
@@ -208,7 +214,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("to_timestamp('2020-06-10 06:14:00.742', 'YYYY-MM-DD HH24:MI:SS.FF')",
                 "to_timestamp('2020-06-10 06:14:00.742123', 'YYYY-MM-DD HH24:MI:SS.FF')")
-            .addExpectedValues("2020-06-10T06:14:00.742000Z", "2020-06-10T06:14:00.742123Z")
+            .addExpectedValues("2020-06-10T06:14:00.742", "2020-06-10T06:14:00.742123")
             .build());
 
     addDataTypeTestData(

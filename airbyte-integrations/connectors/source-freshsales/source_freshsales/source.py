@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -16,16 +16,27 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # Basic full refresh stream
 class FreshsalesStream(HttpStream, ABC):
-    url_base = "https://{}/crm/sales/api/"
-    primary_key = "id"
-    order_field = "updated_at"
+
+    primary_key: str = "id"
+    order_field: str = "updated_at"
+    object_name: str = None
+    require_view_id: bool = False
+    filter_value: str = None
+
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, domain_name: str, **kwargs):
         super().__init__(**kwargs)
-        self.url_base = self.url_base.format(domain_name)
         self.domain_name = domain_name
         self.page = 1
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.domain_name}/crm/sales/api/"
+
+    @property
+    def auth_headers(self) -> Mapping[str, Any]:
+        return self.authenticator.get_auth_header()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -38,43 +49,42 @@ class FreshsalesStream(HttpStream, ABC):
         else:
             return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = {"page": self.page, "sort": self.order_field, "sort_type": "asc"}
+        if self.filter_value:
+            params["filter"] = self.filter_value
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = response.json()
-        records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
+        json_response = response.json() or {}
+        records = json_response.get(self.object_name, []) if self.object_name else json_response
         yield from records
 
     def _get_filters(self) -> List:
         """
         Some streams require a filter_id to be passed in. This function gets all available filters.
         """
-        filters_url = f"https://{self.domain_name}/crm/sales/api/{self.object_name}/filters"
-        auth = self.authenticator.get_auth_header()
-
+        url = f"{self.url_base}{self.object_name}/filters"
         try:
-            r = requests.get(filters_url, headers=auth)
-            r.raise_for_status()
-            return r.json().get("filters")
+            response = self._session.get(url=url, headers=self.auth_headers)
+            response.raise_for_status()
+            return response.json().get("filters")
         except requests.exceptions.RequestException as e:
-            raise e
+            self.logger.error(f"Error occured while getting `Filters` for stream `{self.name}`, full message: {e}")
+            raise
 
-    def get_view_id(self):
+    def get_view_id(self) -> int:
         """
         This function finds a relevant filter_id among all available filters by its name.
         """
         filters = self._get_filters()
         return next(_filter["id"] for _filter in filters if _filter["name"] == self.filter_name)
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        view_id = self.get_view_id()
-        return f"{self.object_name}/view/{view_id}"
+    def path(self, **kwargs) -> str:
+        if self.require_view_id:
+            return f"{self.object_name}/view/{self.get_view_id()}"
+        else:
+            return self.object_name
 
 
 class Contacts(FreshsalesStream):
@@ -84,6 +94,7 @@ class Contacts(FreshsalesStream):
 
     object_name = "contacts"
     filter_name = "All Contacts"
+    require_view_id = True
 
 
 class Accounts(FreshsalesStream):
@@ -93,18 +104,18 @@ class Accounts(FreshsalesStream):
 
     object_name = "sales_accounts"
     filter_name = "All Accounts"
+    require_view_id = True
 
 
 class Deals(FreshsalesStream):
     object_name = "deals"
+    require_view_id = True
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = response.json()
-        records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
         # This is to remove data form widget development. Keeping this in failed integration tests.
-        for record in records:
+        for record in super().parse_response(response):
             record.pop("fc_widget_collaboration", None)
-        yield from records
+            yield record
 
 
 class OpenDeals(Deals):
@@ -139,18 +150,6 @@ class OpenTasks(FreshsalesStream):
     object_name = "tasks"
     filter_value = "open"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.object_name}"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["filter"] = self.filter_value
-        return params
-
 
 class CompletedTasks(FreshsalesStream):
     """
@@ -159,18 +158,6 @@ class CompletedTasks(FreshsalesStream):
 
     object_name = "tasks"
     filter_value = "completed"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.object_name}"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["filter"] = self.filter_value
-        return params
 
 
 class PastAppointments(FreshsalesStream):
@@ -181,18 +168,6 @@ class PastAppointments(FreshsalesStream):
     object_name = "appointments"
     filter_value = "past"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.object_name}"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["filter"] = self.filter_value
-        return params
-
 
 class UpcomingAppointments(FreshsalesStream):
     """
@@ -202,34 +177,26 @@ class UpcomingAppointments(FreshsalesStream):
     object_name = "appointments"
     filter_value = "upcoming"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.object_name}"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["filter"] = self.filter_value
-        return params
-
 
 # Source
 class SourceFreshsales(AbstractSource):
+    @staticmethod
+    def get_input_stream_args(api_key: str, domain_name: str) -> Mapping[str, Any]:
+        return {
+            "authenticator": TokenAuthenticator(token=api_key, auth_method="Token"),
+            "domain_name": domain_name,
+        }
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        auth = TokenAuthenticator(token=f'token={config["api_key"]}', auth_method="Token").get_auth_header()
-        url = f'https://{config["domain_name"]}/crm/sales/api/contacts/filters'
+        stream = Contacts(**self.get_input_stream_args(config["api_key"], config["domain_name"]))
         try:
-            session = requests.get(url, headers=auth)
-            session.raise_for_status()
+            next(stream.read_records(sync_mode=None))
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=f'token={config["api_key"]}', auth_method="Token")
-        args = {"authenticator": auth, "domain_name": config["domain_name"]}
+        args = self.get_input_stream_args(config["api_key"], config["domain_name"])
         return [
             Contacts(**args),
             Accounts(**args),

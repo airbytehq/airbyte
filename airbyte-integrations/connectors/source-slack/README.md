@@ -64,7 +64,7 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/slack:dev
+docker build . -t airbyte/source-slack:dev
 ```
 
 You can also build the connector image via Gradle:
