@@ -293,7 +293,7 @@ public class MongoUtils {
 
   private static List<String> getFieldsName(final MongoCollection<Document> collection, final String fieldName) {
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-        new Document("$limit", DISCOVER_LIMIT),
+        new Document("$sample", DISCOVER_LIMIT),
         new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$" + fieldName))),
         new Document("$unwind", "$arrayofkeyvalue"),
         new Document("$group", new Document(ID, null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
@@ -307,7 +307,7 @@ public class MongoUtils {
   private static List<String> getTypes(final MongoCollection<Document> collection, final String name) {
     final var fieldName = "$" + name;
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-        new Document("$limit", DISCOVER_LIMIT),
+        new Document("$sample", DISCOVER_LIMIT),
         new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", fieldName))),
         new Document("$group", new Document(ID, new Document("fieldType", "$fieldType"))
             .append("count", new Document("$sum", 1)))));
