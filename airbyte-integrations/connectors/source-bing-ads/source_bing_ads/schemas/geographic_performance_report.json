@@ -70,13 +70,13 @@
       "type": ["null", "string"]
     },
     "AbsoluteTopImpressionRatePercent": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "TopImpressionRatePercent": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "AllConversionsQualified": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "Neighborhood": {
       "type": ["null", "string"]
