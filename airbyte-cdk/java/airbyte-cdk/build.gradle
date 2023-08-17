@@ -12,7 +12,17 @@ version = props.getProperty('version')
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+    implementation libs.airbyte.protocol
+
+    implementation libs.bundles.junit
+    // implementation libs.junit.jupiter.api
+    implementation libs.junit.jupiter.params
+    implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
+    implementation libs.jooq
+    testImplementation libs.junit.jupiter.engine
+    implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
+
+    // testImplementation libs.junit.jupiter.api
 }
 
 publishing {
