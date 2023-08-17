@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import datetime
+
 from dataclasses import dataclass
 from typing import List, Union
 
@@ -18,8 +18,7 @@ from braintree.plan import Plan as BPlan
 from braintree.subscription import Subscription as BSubscription
 from braintree.transaction import Transaction as BTransaction
 from braintree.util.xml_util import XmlUtil
-
-from source_braintree.schemas import MerchantAccount, Customer, Discount, Transaction, Subscription, Plan, Dispute
+from source_braintree.schemas import Customer, Discount, Dispute, MerchantAccount, Plan, Subscription, Transaction
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
@@ -55,9 +54,7 @@ class BraintreeExtractor(RecordExtractor):
                 if callable(obj_dict[attr]):
                     continue
                 result[attr] = (
-                    self._get_json_from_resource(obj_dict[attr])
-                    if isinstance(obj_dict[attr], (AttributeGetter, list))
-                    else obj_dict[attr]
+                    self._get_json_from_resource(obj_dict[attr]) if isinstance(obj_dict[attr], (AttributeGetter, list)) else obj_dict[attr]
                 )
         return result
 
@@ -69,12 +66,16 @@ class MerchantAccountExtractor(BraintreeExtractor):
     It parses output XML and finds all `Merchant Account` occurrences in it.
     """
 
-    def extract_records(self, response: requests.Response,
-                        ) -> List[Record]:
-        data = XmlUtil.dict_from_xml(response.text)['merchant_accounts']
-        merchant_accounts = self._extract_as_array(data, 'merchant_account')
-        return [MerchantAccount(**self._get_json_from_resource(BMerchantAccount(None, merchant_account))).dict(exclude_unset=True)
-                for merchant_account in merchant_accounts]
+    def extract_records(
+        self,
+        response: requests.Response,
+    ) -> List[Record]:
+        data = XmlUtil.dict_from_xml(response.text)["merchant_accounts"]
+        merchant_accounts = self._extract_as_array(data, "merchant_account")
+        return [
+            MerchantAccount(**self._get_json_from_resource(BMerchantAccount(None, merchant_account))).dict(exclude_unset=True)
+            for merchant_account in merchant_accounts
+        ]
 
 
 @dataclass
@@ -84,12 +85,13 @@ class CustomerExtractor(BraintreeExtractor):
     It parses output XML and finds all `Customer` occurrences in it.
     """
 
-    def extract_records(self, response: requests.Response,
-                        ) -> List[Record]:
-        data = XmlUtil.dict_from_xml(response.text)['customers']
-        customers = self._extract_as_array(data, 'customer')
-        return [Customer(**self._get_json_from_resource(BCustomer(None, customer))).dict(exclude_unset=True)
-                for customer in customers]
+    def extract_records(
+        self,
+        response: requests.Response,
+    ) -> List[Record]:
+        data = XmlUtil.dict_from_xml(response.text)["customers"]
+        customers = self._extract_as_array(data, "customer")
+        return [Customer(**self._get_json_from_resource(BCustomer(None, customer))).dict(exclude_unset=True) for customer in customers]
 
 
 @dataclass
@@ -99,12 +101,13 @@ class DiscountExtractor(BraintreeExtractor):
     It parses output XML and finds all `Discount` occurrences in it.
     """
 
-    def extract_records(self, response: requests.Response,
-                        ) -> List[Record]:
+    def extract_records(
+        self,
+        response: requests.Response,
+    ) -> List[Record]:
         data = XmlUtil.dict_from_xml(response.text)
-        discounts = self._extract_as_array(data, 'discounts')
-        return [Discount(**self._get_json_from_resource(BDiscount(None, discount))).dict(exclude_unset=True)
-                for discount in discounts]
+        discounts = self._extract_as_array(data, "discounts")
+        return [Discount(**self._get_json_from_resource(BDiscount(None, discount))).dict(exclude_unset=True) for discount in discounts]
 
 
 @dataclass
@@ -114,12 +117,16 @@ class TransactionExtractor(BraintreeExtractor):
     It parses output XML and finds all `Transaction` occurrences in it.
     """
 
-    def extract_records(self, response: requests.Response,
-                        ) -> List[Record]:
-        data = XmlUtil.dict_from_xml(response.text)['credit_card_transactions']
-        transactions = self._extract_as_array(data, 'transaction')
-        return [Transaction(**self._get_json_from_resource(BTransaction(None, transaction))).dict(exclude_unset=True)
-                for transaction in transactions]
+    def extract_records(
+        self,
+        response: requests.Response,
+    ) -> List[Record]:
+        data = XmlUtil.dict_from_xml(response.text)["credit_card_transactions"]
+        transactions = self._extract_as_array(data, "transaction")
+        return [
+            Transaction(**self._get_json_from_resource(BTransaction(None, transaction))).dict(exclude_unset=True)
+            for transaction in transactions
+        ]
 
 
 @dataclass
@@ -129,12 +136,16 @@ class SubscriptionExtractor(BraintreeExtractor):
     It parses output XML and finds all `Subscription` occurrences in it.
     """
 
-    def extract_records(self, response: requests.Response,
-                        ) -> List[Record]:
-        data = XmlUtil.dict_from_xml(response.text)['subscriptions']
-        subscriptions = self._extract_as_array(data, 'subscription')
-        return [Subscription(**self._get_json_from_resource(BSubscription(None, subscription))).dict(exclude_unset=True)
-                for subscription in subscriptions]
+    def extract_records(
+        self,
+        response: requests.Response,
+    ) -> List[Record]:
+        data = XmlUtil.dict_from_xml(response.text)["subscriptions"]
+        subscriptions = self._extract_as_array(data, "subscription")
+        return [
+            Subscription(**self._get_json_from_resource(BSubscription(None, subscription))).dict(exclude_unset=True)
+            for subscription in subscriptions
+        ]
 
 
 @dataclass
@@ -144,12 +155,13 @@ class PlanExtractor(BraintreeExtractor):
     It parses output XML and finds all `Plan` occurrences in it.
     """
 
-    def extract_records(self, response: requests.Response,
-                        ) -> List[Record]:
+    def extract_records(
+        self,
+        response: requests.Response,
+    ) -> List[Record]:
         data = XmlUtil.dict_from_xml(response.text)
-        plans = self._extract_as_array(data, 'plans')
-        return [Plan(**self._get_json_from_resource(BPlan(None, plan))).dict(exclude_unset=True)
-                for plan in plans]
+        plans = self._extract_as_array(data, "plans")
+        return [Plan(**self._get_json_from_resource(BPlan(None, plan))).dict(exclude_unset=True) for plan in plans]
 
 
 @dataclass
@@ -159,12 +171,13 @@ class DisputeExtractor(BraintreeExtractor):
     It parses output XML and finds all `Dispute` occurrences in it.
     """
 
-    def extract_records(self, response: requests.Response,
-                        ) -> List[Record]:
-        data = XmlUtil.dict_from_xml(response.text)['disputes']
-        disputes = self._extract_as_array(data, 'dispute')
-        return [Dispute(**self._get_json_from_resource(BDispute(dispute))).dict(exclude_unset=True)
-                for dispute in disputes]
+    def extract_records(
+        self,
+        response: requests.Response,
+    ) -> List[Record]:
+        data = XmlUtil.dict_from_xml(response.text)["disputes"]
+        disputes = self._extract_as_array(data, "dispute")
+        return [Dispute(**self._get_json_from_resource(BDispute(dispute))).dict(exclude_unset=True) for dispute in disputes]
 
 
 # Declarative Source
