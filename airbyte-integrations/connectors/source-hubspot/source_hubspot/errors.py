@@ -45,7 +45,7 @@ class HubspotAccessDenied(HubspotError):
     """403 Forbidden"""
 
 
-class HubspotRateLimited(HubspotError):
+class HubspotRateLimited(HTTPError):
     """429 Rate Limit Reached"""
 
 

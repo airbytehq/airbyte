@@ -49,10 +49,12 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    CustomAudiences,
     CustomConversions,
     Images,
     Videos,
 )
+from source_facebook_marketing.streams.common import AccountTypeException
 
 from .utils import validate_end_date, validate_start_date
 
@@ -87,7 +89,17 @@ class SourceFacebookMarketing(AbstractSource):
 
             api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
             logger.info(f"Select account {api.account}")
-        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
+
+            account_info = api.account.api_get(fields=["is_personal"])
+
+            if account_info.get("is_personal"):
+                message = (
+                    "The personal ad account you're currently using is not eligible "
+                    "for this operation. Please switch to a business ad account."
+                )
+                raise AccountTypeException(message)
+
+        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException, AccountTypeException) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
@@ -166,6 +178,12 @@ class SourceFacebookMarketing(AbstractSource):
                 max_batch_size=config.max_batch_size,
             ),
             CustomConversions(
+                api=api,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
+            ),
+            CustomAudiences(
                 api=api,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
