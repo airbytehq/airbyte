@@ -704,9 +704,6 @@ class GeographicPerformanceReport(PerformanceReportsMixin, BingAdsStream):
         "AdGroupId",
         "TimePeriod",
         "Country",
-        "State",
-        "MetroArea",
-        "City",
         "CurrencyCode",
         "DeliveredMatchType",
         "AdDistribution",
@@ -720,6 +717,9 @@ class GeographicPerformanceReport(PerformanceReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "MetroArea",
+        "State",
+        "City",
         "AdGroupName",
         "Ctr",
         "ProximityTargetLocation",
