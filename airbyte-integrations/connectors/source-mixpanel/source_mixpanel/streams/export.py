@@ -145,7 +145,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
         for record in self.iter_dicts(response.iter_lines(decode_unicode=True)):
             # transform record into flat dict structure
-            item = {"event": record["event"]}
+            item = {"mixpanel_event": record["event"]}
             properties = record["properties"]
             for result in transform_property_names(properties.keys()):
                 # Convert all values to string (this is default property type)
@@ -153,7 +153,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item[result.transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
-            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
+            if "time" in item: # time is not always present in the response
+                item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
 
             yield item
 
