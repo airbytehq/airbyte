@@ -9,6 +9,8 @@
     <!-- TODO: couldn't figure out how to make gradle exclude to work so defining exclude at PMD level. Cons: hardcoding 'generated' -->
     <exclude-pattern>.*/generated/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-integrations/.*</exclude-pattern>
+    <!-- TODO: work to remove this CDK exclusion, carried over from airbyte-integrations exclude above -->
+    <exclude-pattern>.*/airbyte-cdk/java/airbyte-cdk/.*</exclude-pattern>
     <exclude-pattern>.*/test-integration/.*</exclude-pattern>
 
     <rule ref="category/java/bestpractices.xml">
