@@ -45,17 +45,19 @@
 #                      io.airbyte.integrations.destination.jdbc
 #                      io.airbyte.integrations.destination.normalization
 #                      io.airbyte.integrations.destination.record_buffer
-#                      io.airbyte.integrations.destination.s3
 #                      io.airbyte.integrations.destination.buffered_stream_consumer
 #                      io.airbyte.integrations.destination.dest_state_lifecycle_manager
 #                      io.airbyte.integrations.destination.staging
 #                      io.airbyte.integrations.destination_async
-#                      io.airbyte.integrations.standardtest
 #                      io.airbyte.integrations.source.jdbc
 #                      io.airbyte.integrations.source.relationaldb
 #                      io.airbyte.integrations.util
 #                      io.airbyte.integrations.BaseConnector
 #                      io.airbyte.test.utils
+#            Maybe?:
+#                      io.airbyte.integrations.destination.s3
+#                      io.airbyte.integrations.standardtest
+
 #   - Within rest of repo:
 #     - Find (regex) based on the above list:
 #         io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.normalization|integrations\.destination\.record_buffer|integrations\.destination\.s3|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.standardtest|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)
