@@ -97,8 +97,8 @@
                 "order": 2,
                 "type": "array",
                 "items": {
-                  "title": "List of Valid AdsInsights Fields",
-                  "description": "The list of valid fields for custom insights, imported from the facebook business SDK",
+                  "title": "Valid AdsInsights Fields",
+                  "description": "An enumeration of valid fields for custom insights, imported from the Facebook Business SDK",
                   "enum": [
                     "account_currency",
                     "account_id",
@@ -242,8 +242,8 @@
                 "order": 3,
                 "type": "array",
                 "items": {
-                  "title": "List of Valid AdsInsights Breakdowns",
-                  "description": "The list of valid breakdowns for custom insights, imported from the facebook business SDK",
+                  "title": "Valid AdsInsights Breakdowns",
+                  "description": "An enumeration of valid breakdowns for custom insights, imported from the Facebook Business SDK",
                   "enum": [
                     "ad_format_asset",
                     "age",
@@ -287,8 +287,8 @@
                 "order": 4,
                 "type": "array",
                 "items": {
-                  "title": "List of Valid AdsInsights Action Breakdowns",
-                  "description": "The list of valid action breakdowns for custom insights, imported from the facebook business SDK",
+                  "title": "Valid AdsInsights Action Breakdowns",
+                  "description": "An enumeration of valid action breakdowns for custom insights, imported from the Facebook Business SDK",
                   "enum": [
                     "action_canvas_component_name",
                     "action_carousel_card_id",

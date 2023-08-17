@@ -14,12 +14,12 @@ from pydantic import BaseModel, Field, PositiveInt
 logger = logging.getLogger("airbyte")
 
 
-ValidFields = Enum("List of Valid AdsInsights Fields", AdsInsights.Field.__dict__)
-ValidFields.__doc__ = "The list of valid fields for custom insights, imported from the facebook business SDK"
-ValidBreakdowns = Enum("List of Valid AdsInsights Breakdowns", AdsInsights.Breakdowns.__dict__)
-ValidBreakdowns.__doc__ = "The list of valid breakdowns for custom insights, imported from the facebook business SDK"
-ValidActionBreakdowns = Enum("List of Valid AdsInsights Action Breakdowns", AdsInsights.ActionBreakdowns.__dict__)
-ValidActionBreakdowns.__doc__ = "The list of valid action breakdowns for custom insights, imported from the facebook business SDK"
+ValidFields = Enum("Valid AdsInsights Fields", AdsInsights.Field.__dict__)
+ValidFields.__doc__ = "An enumeration of valid fields for custom insights, imported from the Facebook Business SDK"
+ValidBreakdowns = Enum("Valid AdsInsights Breakdowns", AdsInsights.Breakdowns.__dict__)
+ValidBreakdowns.__doc__ = "An enumeration of valid breakdowns for custom insights, imported from the Facebook Business SDK"
+ValidActionBreakdowns = Enum("Valid AdsInsights Action Breakdowns", AdsInsights.ActionBreakdowns.__dict__)
+ValidActionBreakdowns.__doc__ = "An enumeration of valid action breakdowns for custom insights, imported from the Facebook Business SDK"
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
 
