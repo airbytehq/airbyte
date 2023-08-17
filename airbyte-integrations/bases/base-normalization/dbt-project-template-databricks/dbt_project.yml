@@ -54,7 +54,11 @@ models:
         +incremental_strategy: merge
         +on_schema_change: "sync_all_columns"
         +file_format: delta
-        +post-hook: "ALTER TABLE {{this}} SET TBLPROPERTIES ('delta.deletedFileRetentionDuration' = 'interval 1 day', 'delta.minReaderVersion' = '2','delta.minWriterVersion' = '5','delta.columnMapping.mode' = 'name')"
+        +tblproperties:
+          delta.deletedFileRetentionDuration: "interval 1 day"
+          delta.minReaderVersion: 2
+          delta.minWriterVersion: 5
+          delta.columnMapping.mode: name
       airbyte_tables:
         +tags: normalized_tables
         +materialized: table
