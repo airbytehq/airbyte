@@ -9,8 +9,15 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+airbyteCdk {
+    cdkVersionRequired = '0.1.0-SNAPSHOT'  // The version of the CDK you are targeting.
+    useCdkProjectRef = true        // True to avoid using MavenLocal, and just depend on the folder.
+}
+
 dependencies {
-    implementation 'io.airbyte:airbyte-cdk:0.0.1'
+    // Toggle between the two implementations below to test without interim CDK build.
+    // implementation "io.airbyte:airbyte-cdk:0.1.0-SNAPSHOT"
+    implementation project(":airbyte-cdk:java:airbyte-cdk")
 
     implementation 'com.google.cloud:google-cloud-bigquery:2.27.0'
     implementation 'org.apache.commons:commons-lang3:3.11'
@@ -22,21 +29,11 @@ dependencies {
     implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
     implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java-s3')
-    implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
-    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
-    integrationTestJavaImplementation project(':airbyte-db:db-lib')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 
 configurations.all {

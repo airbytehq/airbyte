@@ -9,16 +9,20 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+// Define the properties that the plugin will use
+airbyteCdk {
+    cdkVersionRequired = '0.1.0-SNAPSHOT'  // The version of the CDK you are targeting.
+    useCdkProjectRef = true        // True to avoid using MavenLocal, and just depend on the folder.
+}
+
 dependencies {
+    // Toggle between the two implementations below to test without interim CDK build.
+    // implementation "io.airbyte:airbyte-cdk:0.1.0-SNAPSHOT"
+    implementation project(":airbyte-cdk:java:airbyte-cdk")
+
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.47'
 
-    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-dynamodb')
 }

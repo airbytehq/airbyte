@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+    id 'airbyte-java-cdk'
 }
 
 repositories {
@@ -14,13 +15,27 @@ application {
     mainClass = 'io.airbyte.integrations.destination_performance.Main'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
+
+// Define the properties that the plugin will use
+airbyteCdk {
+    cdkVersionRequired = '0.1.0-SNAPSHOT'  // The version of the CDK you are targeting.
+    useCdkProjectRef = true        // True to avoid using MavenLocal, and just depend on the folder.
+}
+
+// // TODO: Move this logic into the 'airbyte-java-connector' plugin:
+// def cdkImplementation = project(':airbyte-cdk')
+// if (!useCdkProjRef) {
+//     cdkImplementation = "io.airbyte:airbyte-cdk:${cdkVersion}"
+// }
+
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
+    // Toggle between the two implementations below to test without interim CDK build.
+    // implementation "io.airbyte:airbyte-cdk:0.1.0-SNAPSHOT"
+    implementation project(":airbyte-cdk:java:airbyte-cdk")
+
     implementation libs.airbyte.protocol
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
     implementation 'junit:junit:4.13.1'

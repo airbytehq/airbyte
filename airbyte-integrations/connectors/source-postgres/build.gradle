@@ -3,6 +3,7 @@ import org.jsonschema2pojo.SourceType
 plugins {
     id 'application'
     id 'airbyte-docker'
+    id 'airbyte-java-cdk'
     id 'airbyte-integration-test-java'
     id 'airbyte-performance-test-java'
     id 'airbyte-connector-acceptance-test'
@@ -14,35 +15,41 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-dependencies {
-    implementation 'io.airbyte:airbyte-cdk:0.0.2-SNAPSHOT'
+// Define the properties that the plugin will use
+airbyteCdk {
+    cdkVersionRequired = '0.1.0-SNAPSHOT'  // The version of the CDK you are targeting.
+    useCdkProjectRef = true        // True to avoid using MavenLocal, and just depend on the folder.
+}
 
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium')
+// // TODO: Move this logic into the 'airbyte-java-connector' plugin:
+// def cdkImplementation = project(':airbyte-cdk')
+// if (!useCdkProjRef) {
+//     cdkImplementation = "io.airbyte:airbyte-cdk:${cdkVersion}"
+// }
+
+dependencies {
+    // Toggle between the two implementations below to test without interim CDK build.
+    // implementation "io.airbyte:airbyte-cdk:0.1.0-SNAPSHOT"
+    implementation project(":airbyte-cdk:java:airbyte-cdk")
+
+    // implementation airbyteCdk.getCdkDependencyRef()
+    // // testImplementation testFixtures(airbyteCdk.getCdkDependencyRef())
+    // integrationTestJavaImplementation airbyteCdk.getCdkDependencyRef()
+    // performanceTestJavaImplementation airbyteCdk.getCdkDependencyRef()
+
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.postgresql
     implementation libs.bundles.datadog
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")
-    testImplementation project(':airbyte-test-utils')
+    // testImplementation project(':airbyte-test-utils')
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation libs.connectors.testcontainers.jdbc
     testImplementation libs.connectors.testcontainers.postgresql
     testImplementation libs.junit.jupiter.system.stubs
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 
 jsonSchema2Pojo {
