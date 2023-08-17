@@ -79,8 +79,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public String createTable(final StreamConfig stream, final String suffix) {
     final String columnDeclarations = stream.columns().entrySet().stream()
-        .map(column -> column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
-        .collect(joining(",\n"));
+        .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
+        .collect(joining("\n"));
     // TODO indexes and stuff
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
@@ -92,7 +92,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         CREATE TABLE ${final_table_id} (
           "_airbyte_raw_id" TEXT NOT NULL,
           "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
-          "_airbyte_meta" VARIANT NOT NULL,
+          "_airbyte_meta" VARIANT NOT NULL
           ${column_declarations}
         );
         """);
