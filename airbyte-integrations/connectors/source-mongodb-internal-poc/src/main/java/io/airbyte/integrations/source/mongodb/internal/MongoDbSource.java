@@ -10,6 +10,7 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.FET
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -174,30 +176,10 @@ public class MongoDbSource extends BaseConnector implements Source {
         .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
-          final var collection = database.getCollection(collectionName);
           // TODO verify that if all fields are selected that all fields are returned here
           // (or should this check and ignore them if all fields are selected)
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
-
-          // The filter determines the starting point of this iterator based on the state of this collection.
-          // If a state exists, it will use that state to create a query akin to "where _id > [last saved
-          // state] order by _id ASC".
-          // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
-          final Bson filter = states.entrySet().stream()
-              // look only for states that match this stream's name
-              .filter(state -> state.getKey().equals(airbyteStream.getStream().getName()))
-              .findFirst()
-              // TODO add type support here when we add support for _id fields that are not ObjectId types
-              .map(entry -> Filters.gt("_id", new ObjectId(entry.getValue().id())))
-              // if nothing was found, return a new BsonDocument
-              .orElseGet(BsonDocument::new);
-
-          final var cursor = collection.find()
-              .filter(filter)
-              .projection(fields)
-              .sort(Sorts.ascending("_id"))
-              .batchSize(fetchSize)
-              .cursor();
+          final var cursor = getRecords(database, fields, collectionName, states, fetchSize);
 
           final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, emittedAt, fetchSize);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
@@ -209,4 +191,33 @@ public class MongoDbSource extends BaseConnector implements Source {
     return MongoConnectionUtils.createMongoClient(config);
   }
 
+  protected MongoCursor<Document> getRecords(
+      final MongoDatabase database,
+      final Bson fields,
+      final String collectionName,
+      final Map<String, MongodbStreamState> states,
+      final Integer fetchSize) {
+
+    final var collection = database.getCollection(collectionName);
+
+    // The filter determines the starting point of this iterator based on the state of this collection.
+    // If a state exists, it will use that state to create a query akin to "where _id > [last saved
+    // state] order by _id ASC".
+    // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
+    final Bson filter = states.entrySet().stream()
+        // look only for states that match this stream's name
+        .filter(state -> state.getKey().equals(collectionName))
+        .findFirst()
+        // TODO add type support here when we add support for _id fields that are not ObjectId types
+        .map(entry -> Filters.gt("_id", new ObjectId(entry.getValue().id())))
+        // if nothing was found, return a new BsonDocument
+        .orElseGet(BsonDocument::new);
+
+    return collection.find()
+        .filter(filter)
+        .projection(fields)
+        .sort(Sorts.ascending("_id"))
+        .batchSize(fetchSize)
+        .cursor();
+  }
 }
