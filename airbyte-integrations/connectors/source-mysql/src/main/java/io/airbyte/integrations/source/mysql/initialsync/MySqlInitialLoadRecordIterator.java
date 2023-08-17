@@ -42,12 +42,15 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   private final String quoteString;
   private final MySqlInitialLoadStateManager initialLoadStateManager;
   private final List<String> columnNames;
+
+  private PrimaryKeyLoadStatus prevPkLoadStatus;
   private final AirbyteStreamNameNamespacePair pair;
   private final JdbcDatabase database;
   // Represents the number of rows to get with each query.
   private final long chunkSize;
   private final PrimaryKeyInfo pkInfo;
   private int numSubqueries = 0;
+  private boolean shouldAbandonChunkingApproach = false;
   private AutoCloseableIterator<JsonNode> currentIterator;
 
   MySqlInitialLoadRecordIterator(
@@ -109,9 +112,9 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
 
-      final PrimaryKeyLoadStatus pkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
+      final PrimaryKeyLoadStatus currentPkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
 
-      if (pkLoadStatus == null) {
+      if (currentPkLoadStatus == null) {
         LOGGER.info("pkLoadStatus is null");
         final String quotedCursorField = enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
         final String sql = String.format("SELECT %s FROM %s ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
@@ -120,15 +123,30 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       } else {
-        LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
-        final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
-        // Since a pk is unique, we can issue a > query instead of a >=, as there cannot be two records with the same pk.
-        final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
-            quotedCursorField, quotedCursorField, chunkSize);
+        LOGGER.info("pkLoadStatus value is : {}", currentPkLoadStatus.getPkVal());
+        // For the composite key case, if the previous pk load status equals the current once, we could run the risk of not
+        // advancing in the sync. This could happen in the case of a composite primary key situation where there are a lot of duplicate
+        // values associated with the first primary key field. In this case, we should abandon the chunking approach altogether to prevent
+        // the subqueries from re-processing the same data over and over again.
+        if (prevPkLoadStatus != null && prevPkLoadStatus.getPkVal().equals(currentPkLoadStatus.getPkVal())) {
+          shouldAbandonChunkingApproach = true;
+          LOGGER.info("Previous pkLoadStatus is the same as the current one for {}. This can happen in a composite key scenario, "
+              + "abandoning chunking approach.", tableName);
+        }
+        final String quotedCursorField = enquoteIdentifier(currentPkLoadStatus.getPkName(), quoteString);
+        final String sql;
+        if (shouldAbandonChunkingApproach) {
+          sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s", wrappedColumnNames, fullTableName,
+              quotedCursorField, quotedCursorField);
+        } else {
+          sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
+              quotedCursorField, quotedCursorField, chunkSize);
+        }
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         final MysqlType cursorFieldType = pkInfo.fieldType();
-        sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());
+        sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, currentPkLoadStatus.getPkVal());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        prevPkLoadStatus = currentPkLoadStatus;
         return preparedStatement;
       }
     } catch (final SQLException e) {

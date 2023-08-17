@@ -4,6 +4,7 @@ import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadS
 
 import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -28,7 +29,7 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   private final Iterator<AirbyteMessage> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;
   private boolean hasEmittedFinalState = false;
-  private PrimaryKeyLoadStatus pkStatus;
+  private PrimaryKeyLoadStatus prevPkStatus;
   private final JsonNode streamStateForIncrementalRun;
   private final MySqlInitialLoadStateManager stateManager;
   private long recordCount = 0L;
@@ -36,6 +37,8 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   private final Duration syncCheckpointDuration;
   private final Long syncCheckpointRecords;
   private final String pkFieldName;
+  private boolean shouldEmitIntermediateState = false;
+  private final PrimaryKeyInfo pkInfo;
 
   public MySqlInitialSyncStateIterator(final Iterator<AirbyteMessage> messageIterator,
       final AirbyteStreamNameNamespacePair pair,
@@ -50,34 +53,42 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
     this.syncCheckpointDuration = checkpointDuration;
     this.syncCheckpointRecords = checkpointRecords;
     this.pkFieldName = stateManager.getPrimaryKeyInfo(pair).pkFieldName();
-    this.pkStatus = stateManager.getPrimaryKeyLoadStatus(pair);
+    this.prevPkStatus = stateManager.getPrimaryKeyLoadStatus(pair);
+    this.pkInfo = stateManager.getPrimaryKeyInfo(pair);
   }
 
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {
     if (messageIterator.hasNext()) {
-      if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
-          && Objects.nonNull(pkStatus)) {
-        LOGGER.info("Emitting initial sync pk state for stream {}, state is {}", pair, pkStatus);
+      if (shouldEmitIntermediateState
+          && (recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
+          && Objects.nonNull(prevPkStatus)) {
+        LOGGER.info("Emitting initial sync pk state for stream {}, state is {}", pair, prevPkStatus);
         recordCount = 0L;
         lastCheckpoint = Instant.now();
+        shouldEmitIntermediateState = false;
         return new AirbyteMessage()
             .withType(Type.STATE)
-            .withState(stateManager.createIntermediateStateMessage(pair, pkStatus));
+            .withState(stateManager.createIntermediateStateMessage(pair, prevPkStatus));
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
         final AirbyteMessage message = messageIterator.next();
         if (Objects.nonNull(message)) {
-          final String lastPk = message.getRecord().getData().get(pkFieldName).asText();
-          pkStatus = new PrimaryKeyLoadStatus()
-              .withVersion(MYSQL_STATUS_VERSION)
-              .withStateType(StateType.PRIMARY_KEY)
-              .withPkName(pkFieldName)
-              .withPkVal(lastPk)
-              .withIncrementalState(streamStateForIncrementalRun);
-          stateManager.updatePrimaryKeyLoadState(pair, pkStatus);
+          final String currentPk = message.getRecord().getData().get(pkFieldName).asText();
+          // This is to handle the composite pk case where the field may not be unique. We only want to emit the state and update the pkLoad value
+          // once we have processed all the records with the same primary key value. This lets us issue a > statement in the next chunk.
+          if (prevPkStatus == null || !prevPkStatus.getPkVal().equals(currentPk)) {
+            prevPkStatus = new PrimaryKeyLoadStatus()
+                .withVersion(MYSQL_STATUS_VERSION)
+                .withStateType(StateType.PRIMARY_KEY)
+                .withPkName(pkFieldName)
+                .withPkVal(currentPk)
+                .withIncrementalState(streamStateForIncrementalRun);
+            stateManager.updatePrimaryKeyLoadState(pair, prevPkStatus);
+            shouldEmitIntermediateState = true;
+          }
         }
         recordCount++;
         return message;
