@@ -84,7 +84,7 @@ Schema can be either inferred or user provided.
 ### Validation Policies
 Users will be required to select one of 3 different options, in the event that records are encountered that don’t conform to the schema.
 
-* Skip nonconforming records: check each record to see if it conforms to the schema; keep a count of the number of records in each file that do and do not conform and emit a log message with these counts once we’re done reading the file. Do not emit records that don’t conform.
+* Skip nonconforming records: check each record to see if it conforms to the user-input or inferred schema; skip the record if it doesn't conform. We keep a count of the number of records in each file that do and do not conform and emit a log message with these counts once we’re done reading the file.
 * Emit all records: columns that don’t exist in the configured catalog may still be available in the destination’s raw tables, but this is undefined behavior.
 Only error if there are conflicting field types or malformed rows.
 * Stop the sync and wait for schema re-discovery:  if a record is encountered that does not conform to the configured catalog’s schema, we log a message and stop the whole sync.
