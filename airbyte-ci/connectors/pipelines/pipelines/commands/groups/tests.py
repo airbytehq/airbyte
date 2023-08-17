@@ -43,9 +43,9 @@ async def run_test(poetry_package_path: str, test_directory: str) -> bool:
     """
     logger = logging.getLogger(f"{poetry_package_path}.tests")
     logger.info(f"Running tests for {poetry_package_path}")
-    # .git and airbyte-integrations are always mounted because a lot of tests rely on them
-    directories_to_always_mount = [".git", "airbyte-integrations"]
-    directories_to_mount = [poetry_package_path, *directories_to_always_mount]
+    # The following directories are always mounted because a lot of tests rely on them
+    directories_to_always_mount = [".git", "airbyte-integrations", "airbyte-ci"]
+    directories_to_mount = list(set([poetry_package_path, *directories_to_always_mount]))
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
             docker_host_socket = dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
