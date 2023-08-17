@@ -16,7 +16,6 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
@@ -37,6 +36,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRec
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV1V2Migrator;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -76,7 +76,8 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
 
-  public static final String RAW_NAMESPACE_OVERRIDE = "raw_data_dataset";
+  private static final String RAW_DATA_DATASET = "raw_data_dataset";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final List<String> REQUIRED_PERMISSIONS = List.of(
       "storage.multipartUploads.abort",
@@ -230,21 +231,25 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
     final CatalogParser catalogParser;
-    if (config.hasNonNull(RAW_NAMESPACE_OVERRIDE) && !Strings.isNullOrEmpty(config.get(RAW_NAMESPACE_OVERRIDE).asText())) {
-      catalogParser = new CatalogParser(sqlGenerator, config.get(RAW_NAMESPACE_OVERRIDE).asText());
+    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()) {
+      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
     } else {
       catalogParser = new CatalogParser(sqlGenerator);
     }
-    ParsedCatalog parsedCatalog = catalogParser.parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog;
 
     final BigQuery bigquery = getBigQuery(config);
     TyperDeduper typerDeduper;
     if (TypingAndDedupingFlag.isDestinationV2()) {
+      parsedCatalog = catalogParser.parseCatalog(catalog);
+      BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
       typerDeduper = new DefaultTyperDeduper<>(
           sqlGenerator,
           new BigQueryDestinationHandler(bigquery, datasetLocation),
-          parsedCatalog);
+          parsedCatalog,
+          migrator);
     } else {
+      parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
     }
 
@@ -268,13 +273,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
-      StreamConfig parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+      final StreamConfig parsedStream;
 
       final String streamName = stream.getName();
       String targetTableName;
       if (use1s1t) {
+        parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
         targetTableName = parsedStream.id().rawName();
       } else {
+        parsedStream = null;
         targetTableName = getTargetTableName(streamName);
       }
 
@@ -346,7 +353,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         outputRecordCollector,
         BigQueryUtils.getDatasetId(config),
         typerDeduper,
-        parsedCatalog);
+        parsedCatalog
+    );
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(BigQuery bigQuery,
@@ -402,7 +410,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         getTargetTableNameTransformer(namingResolver),
         typerDeduper,
         parsedCatalog,
-        BigQueryUtils.getDatasetId(config));
+        BigQueryUtils.getDatasetId(config)
+    );
   }
 
   protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {

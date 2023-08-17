@@ -29,10 +29,12 @@ from source_stripe.streams import (
     Payouts,
     Persons,
     Plans,
+    Prices,
     Products,
     PromotionCodes,
     Refunds,
     SetupIntents,
+    ShippingRates,
     SubscriptionItems,
     Subscriptions,
     SubscriptionSchedule,
@@ -175,6 +177,7 @@ def config_fixture():
         (Payouts, {}, "payouts"),
         (Persons, {"stream_slice": {"id": "A1"}}, "accounts/A1/persons"),
         (Plans, {}, "plans"),
+        (Prices, {}, "prices"),
         (Products, {}, "products"),
         (Subscriptions, {}, "subscriptions"),
         (SubscriptionItems, {}, "subscription_items"),
@@ -188,6 +191,7 @@ def config_fixture():
         (PromotionCodes, {}, "promotion_codes"),
         (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
         (SetupIntents, {}, "setup_intents"),
+        (ShippingRates, {}, "shipping_rates"),
     ],
 )
 def test_path_and_headers(

@@ -1,0 +1,13 @@
+name: "Java CDK CI"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+    paths:
+      - '.github/workflows/java_cdk.yml'
+      - 'airbyte-ci/java-cdk/**'
+      - 'airbyte-ci/java/**'
+  workflow_dispatch:

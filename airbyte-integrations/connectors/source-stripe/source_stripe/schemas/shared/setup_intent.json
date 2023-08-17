@@ -72,6 +72,20 @@
     "usage": {
       "type": ["string"],
       "enum": ["on_session", "off_session"]
+    },
+    "client_secret": {
+      "type": ["null", "string"]
+    },
+    "automatic_payment_methods": {
+      "type": ["null", "object"],
+      "properties": {
+        "allow_redirects": {
+          "type": ["null", "string"]
+        },
+        "enabled": {
+          "type": ["null", "boolean"]
+        }
+      }
     }
   }
 }

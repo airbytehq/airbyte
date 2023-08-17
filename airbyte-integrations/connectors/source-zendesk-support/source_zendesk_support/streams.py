@@ -119,11 +119,13 @@ class BaseZendeskSupportStream(HttpStream, ABC):
                     yield record
 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 403:
+        status_code = response.status_code
+        if status_code == 403 or status_code == 404:
             try:
                 error = response.json().get("error")
             except requests.exceptions.JSONDecodeError:
-                error = {"title": "Forbidden", "message": "Received empty JSON response"}
+                reason = response.reason
+                error = {"title": f"{reason}", "message": "Received empty JSON response"}
             self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {error}.")
             setattr(self, "raise_on_http_errors", False)
             return False
@@ -227,7 +229,7 @@ class FullRefreshZendeskSupportStream(BaseZendeskSupportStream):
         if self._ignore_pagination:
             return None
 
-        meta = response.json().get("meta", {})
+        meta = response.json().get("meta", {}) if response.content else {}
         return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
 
     def request_params(
@@ -614,6 +616,20 @@ class TicketMetricEvents(CursorPaginationZendeskSupportStream):
     def path(self, **kwargs):
         return "incremental/ticket_metric_events"
 
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "start_time": self.check_stream_state(stream_state),
+            "page[size]": self.page_size,
+        }
+        if next_page_token:  # need keep start_time for this stream
+            params.update(next_page_token)
+        return params
+
 
 class Macros(SourceZendeskSupportStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
@@ -657,6 +673,17 @@ class Tags(FullRefreshZendeskSupportStream):
 
     # doesn't have the 'id' field
     primary_key = "name"
+
+
+class Topics(CursorPaginationZendeskSupportStream):
+    """
+    Topics stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics
+    """
+
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs):
+        return "community/topics"
 
 
 class SlaPolicies(FullRefreshZendeskSupportStream):

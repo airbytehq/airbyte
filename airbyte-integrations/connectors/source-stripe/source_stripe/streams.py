@@ -517,6 +517,17 @@ class Plans(IncrementalStripeStream):
         return params
 
 
+class Prices(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/prices/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "prices"
+
+
 class Products(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/products/list
@@ -526,6 +537,17 @@ class Products(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "products"
+
+
+class ShippingRates(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/shipping_rates/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "shipping_rates"
 
 
 class Reviews(IncrementalStripeStream):

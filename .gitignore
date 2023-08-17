@@ -92,6 +92,7 @@ dd-java-agent.jar
 /.env
 /.env.dev
 /flags.yml
+/temporal/dynamicconfig/development.yaml
 
 # Java
 **/bin/**
@@ -99,3 +100,9 @@ dd-java-agent.jar
 **/node_modules/**
 # Ignore generated credentials from google-github-actions/auth
 gha-creds-*.json
+
+# Legacy pipeline reports path
+tools/ci_connector_ops/pipeline_reports/
+
+# ignore local build scan uri output
+scan-journal.log

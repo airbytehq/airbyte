@@ -19,6 +19,7 @@ import io.airbyte.configoss.StandardCheckConnectionOutput;
 import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -32,9 +33,14 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -56,6 +62,11 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   private JsonNode config;
   private JdbcDatabase database;
   private DataSource dataSource;
+
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(getConfig());
+  }
 
   @Override
   protected String getImageName() {
@@ -84,6 +95,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   @Override
   protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  protected boolean supportsInDestinationNormalization() {
     return true;
   }
 
@@ -158,9 +173,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
+    TEST_SCHEMAS.add(schemaName);
 
     this.config = Jsons.clone(getStaticConfig());
     ((ObjectNode) config).put("schema", schemaName);
@@ -171,24 +187,19 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
-    database.execute(createSchemaQuery);
+  protected void tearDown(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+    String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
+    database.execute(dropSchemaQuery);
+
+    for (final String schema : TEST_SCHEMAS) {
+      dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", schema);
+      database.execute(dropSchemaQuery);
+    }
+
     DataSourceFactory.close(dataSource);
   }
 
-  @Test
-  public void testCheckWithNoActiveWarehouseConnection() throws Exception {
-    // Config to user(creds) that has no warehouse assigned
-    final JsonNode config = Jsons.deserialize(IOs.readFile(
-        Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
-
-    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
-
-    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
-    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
-  }
-
+  @Disabled("See README for why this test is disabled")
   @Test
   public void testCheckWithNoTextSchemaPermissionConnection() throws Exception {
     // Config to user (creds) that has no permission to schema

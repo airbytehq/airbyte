@@ -35,6 +35,7 @@ dependencies {
     // TODO (edgao) explain how you built this jar
     implementation files('lib/snowflake-jdbc.jar')
     implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'org.apache.commons:commons-text:1.10.0'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
@@ -45,6 +46,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation project(':airbyte-integrations:bases:base-java-s3')
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation libs.airbyte.protocol
 
 //    this is a configuration to make mockito work with final classes
@@ -52,6 +54,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-snowflake')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 

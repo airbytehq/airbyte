@@ -203,7 +203,7 @@ spec:
     assert isinstance(stream, DeclarativeStream)
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert stream.stream_cursor_field.string == "created"
+    assert stream._stream_cursor_field.string == "created"
 
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -1542,26 +1542,15 @@ def test_simple_retriever_emit_log_messages():
 
 def test_ignore_retry():
     requester_model = {
-        "type": "SimpleRetriever",
-        "record_selector": {
-            "type": "RecordSelector",
-            "extractor": {
-                "type": "DpathExtractor",
-                "field_path": [],
-            },
-        },
-        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+        "type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api",
     }
 
     connector_builder_factory = ModelToComponentFactory(disable_retries=True)
-    retriever = connector_builder_factory.create_component(
-        model_type=SimpleRetrieverModel,
+    requester = connector_builder_factory.create_component(
+        model_type=HttpRequesterModel,
         component_definition=requester_model,
         config={},
         name="Test",
-        primary_key="id",
-        stream_slicer=None,
-        transformations=[]
     )
 
-    assert retriever.max_retries == 0
+    assert requester.max_retries == 0
