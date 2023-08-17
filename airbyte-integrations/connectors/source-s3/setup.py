@@ -20,7 +20,7 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "connector-acceptance-test",
-    "pandas==1.3.1",
+    "pandas==1.3.3",
     "psutil",
     "pytest-order",
     "netifaces~=0.11.0",
