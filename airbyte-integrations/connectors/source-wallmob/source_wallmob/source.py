@@ -168,6 +168,24 @@ class Products(WallmobStream):
         should return "customers". Required.
         """
         return "products"
+    
+class Suppliers(WallmobStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "id"
+    page_size = 100
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        return "suppliers"
 
 
 class PurchaseOrders(WallmobStream):
@@ -351,4 +369,4 @@ class SourceWallmob(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
-        return [Shops(config), Products(config), StockValues(config), ProductCategories(config), PurchaseOrders(config), Orders(config)]
+        return [Shops(config), Products(config), Suppliers(config), StockValues(config), ProductCategories(config), PurchaseOrders(config), Orders(config)]

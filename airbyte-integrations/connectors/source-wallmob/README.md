@@ -60,7 +60,9 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-wallmob:dev
+docker build . -t airbyte/source-wallmob:4.0.0 --platform linux/amd64
+docker tag airbyte/source-wallmob:4.0.0 askeladden/airbyte-wallmob-python-source:4.0.0
+docker push askeladden/airbyte-wallmob-python-source:4.0.0
 ```
 
 If you want to build the Docker image with the CDK on your local machine (rather than the most recent package published to pypi), from the airbyte base directory run:
