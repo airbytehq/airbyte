@@ -96,7 +96,7 @@
               "type": "array",
               "items": {
                 "title": "ValidEnums",
-                "description": "An enumeration.",
+                "description": "The list of valid fields for querying the Facebook API.",
                 "enum": [
                   "account_currency",
                   "account_id",
@@ -241,7 +241,7 @@
               "type": "array",
               "items": {
                 "title": "ValidBreakdowns",
-                "description": "An enumeration.",
+                "description": "The list of valid breakdowns for querying the Facebook API.",
                 "enum": [
                   "ad_format_asset",
                   "age",
@@ -286,7 +286,7 @@
               "type": "array",
               "items": {
                 "title": "ValidActionBreakdowns",
-                "description": "An enumeration.",
+                "description": "The list of valid action breakdowns for querying the Facebook API.",
                 "enum": [
                   "action_canvas_component_name",
                   "action_carousel_card_id",
