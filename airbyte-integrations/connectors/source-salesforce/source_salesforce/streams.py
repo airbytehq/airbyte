@@ -450,6 +450,9 @@ class BulkSalesforceStream(SalesforceStream):
 
         content_type = headers.get("content-type")
 
+        if not content_type:
+            return self.encoding
+
         content_type, params = requests.utils._parse_content_type_header(content_type)
 
         if "charset" in params:
