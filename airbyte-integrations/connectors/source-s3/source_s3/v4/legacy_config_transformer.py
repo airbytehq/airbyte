@@ -14,7 +14,6 @@ from source_s3.source_files_abstract.formats.parquet_spec import ParquetFormat
 
 SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-IGNORE_LEGACY_ADVANCED_OPTIONS = ("auto_dict_encode", "timestamp_parsers")
 
 
 class LegacyConfigTransformer:
@@ -103,8 +102,7 @@ class LegacyConfigTransformer:
             ):
                 csv_options["autogenerate_column_names"] = autogenerate_column_names
 
-            for option in IGNORE_LEGACY_ADVANCED_OPTIONS:
-                advanced_options.pop(option, None)
+            cls._filter_legacy_noops(advanced_options)
 
             if advanced_options or additional_reader_options:
                 raise ValueError(
@@ -135,3 +133,15 @@ class LegacyConfigTransformer:
             return json.loads(options_str)
         except json.JSONDecodeError as error:
             raise ValueError(f"Malformed {options_field} config json: {error}. Please ensure that it is a valid JSON.")
+
+    @staticmethod
+    def _filter_legacy_noops(advanced_options: Dict[str, Any]):
+        ignore_all = ("auto_dict_encode", "timestamp_parsers")
+        ignore_by_value = (("check_utf8", False),)
+
+        for option in ignore_all:
+            advanced_options.pop(option, None)
+
+        for option, value_to_ignore in ignore_by_value:
+            if advanced_options.get(option) == value_to_ignore:
+                advanced_options.pop(option)
