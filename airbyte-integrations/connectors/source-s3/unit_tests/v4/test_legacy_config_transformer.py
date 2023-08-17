@@ -203,11 +203,29 @@ def test_convert_legacy_config(legacy_config, expected_config):
         pytest.param(
             "csv",
             {
+                "additional_reader_options": '{"include_columns": ""}',
+            },
+            None,
+            ValueError,
+            id="test_unsupported_additional_reader_options",
+        ),
+        pytest.param(
+            "csv",
+            {
                 "advanced_options": '{"not_valid": "at all}',
             },
             None,
             ValueError,
             id="test_malformed_advanced_options",
+        ),
+        pytest.param(
+            "csv",
+            {
+                "advanced_options": '{"column_names": : ""}',
+            },
+            None,
+            ValueError,
+            id="test_unsupported_advanced_options",
         ),
         pytest.param(
             "jsonl",
