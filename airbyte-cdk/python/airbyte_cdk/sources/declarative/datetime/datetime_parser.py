@@ -16,7 +16,7 @@ class DatetimeParser:
     Instead of using the directive directly, we can use datetime.fromtimestamp and dt.timestamp()
     """
 
-    _UNIX_ZERO_DT = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+    _UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
     def parse(self, date: Union[str, int], format: str) -> datetime.datetime:
         # "%s" is a valid (but unreliable) directive for formatting, but not for parsing
@@ -28,7 +28,7 @@ class DatetimeParser:
         if format == "%s":
             return datetime.datetime.fromtimestamp(int(date), tz=datetime.timezone.utc)
         elif format == "%ms":
-            return self._UNIX_ZERO_DT + datetime.timedelta(milliseconds=int(date))
+            return self._UNIX_EPOCH + datetime.timedelta(milliseconds=int(date))
 
         parsed_datetime = datetime.datetime.strptime(str(date), format)
         if self._is_naive(parsed_datetime):
