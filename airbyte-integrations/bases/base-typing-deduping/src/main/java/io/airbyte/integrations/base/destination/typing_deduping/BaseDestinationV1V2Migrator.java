@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator {
 
-  Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
 
   @Override
   public void migrateIfNecessary(
@@ -23,10 +23,14 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
                                  final DestinationHandler destinationHandler,
                                  final StreamConfig streamConfig)
       throws TableNotMigratedException, UnexpectedSchemaException {
+    LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
       migrate(sqlGenerator, destinationHandler, streamConfig);
+    } else {
+      LOGGER.info("No Migration Required for stream: {}", streamConfig.id().finalName());
     }
+
   }
 
   /**
@@ -37,9 +41,13 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    */
   protected boolean shouldMigrate(final StreamConfig streamConfig) {
     final var v1RawTable = convertToV1RawName(streamConfig);
-    return isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode())
-        && !doesValidV2RawTableAlreadyExist(streamConfig)
-        && doesValidV1RawTableExist(v1RawTable.namespace(), v1RawTable.tableName());
+    LOGGER.info("Checking whether v1 raw table {} in dataset {} exists", v1RawTable.tableName(), v1RawTable.namespace());
+    final var syncModeNeedsMigration = isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode());
+    final var noValidV2RawTableExists = !doesValidV2RawTableAlreadyExist(streamConfig);
+    final var aValidV1RawTableExists = doesValidV1RawTableExist(v1RawTable.namespace(), v1RawTable.tableName());
+    LOGGER.info("Migration Info: Required for Sync mode: {}, No existing v2 raw tables: {}, A v1 raw table exists: {}",
+        syncModeNeedsMigration, noValidV2RawTableExists, aValidV1RawTableExists);
+    return syncModeNeedsMigration && noValidV2RawTableExists && aValidV1RawTableExists;
   }
 
   /**
@@ -55,7 +63,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
                       final StreamConfig streamConfig)
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);
-    final var migrateAndReset = String.join("\n",
+    final var migrateAndReset = String.join("\n\n",
         sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(),
             namespacedTableName.tableName()),
         sqlGenerator.softReset(streamConfig));
