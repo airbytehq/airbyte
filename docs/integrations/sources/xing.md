@@ -64,4 +64,4 @@ See [https://dev.xing.com/docs/authentication](https://dev.xing.com/docs/authent
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
-| 0.0.1   | 2023-08-16 | | Introduce Xing API source
+| 0.0.1   | 2023-08-16 | #29527 | New Connector Xing |
