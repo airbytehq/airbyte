@@ -1,3 +1,5 @@
+// The airbyte-python is commented out because connector-acceptance-test are now installed with poetry and use Python 3.10
+// The python Gradle plugin can't install connector-acceptance-test in this situation.
 plugins {
     id 'airbyte-docker'
     // id 'airbyte-python'
