@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "ad_id": {
+      "type": "string"
+    },
+    "impressions": {
+      "type": "integer"
+    },
+    "spend": {
+      "type": "string",
+      "description": "rounded currency value (EUR)"
+    },
+    "clicks": {
+      "type": "integer"
+    },
+    "frequency": {
+      "type": "number",
+      "description": "impressions divided by reach"
+    },
+    "reach": {
+      "type": "number",
+      "description": "number of unique users who saw the ad"
+    },
+    "video_play_actions": {
+      "type": "number",
+      "description": "number of times your video starts to play"
+    },
+    "video_3_sec_watched_actions": {
+      "type": "number",
+      "description": "number of times your video played at the 3 seconds mark, including plays that skipped to this point"
+    },
+    "video_10_sec_watched_actions": {
+      "type": "number",
+      "description": "number of times your video played at the 10 seconds mark, including plays that skipped to this point"
+    },
+    "video_p25_watched_actions": {
+      "type": "number",
+      "description": "number of times your video was played at 25% of its length, including plays that skipped to this point"
+    },
+    "video_p50_watched_actions": {
+      "type": "number",
+      "description": "number of times your video was played at 50% of its length, including plays that skipped to this point"
+    },
+    "video_p75_watched_actions": {
+      "type": "number",
+      "description": "number of times your video was played at 75% of its length, including plays that skipped to this point"
+    },
+    "video_p95_watched_actions": {
+      "type": "number",
+      "description": "number of times your video was played at 95% of its length, including plays that skipped to this point"
+    },
+    "video_p100_watched_actions": {
+      "type": "number",
+      "description": "number of times your video was played at 100% of its length, including plays that skipped to this point"
+    },
+    "customer_id": {
+      "type": "string",
+      "nullable": true
+    }
+  },
+  "required": [
+    "ad_id",
+    "customer_id"
+  ]
+}

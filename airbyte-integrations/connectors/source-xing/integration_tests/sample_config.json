@@ -1,0 +1,7 @@
+{
+  "access_token":"1234567890",
+  "daily_insights":{
+    "start_date":"2023-01-01",
+    "end_date":"2023-01-31"
+  }
+}

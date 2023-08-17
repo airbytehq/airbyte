@@ -1,0 +1,38 @@
+{
+  "data": [
+    {
+      "bid": "3.00",
+      "bidding_mode": "CPC",
+      "daily_budget": null,
+      "end_at": "2022-12-15",
+      "id": "123456_5zz44f",
+      "name": "Test Ad 1",
+      "start_at": "2022-09-01",
+      "status": "draft",
+      "target_url": "http://www.test.de",
+      "total_budget": null,
+      "type": "WebsiteAd"
+    },
+    {
+      "bid": "4.00",
+      "bidding_mode": "CPC",
+      "daily_budget": null,
+      "end_at": "2018-05-31",
+      "id": "111111_vv9hhh",
+      "name": "Test Ad 2",
+      "start_at": "2018-01-04",
+      "status": "archived",
+      "target_url": "http://www.test.de",
+      "total_budget": "300.80",
+      "type": "WebsiteAd"
+    }
+  ],
+  "paging": {
+    "count": 2,
+    "limit": 100,
+    "page": 1,
+    "next_page": null,
+    "prev_page": null,
+    "total_pages": 1
+  }
+}

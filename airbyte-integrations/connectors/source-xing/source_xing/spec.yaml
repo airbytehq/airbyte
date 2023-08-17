@@ -1,0 +1,67 @@
+documentationUrl: 'https://docs.airbyte.com/integrations/sources/xing'
+connectionSpecification:
+  $schema: 'http://json-schema.org/draft-07/schema#'
+  title: Xing Spec
+  type: object
+  required:
+    - access_token
+  properties:
+    access_token:
+      type: string
+      title: Access Token
+      description: The token value generated via Auth2 process.
+      airbyte_secret: true
+    customers:
+      fields:
+        type: string
+        title: Fields to be retrieved. Default behavior is to return the name.
+        description: >-
+          The response will always contain the id. Available values: name, agency_name.
+    ads:
+      ad_ids:
+        type: string
+        title: Ad_id filter
+        description: Filter data by ad id.
+      ad_status:
+        type: string
+        title: Filtering status
+        description: >-
+          Filter data by status. Please notice that finished, draft, and scheduledare not supported yet.
+      fields:
+        type: string
+        title: Fields to be retrieved. Default behavior is to return the name.
+        description: >-
+          Available values: name, type, status, start_at, end_at, bid, bidding_mode, daily_budget, total_budget, target_url
+    daily_insights:
+      start_date:
+        type: string
+        title: Beginning of query time range.
+        description: >-
+          Only render results tracked after or on time_range_start (YYYY-MM-DD). Dates are in Europe/Berlin-timezone.
+        pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2}'
+      end_date:
+        type: string
+        title: End of query time range.
+        description: >-
+          Only render results created before or on time_range_end (YYYY-MM-DD). Dates are in Europe/Berlin-timezone.
+        pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2}'
+      fields:
+        type: string
+        title: >-
+          Available values: ad_name, impressions, clicks, spend, ctr, video_play_actions, video_3_sec_watched_actions, video_10_sec_watched_actions, video_p25_watched_actions, video_p50_watched_actions, video_p75_watched_actions, video_p95_watched_actions, video_p100_watched_actions
+      ad_ids:
+        type: string
+        title: Ad_id filter
+        description: Filter data by ad id.
+    lifetime_insights:
+      ad_ids:
+        type: string
+        title: Ad_id filter
+        description: Filter data by ad id.
+      fields:
+        type: string
+        title: >- 
+          Fields to be retrieved. Default behavior is to return impressions, spend, reach and frequency. The response will always contain the ad_id.
+        description: >-
+          Available values: impressions, clicks, spend, frequency, reach, video_play_actions, video_3_sec_watched_actions, video_10_sec_watched_actions, video_p25_watched_actions, video_p50_watched_actions, video_p75_watched_actions, video_p95_watched_actions, video_p100_watched_actions
+

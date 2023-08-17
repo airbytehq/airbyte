@@ -1,0 +1,20 @@
+data:
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f1c09d4c-1db9-420d-9e29-0d73cb1d50db
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-xing
+  githubIssueLabel: source-xing
+  icon: xing.svg
+  license: MIT
+  name: Xing
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/xing
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

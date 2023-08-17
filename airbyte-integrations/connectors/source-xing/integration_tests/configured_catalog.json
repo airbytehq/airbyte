@@ -1,0 +1,41 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "customers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "ads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "daily_insights",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "lifetime_insights",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}
+

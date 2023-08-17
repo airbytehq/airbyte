@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "start_at": {
+      "type": ["string", "null"]
+    },
+    "end_at": {
+      "type": ["string", "null"]
+    },
+    "bid": {
+      "type": "string",
+      "description": "rounded currency value (EUR)"
+    },
+    "bidding_mode": {
+      "description": "CPC (pay per click) or CPM (pay per 1000 impressions)",
+      "type": "string"
+    },
+    "daily_budget": {
+      "type": ["string", "null"],
+      "description": "rounded currency value (EUR)"
+    },
+    "total_budget": {
+      "type": ["string", "null"],
+      "description": "rounded currency value (EUR)"
+    },
+    "target_url": {
+      "type": ["string", "null"]
+    },
+    "customer_id": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": [
+    "id",
+    "customer_id"
+  ]
+}
+
