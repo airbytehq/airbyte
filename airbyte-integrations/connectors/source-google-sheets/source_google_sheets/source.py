@@ -132,8 +132,21 @@ class SourceGoogleSheets(Source):
 
         except errors.HttpError as err:
             reason = str(err)
-            if err.resp.status == status_codes.NOT_FOUND:
-                reason = "Requested spreadsheet was not found."
+            config_error_status_codes = [status_codes.NOT_FOUND, status_codes.FORBIDDEN]
+            if err.resp.status in config_error_status_codes:
+                if err.resp.status == status_codes.NOT_FOUND:
+                    reason = f"Requested spreadsheet with id {spreadsheet_id} was not found"
+                if err.resp.status == status_codes.FORBIDDEN:
+                    reason = f"Forbidden when requesting spreadsheet with id {spreadsheet_id}"
+                message = (
+                    f"{reason}. {err.reason}. See docs for more details here: "
+                    f"https://cloud.google.com/service-infrastructure/docs/service-control/reference/rpc/google.api/servicecontrol.v1#code"
+                )
+                raise AirbyteTracedException(
+                    message=message,
+                    internal_message=message,
+                    failure_type=FailureType.config_error,
+                ) from err
             raise Exception(f"Could not run discovery: {reason}")
 
     def read(
