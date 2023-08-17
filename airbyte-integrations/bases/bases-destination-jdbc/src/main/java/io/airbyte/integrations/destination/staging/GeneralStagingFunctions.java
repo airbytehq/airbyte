@@ -58,7 +58,7 @@ public class GeneralStagingFunctions {
       log.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
 
-      typerDeduper.prepareFinalTables();
+      typerDeduper.prepareTables();
     };
   }
 
@@ -82,7 +82,7 @@ public class GeneralStagingFunctions {
       stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
           tableName, schemaName);
 
-      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamNamespace, streamName);
+      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
       if (!typerDeduperValve.containsKey(streamId)) {
         typerDeduperValve.addStream(streamId);
       }
