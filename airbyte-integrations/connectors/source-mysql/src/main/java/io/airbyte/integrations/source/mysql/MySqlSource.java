@@ -46,7 +46,6 @@ import io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlFeatureFlags;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -332,9 +331,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    final MySqlFeatureFlags featureFlags = new MySqlFeatureFlags(sourceConfig);
+    //final MySqlFeatureFlags featureFlags = new MySqlFeatureFlags(sourceConfig);
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      if (featureFlags.isCdcSyncEnabled()) {
+      if (true) {//eatureFlags.isCdcSyncEnabled()) {
         LOGGER.info("Using PK + CDC");
         return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
       }
