@@ -124,7 +124,7 @@ def write_changelog_file():
     markdown = markdown_table(entries).set_params(row_sep="markdown", quote=False).get_markdown()
     with open("PYTHON_BASE_IMAGES_CHANGELOG.md", "w") as f:
         f.write(
-            "Python base images used for connector built are declared [here](https://github.com/airbytehq/airbyte/blob/8328c9dd89f6417295a20f7c0f5b823a2f02ee8e/airbyte-ci/connectors/pipelines/pipelines/builds/base_images/python.py)"
+            "Python base images used for connector built are declared [here](https://github.com/airbytehq/airbyte/blob/8328c9dd89f6417295a20f7c0f5b823a2f02ee8e/airbyte-ci/connectors/pipelines/pipelines/builds/base_images/python.py)\n\n"
         )
         f.write(f"# Changelog for {AirbytePythonBase.name}\n\n")
         f.write(markdown)
