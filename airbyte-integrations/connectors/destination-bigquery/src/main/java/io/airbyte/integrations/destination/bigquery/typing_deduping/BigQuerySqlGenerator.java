@@ -604,11 +604,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     return new StringSubstitutor(Map.of(
+        "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
+        "dataset_location", datasetLocation,
         "v2_raw_table", streamId.rawTableId(QUOTE),
         "v1_raw_table", wrapAndQuote(namespace, tableName)
     )
     ).replace(
-        """      
+        """
+            CREATE SCHEMA IF NOT EXISTS ${raw_namespace}
+            OPTIONS(location="${dataset_location}");
+                 
             CREATE OR REPLACE TABLE ${v2_raw_table} (
               _airbyte_raw_id STRING,
               _airbyte_data JSON,
