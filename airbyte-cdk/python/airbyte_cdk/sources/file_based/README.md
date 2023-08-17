@@ -85,7 +85,7 @@ Schema can be either inferred or user provided.
 Users will be required to select one of 3 different options, in the event that records are encountered that don’t conform to the schema.
 
 * Skip nonconforming records: check each record to see if it conforms to the user-input or inferred schema; skip the record if it doesn't conform. We keep a count of the number of records in each file that do and do not conform and emit a log message with these counts once we’re done reading the file.
-* Emit all records: columns that don’t exist in the configured catalog may still be available in the destination’s raw tables, but this is undefined behavior.
+* Emit all records: emit all records, even if they do not conform to the user-provided or inferred schema. Columns that don't exist in the configured catalog probably won't be available in the destination's table since that's the current behavior.
 Only error if there are conflicting field types or malformed rows.
 * Stop the sync and wait for schema re-discovery:  if a record is encountered that does not conform to the configured catalog’s schema, we log a message and stop the whole sync. Note: this option is not recommended if the files have very different columns or datatypes, because the inferred schema may vary significantly at discover time.
 
