@@ -8,7 +8,7 @@ import io.airbyte.integrations.destination.databricks.DatabricksExternalStorageB
 import io.airbyte.integrations.destination.databricks.DatabricksStorageConfigProvider;
 import io.airbyte.integrations.destination.databricks.DatabricksStreamCopierFactory;
 import io.airbyte.integrations.destination.s3.S3BaseChecks;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 
 public class DatabricksS3Destination extends DatabricksExternalStorageBaseDestination {

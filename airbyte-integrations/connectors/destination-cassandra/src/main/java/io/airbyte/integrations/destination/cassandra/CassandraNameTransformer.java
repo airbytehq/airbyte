@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.cassandra;
 
 import com.google.common.base.CharMatcher;
 import io.airbyte.commons.text.Names;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 class CassandraNameTransformer extends StandardNameTransformer {
 

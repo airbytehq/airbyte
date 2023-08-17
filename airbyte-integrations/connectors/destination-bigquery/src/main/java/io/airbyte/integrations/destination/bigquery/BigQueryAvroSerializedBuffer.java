@@ -6,10 +6,10 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
-import io.airbyte.integrations.destination.record_buffer.BufferStorage;
-import io.airbyte.integrations.destination.s3.avro.AvroSerializedBuffer;
-import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
+import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction;
+import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage;
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroSerializedBuffer;
+import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;

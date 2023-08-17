@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.record_buffer;
+package io.airbyte.cdk.integrations.destination.record_buffer;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

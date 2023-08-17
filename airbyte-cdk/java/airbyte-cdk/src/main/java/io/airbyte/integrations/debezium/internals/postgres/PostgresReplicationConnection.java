@@ -2,11 +2,11 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals.postgres;
+package io.airbyte.cdk.integrations.debezium.internals.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.debezium.jdbc.JdbcConnection.ResultSetMapper;
 import io.debezium.jdbc.JdbcConnection.StatementFactory;
 import java.sql.*;

@@ -2,10 +2,10 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.cdk.integrations.base;
 
-import static io.airbyte.integrations.base.IntegrationRunner.ORPHANED_THREAD_FILTER;
-import static io.airbyte.integrations.util.ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE;
+import static io.airbyte.cdk.integrations.base.IntegrationRunner.ORPHANED_THREAD_FILTER;
+import static io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,7 +28,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.base.Destination.ShimToSerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.Destination.ShimToSerializedAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;

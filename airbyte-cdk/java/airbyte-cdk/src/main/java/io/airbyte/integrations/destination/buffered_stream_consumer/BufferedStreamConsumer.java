@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.buffered_stream_consumer;
+package io.airbyte.cdk.integrations.destination.buffered_stream_consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -10,12 +10,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
-import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
-import io.airbyte.integrations.destination.record_buffer.BufferFlushType;
-import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
+import io.airbyte.cdk.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
+import io.airbyte.cdk.integrations.destination.record_buffer.BufferFlushType;
+import io.airbyte.cdk.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.starburst_galaxy;
 
-import static io.airbyte.integrations.destination.s3.writer.BaseS3Writer.determineOutputFilename;
+import static io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer.determineOutputFilename;
 import static org.apache.hadoop.fs.s3a.Constants.ACCESS_KEY;
 import static org.apache.hadoop.fs.s3a.Constants.AWS_CREDENTIALS_PROVIDER;
 import static org.apache.hadoop.fs.s3a.Constants.SECRET_KEY;
@@ -15,10 +15,10 @@ import static org.apache.iceberg.aws.AwsProperties.S3FILEIO_ACCESS_KEY_ID;
 import static org.apache.iceberg.aws.AwsProperties.S3FILEIO_SECRET_ACCESS_KEY;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
-import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3Format;
+import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;

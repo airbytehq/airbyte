@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.normalization;
+package io.airbyte.cdk.integrations.destination.normalization;
 
 import java.util.Arrays;
 import java.util.HashMap;

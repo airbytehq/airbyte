@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.buffered_stream_consumer;
+package io.airbyte.cdk.integrations.destination.buffered_stream_consumer;
 
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 

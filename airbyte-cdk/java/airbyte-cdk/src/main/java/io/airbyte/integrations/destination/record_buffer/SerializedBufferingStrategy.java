@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.record_buffer;
+package io.airbyte.cdk.integrations.destination.record_buffer;
 
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.AirbyteMessage;

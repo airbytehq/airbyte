@@ -2,11 +2,11 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.record_buffer;
+package io.airbyte.cdk.integrations.destination.record_buffer;
 
-import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;

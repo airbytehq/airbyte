@@ -2,15 +2,15 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals.mssql;
+package io.airbyte.cdk.integrations.debezium.internals.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
-import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
 import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.sql.SQLException;

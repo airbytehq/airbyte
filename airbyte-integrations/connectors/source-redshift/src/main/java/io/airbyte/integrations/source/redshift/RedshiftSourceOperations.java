@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.source.redshift;
 
-import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLTime;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.db.jdbc.DateTimeConverter;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -2,12 +2,12 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals.mysql;
+package io.airbyte.cdk.integrations.debezium.internals.mysql;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
-import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;

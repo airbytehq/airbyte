@@ -2,12 +2,12 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals;
+package io.airbyte.cdk.integrations.debezium.internals;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
-import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
 import java.util.Collections;

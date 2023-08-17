@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase;
-import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase;
-import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
+import static io.airbyte.cdk.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase;
+import static io.airbyte.cdk.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase;
+import static io.airbyte.cdk.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -14,18 +14,18 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
-import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
-import io.airbyte.integrations.base.destination.typing_deduping.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import io.airbyte.integrations.base.destination.typing_deduping.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
-import io.airbyte.integrations.base.destination.typing_deduping.Union;
-import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.AirbyteType;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.AlterTableReport;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.Array;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.Struct;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.TableNotMigratedException;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.Union;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;

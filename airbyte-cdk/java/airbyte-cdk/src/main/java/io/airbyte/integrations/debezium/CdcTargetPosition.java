@@ -2,9 +2,9 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium;
+package io.airbyte.cdk.integrations.debezium;
 
-import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import java.util.Map;
 
 /**

@@ -2,9 +2,9 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals;
+package io.airbyte.cdk.integrations.debezium.internals;
 
-import io.airbyte.db.DataTypeUtils;
+import io.airbyte.cdk.db.DataTypeUtils;
 import io.debezium.spi.converter.RelationalColumn;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -24,7 +24,7 @@ public final class DebeziumConverterUtils {
   }
 
   /**
-   * TODO : Replace usage of this method with {@link io.airbyte.db.jdbc.DateTimeConverter}
+   * TODO : Replace usage of this method with {@link io.airbyte.cdk.db.jdbc.DateTimeConverter}
    */
   public static String convertDate(final Object input) {
     /**

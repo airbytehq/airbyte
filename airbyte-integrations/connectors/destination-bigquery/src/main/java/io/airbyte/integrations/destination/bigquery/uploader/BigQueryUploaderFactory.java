@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import static io.airbyte.integrations.destination.s3.avro.AvroConstants.JSON_CONVERTER;
+import static io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants.JSON_CONVERTER;
 import static software.amazon.awssdk.http.HttpStatusCode.FORBIDDEN;
 import static software.amazon.awssdk.http.HttpStatusCode.NOT_FOUND;
 
@@ -20,7 +20,7 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;

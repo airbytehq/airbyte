@@ -4,14 +4,14 @@
 
 package io.airbyte.integrations.destination.starburst_galaxy;
 
-import static io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory.getSchema;
+import static io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopierFactory.getSchema;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.Timestamp;

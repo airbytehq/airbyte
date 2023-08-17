@@ -28,7 +28,7 @@ import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.MinioContainer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

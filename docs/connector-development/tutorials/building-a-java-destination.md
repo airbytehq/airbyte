@@ -118,7 +118,7 @@ In order to best propagate user-friendly error messages and log error informatio
 
 We recommend using AirbyteTraceMessages for known errors, as in these cases you can likely offer the user a helpful message as to what went wrong and suggest how they can resolve it.
 
-Airbyte provides a static utility class, `io.airbyte.integrations.base.AirbyteTraceMessageUtility`, to give you a clear and straight-forward way to emit these AirbyteTraceMessages. Example usage:
+Airbyte provides a static utility class, `io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility`, to give you a clear and straight-forward way to emit these AirbyteTraceMessages. Example usage:
 ```java
 try {
   // some connector code responsible for doing X

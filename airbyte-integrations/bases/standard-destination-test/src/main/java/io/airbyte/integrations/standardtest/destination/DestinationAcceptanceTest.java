@@ -34,7 +34,7 @@ import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.configoss.StandardDestinationDefinition;
 import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.configoss.init.LocalDefinitionsProvider;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.BasicTestDataComparator;

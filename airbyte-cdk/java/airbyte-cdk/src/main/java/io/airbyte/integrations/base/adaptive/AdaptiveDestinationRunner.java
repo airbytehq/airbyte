@@ -2,15 +2,15 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base.adaptive;
+package io.airbyte.cdk.integrations.base.adaptive;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.Command;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConfig;
-import io.airbyte.integrations.base.IntegrationCliParser;
-import io.airbyte.integrations.base.IntegrationConfig;
-import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Command;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.IntegrationCliParser;
+import io.airbyte.cdk.integrations.base.IntegrationConfig;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

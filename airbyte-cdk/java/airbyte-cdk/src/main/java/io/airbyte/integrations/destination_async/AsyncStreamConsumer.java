@@ -2,18 +2,18 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination_async;
+package io.airbyte.cdk.integrations.destination_async;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination_async.buffers.BufferEnqueue;
-import io.airbyte.integrations.destination_async.buffers.BufferManager;
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.integrations.destination_async.state.FlushFailure;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
+import io.airbyte.cdk.integrations.destination_async.buffers.BufferEnqueue;
+import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Async version of the
- * {@link io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer}.
+ * {@link io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer}.
  * <p>
  * With this consumer, a destination is able to continue reading records until hitting the maximum
  * memory limit governed by {@link GlobalMemoryManager}. Record writing is decoupled via

@@ -21,7 +21,7 @@ definitions:
     type: object
     extends:
       type: object
-      existingJavaType: "io.airbyte.integrations.source.relationaldb.models.DbStreamState"
+      existingJavaType: "io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState"
     properties:
       state_type:
         "$ref": "#/definitions/StateType"

@@ -2,19 +2,19 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals.postgres;
+package io.airbyte.cdk.integrations.debezium.internals.postgres;
 
-import static io.airbyte.db.jdbc.DateTimeConverter.convertToDate;
-import static io.airbyte.db.jdbc.DateTimeConverter.convertToTime;
-import static io.airbyte.db.jdbc.DateTimeConverter.convertToTimestamp;
-import static io.airbyte.db.jdbc.DateTimeConverter.convertToTimestampWithTimezone;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToDate;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTime;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTimestamp;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTimestampWithTimezone;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_INT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
 
-import io.airbyte.db.jdbc.DateTimeConverter;
-import io.airbyte.integrations.debezium.internals.DebeziumConverterUtils;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import io.debezium.time.Conversions;

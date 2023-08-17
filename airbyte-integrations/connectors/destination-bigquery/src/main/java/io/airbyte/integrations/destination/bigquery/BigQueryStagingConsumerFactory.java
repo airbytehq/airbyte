@@ -4,26 +4,26 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
-import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
-import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
-import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
-import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
-import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
+import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction;
+import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class mimics the same functionality as
- * {@link io.airbyte.integrations.destination.staging.StagingConsumerFactory} which likely should be
+ * {@link io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory} which likely should be
  * placed into a commons package to be utilized across all ConsumerFactories
  */
 public class BigQueryStagingConsumerFactory {

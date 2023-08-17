@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals.mysql;
+package io.airbyte.cdk.integrations.debezium.internals.mysql;
 
 import java.util.Objects;
 

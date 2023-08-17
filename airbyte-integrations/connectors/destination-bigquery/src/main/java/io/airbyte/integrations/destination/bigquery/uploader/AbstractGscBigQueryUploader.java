@@ -17,7 +17,7 @@ import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
+import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.List;
 import java.util.function.Consumer;

@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.record_buffer;
+package io.airbyte.cdk.integrations.destination.record_buffer;
 
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -10,7 +10,7 @@ import java.util.Optional;
 
 /**
  * High-level interface used by
- * {@link io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer}
+ * {@link io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer}
  *
  * A Record buffering strategy relies on the capacity available of underlying
  * {@link SerializableBuffer} to determine what to do when consuming a new {@link AirbyteMessage}

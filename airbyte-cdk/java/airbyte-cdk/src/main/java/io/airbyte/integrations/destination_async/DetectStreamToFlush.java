@@ -2,10 +2,10 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination_async;
+package io.airbyte.cdk.integrations.destination_async;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
+import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -9,7 +9,7 @@ import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 
 public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Long> {
 

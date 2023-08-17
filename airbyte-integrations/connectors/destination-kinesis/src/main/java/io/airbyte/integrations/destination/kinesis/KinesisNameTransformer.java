@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.kinesis;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 /**
  * KinesisNameTransformer class for creating Kinesis stream names.

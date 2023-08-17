@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals;
+package io.airbyte.cdk.integrations.debezium.internals;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

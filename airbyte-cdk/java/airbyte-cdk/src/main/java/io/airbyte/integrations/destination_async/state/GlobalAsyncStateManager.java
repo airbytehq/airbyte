@@ -2,14 +2,14 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination_async.state;
+package io.airbyte.cdk.integrations.destination_async.state;
 
 import static java.lang.Thread.sleep;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
+import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -134,7 +134,7 @@ public class GlobalAsyncStateManager {
 
   /**
    * Returns state messages with no more inflight records i.e. counter = 0 across all streams.
-   * Intended to be called by {@link io.airbyte.integrations.destination_async.FlushWorkers} after a
+   * Intended to be called by {@link io.airbyte.cdk.integrations.destination_async.FlushWorkers} after a
    * worker has finished flushing its record batch.
    * <p>
    * The return list of states should be emitted back to the platform.

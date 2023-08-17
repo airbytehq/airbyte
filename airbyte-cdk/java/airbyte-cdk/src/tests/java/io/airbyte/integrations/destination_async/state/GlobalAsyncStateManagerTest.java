@@ -2,16 +2,16 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination_async.state;
+package io.airbyte.cdk.integrations.destination_async.state;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteStateMessage;
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
+import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteStateMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.StreamDescriptor;

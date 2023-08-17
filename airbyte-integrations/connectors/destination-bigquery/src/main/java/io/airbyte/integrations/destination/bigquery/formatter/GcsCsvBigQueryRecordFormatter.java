@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.formatter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 /**
  * Formatter for GCS CSV uploader. Contains specific filling of default Airbyte attributes. Note!

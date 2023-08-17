@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base.errors.messages;
+package io.airbyte.cdk.integrations.base.errors.messages;
 
 import java.util.Objects;
 

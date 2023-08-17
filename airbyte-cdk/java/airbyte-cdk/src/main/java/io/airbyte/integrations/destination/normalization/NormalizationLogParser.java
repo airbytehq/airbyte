@@ -2,12 +2,12 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.normalization;
+package io.airbyte.cdk.integrations.destination.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.normalization.SentryExceptionHelper.ErrorMapKeys;
+import io.airbyte.cdk.integrations.destination.normalization.SentryExceptionHelper.ErrorMapKeys;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteLogMessage;

@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.util;
+package io.airbyte.cdk.integrations.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.BufferedReader;

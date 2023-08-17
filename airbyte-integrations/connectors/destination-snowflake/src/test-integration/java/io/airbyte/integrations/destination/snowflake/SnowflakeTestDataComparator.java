@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

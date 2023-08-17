@@ -2,14 +2,14 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination_async;
+package io.airbyte.cdk.integrations.destination_async;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
-import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.integrations.destination_async.state.FlushFailure;
-import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
+import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
+import io.airbyte.cdk.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
+import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;

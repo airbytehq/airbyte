@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.standardtest.source.performancetest;
 
-import io.airbyte.db.Database;
+import io.airbyte.cdk.db.Database;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Disabled;

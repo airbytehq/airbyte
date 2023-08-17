@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -16,9 +16,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.integrations.util.ApmTraceUtils;
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
-import io.airbyte.integrations.util.concurrent.ConcurrentStreamConsumer;
+import io.airbyte.cdk.integrations.util.ApmTraceUtils;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;

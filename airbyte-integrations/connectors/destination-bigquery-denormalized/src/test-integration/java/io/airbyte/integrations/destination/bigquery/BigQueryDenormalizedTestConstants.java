@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import java.nio.file.Path;
 import java.util.List;
 

@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.cdk.integrations.base;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

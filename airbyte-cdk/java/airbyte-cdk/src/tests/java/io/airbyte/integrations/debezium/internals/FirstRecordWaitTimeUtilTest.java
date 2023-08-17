@@ -2,10 +2,10 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals;
+package io.airbyte.cdk.integrations.debezium.internals;
 
-import static io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil.MAX_FIRST_RECORD_WAIT_TIME;
-import static io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil.MIN_FIRST_RECORD_WAIT_TIME;
+import static io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil.MAX_FIRST_RECORD_WAIT_TIME;
+import static io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil.MIN_FIRST_RECORD_WAIT_TIME;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

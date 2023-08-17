@@ -2,11 +2,11 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations;
+package io.airbyte.cdk.integrations;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.Integration;
+import io.airbyte.cdk.integrations.base.Integration;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 
 public abstract class BaseConnector implements Integration {

@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
 import java.util.Map;
 

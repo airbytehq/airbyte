@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.test.utils;
+package io.airbyte.cdk.test.utils;
 
 import java.io.IOException;
 import java.util.UUID;

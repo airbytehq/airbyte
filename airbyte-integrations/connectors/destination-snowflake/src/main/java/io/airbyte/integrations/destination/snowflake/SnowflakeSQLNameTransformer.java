@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 public class SnowflakeSQLNameTransformer extends StandardNameTransformer {
 
