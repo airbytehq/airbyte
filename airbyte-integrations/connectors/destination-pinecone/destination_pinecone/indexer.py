@@ -79,7 +79,7 @@ class PineconeIndexer(Indexer):
 
     def delete_vectors(self, filter):        
         if self.pod_type == "starter":
-            # Starter pod types have a maximum of 1000000 rows
+            # Starter pod types have a maximum of 100000 rows
             top_k = 10000
             self.delete_by_metadata(filter, top_k)
         else:

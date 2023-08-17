@@ -61,15 +61,6 @@ class CohereEmbeddingConfigModel(BaseModel):
             "description": "Use the Cohere API to embed text."
         }
 
-class HuggingFaceEmbeddingConfigModel(BaseModel):
-    mode: Literal["huggingface"] = Field("huggingface", const=True)    
-
-    class Config:
-        title = "HuggingFace"
-        schema_extra = {
-            "description": "Use the HuggingFace API to embed text."
-        }
-
 class FakeEmbeddingConfigModel(BaseModel):
     mode: Literal["fake"] = Field("fake", const=True)
 
@@ -96,7 +87,7 @@ class PineconeIndexingModel(BaseModel):
 class ConfigModel(BaseModel):
     indexing: PineconeIndexingModel
 
-    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, HuggingFaceEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
+    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
         ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
     )
     processing: ProcessingConfigModel

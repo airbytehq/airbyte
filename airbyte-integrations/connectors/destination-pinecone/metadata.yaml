@@ -6,9 +6,9 @@ data:
       enabled: true
   connectorSubtype: database
   connectorType: destination
-  definitionId: cf98d52c-ba5a-4dfd-8ada-c1baebfa6e73
+  definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
   dockerImageTag: 0.0.1
-  dockerRepository: pineconecommunity/airbyte-pinecone-connector
+  dockerRepository: pineconecommunity/airbyte-dev
   githubIssueLabel: destination-pinecone
   icon: icon.svg
   license: MIT
