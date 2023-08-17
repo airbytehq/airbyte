@@ -9,14 +9,14 @@ ALL_CONNECTORS = get_all_connectors_in_repo()
 
 
 def pick_a_random_connector(
-    language: ConnectorLanguage = None, release_stage: str = None, other_picked_connectors: list = None
+    language: ConnectorLanguage = None, support_level: str = None, other_picked_connectors: list = None
 ) -> Connector:
     """Pick a random connector from the list of all connectors."""
     all_connectors = list(ALL_CONNECTORS)
     if language:
         all_connectors = [c for c in all_connectors if c.language is language]
-    if release_stage:
-        all_connectors = [c for c in all_connectors if c.release_stage == release_stage]
+    if support_level:
+        all_connectors = [c for c in all_connectors if c.support_level == support_level]
     picked_connector = random.choice(all_connectors)
     if other_picked_connectors:
         while picked_connector in other_picked_connectors:

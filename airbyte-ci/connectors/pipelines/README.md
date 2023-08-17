@@ -119,7 +119,7 @@ Available commands:
 | -------------------------------------------------------------- | -------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--use-remote-secrets`                                         | False    | True                             | If True, connectors configuration will be pulled from Google Secret Manager. Requires the GCP_GSM_CREDENTIALS environment variable to be set with a service account with permission to read GSM secrets. If False the connector configuration will be read from the local connector `secrets` folder. |
 | `--name`                                                       | True     |                                  | Select a specific connector for which the pipeline will run. Can be used multiple time to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                        |
-| `--release-stage`                                              | True     |                                  | Select connectors with a specific release stage: `alpha`, `beta`, `generally_available`.  Can be used multiple times to select multiple release stages.                                                                                                                                               |
+| `--support-level`                                              | True     |                                  | Select connectors with a specific support level: `community`, `certified`.  Can be used multiple times to select multiple support levels.                                                                                                                                               |
 | `--language`                                                   | True     |                                  | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
 | `--modified`                                                   | False    | False                            | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
 | `--concurrency`                                                | False    | 5                                | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
@@ -134,9 +134,9 @@ List all connectors:
 
 `airbyte-ci connectors list`
 
-List generally available connectors:
+List certified connectors:
 
-`airbyte-ci connectors --release-stage=generally_available list`
+`airbyte-ci connectors --support-level=certified list`
 
 List connectors changed on the current branch:
 
@@ -148,7 +148,7 @@ List connectors with a specific language:
 
 List connectors with multiple filters:
 
-`airbyte-ci connectors --language=low-code --release-stage=generally_available list`
+`airbyte-ci connectors --language=low-code --support-level=certified list`
 
 ### <a id="connectors-list-command"></a>`connectors format` command
 Run a code formatter on one or multiple connectors.
@@ -188,8 +188,8 @@ Test a single connector:
 Test multiple connectors:
 `airbyte-ci connectors --name=source-pokeapi --name=source-bigquery test`
 
-Test generally available connectors:
-`airbyte-ci connectors --release-stage=generally_available test`
+Test certified connectors:
+`airbyte-ci connectors --support-level=certified test`
 
 Test connectors changed on the current branch:
 `airbyte-ci connectors --modified test`
@@ -237,8 +237,8 @@ Build a single connector:
 Build multiple connectors:
 `airbyte-ci connectors --name=source-pokeapi --name=source-bigquery build`
 
-Build generally available connectors:
-`airbyte-ci connectors --release-stage=generally_available build`
+Build certified connectors:
+`airbyte-ci connectors --support-level=certified build`
 
 Build connectors changed on the current branch:
 `airbyte-ci connectors --modified build`
@@ -379,6 +379,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 | ------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | [#28000](https://github.com/airbytehq/airbyte/pull/29232) | Remove release stages in favor of support level from airbyte-ci.                                          |
 | 0.5.0   | [#28000](https://github.com/airbytehq/airbyte/pull/28000) | Run connector acceptance tests with dagger-in-dagger.                                                     |
 | 0.4.7   | [#29156](https://github.com/airbytehq/airbyte/pull/29156) | Improve how we check existence of requirement.txt or setup.py file to not raise early pip install errors. |
 | 0.4.6   | [#28729](https://github.com/airbytehq/airbyte/pull/28729) | Use keyword args instead of positional argument for optional  paramater in Dagger's API                   |
