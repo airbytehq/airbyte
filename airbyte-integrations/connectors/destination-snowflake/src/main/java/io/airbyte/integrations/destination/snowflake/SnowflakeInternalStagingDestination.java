@@ -17,7 +17,6 @@ import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
-import io.airbyte.integrations.base.destination.typing_deduping.NoOpDestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
@@ -28,6 +27,7 @@ import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -149,8 +149,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         catalogParser = new CatalogParser(sqlGenerator);
       }
       parsedCatalog = catalogParser.parseCatalog(catalog);
-      // TODO make a SnowflakeV1V2Migrator
-      NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
+      final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator();
       typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
     } else {
       parsedCatalog = null;
@@ -197,8 +196,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         catalogParser = new CatalogParser(sqlGenerator);
       }
       parsedCatalog = catalogParser.parseCatalog(catalog);
-      // TODO make a SnowflakeV1V2Migrator
-      NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
+      final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator();
       typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
     } else {
       parsedCatalog = null;
