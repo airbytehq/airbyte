@@ -42,6 +42,7 @@ class DatetimeParser:
         if format == "%s":
             return str(int(dt.timestamp()))
         if format == "%ms":
+            # Best we can do is second precision and mulitply by 1000
             return str(int(dt.timestamp() * 1000))
         else:
             return dt.strftime(format)
