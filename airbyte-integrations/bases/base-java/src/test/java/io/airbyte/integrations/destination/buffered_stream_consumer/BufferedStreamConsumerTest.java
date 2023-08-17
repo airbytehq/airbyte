@@ -365,7 +365,8 @@ public class BufferedStreamConsumerTest {
   void testStreamTail() throws Exception {
     // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
     final BufferingStrategy strategy = mock(BufferingStrategy.class);
-    // The first two records that we push will not trigger any flushes, but the third record _will_ trigger a flush
+    // The first two records that we push will not trigger any flushes, but the third record _will_
+    // trigger a flush
     when(strategy.addRecord(any(), any())).thenReturn(
         Optional.empty(),
         Optional.empty(),
@@ -381,10 +382,10 @@ public class BufferedStreamConsumerTest {
         Duration.ofHours(24),
         null);
     final List<AirbyteMessage> expectedRecordsStream1 = List.of(new AirbyteMessage()
-            .withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream(STREAM_NAME)
-                .withNamespace(SCHEMA_NAME)));
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)));
     final List<AirbyteMessage> expectedRecordsStream2 = List.of(new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -432,7 +433,8 @@ public class BufferedStreamConsumerTest {
   void testStreamTailGlobalState() throws Exception {
     // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
     final BufferingStrategy strategy = mock(BufferingStrategy.class);
-    // The first two records that we push will not trigger any flushes, but the third record _will_ trigger a flush
+    // The first two records that we push will not trigger any flushes, but the third record _will_
+    // trigger a flush
     when(strategy.addRecord(any(), any())).thenReturn(
         Optional.empty(),
         Optional.empty(),
