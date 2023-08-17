@@ -228,6 +228,26 @@ def test_convert_legacy_config(legacy_config, expected_config):
             id="test_unsupported_advanced_options",
         ),
         pytest.param(
+            "csv",
+            {
+                "advanced_options": '{"auto_dict_encode": ""}',
+            },
+            {
+                "filetype": "csv",
+                "delimiter": ",",
+                "quote_char": '"',
+                "encoding": "utf8",
+                "double_quote": True,
+                "null_values": ["", "null", "NULL", "N/A", "NA", "NaN", "None"],
+                "true_values": ["y", "yes", "t", "true", "on", "1"],
+                "false_values": ["n", "no", "f", "false", "off", "0"],
+                "inference_type": "Primitive Types Only",
+                "strings_can_be_null": False,
+            },
+            None,
+            id="test_ignored_advanced_options",
+        ),
+        pytest.param(
             "jsonl",
             {
                 "filetype": "jsonl",

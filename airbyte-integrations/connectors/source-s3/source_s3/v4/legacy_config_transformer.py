@@ -14,6 +14,7 @@ from source_s3.source_files_abstract.formats.parquet_spec import ParquetFormat
 
 SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+IGNORE_LEGACY_ADVANCED_OPTIONS = ("auto_dict_encode", "timestamp_parsers")
 
 
 class LegacyConfigTransformer:
@@ -97,6 +98,9 @@ class LegacyConfigTransformer:
                 csv_options["skip_rows_after_header"] = skip_rows_after_names
             if autogenerate_column_names := advanced_options.pop("autogenerate_column_names", None):
                 csv_options["autogenerate_column_names"] = autogenerate_column_names
+
+            for option in IGNORE_LEGACY_ADVANCED_OPTIONS:
+                advanced_options.pop(option, None)
 
             if advanced_options or additional_reader_options:
                 raise ValueError(
