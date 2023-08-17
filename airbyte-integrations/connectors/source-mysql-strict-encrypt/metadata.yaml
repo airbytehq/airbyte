@@ -21,4 +21,9 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   tags:
     - language:java
+  releases:
+    breakingChanges:
+      3.0.0:
+        message: "Add default cursor for cdc"
+        upgradeDeadline: "2023-08-17"
 metadataSpecVersion: "1.0"
