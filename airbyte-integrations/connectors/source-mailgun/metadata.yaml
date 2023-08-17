@@ -21,5 +21,9 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailgun
   tags:
-    - language:lowcode
+    - language:low-code
+  ab_internal:
+    sl: 200
+    ql: 200
+  supportLevel: community
 metadataSpecVersion: "1.0"
