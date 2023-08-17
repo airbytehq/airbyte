@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, MutableMapping
 
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
@@ -15,6 +16,11 @@ class Cursor(DefaultFileBasedCursor):
     _LEGACY_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     _V4_MIGRATION_BUFFER = timedelta(hours=1)
     _V3_MIN_SYNC_DATE_FIELD = "v3_min_sync_date"
+
+    def __init__(self, stream_config: FileBasedStreamConfig, **_: Any):
+        super().__init__(stream_config)
+        self._running_migration = False
+        self._v3_migration_start_datetime = None
 
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
