@@ -58,21 +58,21 @@
 #                       `base-java-s3`
 #                       `destination-s3`
 #                       `s3-destination-base-integration-test`
-#            These packages refs must be fixed manually without a global search/replace.
-#                    - io.airbyte.integrations.destination.s3.avro
-#                    - io.airbyte.integrations.destination.s3.credential
-#                    - io.airbyte.integrations.destination.s3.constant
-#                    - io.airbyte.integrations.destination.s3.csv
-#                    - io.airbyte.integrations.destination.s3.jsonl
-#                    - io.airbyte.integrations.destination.s3.parquet
-#                    - io.airbyte.integrations.destination.s3.S3DestinationConfig
-#                    - io.airbyte.integrations.destination.s3.StorageProvider
-#                    - io.airbyte.integrations.destination.s3.S3DestinationConstants;
-#                    - io.airbyte.integrations.destination.s3.S3Format;
-#                    - io.airbyte.integrations.destination.s3.S3FormatConfig
-#                    - io.airbyte.integrations.destination.s3.template
-#                    - io.airbyte.integrations.destination.s3.util
-#                    - io.airbyte.integrations.destination.s3.writer
+#            These S3 packages refs must be fixed manually without a global search/replace.
+#                      io.airbyte.integrations.destination.s3.avro
+#                      io.airbyte.integrations.destination.s3.credential
+#                      io.airbyte.integrations.destination.s3.constant
+#                      io.airbyte.integrations.destination.s3.csv
+#                      io.airbyte.integrations.destination.s3.jsonl
+#                      io.airbyte.integrations.destination.s3.parquet
+#                      io.airbyte.integrations.destination.s3.S3DestinationConfig
+#                      io.airbyte.integrations.destination.s3.StorageProvider
+#                      io.airbyte.integrations.destination.s3.S3DestinationConstants;
+#                      io.airbyte.integrations.destination.s3.S3Format;
+#                      io.airbyte.integrations.destination.s3.S3FormatConfig
+#                      io.airbyte.integrations.destination.s3.template
+#                      io.airbyte.integrations.destination.s3.util
+#                      io.airbyte.integrations.destination.s3.writer
 #           You can use this regex pattern to find and replace each one:
 #              Find: `io\.airbyte\.integrations\.destination\.s3\.(avro)\b`
 #              Replace: `io.airbyte.cdk.integrations.destination.s3.$1`
