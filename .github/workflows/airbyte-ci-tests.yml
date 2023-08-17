@@ -20,8 +20,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-      - name: Run pipelines tests
-        id: run-pipelines-tests
+      - name: Run airbyte-ci/connectors/pipelines tests
+        id: run-airbyte-ci-connectors-pipelines-tests
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
