@@ -68,15 +68,17 @@ class Cursor(DefaultFileBasedCursor):
             return False
         try:
             # Verify datetime format in history
-            item = list(value.get("history", {}).keys())[0]
-            datetime.strptime(item, Cursor._DATE_FORMAT)
+            history = value.get("history", {}).keys()
+            if history:
+                item = list(value.get("history", {}).keys())[0]
+                datetime.strptime(item, Cursor._DATE_FORMAT)
 
             # verify the format of the last_modified cursor
             last_modified_at_cursor = value.get(DefaultFileBasedCursor.CURSOR_FIELD)
             if not last_modified_at_cursor:
                 return False
             datetime.strptime(last_modified_at_cursor, Cursor._LEGACY_DATE_TIME_FORMAT)
-        except (IndexError, ValueError):
+        except ValueError:
             return False
         return True
 
