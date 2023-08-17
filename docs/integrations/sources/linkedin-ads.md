@@ -4,30 +4,28 @@ This page contains the setup guide and reference information for the LinkedIn Ad
 
 ## Prerequisites
 
-<!-- env:cloud -->
-### For Airbyte Cloud
-
-* The LinkedIn Ads account with permission to access data from accounts you want to sync.
-<!-- /env:cloud -->
-
-<!-- env:oss -->
-### For Airbyte Open Source
-
-* The LinkedIn Ads account with permission to access data from accounts you want to sync.
-* Authentication Options:
-   * OAuth2.0:
-      * `Client ID` from your `Developer Application`
-      * `Client Secret` from your `Developer Application`
-      * `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
-   * Access Token:
-      * `Access Token` obtained from successful authorization with `Client ID` + `Client Secret`
-<!-- /env:oss -->
+- The LinkedIn Ads account with permission to access data from accounts you want to sync.
 
 ## Setup guide
 
-### Step 1: Set up LinkedIn Ads
+<!-- env:cloud -->
 
-1. [Login to LinkedIn](https://developer.linkedin.com/) with a developer account.
+We recommend using **Oauth2.0** authentication for Airbyte Cloud, as this significantly simplifies the setup process, and allows you to authenticate your account directly from the Airbyte UI.
+
+<!-- env:oss -->
+
+### Set up LinkedIn Ads authentication (Airbyte Open Source)
+
+You can authenticate the Linkedin Ads connector using one of the following options and credentials:
+
+- OAuth2.0
+  - `Client ID` from your `Developer Application`
+  - `Client Secret` from your `Developer Application`
+  - `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
+- Access Token
+  - `Access Token` obtained from successful authorization with `Client ID` + `Client Secret`
+
+1. [Log in to LinkedIn](https://developer.linkedin.com/) with a developer account.
 2. Click the **Create App** icon in the center of the page or [use here](https://www.linkedin.com/developers/apps). Fill in the required fields:  
     1. For **App Name**, enter a name.
     2. For **LinkedIn Page**, enter your company's name or LinkedIn Company Page URL.
@@ -36,16 +34,15 @@ This page contains the setup guide and reference information for the LinkedIn Ad
     5. For **Legal Agreement**, select **I have read and agree to these terms**.
     6. Click **Create App**, on the bottom right of the screen. LinkedIn redirects you to a page showing the details of your application.
 
-3. Verify your app. You can verify your app using the following steps:
+3. You can verify your app using the following steps:
     1. To display the settings page, click the **Settings** tab. On the **App Settings** section, click **Verify** under **Company**. A popup window will be displayed. To generate the verification URL, click on **Generate URL**, then copy and send the URL to the Page Admin (this may be you). Click on **I'm done**.
     If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on **Verify**. Finally, Refresh the tab of app creation, the app should now be associated with your Page.
 
-    2.  To display the Products page, click the **Product** tab. For **Marketing Developer Platform** click on the **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**. 
-    
-    3. To authorize your application, click the **Auth** tab. The authentication page is displayed. Copy the **client_id** and **client_secret** (for later steps). For **Oauth 2.0 settings**, Provide a **redirect_uri** (for later steps).
-    
-    4. Click and review the **Analytics** tab. This page shows the daily application and user/member limits with the percent used for each resource endpoint.
+    2. To display the Products page, click the **Product** tab. For **Marketing Developer Platform** click on the **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**.
 
+    3. To authorize your application, click the **Auth** tab. The authentication page is displayed. Copy the **client_id** and **client_secret** (for later steps). For **Oauth 2.0 settings**, Provide a **redirect_uri** (for later steps).
+
+    4. Click and review the **Analytics** tab. This page shows the daily application and user/member limits with the percent used for each resource endpoint.
 
 4. (Optional for Airbyte Cloud) Authorize your app. In case your authorization expires:
 
@@ -61,7 +58,7 @@ This page contains the setup guide and reference information for the LinkedIn Ad
    4. To authorize the app, click **Allow**.
 
    5. Copy the `code` parameter listed in the redirect URL in the Browser header URL.
-   
+
 5. (Optional for Airbyte Cloud) Run the following curl command using `Terminal` or `Command line` with the parameters replaced to return your `access_token`. The `access_token` expires in 2-months.
 
    ```text
@@ -100,7 +97,9 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 
 :::
 
-### Step 2: Set up the LinkedIn Ads connector in Airbyte
+<!-- /env:oss -->
+
+### Set up the LinkedIn Ads connector in Airbyte
 
 <!-- env:cloud -->
 #### For Airbyte Cloud:
@@ -118,7 +117,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
    * complete the Name for the Report
    * select **Pivot By** property for the report from the list
    * select **Time Granularity** property for the report from the list
-10. Click **Set up source**.
+10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -144,7 +143,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 
 ## Supported sync modes
 
-The LinkedIn Ads source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The LinkedIn Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
