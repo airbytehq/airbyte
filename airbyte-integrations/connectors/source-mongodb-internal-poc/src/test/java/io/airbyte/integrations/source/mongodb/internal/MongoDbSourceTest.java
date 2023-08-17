@@ -5,7 +5,9 @@
 package io.airbyte.integrations.source.mongodb.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -29,11 +32,14 @@ import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -49,10 +55,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MongoDBContainer;
 
 class MongoDbSourceTest {
 
@@ -66,8 +74,16 @@ class MongoDbSourceTest {
   private static final String COLLECTION3 = "collection3";
 
   private static final ObjectId OBJECT_ID1 = new ObjectId("64c0029d95ad260d69ef28a1");
+  private static final ObjectId OBJECT_ID2 = new ObjectId("64c0029d95ad260d69ef28a2");
+  private static final ObjectId OBJECT_ID3 = new ObjectId("64c0029d95ad260d69ef28a3");
+  private static final ObjectId OBJECT_ID4 = new ObjectId("64c0029d95ad260d69ef28a4");
+  private static final ObjectId OBJECT_ID5 = new ObjectId("64c0029d95ad260d69ef28a5");
 
   private static final String NAME1 = "name1";
+  private static final String NAME2 = "name2";
+  private static final String NAME3 = "name3";
+  private static final String NAME4 = "name4";
+  private static final String NAME5 = "name5";
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -268,22 +284,185 @@ class MongoDbSourceTest {
     }
   }
 
-  private static JsonNode createConfiguration(
-      final String connectionString,
-      final Optional<String> replicaSet,
-      final Optional<String> username,
-      final Optional<String> password) {
-    final Map<String, Object> config = new HashMap<>();
-    final Map<String, Object> baseConfig = Map.of(
-        MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
-        MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, connectionString,
-        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin");
+  @Nested
+  @DisplayName("Tests without mock database")
+  class ContainerizedDatabaseTests {
 
-    config.putAll(baseConfig);
-    replicaSet.ifPresent( r -> config.put(MongoConstants.REPLICA_SET_CONFIGURATION_KEY, r));
-    username.ifPresent(u -> config.put(MongoConstants.USER_CONFIGURATION_KEY, u));
-    password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
-    return Jsons.deserialize(Jsons.serialize(config));
+    private MongoDbSource source;
+    private JsonNode airbyteSourceConfig;
+    private MongoDBContainer MONGO_DB;
+
+    @BeforeEach
+    void setup() {
+      MONGO_DB = new MongoDBContainer("mongo:6.0.8");
+      MONGO_DB.start();
+      airbyteSourceConfig = createConfiguration(MONGO_DB.getConnectionString() + "/", Optional.empty(), Optional.empty(), Optional.empty());
+      source = new MongoDbSource();
+    }
+
+    @AfterEach
+    void cleanup() {
+      MONGO_DB.stop();
+    }
+
+    @Test
+    void testIncrementalReadNoSavedState() {
+      insertDocuments(COLLECTION1, List.of(
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID1,
+              NAME_FIELD, NAME1)),
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID2,
+              NAME_FIELD, NAME2)),
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID3,
+              NAME_FIELD, NAME3))));
+
+      insertDocuments(COLLECTION2, List.of(
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID4,
+              NAME_FIELD, NAME4)),
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID5,
+              NAME_FIELD, NAME5))));
+
+      final AutoCloseableIterator<AirbyteMessage> airbyteMessagesIterator =
+          source.read(
+              airbyteSourceConfig,
+              CONFIGURED_CATALOG,
+              Jsons.deserialize(Jsons.serialize(Map.of("id", OBJECT_ID4.toString()))));
+
+      //collection1
+      final AirbyteMessage collection1StreamMessage1 = airbyteMessagesIterator.next();
+      assertEquals(Type.RECORD, collection1StreamMessage1.getType());
+      assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
+      assertEquals(OBJECT_ID1.toString(), collection1StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertEquals(NAME1, collection1StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
+      final AirbyteMessage collection1StreamMessage2 = airbyteMessagesIterator.next();
+      assertEquals(Type.RECORD, collection1StreamMessage2.getType());
+      assertEquals(COLLECTION1, collection1StreamMessage2.getRecord().getStream());
+      assertEquals(OBJECT_ID2.toString(), collection1StreamMessage2.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertEquals(NAME2, collection1StreamMessage2.getRecord().getData().get(NAME_FIELD).asText());
+      final AirbyteMessage collection1StreamMessage3 = airbyteMessagesIterator.next();
+      assertEquals(Type.RECORD, collection1StreamMessage3.getType());
+      assertEquals(COLLECTION1, collection1StreamMessage3.getRecord().getStream());
+      assertEquals(OBJECT_ID3.toString(), collection1StreamMessage3.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertEquals(NAME3, collection1StreamMessage3.getRecord().getData().get(NAME_FIELD).asText());
+
+      final AirbyteMessage collection1SateMessage = airbyteMessagesIterator.next();
+      assertEquals(Type.STATE, collection1SateMessage.getType());
+      assertEquals(COLLECTION1, collection1SateMessage.getState().getStream().getStreamDescriptor().getName());
+      assertEquals(OBJECT_ID3.toString(), collection1SateMessage.getState().getStream().getStreamState().get("id").asText());
+
+      //collection2
+      final AirbyteMessage collection2StreamMessage1 = airbyteMessagesIterator.next();
+      assertEquals(Type.RECORD, collection2StreamMessage1.getType());
+      assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
+      assertEquals(OBJECT_ID4.toString(), collection2StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertNull(collection2StreamMessage1.getRecord().getData().get(NAME_FIELD));
+      final AirbyteMessage collection2StreamMessage2 = airbyteMessagesIterator.next();
+      assertEquals(Type.RECORD, collection2StreamMessage2.getType());
+      assertEquals(COLLECTION2, collection2StreamMessage2.getRecord().getStream());
+      assertEquals(OBJECT_ID5.toString(), collection2StreamMessage2.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertNull(collection2StreamMessage2.getRecord().getData().get(NAME_FIELD));
+
+      final AirbyteMessage collection2SateMessage = airbyteMessagesIterator.next();
+      assertEquals(Type.STATE, collection2SateMessage.getType());
+      assertEquals(COLLECTION2, collection2SateMessage.getState().getStream().getStreamDescriptor().getName());
+      assertEquals(OBJECT_ID5.toString(), collection2SateMessage.getState().getStream().getStreamState().get("id").asText());
+
+      assertFalse(airbyteMessagesIterator.hasNext());
+    }
+
+    @Test
+    void testConsecutiveIncrementalReads() {
+      insertDocuments(COLLECTION1, List.of(
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID1,
+              NAME_FIELD, NAME1)),
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID2,
+              NAME_FIELD, NAME2))));
+
+      insertDocuments(COLLECTION2, List.of(
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID3,
+              NAME_FIELD, NAME3))));
+
+      final AutoCloseableIterator<AirbyteMessage> airbyteMessagesIteratorNoState = source.read(
+          airbyteSourceConfig,
+          CONFIGURED_CATALOG,
+          null);
+
+      //collection1
+      final AirbyteMessage collection1StreamMessage1 = airbyteMessagesIteratorNoState.next();
+      assertEquals(Type.RECORD, collection1StreamMessage1.getType());
+      assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
+      assertEquals(OBJECT_ID1.toString(), collection1StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertEquals(NAME1, collection1StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
+      final AirbyteMessage collection1StreamMessage2 = airbyteMessagesIteratorNoState.next();
+      assertEquals(Type.RECORD, collection1StreamMessage2.getType());
+      assertEquals(COLLECTION1, collection1StreamMessage2.getRecord().getStream());
+      assertEquals(OBJECT_ID2.toString(), collection1StreamMessage2.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertEquals(NAME2, collection1StreamMessage2.getRecord().getData().get(NAME_FIELD).asText());
+
+      final AirbyteMessage collection1SateMessage = airbyteMessagesIteratorNoState.next();
+      assertEquals(Type.STATE, collection1SateMessage.getType());
+      assertEquals(COLLECTION1, collection1SateMessage.getState().getStream().getStreamDescriptor().getName());
+      assertEquals(OBJECT_ID2.toString(), collection1SateMessage.getState().getStream().getStreamState().get("id").asText());
+
+      //collection2
+      final AirbyteMessage collection2StreamMessage1 = airbyteMessagesIteratorNoState.next();
+      assertEquals(Type.RECORD, collection2StreamMessage1.getType());
+      assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
+      assertEquals(OBJECT_ID3.toString(), collection2StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertNull(collection2StreamMessage1.getRecord().getData().get(NAME_FIELD));
+
+      final AirbyteMessage collection2SateMessage = airbyteMessagesIteratorNoState.next();
+      assertEquals(Type.STATE, collection2SateMessage.getType());
+      assertEquals(COLLECTION2, collection2SateMessage.getState().getStream().getStreamDescriptor().getName());
+      assertEquals(OBJECT_ID3.toString(), collection2SateMessage.getState().getStream().getStreamState().get("id").asText());
+
+      assertFalse(airbyteMessagesIteratorNoState.hasNext());
+
+      insertDocuments(COLLECTION2, List.of(
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID4,
+              NAME_FIELD, NAME4))));
+
+      final AutoCloseableIterator<AirbyteMessage> airbyteMessagesIteratorWithState = source.read(
+          airbyteSourceConfig,
+          CONFIGURED_CATALOG,
+          Jsons.jsonNode(List.of(collection1SateMessage.getState(), collection2SateMessage.getState())));
+
+      //collection1 only sends state message containig the last object id
+      final AirbyteMessage collection1SateMessage2 = airbyteMessagesIteratorWithState.next();
+      assertEquals(Type.STATE, collection1SateMessage2.getType());
+      assertEquals(COLLECTION1, collection1SateMessage2.getState().getStream().getStreamDescriptor().getName());
+      //assertEquals(OBJECT_ID2.toString(), collection1SateMessage2.getState().getStream().getStreamState().get("id").asText());
+      assertNull(collection1SateMessage2.getState().getStream().getStreamState());
+
+      //collection2 skips first record
+      final AirbyteMessage collection2StreamMessage2 = airbyteMessagesIteratorWithState.next();
+      assertEquals(Type.RECORD, collection2StreamMessage2.getType());
+      assertEquals(COLLECTION2, collection2StreamMessage2.getRecord().getStream());
+      assertEquals(OBJECT_ID4.toString(), collection2StreamMessage2.getRecord().getData().get(CURSOR_FIELD).asText());
+      assertNull(collection2StreamMessage2.getRecord().getData().get(NAME_FIELD));
+
+      final AirbyteMessage collection2SateMessage2 = airbyteMessagesIteratorWithState.next();
+      assertEquals(Type.STATE, collection2SateMessage2.getType());
+      assertEquals(COLLECTION2, collection2SateMessage2.getState().getStream().getStreamDescriptor().getName());
+      assertEquals(OBJECT_ID4.toString(), collection2SateMessage2.getState().getStream().getStreamState().get("id").asText());
+
+      assertFalse(airbyteMessagesIteratorWithState.hasNext());
+    }
+
+    private void insertDocuments(final String collectionName, final List<Document> documents) {
+      try (final MongoClient client = MongoClients.create(MONGO_DB.getConnectionString() + "/?retryWrites=false")) {
+        final MongoCollection<Document> collection = client.getDatabase(DB_NAME).getCollection(collectionName);
+        collection.insertMany(documents);
+      }
+    }
   }
 
   private static ConfiguredAirbyteCatalog toConfiguredCatalog(final AirbyteCatalog catalog) {
@@ -302,5 +481,23 @@ class MongoDbSourceTest {
         .withCursorField(List.of(CURSOR_FIELD))
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withPrimaryKey(new ArrayList<>())).collect(Collectors.toList());
+  }
+
+  private static JsonNode createConfiguration(
+      final String connectionString,
+      final Optional<String> replicaSet,
+      final Optional<String> username,
+      final Optional<String> password) {
+    final Map<String, Object> config = new HashMap<>();
+    final Map<String, Object> baseConfig = Map.of(
+        MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
+        MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, connectionString,
+        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin");
+
+    config.putAll(baseConfig);
+    replicaSet.ifPresent( r -> config.put(MongoConstants.REPLICA_SET_CONFIGURATION_KEY, r));
+    username.ifPresent(u -> config.put(MongoConstants.USER_CONFIGURATION_KEY, u));
+    password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
+    return Jsons.deserialize(Jsons.serialize(config));
   }
 }
