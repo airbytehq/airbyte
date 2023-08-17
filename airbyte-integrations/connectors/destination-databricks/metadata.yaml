@@ -16,7 +16,7 @@ data:
   releaseStage: alpha
   supportsDbt: true
   normalizationConfig:
-    normalizationRepository: 227743832892.dkr.ecr.eu-west-1.amazonaws.com/airbyte/normalization-databricks
+    normalizationRepository: airbyte/normalization-databricks # TODO: this is not yet available, tested using private repo with rebuilt image
     normalizationTag: 0.2.25
     normalizationIntegrationType: databricks
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
