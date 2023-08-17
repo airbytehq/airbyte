@@ -373,14 +373,20 @@ This command runs tests for the metadata service orchestrator.
 ### <a id="tests-command"></a>`tests` command
 This command runs the Python tests for a airbyte-ci poetry package.
 
+#### Arguments
+| Option             | Required | Default | Mapped environment variable | Description                                                      |
+| ------------------ | -------- | ------- | --------------------------- | ---------------------------------------------------------------- |
+| `poetry_package_path` | True    |    |                             | The path to poetry package to test. |
+
 #### Options
 | Option             | Required | Default | Mapped environment variable | Description                                                      |
 | ------------------ | -------- | ------- | --------------------------- | ---------------------------------------------------------------- |
-| `--test-directory` | False    | tests   |                             | The path to the directory on which pytest should discover tests. |
+| `--test-directory` | False    | tests   |                             | The path to the directory on which pytest should discover tests, relative to the poetry package. |
 
 
 #### Example
-`airbyte-ci test connectors/pipelines`
+`airbyte-ci test airbyte-ci/connectors/pipelines --test-directory=tests`
+`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --test-directory=unit_tests`
 
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
