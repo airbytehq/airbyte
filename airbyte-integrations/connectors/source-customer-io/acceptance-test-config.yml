@@ -16,9 +16,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: 
-          - name: newsletters
-            bypass_reason: "Sandbox account can't seed the stream"
+        empty_streams: []
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no

@@ -6,6 +6,33 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "content_ids": {
+      "type": ["null", "array"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "sent_at": {
+      "type": ["null", "array"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
     "deduplicate_id": {
       "type": ["null", "string"]
     },
