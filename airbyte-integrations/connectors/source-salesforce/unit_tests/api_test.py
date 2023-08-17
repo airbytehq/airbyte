@@ -31,17 +31,26 @@ from source_salesforce.streams import (
 
 
 @pytest.mark.parametrize(
-    "login_status_code, login_json_resp, expected_error_msg",
-    [(400, {"error": "invalid_grant", "error_description": "expired access/refresh token"}, AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"))]
+    "login_status_code, login_json_resp, expected_error_msg, is_config_error",
+    [
+        (400, {"error": "invalid_grant", "error_description": "expired access/refresh token"}, AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"), True),
+        (400, {"error": "invalid_grant", "error_description": "Authentication failure."}, 'An error occurred: {"error": "invalid_grant", "error_description": "Authentication failure."}', False),
+        (401, {"error": "Unauthorized", "error_description": "Unautorized"}, 'An error occurred: {"error": "Unauthorized", "error_description": "Unautorized"}', False),
+    ]
 )
-def test_login_authentication_error_handler(stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg):
+def test_login_authentication_error_handler(stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error):
     source = SourceSalesforce()
     logger = logging.getLogger("airbyte")
+    requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
 
-    with pytest.raises(AirbyteTracedException) as err:
-        requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
-        source.check_connection(logger, stream_config)
-    assert err.value.message == expected_error_msg
+    if is_config_error:
+        with pytest.raises(AirbyteTracedException) as err:
+            source.check_connection(logger, stream_config)
+        assert err.value.message == expected_error_msg
+    else:
+        result, msg = source.check_connection(logger, stream_config)
+        assert result is False
+        assert msg == expected_error_msg
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
