@@ -149,7 +149,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         catalogParser = new CatalogParser(sqlGenerator);
       }
       parsedCatalog = catalogParser.parseCatalog(catalog);
-      final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator();
+      final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
       typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
     } else {
       parsedCatalog = null;
@@ -196,7 +196,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         catalogParser = new CatalogParser(sqlGenerator);
       }
       parsedCatalog = catalogParser.parseCatalog(catalog);
-      final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator();
+      final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
       typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
     } else {
       parsedCatalog = null;
