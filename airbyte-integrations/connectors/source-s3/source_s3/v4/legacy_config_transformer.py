@@ -80,9 +80,9 @@ class LegacyConfigTransformer:
                 "delimiter": format_options.delimiter,
                 "quote_char": format_options.quote_char,
                 "double_quote": format_options.double_quote,
-                "null_values": ["", "null", "NULL", "N/A", "NA", "NaN", "None"],
-                "true_values": ["y", "yes", "t", "true", "on", "1"],
-                "false_values": ["n", "no", "f", "false", "off", "0"],
+                "null_values": ["", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN", "N/A", "NA",  "NULL", "NaN",  "n/a", "nan", "null"],
+                "true_values": ["1", "True", "TRUE", "true"],
+                "false_values": ["0", "False", "FALSE", "false"],
                 "inference_type": "Primitive Types Only" if format_options.infer_datatypes else "None",
                 "strings_can_be_null": additional_reader_options.get("strings_can_be_null", False),
             }
