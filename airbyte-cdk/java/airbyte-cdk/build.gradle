@@ -4,13 +4,19 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id "com.github.eirnym.js2p" version "1.0"
-    // id "java-test-fixtures"
+    id "java-test-fixtures"
     // id 'airbyte-docker'
     // id "airbyte-integration-test-java"
     // id "airbyte-performance-test-java"
 }
 
 group 'io.airbyte'
+
+project.configurations {
+    testImplementation.extendsFrom implementation
+    testFixturesImplementation.extendsFrom implementation
+    testFixturesRuntimeOnly.extendsFrom runtimeOnly
+}
 
 // Version is dynamically loaded from version.properties file.
 def props = new Properties()
@@ -26,6 +32,8 @@ dependencies {
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     testImplementation project(':airbyte-test-utils')
+
+    testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
 
     implementation libs.bundles.junit
     // implementation libs.junit.jupiter.api
@@ -157,12 +165,6 @@ jsonSchema2Pojo {
 // // Add a configuration for our migrations tasks defined below to encapsulate their dependencies
 // configurations {
 //     migrations.extendsFrom implementation
-// }
-
-
-// project.configurations {
-//     testFixturesImplementation.extendsFrom implementation
-//     testFixturesRuntimeOnly.extendsFrom runtimeOnly
 // }
 
 /*
