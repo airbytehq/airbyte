@@ -120,7 +120,7 @@ The [Google API rate limits](https://developers.google.com/sheets/api/limits) ar
 - 300 read requests per minute per project
 - 60 requests per minute per user per project
 
-Airbyte batches requests to the API in order to efficiently pull data and respect these rate limits. We recommend not using the same service user for more than 3 instances of the Google Sheets source connector to ensure high transfer speeds.
+Airbyte batches requests to the API in order to efficiently pull data and respect these rate limits. We recommend not using the same user or service account for more than 3 instances of the Google Sheets source connector to ensure high transfer speeds.
 
 ## Changelog
 
