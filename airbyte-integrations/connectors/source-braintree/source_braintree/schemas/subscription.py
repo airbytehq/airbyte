@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import List
 
@@ -22,12 +22,12 @@ class Subscription(CatalogModel):
     description: str
     discounts: List[Discount]
     failure_count: Decimal
-    first_billing_date: datetime
+    first_billing_date: date
     id: str
     merchant_account_id: str
     never_expires: bool
     next_bill_amount: Decimal
-    next_billing_date: datetime
+    next_billing_date: date
     next_billing_period_amount: Decimal
     number_of_billing_cycles: Decimal
     paid_through_date: datetime
