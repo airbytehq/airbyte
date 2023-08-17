@@ -56,7 +56,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
    * @param datasetLocation This is technically redundant with {@link BigQueryDestinationHandler} setting the query
    *                        execution location, but let's be explicit since this is typically a compliance requirement.
    */
-  public BigQuerySqlGenerator(String datasetLocation) {
+  public BigQuerySqlGenerator(final String datasetLocation) {
     this.datasetLocation = datasetLocation;
   }
 
@@ -343,7 +343,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   public String updateTable(final StreamConfig stream, final String finalSuffix) {
     return updateTable(stream, finalSuffix, true);
   }
-  private String updateTable(final StreamConfig stream, final String finalSuffix, boolean verifyPrimaryKeys) {
+  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
     String pkVarDeclaration = "";
     String validatePrimaryKeys = "";
     if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
@@ -424,20 +424,26 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors = streamColumns.entrySet().stream().map(
-        col -> new StringSubstitutor(Map.of(
-            "raw_col_name", col.getKey().originalName(),
-            "col_type", toDialectType(col.getValue()).name(),
-            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
-                """
-                CASE
-                  WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
-                    AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"')) != 'null')
-                    AND (${json_extract} IS NULL)
-                    THEN ["Problem with `${raw_col_name}`"]
-                  ELSE []
-                END"""))
-        .collect(joining(",\n"));
+    final String columnErrors;
+    if (streamColumns.isEmpty()) {
+      // ARRAY_CONCAT doesn't like having an empty argument list, so handle that case separately
+      columnErrors = "[]";
+    } else {
+      columnErrors = "ARRAY_CONCAT(" + streamColumns.entrySet().stream().map(
+              col -> new StringSubstitutor(Map.of(
+                  "raw_col_name", col.getKey().originalName(),
+                  "col_type", toDialectType(col.getValue()).name(),
+                  "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+                  """
+                      CASE
+                        WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
+                          AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"')) != 'null')
+                          AND (${json_extract} IS NULL)
+                          THEN ["Problem with `${raw_col_name}`"]
+                        ELSE []
+                      END"""))
+          .collect(joining(",\n")) + ")";
+    }
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
@@ -468,9 +474,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 WITH intermediate_data AS (
                   SELECT
                 ${column_casts}
-                  array_concat(
-                ${column_errors}
-                  ) as _airbyte_cast_errors,
+                  ${column_errors} as _airbyte_cast_errors,
                   _airbyte_raw_id,
                   _airbyte_extracted_at
                   FROM ${raw_table_id}
@@ -598,7 +602,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String migrateFromV1toV2(StreamId streamId, String namespace, String tableName) {
+  public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     return new StringSubstitutor(Map.of(
         "v2_raw_table", streamId.rawTableId(QUOTE),
         "v1_raw_table", wrapAndQuote(namespace, tableName)
