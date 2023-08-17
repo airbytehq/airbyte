@@ -18,6 +18,7 @@ from dagger import Container, Directory, File
 from pipelines import hacks
 from pipelines.actions import environments
 from pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
+from pipelines.builds.cat import BuildCat
 from pipelines.utils import METADATA_FILE_NAME
 
 
@@ -181,25 +182,14 @@ class AcceptanceTests(PytestStep):
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
 
-    @property
-    def base_cat_command(self) -> List[str]:
-        return [
-            "python",
-            "-m",
-            "pytest",
-            "-p",
-            "connector_acceptance_test.plugin",
-            "--acceptance-test-config",
-            self.CONTAINER_TEST_INPUT_DIRECTORY,
-        ]
-
-    async def get_cat_command(self, connector_dir: Directory) -> List[str]:
+    async def get_cat_command(self, cat_container: Container, connector_dir: Directory) -> List[str]:
         """
         Connectors can optionally setup or teardown resources before and after the acceptance tests are run.
         This is done via the acceptance.py file in their integration_tests directory.
         We append this module as a plugin the acceptance will use.
         """
-        cat_command = self.base_cat_command
+        cat_entrypoint = await cat_container.entrypoint()
+        cat_command = cat_entrypoint + ["--acceptance-test-config", self.CONTAINER_TEST_INPUT_DIRECTORY]
         if "integration_tests" in await connector_dir.entries():
             if "acceptance.py" in await connector_dir.directory("integration_tests").entries():
                 cat_command += ["-p", "integration_tests.acceptance"]
@@ -218,7 +208,7 @@ class AcceptanceTests(PytestStep):
             return StepResult(self, StepStatus.SKIPPED)
         connector_dir = await self.context.get_connector_dir()
         cat_container = await self._build_connector_acceptance_test(connector_under_test_image_tar, connector_dir)
-        cat_command = await self.get_cat_command(connector_dir)
+        cat_command = await self.get_cat_command(cat_container, connector_dir)
         cat_container = cat_container.with_(hacks.never_fail_exec(cat_command))
         step_result = await self.get_step_result(cat_container)
         secret_dir = cat_container.directory(self.CONTAINER_SECRETS_DIRECTORY)
@@ -258,7 +248,7 @@ class AcceptanceTests(PytestStep):
         """
 
         if self.context.connector_acceptance_test_image.endswith(":dev"):
-            cat_container = self.context.connector_acceptance_test_source_dir.docker_build()
+            cat_container = await BuildCat.get_container(self.dagger_client, self.context)
         else:
             cat_container = self.dagger_client.container().from_(self.context.connector_acceptance_test_image)
 

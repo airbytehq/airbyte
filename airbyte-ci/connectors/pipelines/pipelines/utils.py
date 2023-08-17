@@ -164,7 +164,7 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
     """
     try:
         exit_code = 0
-        in_file_exit_code = await get_file_contents(container, "/exit_code")
+        in_file_exit_code = "exit_code" in await container.directory("/").entries()
         if in_file_exit_code:
             exit_code = int(in_file_exit_code)
         return exit_code, *(await get_container_output(container))

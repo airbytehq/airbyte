@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dagger import ExecError, File, QueryError
 from pipelines.actions import environments
 from pipelines.bases import StepResult, StepStatus
-from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
+from pipelines.builds.common import BuildConnectorImageBase, BuildImageForAllPlatformsBase
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
-from dagger import ExecError, File, QueryError
 
 
 class BuildConnectorDistributionTar(GradleTask):
@@ -64,7 +64,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
 
-class BuildConnectorImageForAllPlatforms(BuildConnectorImageForAllPlatformsBase):
+class BuildConnectorImageForAllPlatforms(BuildImageForAllPlatformsBase):
     """Build a Java connector image for all platforms."""
 
     async def _run(self, distribution_tar: File) -> StepResult:

@@ -2,14 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC
-from typing import Tuple
 
 import docker
+from dagger import Container, Platform
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.contexts import ConnectorContext
 from pipelines.utils import export_container_to_tarball
-from dagger import Container, Platform
 
 
 class BuildConnectorImageBase(Step, ABC):
@@ -22,17 +21,17 @@ class BuildConnectorImageBase(Step, ABC):
         super().__init__(context)
 
 
-class BuildConnectorImageForAllPlatformsBase(Step, ABC):
+class BuildImageForAllPlatformsBase(Step, ABC):
 
     ALL_PLATFORMS = BUILD_PLATFORMS
 
-    title = f"Build connector image for {BUILD_PLATFORMS}"
+    title = f"Build image for {BUILD_PLATFORMS}"
 
     def get_success_result(self, build_results_per_platform: dict[Platform, Container]) -> StepResult:
         return StepResult(
             self,
             StepStatus.SUCCESS,
-            stdout="The connector image was successfully built for all platforms.",
+            stdout="The image was successfully built for all platforms.",
             output_artifact=build_results_per_platform,
         )
 
@@ -40,20 +39,18 @@ class BuildConnectorImageForAllPlatformsBase(Step, ABC):
 class LoadContainerToLocalDockerHost(Step):
     IMAGE_TAG = "dev"
 
-    def __init__(self, context: ConnectorContext, container: Container) -> None:
+    def __init__(self, context: ConnectorContext, container: Container, image_name: str) -> None:
         super().__init__(context)
         self.container = container
+        self.image_name = image_name
 
     @property
     def title(self):
         return f"Load {self.image_name}:{self.IMAGE_TAG} to the local docker host."
 
-    @property
-    def image_name(self) -> Tuple:
-        return f"airbyte/{self.context.connector.technical_name}"
-
     async def _run(self) -> StepResult:
-        _, exported_tarball_path = await export_container_to_tarball(self.context, self.container)
+        tar_file_name = f"{self.image_name.replace('/', '-')}-{self.IMAGE_TAG}-{self.context.git_revision}.tar"
+        _, exported_tarball_path = await export_container_to_tarball(self.context, self.container, tar_file_name=tar_file_name)
         client = docker.from_env()
         try:
             with open(exported_tarball_path, "rb") as tarball_content:

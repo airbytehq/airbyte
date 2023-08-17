@@ -11,7 +11,7 @@ from typing import List, Set, Tuple
 
 import anyio
 import click
-from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo, SupportLevelEnum
+from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, console, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.builds import run_connector_build_pipeline
@@ -112,7 +112,7 @@ def get_selected_connectors_with_modified_files(
 # COMMANDS
 
 
-@click.group(help="Commands related to connectors and connector acceptance tests.")
+@click.group(help="Commands related to connectors.")
 @click.option("--use-remote-secrets", default=True)  # specific to connectors
 @click.option(
     "--name",

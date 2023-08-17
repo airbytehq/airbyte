@@ -5,7 +5,7 @@
 from dagger import QueryError
 from pipelines.actions.environments import with_airbyte_python_connector
 from pipelines.bases import StepResult, StepStatus
-from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
+from pipelines.builds.common import BuildConnectorImageBase, BuildImageForAllPlatformsBase
 from pipelines.contexts import ConnectorContext
 
 
@@ -23,7 +23,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
 
-class BuildConnectorImageForAllPlatforms(BuildConnectorImageForAllPlatformsBase):
+class BuildConnectorImageForAllPlatforms(BuildImageForAllPlatformsBase):
     """Build a Python connector image for all platforms."""
 
     async def _run(self) -> StepResult:
