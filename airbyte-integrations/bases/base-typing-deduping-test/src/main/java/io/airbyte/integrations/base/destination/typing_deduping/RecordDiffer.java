@@ -89,6 +89,8 @@ public class RecordDiffer {
   }
 
   /**
+   * Lift _airbyte_data fields to the root level. If _airbyte_data is a string, deserialize it first.
+   *
    * @return A copy of the record, but with all fields in _airbyte_data lifted to the top level.
    */
   private static JsonNode copyWithLiftedData(final JsonNode record) {

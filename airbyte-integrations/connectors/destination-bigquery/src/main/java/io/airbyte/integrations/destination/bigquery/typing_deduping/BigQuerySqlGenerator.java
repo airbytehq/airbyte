@@ -137,15 +137,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           END)
           """);
     } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
-      // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
-      // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
-      // This is to avoid needing to convert the raw SQL type back into JSON.
+      // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse the airbyte_data to json
+      // and json_query it directly (which preserves nulls correctly).
       return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
           """
-          CASE
-            WHEN JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')) = 'null' THEN JSON'null'
-            ELSE PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')
-          END
+          JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')
           """);
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
@@ -614,7 +610,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             AS (
                 SELECT
                     _airbyte_ab_id AS _airbyte_raw_id,
-                    PARSE_JSON(_airbyte_data) AS _airbyte_data,
+                    _airbyte_data AS _airbyte_data,
                     _airbyte_emitted_at AS _airbyte_extracted_at,
                     CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
                 FROM ${v1_raw_table}

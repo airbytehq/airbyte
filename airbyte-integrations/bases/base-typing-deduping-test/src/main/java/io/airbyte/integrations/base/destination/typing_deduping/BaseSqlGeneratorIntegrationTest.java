@@ -777,7 +777,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         () -> assertEquals(1, v1RawRecords.size()),
         () -> assertEquals(1, v2RawRecords.size()),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_ab_id").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
-        () -> assertEquals(Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText()), v2RawRecords.get(0).get("_airbyte_data")),
+        () -> {
+          final JsonNode originalData = Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText());
+          JsonNode migratedData = v2RawRecords.get(0).get("_airbyte_data");
+          if (migratedData.isTextual()) {
+            migratedData = Jsons.deserialize(migratedData.asText());
+          }
+          assertEquals(originalData, migratedData);
+        },
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_emitted_at").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
         () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at")));
 
