@@ -84,6 +84,10 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         if (currentIterator != null) {
           currentIterator.close();
         }
+        // WE SHOULD NOT BUILD THE NEXT SUBQUERY IF we are in composite key mode and have already executed a subquery
+        if (isCompositeKeyLoad && numSubqueries >=1) {
+          return endOfData();
+        }
         currentIterator = AutoCloseableIterators.fromStream(stream, pair);
         numSubqueries++;
         // If the current subquery has no records associated with it, the entire stream has been read.
@@ -99,7 +103,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
   private boolean shouldBuildNextSubquery() {
     // The next sub-query should be built if (i) it is the first subquery in the sequence. (ii) the previous subquery has finished.
-    return currentIterator == null || !currentIterator.hasNext();
+    return (currentIterator == null || !currentIterator.hasNext());
   }
 
   private PreparedStatement getPkPreparedStatement(final Connection connection) {
