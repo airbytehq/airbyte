@@ -32,7 +32,7 @@ import org.mockito.stubbing.Answer;
 
 class MongoDbStateIteratorTest {
 
-  private static final int BATCH_SIZE = 2;
+  private static final int CHECKPOINT_INTERVAL = 2;
   @Mock
   private MongoCursor<Document> mongoCursor;
   private AutoCloseable closeable;
@@ -59,7 +59,7 @@ class MongoDbStateIteratorTest {
       public Boolean answer(InvocationOnMock invocation) throws Throwable {
         count++;
         // hasNext will be called for each doc plus for each state message
-        return count <= (docs.size() + (docs.size() % BATCH_SIZE));
+        return count <= (docs.size() + (docs.size() % CHECKPOINT_INTERVAL));
       }
 
     });
@@ -79,7 +79,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Instant.now(), BATCH_SIZE);
+    final var iter = new MongoDbStateIterator(mongoCursor, stream, Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -137,7 +137,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Instant.now(), BATCH_SIZE);
+    final var iter = new MongoDbStateIterator(mongoCursor, stream, Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
