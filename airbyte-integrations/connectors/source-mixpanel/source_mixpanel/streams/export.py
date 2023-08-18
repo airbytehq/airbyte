@@ -145,7 +145,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
         for record in self.iter_dicts(response.iter_lines(decode_unicode=True)):
             # transform record into flat dict structure
-            item = {"mixpanel_event": record["event"]}
+            # Changed event property name to "mp_event" to avoid conflict with "event" reserved property
+            item = {"mp_event": record["event"]}
             properties = record["properties"]
             for result in transform_property_names(properties.keys()):
                 # Convert all values to string (this is default property type)
