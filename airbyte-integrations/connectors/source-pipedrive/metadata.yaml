@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - api.pipedrive.com
@@ -7,6 +10,7 @@ data:
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-pipedrive
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
   icon: pipedrive.svg
   license: MIT
@@ -17,11 +21,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"
