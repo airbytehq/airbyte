@@ -1,9 +1,13 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-adjust
+  documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
   githubIssueLabel: source-adjust
   icon: adjust.svg
   license: MIT
@@ -14,11 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -45,7 +45,7 @@ The quickest path to upgrading is to click upgrade on any out-of-date connection
 
 After upgrading the out-of-date destination to a [Destinations V2 compatible version](#destinations-v2-effective-versions), the following will occur at the next sync **for each connection** sending data to the updated destination:
 
-1. Existing raw tables replicated to this destination will be copied to a new `airbyte` schema.
+1. Existing raw tables replicated to this destination will be copied to a new `airbyte_internal` schema.
 2. The new raw tables will be updated to the new Destinations V2 format.
 3. The new raw tables will be updated with any new data since the last sync, like normal.
 4. The new raw tables will be typed and de-duplicated according to the Destinations V2 format.
