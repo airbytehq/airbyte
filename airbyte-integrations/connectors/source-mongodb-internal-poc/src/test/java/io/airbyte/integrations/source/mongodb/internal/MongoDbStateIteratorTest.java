@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
@@ -79,7 +80,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Instant.now(), BATCH_SIZE);
+    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty() , Instant.now(), BATCH_SIZE);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -137,7 +138,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Instant.now(), BATCH_SIZE);
+    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty() , Instant.now(), BATCH_SIZE);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
