@@ -35,8 +35,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             // Extract the token from the Authorization header
             String token = authorizationHeader
                     .substring(AUTHENTICATION_SCHEME.length()).trim();
-            LOGGER.info(" Token " + token);
-            LOGGER.error(" Token " + token);
             // Validate the Authorization header
             if (requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
                 requestContext.abortWith(Response.ok().build());
@@ -108,6 +106,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     private boolean isEdgeTagBasedAuthentication(String originHeader) {
         LOGGER.info(" originHeader " + originHeader);
         LOGGER.error(" originHeader " + originHeader);
+        LOGGER.info(" Inside isEdgeTagBasedAuthentication ");
+        LOGGER.error(" Inside isEdgeTagBasedAuthentication ");
         return originHeader != null && originHeader.toLowerCase()
                 .equalsIgnoreCase(EDGETAG_ORIGIN);
     }
@@ -132,6 +132,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     }
 
     private boolean validateEdgeBasedToken(String origin, String token) throws Exception {
+        LOGGER.info(" Inside validateEdgeBasedToken ");
+        LOGGER.error(" Inside validateEdgeBasedToken ");
         return blotoutAuthentication.validateEdgeTagBasedAuthentication(origin, token);
 
     }
