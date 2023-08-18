@@ -162,6 +162,33 @@ class MongoDbStateIteratorTest {
     assertFalse(iter.hasNext(), "should have no more records");
   }
 
+  @Test
+  void initialStateIsReturnedIfUnderlyingIteratorIsEmpty() {
+    final var docs = docs();
+
+    // on the second hasNext call, throw an exception
+    when(mongoCursor.hasNext()).thenReturn(false);
+
+    final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
+    final var objectId = "64dfb6a7bb3c3458c30801f4";
+    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.of(new MongodbStreamState(objectId)), Instant.now(), BATCH_SIZE);
+
+    // the MongoDbStateIterator should return the following after each
+    // `hasNext`/`next` call:
+    // false
+    // then the generated state message should have the same id as the initial state
+    assertTrue(iter.hasNext(), "state should be next");
+
+    final AirbyteMessage message = iter.next();
+    assertEquals(Type.STATE, message.getType());
+    assertEquals(
+        objectId,
+        message.getState().getStream().getStreamState().get("id").asText(),
+        "state id should match initial state ");
+
+    assertFalse(iter.hasNext(), "should have no more records");
+  }
+
   private ConfiguredAirbyteCatalog catalog() {
     return new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
