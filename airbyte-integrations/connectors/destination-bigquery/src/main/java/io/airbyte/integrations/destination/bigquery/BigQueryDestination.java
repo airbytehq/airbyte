@@ -342,7 +342,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final ParsedCatalog parsedCatalog,
                                                            final Consumer<AirbyteMessage> outputRecordCollector,
                                                            final TyperDeduper typerDeduper)
-      throws IOException {
+      throws Exception {
+    typerDeduper.prepareTables();
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
         config,
