@@ -782,7 +782,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
           if (migratedData.isTextual()) {
             migratedData = Jsons.deserializeExact(migratedData.asText());
           }
-          assertEquals(originalData, migratedData);
+          // hacky thing because we only care about the data contents.
+          // diffRawTableRecords makes some assumptions about the structure of the blob.
+          DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
         },
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_emitted_at").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
         () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at")));
