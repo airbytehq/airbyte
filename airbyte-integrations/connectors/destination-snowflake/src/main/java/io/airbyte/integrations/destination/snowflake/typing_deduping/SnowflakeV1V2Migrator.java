@@ -29,13 +29,17 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
   @SneakyThrows
   @Override
   protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) {
-    return database
+    return !database
         .queryJsons(
             """
                 SELECT SCHEMA_NAME
                 FROM information_schema.schemata
-                WHERE schema_name = ?;
-                """, streamConfig.id().rawNamespace())
+                WHERE schema_name = "?"
+                AND catalog_name = ?;
+                """,
+            streamConfig.id().rawNamespace(),
+            databaseName
+        )
         .isEmpty();
   }
 

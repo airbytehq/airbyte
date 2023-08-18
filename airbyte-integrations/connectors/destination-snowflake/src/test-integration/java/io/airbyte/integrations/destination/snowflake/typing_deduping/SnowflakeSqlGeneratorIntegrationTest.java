@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -137,18 +138,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
                                 .map(record -> columnNames.stream()
                                                           .map(record::get)
-                                                          .map(r -> {
-                                                            if (r == null) {
-                                                              return "NULL";
-                                                            }
-                                                            final String stringContents;
-                                                            if (r.isTextual()) {
-                                                              stringContents = r.asText();
-                                                            } else {
-                                                              stringContents = r.toString();
-                                                            }
-                                                            return "$$" + stringContents + "$$";
-                                                          })
+                                                          .map(this::dollarQuoteWrap)
                                                           .collect(joining(",")))
                                 .map(row -> "(" + row + ")")
                                 .collect(joining(","));
@@ -211,26 +201,24 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             """));
   }
 
+  private String dollarQuoteWrap(JsonNode node) {
+    if (node == null) {
+      return "NULL";
+    }
+    final String stringContents = node.isTextual() ? node.asText() : node.toString();
+    // Use dollar quotes to avoid needing to escape anything
+    return StringUtils.wrap("$$", stringContents);
+  }
+
   @Override
   protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
     final String recordsText = records.stream()
                                 // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
-                                .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES.stream()
-                                                                                          .map(record::get)
-                                                                                          .map(r -> {
-                                                                                            if (r == null) {
-                                                                                              return "NULL";
-                                                                                            }
-                                                                                            final String stringContents;
-                                                                                            if (r.isTextual()) {
-                                                                                              stringContents = r.asText();
-                                                                                            } else {
-                                                                                              stringContents = r.toString();
-                                                                                            }
-                                                                                            // Use dollar quotes to avoid needing to escape anything
-                                                                                            return "$$" + stringContents + "$$";
-                                                                                          })
-                                                                                          .collect(joining(",")))
+                                .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
+                                    .stream()
+                                    .map(record::get)
+                                    .map(this::dollarQuoteWrap)
+                                    .collect(joining(",")))
                                 .map(row -> "(" + row + ")")
                                 .collect(joining(","));
     database.execute(new StringSubstitutor(
@@ -325,12 +313,37 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected void createV1RawTable(final StreamId v1RawTable) throws Exception {
-
+    database.execute(String.format(
+        """
+            CREATE TABLE IF NOT EXISTS %s.%s (
+              %s VARCHAR PRIMARY KEY,
+              %s VARIANT,
+              %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
+            ) data_retention_time_in_days = 0;
+        """,
+        v1RawTable.rawNamespace(),
+        v1RawTable.rawName(),
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+    ));
   }
 
   @Override
   protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
-
+    new StringSubstitutor(Map.of(
+        "v1_raw_table_id", String.join(".", streamId.rawNamespace(), streamId.rawName()),
+        "records", recordsText
+    )).replace(
+        """
+            INSERT INTO ${v1_raw_table_id} (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at)
+            SELECT _airbyte_ab_id, _airbyte_data, _airbyte_emitted_at FROM UNNEST([
+              STRUCT<`_airbyte_ab_id` STRING, _airbyte_data STRING, `_airbyte_emitted_at` TIMESTAMP>
+              ${records}
+            ])
+            """
+    )
+            )
   }
 
   @Override
