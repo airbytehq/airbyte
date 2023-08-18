@@ -1,9 +1,13 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerImageTag: 1.5.0
   dockerRepository: airbyte/source-amazon-seller-partner
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   githubIssueLabel: source-amazon-seller-partner
   icon: amazonsellerpartner.svg
   license: MIT
@@ -14,11 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"

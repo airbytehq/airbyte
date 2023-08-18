@@ -1,9 +1,13 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: database
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-mongodb-v2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v2
   icon: mongodb.svg
   license: ELv2
@@ -16,12 +20,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
+  supportLevel: community
   tags:
     - language:java
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"
