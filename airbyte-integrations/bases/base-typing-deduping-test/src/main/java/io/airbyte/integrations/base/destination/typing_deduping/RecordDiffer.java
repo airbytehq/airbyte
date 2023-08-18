@@ -94,7 +94,11 @@ public class RecordDiffer {
   private static JsonNode copyWithLiftedData(final JsonNode record) {
     final ObjectNode copy = record.deepCopy();
     copy.remove("_airbyte_data");
-    Streams.stream(record.get("_airbyte_data").fields()).forEach(field -> {
+    JsonNode airbyteData = record.get("_airbyte_data");
+    if (airbyteData.isTextual()) {
+      airbyteData = Jsons.deserialize(airbyteData.asText());
+    }
+    Streams.stream(airbyteData.fields()).forEach(field -> {
       if (!copy.has(field.getKey())) {
         copy.set(field.getKey(), field.getValue());
       } else {

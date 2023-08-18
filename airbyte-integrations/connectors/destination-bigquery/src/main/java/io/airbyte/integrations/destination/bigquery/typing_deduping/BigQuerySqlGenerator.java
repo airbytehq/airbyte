@@ -116,30 +116,37 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
       return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+          // Note the wide_number_mode here. We're not using the actual value, so we don't care about losing precision.
           """
-          CASE
+          PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
-              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${column_name}"')) != 'object'
+              OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'object'
               THEN NULL
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
-          END
+          END)
           """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
       return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
           """
-          CASE
+          PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
-              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${column_name}"')) != 'array'
+              OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'array'
               THEN NULL
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
-          END
+          END)
           """);
     } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
       // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
       // This is to avoid needing to convert the raw SQL type back into JSON.
-      return "JSON_QUERY(`_airbyte_data`, '$.\"" + column.originalName() + "\"')";
+      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+          """
+          CASE
+            WHEN JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')) = 'null' THEN JSON'null'
+            ELSE PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')
+          END
+          """);
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
       return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + column.originalName() + "\"') as " + dialectType.name() + ")";
@@ -419,7 +426,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   """
                       CASE
                         WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
-                          AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"')) != 'null')
+                          AND (JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"'), wide_number_mode=>'round')) != 'null')
                           AND (${json_extract} IS NULL)
                           THEN ["Problem with `${raw_col_name}`"]
                         ELSE []
@@ -530,7 +537,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 ${pk_extracts}
               )
             FROM  ${raw_table_id}
-            WHERE JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
+            WHERE JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at'), wide_number_mode=>'round')) != 'null'
           )
         ;"""
     );
@@ -598,7 +605,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                  
             CREATE OR REPLACE TABLE ${v2_raw_table} (
               _airbyte_raw_id STRING,
-              _airbyte_data JSON,
+              _airbyte_data STRING,
               _airbyte_extracted_at TIMESTAMP,
               _airbyte_loaded_at TIMESTAMP
             )
