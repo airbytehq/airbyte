@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "emailBlacklisted": {
+      "type": ["null", "boolean"]
+    },
+    "smsBlacklisted": {
+      "type": ["null", "boolean"]
+    },
+    "listIds": {
+      "type": ["null", "array"]
+    },
+    "createdAt": {
+      "type": ["null", "string"]
+    },
+    "modifiedAt": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "object"]
+    }
+  }
+}
