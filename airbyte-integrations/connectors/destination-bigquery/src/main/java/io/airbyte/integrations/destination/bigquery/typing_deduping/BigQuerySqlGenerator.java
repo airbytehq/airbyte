@@ -115,7 +115,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON null).
       // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
-      return new StringSubstitutor(Map.of("column_name", escapeStringLiteral(column.originalName()))).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
           CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -126,7 +126,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
-      return new StringSubstitutor(Map.of("column_name", escapeStringLiteral(column.originalName()))).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
           CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -139,10 +139,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
       // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
       // This is to avoid needing to convert the raw SQL type back into JSON.
-      return "JSON_QUERY(`_airbyte_data`, '$.\"" + escapeStringLiteral(column.originalName()) + "\"')";
+      return "JSON_QUERY(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + escapeStringLiteral(column.originalName()) + "\"') as " + dialectType.name() + ")";
+      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"') as " + dialectType.name() + ")";
     }
   }
 
@@ -413,7 +413,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     } else {
       columnErrors = "ARRAY_CONCAT(" + streamColumns.entrySet().stream().map(
               col -> new StringSubstitutor(Map.of(
-                  "raw_col_name", escapeStringLiteral(col.getKey().originalName()),
+                  "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
                   "col_type", toDialectType(col.getValue()).name(),
                   "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
                   """
@@ -615,8 +615,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             """);
   }
 
-  private String escapeStringLiteral(final String stringContents) {
-    return stringContents.replace("'", "\\'");
+  /**
+   * Does two things: escape single quotes (for use inside sql string literals),and escape double quotes
+   * (for use inside JSON paths). For example, if a column name is foo'bar"baz, then we want to end up
+   * with something like {@code SELECT JSON_QUERY(..., '$."foo\'bar\\"baz"')}. Note the single-backslash
+   * for single-quotes (needed for SQL) and the double-backslash for double-quotes (needed for JSON path).
+   */
+  private String escapeColumnNameForJsonPath(final String stringContents) {
+    return stringContents
+        .replace("'", "\\'")
+        // This is not a place of honor.
+        .replace("\"", "\\\\\"");
   }
 
 }
