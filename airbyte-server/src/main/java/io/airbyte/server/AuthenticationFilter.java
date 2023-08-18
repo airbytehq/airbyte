@@ -23,15 +23,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        LOGGER.info(" Inside filter " + requestContext.getUriInfo().getPath());
-        LOGGER.error(" Inside filter " + requestContext.getUriInfo().getPath());
 
         if (!"v1/health".equalsIgnoreCase(requestContext.getUriInfo().getPath())) {
             // Get the Authorization header from the request
             String authorizationHeader =
                     requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-            LOGGER.info(" authorizationHeader " + authorizationHeader);
-            LOGGER.error(" authorizationHeader " + authorizationHeader);
             // Extract the token from the Authorization header
             String token = authorizationHeader
                     .substring(AUTHENTICATION_SCHEME.length()).trim();
@@ -43,8 +39,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             // Validate origin based authentication
             String originHeader =
                     requestContext.getHeaderString("origin");
-            LOGGER.info(" originHeader " + originHeader);
-            LOGGER.error(" originHeader " + originHeader);
             if (isEdgeTagBasedAuthentication(originHeader)) {
                 try {
                     if (!validateEdgeBasedToken(originHeader, token)) {
@@ -66,8 +60,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     }
                 }
             } else if (isTokenBasedAuthentication(authorizationHeader)) {
-                LOGGER.info(" Inside else if filter ");
-                LOGGER.error(" Inside else if filter ");
                 try {
                     if (!validateToken(token)) {
                         abortWithUnauthorized(requestContext);
@@ -104,10 +96,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     }
 
     private boolean isEdgeTagBasedAuthentication(String originHeader) {
-        LOGGER.info(" originHeader " + originHeader);
-        LOGGER.error(" originHeader " + originHeader);
-        LOGGER.info(" Inside isEdgeTagBasedAuthentication ");
-        LOGGER.error(" Inside isEdgeTagBasedAuthentication ");
         return originHeader != null && originHeader.toLowerCase()
                 .equalsIgnoreCase(EDGETAG_ORIGIN);
     }
@@ -115,8 +103,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     private void abortWithUnauthorized(ContainerRequestContext requestContext) {
         // Abort the filter chain with a 401 status code response
         // The WWW-Authenticate header is sent along with the response
-        LOGGER.info(" Inside abortWithUnauthorized ");
-        LOGGER.error(" Inside abortWithUnauthorized ");
         requestContext.abortWith(
                 Response.status(Response.Status.UNAUTHORIZED)
                         .header(HttpHeaders.WWW_AUTHENTICATE,
@@ -126,17 +112,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private boolean validateToken(String token) throws Exception {
         // Checking token from blotout
-        LOGGER.info(" Inside validateToken ");
-        LOGGER.error(" Inside validateToken ");
         return blotoutAuthentication.validateToken(token);
     }
 
     private boolean validateEdgeBasedToken(String origin, String token) throws Exception {
-        LOGGER.info(" Inside validateEdgeBasedToken ");
-        LOGGER.error(" Inside validateEdgeBasedToken ");
         boolean result = blotoutAuthentication.validateEdgeTagBasedAuthentication(origin, token);
-        LOGGER.info(" result " + result);
-        LOGGER.error(" result " + result);
         return result;
 
     }
