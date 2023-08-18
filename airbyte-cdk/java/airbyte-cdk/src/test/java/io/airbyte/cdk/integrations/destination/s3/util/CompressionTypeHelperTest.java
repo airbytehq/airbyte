@@ -6,8 +6,8 @@ package io.airbyte.cdk.integrations.destination.s3.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.commons.json.Jsons;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 

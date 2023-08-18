@@ -9,8 +9,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.HashSet;

@@ -6,8 +6,8 @@ package io.airbyte.cdk.integrations.destination.s3.csv;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.commons.json.Jsons;
 import java.util.Collections;
 import java.util.List;
 

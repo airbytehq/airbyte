@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The {@link io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer} class
- * abstracts the {@link io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage} from the
- * details of the format the data is going to be stored in.
+ * abstracts the {@link io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage} from
+ * the details of the format the data is going to be stored in.
  * <p>
  * Unfortunately, the Parquet library doesn't allow us to manipulate the output stream and forces us
  * to go through {@link HadoopOutputFile} instead. So we can't benefit from the abstraction

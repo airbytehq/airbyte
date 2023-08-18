@@ -9,10 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -21,11 +17,15 @@ import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.cdk.test.utils.PostgreSQLContainerHelper;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
-import io.airbyte.cdk.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
 import java.util.List;
 import java.util.Map;
@@ -163,7 +163,7 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
     // state
-    // @Override  # TODO: Compiler complains this is not overriding anything
+    // @Override # TODO: Compiler complains this is not overriding anything
     protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
       if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
         final AirbyteGlobalState globalState = new AirbyteGlobalState()

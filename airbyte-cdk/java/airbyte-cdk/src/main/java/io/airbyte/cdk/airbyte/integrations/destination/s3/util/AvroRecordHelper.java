@@ -6,10 +6,10 @@ package io.airbyte.cdk.integrations.destination.s3.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
+import io.airbyte.commons.util.MoreIterators;
 
 /**
  * Helper methods for unit tests. This is needed by multiple modules, so it is in the src directory.

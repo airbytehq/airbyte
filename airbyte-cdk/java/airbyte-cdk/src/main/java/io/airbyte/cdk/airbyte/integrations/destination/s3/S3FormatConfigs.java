@@ -5,11 +5,11 @@
 package io.airbyte.cdk.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetFormatConfig;
+import io.airbyte.commons.json.Jsons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

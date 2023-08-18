@@ -7,9 +7,9 @@ package io.airbyte.integrations.destination.s3;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaType;
 import io.airbyte.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
