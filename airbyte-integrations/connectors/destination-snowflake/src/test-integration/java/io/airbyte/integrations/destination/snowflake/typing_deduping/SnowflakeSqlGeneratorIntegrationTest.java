@@ -27,7 +27,6 @@ import javax.sql.DataSource;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<SnowflakeTableDefinition> {
@@ -334,8 +333,6 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   }
 
-  // TODO delete this after implementing https://github.com/airbytehq/airbyte/issues/28691
-  @Disabled
   @Override
   @Test
   public void testV1V2migration() {

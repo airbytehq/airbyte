@@ -461,6 +461,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
+    // In the SQL below, the v2 values are quoted to preserve their case while the v1 values are
+    // intentionally _not_ quoted. This is to preserve the implicit upper-casing behavior in v1.
     return new StringSubstitutor(Map.of(
         "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
         "raw_table_name", streamId.rawTableId(QUOTE),

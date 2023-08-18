@@ -56,7 +56,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
                         FROM information_schema.columns
                         WHERE table_catalog = ?
                           AND table_schema = ?
-                          AND table_name ilike(?)
+                          AND table_name = ?
                         ORDER BY ordinal_position;
                         """,
                     databaseName,
@@ -77,9 +77,17 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
 
   @Override
   protected NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
+    // The implicit upper-casing happens for this in the SqlGenerator
     return new NamespacedTableName(
         this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
         this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName())
     );
+  }
+
+  @Override
+  protected boolean doesValidV1RawTableExist(final String namespace, final String tableName) {
+    // Previously we were not quoting table names and they were being implicitly upper-cased.
+    // In v2 we preserve cases
+    return super.doesValidV1RawTableExist(namespace.toUpperCase(), tableName.toUpperCase());
   }
 }
