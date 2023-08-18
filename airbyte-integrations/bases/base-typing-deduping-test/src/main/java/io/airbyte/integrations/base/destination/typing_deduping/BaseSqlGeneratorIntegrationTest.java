@@ -766,7 +766,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "_airbyte_emitted_at", "2023-01-01T00:00:00Z",
         "_airbyte_data",
         // 67.174118 gets rounded to 67.17411800000001 as a float64. Verify that we don't throw an error.
-        // TODO verify that we read it back correctly.
         """
         {"hello": "world", "foo": 67.174118}"""))));
     final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
