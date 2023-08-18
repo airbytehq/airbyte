@@ -5,6 +5,11 @@
 
 from setuptools import find_packages, setup
 
+MAIN_REQUIREMENTS = ["airbyte-cdk", "pendulum>=2,<3"]
+
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "requests-mock"]
+
+
 setup(
     name="source_exchange_rates",
     description="Source implementation for Exchange Rate API.",
@@ -12,5 +17,8 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     package_data={"": ["*.json", "*.yaml", "schemas/*.json"]},
-    install_requires=["airbyte-cdk~=0.1", "pendulum>=2,<3"],
+    install_requires=MAIN_REQUIREMENTS,
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )

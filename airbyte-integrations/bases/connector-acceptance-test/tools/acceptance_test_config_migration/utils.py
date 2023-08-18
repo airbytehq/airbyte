@@ -31,18 +31,9 @@ def add_dry_param(parser: argparse.ArgumentParser):
     )
 
 
-def add_allow_alpha_param(parser: argparse.ArgumentParser):
+def add_allow_community_param(parser: argparse.ArgumentParser):
     parser.add_argument(
-        "--allow_alpha",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help="Whether to apply the change to alpha connectors, if they are included in the list of connectors.",
-    )
-
-
-def add_allow_beta_param(parser: argparse.ArgumentParser):
-    parser.add_argument(
-        "--allow_beta",
+        "--allow_community",
         action=argparse.BooleanOptionalAction,
         default=False,
         help="Whether to apply the change to bets connectors, if they are included in the list of connectors.",
@@ -66,12 +57,12 @@ def get_valid_definitions_from_args(args):
         connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
         if not definitions.is_airbyte_connector(definition):
             logging.warning(f"Skipping {connector_technical_name} since it's not an airbyte connector.")
-        elif not args.allow_beta and definition in definitions.BETA_DEFINITIONS:
-            logging.warning(f"Skipping {connector_technical_name} since it's a beta connector. This is configurable via `--allow_beta`")
-        elif not args.allow_alpha and definition in definitions.ALPHA_DEFINTIONS:
-            logging.warning(f"Skipping {connector_technical_name} since it's an alpha connector. This is configurable via `--allow_alpha`")
+        elif not args.allow_community and definition in definitions.COMMUNITY_DEFINITIONS:
+            logging.warning(
+                f"Skipping {connector_technical_name} since it's a community connector. This is configurable via `--allow_community`"
+            )
         elif definition in definitions.OTHER_DEFINITIONS:
-            logging.warning(f"Skipping {connector_technical_name} since it doesn't have a release stage.")
+            logging.warning(f"Skipping {connector_technical_name} since it doesn't have a support level.")
         else:
             valid_definitions.append(definition)
 

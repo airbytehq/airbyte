@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
@@ -15,8 +15,8 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -48,16 +48,16 @@ public class BigQueryStagingConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStagingConsumerFactory.class);
 
   public AirbyteMessageConsumer create(final JsonNode config,
-                                       final ConfiguredAirbyteCatalog catalog,
-                                       final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final BigQueryStagingOperations bigQueryGcsOperations,
-                                       final BufferCreateFunction onCreateBuffer,
-                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                       final Function<String, String> tmpTableNameTransformer,
-                                       final Function<String, String> targetTableNameTransformer,
-                                       final TyperDeduper typerDeduper,
-                                       final ParsedCatalog parsedCatalog,
-                                       final String defaultNamespace)
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final BigQueryStagingOperations bigQueryGcsOperations,
+      final BufferCreateFunction onCreateBuffer,
+      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+      final Function<String, String> tmpTableNameTransformer,
+      final Function<String, String> targetTableNameTransformer,
+      final TyperDeduper typerDeduper,
+      final ParsedCatalog parsedCatalog,
+      final String defaultNamespace)
       throws Exception {
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
@@ -154,11 +154,15 @@ public class BigQueryStagingConsumerFactory {
                                           final TyperDeduper typerDeduper) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        typerDeduper.prepareTables();
+      }
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
-            writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
+                    writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName()
+        );
         // In Destinations V2, we will always use the 'airbyte' schema/namespace for raw tables
-        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? AIRBYTE_NAMESPACE_SCHEMA : writeConfig.datasetId();
+        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? DEFAULT_AIRBYTE_INTERNAL_NAMESPACE : writeConfig.datasetId();
         // Regardless, ensure the schema the customer wants to write to exists
         bigQueryGcsOperations.createSchemaIfNotExists(writeConfig.datasetId(), writeConfig.datasetLocation());
         // Schema used for raw and airbyte internal tables
@@ -174,7 +178,6 @@ public class BigQueryStagingConsumerFactory {
           bigQueryGcsOperations.truncateTableIfExists(rawDatasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
         }
       }
-      typerDeduper.prepareFinalTables();
       LOGGER.info("Preparing tables in destination completed.");
     };
   }

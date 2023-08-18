@@ -5,6 +5,7 @@
 """This module groups steps made to run tests agnostic to a connector language."""
 
 import datetime
+import os
 from abc import ABC, abstractmethod
 from functools import cached_property
 from typing import ClassVar, List, Optional
@@ -13,7 +14,7 @@ import requests
 import semver
 import yaml
 from connector_ops.utils import Connector
-from dagger import Container, File
+from dagger import Container, Directory, File
 from pipelines import hacks
 from pipelines.actions import environments
 from pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
@@ -181,7 +182,7 @@ class AcceptanceTests(PytestStep):
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
 
     @property
-    def cat_command(self) -> List[str]:
+    def base_cat_command(self) -> List[str]:
         return [
             "python",
             "-m",
@@ -191,6 +192,18 @@ class AcceptanceTests(PytestStep):
             "--acceptance-test-config",
             self.CONTAINER_TEST_INPUT_DIRECTORY,
         ]
+
+    async def get_cat_command(self, connector_dir: Directory) -> List[str]:
+        """
+        Connectors can optionally setup or teardown resources before and after the acceptance tests are run.
+        This is done via the acceptance.py file in their integration_tests directory.
+        We append this module as a plugin the acceptance will use.
+        """
+        cat_command = self.base_cat_command
+        if "integration_tests" in await connector_dir.entries():
+            if "acceptance.py" in await connector_dir.directory("integration_tests").entries():
+                cat_command += ["-p", "integration_tests.acceptance"]
+        return cat_command
 
     async def _run(self, connector_under_test_image_tar: File) -> StepResult:
         """Run the acceptance test suite on a connector dev image. Build the connector acceptance test image if the tag is :dev.
@@ -203,10 +216,10 @@ class AcceptanceTests(PytestStep):
         """
         if not self.context.connector.acceptance_test_config:
             return StepResult(self, StepStatus.SKIPPED)
-
-        cat_container = await self._build_connector_acceptance_test(connector_under_test_image_tar)
-        cat_container = cat_container.with_(hacks.never_fail_exec(self.cat_command))
-
+        connector_dir = await self.context.get_connector_dir()
+        cat_container = await self._build_connector_acceptance_test(connector_under_test_image_tar, connector_dir)
+        cat_command = await self.get_cat_command(connector_dir)
+        cat_container = cat_container.with_(hacks.never_fail_exec(cat_command))
         step_result = await self.get_step_result(cat_container)
         secret_dir = cat_container.directory(self.CONTAINER_SECRETS_DIRECTORY)
 
@@ -217,44 +230,54 @@ class AcceptanceTests(PytestStep):
                     break
         return step_result
 
-    def get_cache_buster(self) -> str:
+    async def get_cache_buster(self, connector_under_test_image_tar: File) -> str:
         """
-        This bursts the CAT cached results everyday.
+        This bursts the CAT cached results everyday and on new version or image size change.
         It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
         We keep the guarantee that a CAT runs everyday.
 
+        Args:
+            connector_under_test_image_tar (File): The file holding the tar archive of the connector image.
         Returns:
-            str: A string representing the current date.
+            str: A string representing the cachebuster value.
         """
-        return datetime.datetime.utcnow().strftime("%Y%m%d")
+        return (
+            datetime.datetime.utcnow().strftime("%Y%m%d")
+            + self.context.connector.version
+            + str(await connector_under_test_image_tar.size())
+        )
 
-    async def _build_connector_acceptance_test(self, connector_under_test_image_tar: File) -> Container:
-        """Create a container to run connector acceptance tests, bound to a persistent docker host.
+    async def _build_connector_acceptance_test(self, connector_under_test_image_tar: File, test_input: Directory) -> Container:
+        """Create a container to run connector acceptance tests.
 
         Args:
-            connector_under_test_image_tar (File): The file containing the tar archive the image of the connector under test.
+            connector_under_test_image_tar (File): The file containing the tar archive of the image of the connector under test.
+            test_input (Directory): The connector under test directory.
         Returns:
             Container: A container with connector acceptance tests installed.
         """
-        test_input = await self.context.get_connector_dir()
-        cat_config = yaml.safe_load(await test_input.file("acceptance-test-config.yml").contents())
-
-        image_sha = await environments.load_image_to_docker_host(
-            self.context, connector_under_test_image_tar, cat_config["connector_image"]
-        )
 
         if self.context.connector_acceptance_test_image.endswith(":dev"):
             cat_container = self.context.connector_acceptance_test_source_dir.docker_build()
         else:
             cat_container = self.dagger_client.container().from_(self.context.connector_acceptance_test_image)
 
-        return (
-            environments.with_bound_docker_host(self.context, cat_container)
-            .with_entrypoint([])
-            .with_mounted_directory(self.CONTAINER_TEST_INPUT_DIRECTORY, test_input)
-            .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
-            .with_env_variable("CACHEBUSTER", self.get_cache_buster())
-            .with_workdir(self.CONTAINER_TEST_INPUT_DIRECTORY)
-            .with_exec(["mkdir", "-p", self.CONTAINER_SECRETS_DIRECTORY])
-            .with_(environments.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY))
+        cat_container = (
+            cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
+            .with_env_variable("CACHEBUSTER", await self.get_cache_buster(connector_under_test_image_tar))
+            .with_mounted_file("/dagger_share/connector_under_test_image.tar", connector_under_test_image_tar)
+            .with_env_variable("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH", "/dagger_share/connector_under_test_image.tar")
+            .with_workdir("/test_input")
+            .with_mounted_directory("/test_input", test_input)
+            .with_(environments.mounted_connector_secrets(self.context, secret_directory_path="/test_input/secrets"))
         )
+        if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
+            self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
+            cat_container = cat_container.with_env_variable(
+                "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock"
+            ).with_unix_socket(
+                "/var/run/buildkit/buildkitd.sock", self.context.dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
+            )
+
+        return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))

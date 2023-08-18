@@ -10,7 +10,7 @@ jobs:
     name: Connector metadata service CI
     runs-on: medium-runner
     env:
-      CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+      CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
         with:
           subcommand: "metadata test lib"
           context: "pull_request"
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -30,7 +30,7 @@ jobs:
         with:
           subcommand: "metadata test orchestrator"
           context: "pull_request"
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

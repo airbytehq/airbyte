@@ -216,3 +216,15 @@ class ConnectorConfig(BaseConfig):
         default=True,
         airbyte_hidden=True,
     )
+
+    client_id: Optional[str] = Field(
+        description="The Client Id for your OAuth app",
+        airbyte_secret=True,
+        airbyte_hidden=True,
+    )
+
+    client_secret: Optional[str] = Field(
+        description="The Client Secret for your OAuth app",
+        airbyte_secret=True,
+        airbyte_hidden=True,
+    )
