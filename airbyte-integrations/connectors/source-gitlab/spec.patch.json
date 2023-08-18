@@ -1,0 +1,86 @@
+
+{
+  "properties": {
+    "credentials": {
+      "oneOf": [
+        {
+          "x-oauth2-provider": "gitlab",
+          "properties": {
+            "access_token": {
+              "airbyte_secret": true,
+              "description": "Access Token for making authenticated requests.",
+              "type": "string"
+            },
+            "auth_type": {
+              "const": "oauth2.0",
+              "type": "string"
+            },
+            "client_id": {
+              "airbyte_secret": true,
+              "description": "The API ID of the Gitlab developer application.",
+              "type": "string"
+            },
+            "client_secret": {
+              "airbyte_secret": true,
+              "description": "The API Secret the Gitlab developer application.",
+              "type": "string"
+            },
+            "refresh_token": {
+              "airbyte_secret": true,
+              "description": "The key to refresh the expired access_token.",
+              "type": "string"
+            },
+            "token_expiry_date": {
+              "description": "The date-time when the access token should be refreshed.",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          "required": [
+            "client_id",
+            "client_secret",
+            "refresh_token",
+            "access_token",
+            "token_expiry_date"
+          ],
+          "title": "OAuth2.0",
+          "type": "object"
+        },
+        {
+          "properties": {
+            "access_token": {
+              "airbyte_secret": true,
+              "description": "Log into your Gitlab account and then generate a personal Access Token.",
+              "title": "Private Token",
+              "type": "string"
+            },
+            "auth_type": {
+              "const": "access_token",
+              "type": "string"
+            }
+          },
+          "required": [
+            "access_token"
+          ],
+          "title": "Private Token",
+          "type": "object"
+        }
+      ],
+      "order": 0,
+      "title": "Authorization Method",
+      "type": "object"
+    },
+    "groups": {
+      "description": "Space-delimited list of groups. e.g. estuary.dev.",
+      "examples": [
+        "estuary.dev"
+      ]
+    },
+    "projects": {
+      "description": "Space-delimited list of projects. e.g. estuary.dev/docs meltano/tap-gitlab.",
+      "examples": [
+        "meltano/tap-gitlab"
+      ]
+    }
+  }
+}

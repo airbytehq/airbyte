@@ -1,0 +1,44 @@
+{
+    "properties": {
+      "created_by": {
+        "type": "object",
+        "avatar_url": null,
+        "id": null,
+        "state": null,
+        "username": null,
+        "web_url": null,
+        "properties": {
+          "avatar_url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "username": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "web_url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    }
+  }

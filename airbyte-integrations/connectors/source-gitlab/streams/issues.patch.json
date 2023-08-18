@@ -1,0 +1,44 @@
+{
+    "properties": {
+      "epic": {
+        "type": "object",
+        "group_id": null,
+        "id": null,
+        "iid": null,
+        "title": null,
+        "url": null,
+        "properties": {
+          "group_id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "iid": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    }
+  }

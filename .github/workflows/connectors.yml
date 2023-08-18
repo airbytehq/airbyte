@@ -175,6 +175,7 @@ jobs:
           - name: source-pinterest
           - name: source-aircall
           - name: source-confluence
+          - name: source-gitlab
           
     steps:
       - uses: actions/checkout@v2
