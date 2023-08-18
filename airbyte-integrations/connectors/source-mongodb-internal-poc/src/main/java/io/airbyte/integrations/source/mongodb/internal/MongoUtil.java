@@ -29,8 +29,10 @@ import org.bson.conversions.Bson;
 public class MongoUtil {
 
   /**
-   * The maximum number of documents to sample when attempting to discover the unique keys/types for
-   * a collection.  Inspired by the <a href="https://www.mongodb.com/docs/compass/current/sampling/#sampling-method">sampling method utilized by the MongoDB Compass client</a>.
+   * The maximum number of documents to sample when attempting to discover the unique keys/types for a
+   * collection. Inspired by the
+   * <a href="https://www.mongodb.com/docs/compass/current/sampling/#sampling-method">sampling method
+   * utilized by the MongoDB Compass client</a>.
    */
   private static final Integer DISCOVERY_SAMPLE_SIZE = 1000;
 
