@@ -125,7 +125,7 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
         raise exc
 
     stub = set_stub(reader, mocked_response, multiple_pages)
-    files = list(reader.get_matching_files(globs, logger))
+    files = list(reader.get_matching_files(globs, None, logger))
     stub.deactivate()
     assert set(f.uri for f in files) == expected_uris
 
@@ -137,14 +137,14 @@ def test_get_matching_files_exception():
     stub.add_client_error("list_objects_v2")
     stub.activate()
     with pytest.raises(ErrorListingFiles) as exc:
-        list(reader.get_matching_files(["*"], logger))
+        list(reader.get_matching_files(["*"], None, logger))
     stub.deactivate()
     assert FileBasedSourceError.ERROR_LISTING_FILES.value in exc.value.args[0]
 
 
 def test_get_matching_files_without_config_raises_exception():
     with pytest.raises(ValueError):
-        next(SourceS3StreamReader().get_matching_files([], logger))
+        next(SourceS3StreamReader().get_matching_files([], None, logger))
 
 
 def test_open_file_without_config_raises_exception():
