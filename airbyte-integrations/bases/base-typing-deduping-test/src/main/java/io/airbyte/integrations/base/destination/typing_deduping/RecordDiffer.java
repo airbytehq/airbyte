@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -251,7 +250,8 @@ public class RecordDiffer {
       return expectedValue.equals(actualValue)
           // equals() expects the two values to be the same class.
           // We need to handle comparisons between e.g. LongNode and IntNode.
-          || (expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.bigIntegerValue().equals(actualValue.bigIntegerValue()))
+          || (expectedValue.isIntegralNumber() && actualValue.isIntegralNumber()
+              && expectedValue.bigIntegerValue().equals(actualValue.bigIntegerValue()))
           || (expectedValue.isNumber() && actualValue.isNumber() && expectedValue.decimalValue().equals(actualValue.decimalValue()));
     }
   }
