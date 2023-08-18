@@ -215,7 +215,7 @@ RESOURCE_PRIMARY_KEY_MAP = {
     "Publisher": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_publisher.htm
     "ApexPageInfo": "DurableId" # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_apexpageinfo.htm
 }
-UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
+UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup", "PromotionTarget", "PromotionQualifier"]
 
 
 class Salesforce:
