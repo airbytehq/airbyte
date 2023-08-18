@@ -121,6 +121,7 @@ temporal-testing = { module = "io.temporal:temporal-testing", version.ref = "tem
 debezium-api = { module = "io.debezium:debezium-api", version.ref = "debezium"}
 debezium-embedded = { module = "io.debezium:debezium-embedded", version.ref = "debezium"}
 debezium-sqlserver = { module = "io.debezium:debezium-connector-sqlserver", version.ref = "debezium"}
+debezium-mongodb = { module = "io.debezium:debezium-connector-mongodb", version.ref = "debezium" }
 debezium-mysql = { module = "io.debezium:debezium-connector-mysql", version.ref = "debezium"}
 debezium-postgres = { module = "io.debezium:debezium-connector-postgres", version.ref = "debezium"}
 
