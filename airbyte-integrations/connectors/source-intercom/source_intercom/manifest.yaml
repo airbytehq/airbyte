@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.50.2"
 
 definitions:
 
@@ -41,7 +41,7 @@ definitions:
         inject_into: request_parameter
         field_name: per_page
       page_token_option:
-        type: RequestPath      
+        type: RequestPath
   requester_incremental_search:
     $ref: "#/definitions/requester"
     http_method: "POST"
@@ -98,7 +98,7 @@ definitions:
       primary_key: "name"
       path: "teams"
       data_field: "teams"
-  
+
   stream_data_attributes:
     description: "https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes"
     $ref: "#/definitions/stream_full_refresh"
@@ -124,7 +124,7 @@ definitions:
       primary_key: "name"
       path: "data_attributes"
       model: "contact"
-  
+
   # semi-incremental 
   # (full-refresh and emit records >= *prior state)
   # (prior state - frozen state from previous sync, it automatically updates with next sync)
@@ -132,7 +132,7 @@ definitions:
     $ref: "#/definitions/stream_full_refresh"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSlice
+      class_name: source_intercom.components.IncrementalSingleSliceCursor
       cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/stream_full_refresh/retriever"
@@ -193,13 +193,13 @@ definitions:
               response_filters:
                 - http_codes: [ 404 ]
                   action: IGNORE
-    
+
   # semi-incremental substreams
   substream_semi_incremental:
     $ref: "#/definitions/stream_full_refresh"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSubstreamSlicer
+      class_name: source_intercom.components.IncrementalSubstreamSlicerCursor
       cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/stream_full_refresh/retriever"
@@ -256,7 +256,7 @@ definitions:
     $ref: "#/definitions/stream_full_refresh"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSlice
+      class_name: source_intercom.components.IncrementalSingleSliceCursor
       cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/stream_full_refresh/retriever"
@@ -287,7 +287,7 @@ definitions:
       path: "conversations/search"
       data_field: "conversations"
       page_size: 150
-         
+
 streams:
   - "#/definitions/admins"
   - "#/definitions/tags"
@@ -302,5 +302,5 @@ streams:
   - "#/definitions/company_segments"
 
 check:
-  stream_names: 
+  stream_names:
     - "tags"

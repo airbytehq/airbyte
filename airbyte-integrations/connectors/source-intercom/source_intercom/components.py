@@ -2,41 +2,36 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
 from dataclasses import InitVar, dataclass, field
-from functools import lru_cache, wraps
+from functools import wraps
 from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import dpath.util
 import requests
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
-from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import InterpolatedNestedRequestInputProvider
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
+
 
 RequestInput = Union[str, Mapping[str, str]]
 
 
 @dataclass
-class IncrementalSingleSlice(StreamSlicer):
-
+class IncrementalSingleSliceCursor(Cursor):
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    _cursor: dict = field(default_factory=dict)
-    initial_state: dict = field(default_factory=dict)
 
     def __post_init__(self, parameters: Mapping[str, Any]):
+        self._state = {}
         self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
 
     def get_request_params(
@@ -45,7 +40,8 @@ class IncrementalSingleSlice(StreamSlicer):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        # Current implementation does not provide any options to update request params.
+        # Returns empty dict
         return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
 
     def get_request_headers(
@@ -54,7 +50,8 @@ class IncrementalSingleSlice(StreamSlicer):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        # Current implementation does not provide any options to update request headers.
+        # Returns empty dict
         return self._get_request_option(RequestOptionType.header, stream_slice)
 
     def get_request_body_data(
@@ -63,7 +60,8 @@ class IncrementalSingleSlice(StreamSlicer):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        # Current implementation does not provide any options to update body data.
+        # Returns empty dict
         return self._get_request_option(RequestOptionType.body_data, stream_slice)
 
     def get_request_body_json(
@@ -72,100 +70,65 @@ class IncrementalSingleSlice(StreamSlicer):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
-        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        # Current implementation does not provide any options to update body json.
+        # Returns empty dict
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
     def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
         return {}
 
     def get_stream_state(self) -> StreamState:
-        return self._cursor if self._cursor else {}
+        return self._state
 
-    def _get_max_state_value(
-        self,
-        current_state_value: Optional[Union[int, str]],
-        last_record_value: Optional[Union[int, str]],
-    ) -> Optional[Union[int, str]]:
-        if current_state_value and last_record_value:
-            cursor = max(current_state_value, last_record_value)
-        elif current_state_value:
-            cursor = current_state_value
-        else:
-            cursor = last_record_value
-        return cursor
+    def set_initial_state(self, stream_state: StreamState):
+        cursor_field = self.cursor_field.eval(self.config)
+        cursor_value = stream_state.get(cursor_field)
+        if cursor_value:
+            self._state[cursor_field] = cursor_value
+            self._state["prior_state"] = self._state.copy()
 
-    def _set_initial_state(self, stream_slice: StreamSlice):
-        self.initial_state = stream_slice if not self.initial_state else self.initial_state
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
+        latest_record = self._state if self.is_greater_than_or_equal(self._state, most_recent_record) else most_recent_record
+        if latest_record:
+            cursor_field = self.cursor_field.eval(self.config)
+            self._state[cursor_field] = latest_record[cursor_field]
 
-    def _update_cursor_with_prior_state(self):
-        self._cursor["prior_state"] = {self.cursor_field.eval(self.config): self.initial_state.get(self.cursor_field.eval(self.config))}
-
-    def _get_current_state(self, stream_slice: StreamSlice) -> Union[str, float, int]:
-        return stream_slice.get(self.cursor_field.eval(self.config))
-
-    def _get_last_record_value(self, last_record: Optional[Record] = None) -> Union[str, float, int]:
-        return last_record.get(self.cursor_field.eval(self.config)) if last_record else None
-
-    def _get_current_cursor_value(self) -> Union[str, float, int]:
-        return self._cursor.get(self.cursor_field.eval(self.config)) if self._cursor else None
-
-    def _update_current_cursor(
-        self,
-        current_cursor_value: Optional[Union[str, float, int]] = None,
-        updated_cursor_value: Optional[Union[str, float, int]] = None,
-    ):
-        if current_cursor_value and updated_cursor_value:
-            self._cursor.update(**{self.cursor_field.eval(self.config): max(updated_cursor_value, current_cursor_value)})
-        elif updated_cursor_value:
-            self._cursor.update(**{self.cursor_field.eval(self.config): updated_cursor_value})
-
-    def _update_stream_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        self._update_current_cursor(
-            self._get_current_cursor_value(),
-            self._get_max_state_value(
-                self._get_current_state(stream_slice),
-                self._get_last_record_value(last_record),
-            ),
-        )
-
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        # freeze initial state
-        self._set_initial_state(stream_slice)
-        # update the state of the child stream cursor_field value from previous sync,
-        # and freeze it to have an ability to compare the record vs state
-        self._update_cursor_with_prior_state()
-        self._update_stream_cursor(stream_slice, last_record)
-
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         yield {}
+
+    def should_be_synced(self, record: Record) -> bool:
+        """
+        Evaluating if a record should be synced allows for filtering and stop condition on pagination
+        """
+        record_cursor_value = record.get(self.cursor_field.eval(self.config))
+        return bool(record_cursor_value)
+
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        """
+        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
+        """
+        cursor_field = self.cursor_field.eval(self.config)
+        first_cursor_value = first.get(cursor_field) if first else None
+        second_cursor_value = second.get(cursor_field) if second else None
+        if first_cursor_value and second_cursor_value:
+            return first_cursor_value > second_cursor_value
+        elif first_cursor_value:
+            return True
+        else:
+            return False
 
 
 @dataclass
-class IncrementalSubstreamSlicer(StreamSlicer):
-    """
-    Like SubstreamSlicer, but works incrementaly with both parent and substream.
-
-    Input Arguments:
-
-    :: cursor_field: srt - substream cursor_field value
-    :: parent_complete_fetch: bool - If `True`, all slices is fetched into a list first, then yield.
-        If `False`, substream emits records on each parernt slice yield.
-    :: parent_stream_configs: ParentStreamConfig - Describes how to create a stream slice from a parent stream.
-
-    """
-
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
-    cursor_field: Union[InterpolatedString, str]
+class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
     parent_stream_configs: List[ParentStreamConfig]
     parent_complete_fetch: bool = field(default=False)
-    _cursor: dict = field(default_factory=dict)
-    initial_state: dict = field(default_factory=dict)
 
     def __post_init__(self, parameters: Mapping[str, Any]):
+        super().__post_init__(parameters)
+
         if not self.parent_stream_configs:
             raise ValueError("IncrementalSubstreamSlicer needs at least 1 parent stream")
-        self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
+
         # parent stream parts
         self.parent_config: ParentStreamConfig = self.parent_stream_configs[0]
         self.parent_stream: Stream = self.parent_config.stream
@@ -175,186 +138,59 @@ class IncrementalSubstreamSlicer(StreamSlicer):
         self.substream_slice_field: str = self.parent_stream_configs[0].partition_field.eval(self.config)
         self.parent_field: str = self.parent_stream_configs[0].parent_key.eval(self.config)
 
-    def get_request_params(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
+    def set_initial_state(self, stream_state: StreamState):
+        super().set_initial_state(stream_state=stream_state)
+        if self.parent_stream_name in stream_state and stream_state.get(self.parent_stream_name, {}).get(self.parent_cursor_field):
+            parent_stream_state = {
+                self.parent_cursor_field: stream_state[self.parent_stream_name][self.parent_cursor_field]
+            }
+            self._state[self.parent_stream_name] = parent_stream_state
+            if "prior_state" in self._state:
+                self._state["prior_state"][self.parent_stream_name] = parent_stream_state
 
-    def get_request_headers(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        return self._get_request_option(RequestOptionType.header, stream_slice)
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
+        super().close_slice(stream_slice=stream_slice, most_recent_record=most_recent_record)
+        if self.parent_stream:
+            self._state[self.parent_stream_name] = self.parent_stream.state
 
-    def get_request_body_data(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        return self._get_request_option(RequestOptionType.body_data, stream_slice)
-
-    def get_request_body_json(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
-        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        return self._get_request_option(RequestOptionType.body_json, stream_slice)
-
-    def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
-        return {}
-
-    def _get_max_state_value(
-        self, current_state_value: Optional[Union[int, str]], last_record_value: Optional[Union[int, str]]
-    ) -> Optional[Union[int, str]]:
-        if current_state_value and last_record_value:
-            cursor = max(current_state_value, last_record_value)
-        elif current_state_value:
-            cursor = current_state_value
-        else:
-            cursor = last_record_value
-        return cursor
-
-    def _set_initial_state(self, stream_slice: StreamSlice):
-        self.initial_state = stream_slice if not self.initial_state else self.initial_state
-
-    def _get_last_record_value(self, last_record: Optional[Record] = None, parent: Optional[bool] = False) -> Union[str, float, int]:
-        if parent:
-            return last_record.get(self.parent_cursor_field) if last_record else None
-        else:
-            return last_record.get(self.cursor_field.eval(self.config)) if last_record else None
-
-    def _get_current_cursor_value(self, parent: Optional[bool] = False) -> Union[str, float, int]:
-        if parent:
-            return self._cursor.get(self.parent_stream_name, {}).get(self.parent_cursor_field) if self._cursor else None
-        else:
-            return self._cursor.get(self.cursor_field.eval(self.config)) if self._cursor else None
-
-    def _get_current_state(self, stream_slice: StreamSlice, parent: Optional[bool] = False) -> Union[str, float, int]:
-        if parent:
-            return stream_slice.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
-        else:
-            return stream_slice.get(self.cursor_field.eval(self.config))
-
-    def _update_current_cursor(
-        self,
-        current_cursor_value: Optional[Union[str, float, int]] = None,
-        updated_cursor_value: Optional[Union[str, float, int]] = None,
-        parent: Optional[bool] = False,
-    ):
-        if current_cursor_value and updated_cursor_value:
-            if parent:
-                self._cursor.update(
-                    **{self.parent_stream_name: {self.parent_cursor_field: max(updated_cursor_value, current_cursor_value)}}
-                )
-            else:
-                self._cursor.update(**{self.cursor_field.eval(self.config): max(updated_cursor_value, current_cursor_value)})
-        elif updated_cursor_value:
-            if parent:
-                self._cursor.update(**{self.parent_stream_name: {self.parent_cursor_field: updated_cursor_value}})
-            else:
-                self._cursor.update(**{self.cursor_field.eval(self.config): updated_cursor_value})
-
-    def _update_substream_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        self._update_current_cursor(
-            self._get_current_cursor_value(),
-            self._get_max_state_value(
-                self._get_current_state(stream_slice),
-                self._get_last_record_value(last_record),
-            ),
-        )
-
-    def _update_parent_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        if self.parent_cursor_field:
-            self._update_current_cursor(
-                self._get_current_cursor_value(parent=True),
-                self._get_max_state_value(
-                    self._get_current_state(stream_slice, parent=True),
-                    self._get_last_record_value(last_record, parent=True),
-                ),
-            )
-
-    def _update_cursor_with_prior_state(self):
-        self._cursor["prior_state"] = {
-            self.cursor_field.eval(self.config): self.initial_state.get(self.cursor_field.eval(self.config)),
-            self.parent_stream_name: {
-                self.parent_cursor_field: self.initial_state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
-            },
-        }
-
-    def get_stream_state(self) -> StreamState:
-        return self._cursor if self._cursor else {}
-
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        # freeze initial state
-        self._set_initial_state(stream_slice)
-        # update the state of the child stream cursor_field value from previous sync,
-        # and freeze it to have an ability to compare the record vs state
-        self._update_cursor_with_prior_state()
-        # we focus on updating the substream's cursor in this method,
-        # the parent's cursor is updated while reading parent stream
-        self._update_substream_cursor(stream_slice, last_record)
+    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
+        parent_state = (self._state or {}).get(self.parent_stream_name, {})
+        slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
+        yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator
 
     def read_parent_stream(
         self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
     ) -> Iterable[Mapping[str, Any]]:
+        self.parent_stream.state = stream_state
 
-        for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            empty_parent_slice = True
+        parent_stream_slices_gen = self.parent_stream.stream_slices(
+            sync_mode=sync_mode,
+            cursor_field=cursor_field,
+            stream_state=stream_state
+        )
 
-            # update slice with parent state, to pass the initial parent state to the parent instance
-            # stream_state is being replaced by empty object, since the parent stream is not directly initiated
-            parent_prior_state = self._cursor.get("prior_state", {}).get(self.parent_stream_name, {}).get(self.parent_cursor_field)
-            parent_slice.update({"prior_state": {self.parent_cursor_field: parent_prior_state}})
+        for parent_slice in parent_stream_slices_gen:
 
-            for parent_record in self.parent_stream.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
-            ):
-                # Skip non-records (eg AirbyteLogMessage)
-                if isinstance(parent_record, AirbyteMessage):
-                    if parent_record.type == Type.RECORD:
-                        parent_record = parent_record.record.data
+            parent_records_gen = self.parent_stream.read_records(
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_slice=parent_slice,
+                stream_state=stream_state
+            )
 
+            for parent_record in parent_records_gen:
                 try:
-                    substream_slice = dpath.util.get(parent_record, self.parent_field)
+                    substream_slice_value = parent_record[self.parent_field]
                 except KeyError:
-                    pass
-                else:
-                    empty_parent_slice = False
-                    slice = {
-                        self.substream_slice_field: substream_slice,
-                        self.cursor_field.eval(self.config): self._cursor.get(self.cursor_field.eval(self.config)),
-                        self.parent_stream_name: {
-                            self.parent_cursor_field: self._cursor.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
-                        },
+                    continue
+                cursor_field = self.cursor_field.eval(self.config)
+                yield {
+                    self.substream_slice_field: substream_slice_value,
+                    cursor_field: self._state.get(cursor_field),
+                    self.parent_stream_name: {
+                        self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
                     }
-                    # track and update the parent cursor
-                    self._update_parent_cursor(slice, parent_record)
-                    yield slice
-
-            # If the parent slice contains no records,
-            if empty_parent_slice:
-                yield from []
-
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        stream_state = self.initial_state or {}
-        parent_state = stream_state.get(self.parent_stream_name, {})
-        parent_state.update(**{"prior_state": self._cursor.get("prior_state", {}).get(self.parent_stream_name, {})})
-        slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
-        if self.parent_complete_fetch:
-            yield from [slice for slice in slices_generator]
-        else:
-            yield from slices_generator
+                }
 
 
 @dataclass
@@ -479,57 +315,26 @@ class IntercomRateLimiter:
         return decorator
 
 
-@dataclass
-class HttpRequesterWithRateLimiter(Requester):
+@dataclass(eq=False)
+class HttpRequesterWithRateLimiter(HttpRequester):
     """
     The difference between the built-in `HttpRequester` and this one is the custom decorator,
     applied on top of `interpret_response_status` to preserve the api calls for a defined amount of time,
     calculated using the rate limit headers and not use the custom backoff strategy,
     since we deal with Response.status_code == 200,
     the default requester's logic doesn't allow to handle the status of 200 with `should_retry()`.
-
-    Attributes:
-        name (str): Name of the stream. Only used for request/response caching
-        url_base (Union[InterpolatedString, str]): Base url to send requests to
-        path (Union[InterpolatedString, str]): Path to send requests to
-        http_method (Union[str, HttpMethod]): HTTP method to use when sending requests
-        request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests
-        authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source
-        error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors
-        config (Config): The user-provided configuration as specified by the source's spec
     """
 
-    name: str
-    url_base: Union[InterpolatedString, str]
-    path: Union[InterpolatedString, str]
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
-    http_method: Union[str, HttpMethod] = HttpMethod.GET
+    request_headers:    Optional[RequestInput] = None
+    request_body_json:  Optional[RequestInput] = None
     request_parameters: Optional[RequestInput] = None
-    request_headers: Optional[RequestInput] = None
-    request_body_data: Optional[RequestInput] = None
-    request_body_json: Optional[RequestInput] = None
-    authenticator: DeclarativeAuthenticator = None
-    error_handler: Optional[ErrorHandler] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self.url_base = InterpolatedString.create(self.url_base, parameters=parameters)
-        self.path = InterpolatedString.create(self.path, parameters=parameters)
-
-        self.authenticator = self.authenticator or NoAuth(parameters=parameters)
-        if type(self.http_method) == str:
-            self.http_method = HttpMethod[self.http_method]
-        self._method = self.http_method
-        self.error_handler = self.error_handler or DefaultErrorHandler(parameters=parameters, config=self.config)
-        self._parameters = parameters
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
 
         self.request_parameters = self.request_parameters if self.request_parameters else {}
         self.request_headers = self.request_headers if self.request_headers else {}
-        self.request_body_data = self.request_body_data if self.request_body_data else {}
         self.request_body_json = self.request_body_json if self.request_body_json else {}
-
-        if self.request_body_json and self.request_body_data:
-            raise ValueError("RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both")
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(
             config=self.config, request_inputs=self.request_parameters, parameters=parameters
@@ -537,46 +342,15 @@ class HttpRequesterWithRateLimiter(Requester):
         self._headers_interpolator = InterpolatedRequestInputProvider(
             config=self.config, request_inputs=self.request_headers, parameters=parameters
         )
-        self._body_data_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_data, parameters=parameters
-        )
-        self._body_json_interpolator = InterpolatedRequestInputProvider(
+        self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
             config=self.config, request_inputs=self.request_body_json, parameters=parameters
         )
 
-    @property
-    def cache_filename(self) -> str:
-        return f"{self.name}.yml"
-
-    @property
-    def use_cache(self) -> bool:
-        return False
-
-    def __hash__(self):
-        return hash(tuple(self.__dict__))
-
-    def get_authenticator(self):
-        return self.authenticator
-
-    def get_url_base(self):
-        return os.path.join(self.url_base.eval(self.config), "")
-
-    def get_path(
-        self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]]
-    ) -> str:
-        kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        path = self.path.eval(self.config, **kwargs)
-        return path.strip("/")
-
-    def get_method(self):
-        return self._method
-
     # The RateLimiter is applied to balance the api requests.
-    @lru_cache(maxsize=10)
     @IntercomRateLimiter.balance_rate_limit()
     def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
         # Check for response.headers to define the backoff time before the next api call
-        return self.error_handler.interpret_response(response)
+        return super().interpret_response_status(response)
 
     def get_request_params(
         self,
@@ -598,16 +372,7 @@ class HttpRequesterWithRateLimiter(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-
-    def get_request_body_data(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping, str]]:
-        return self._body_data_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-
+    
     def get_request_body_json(
         self,
         *,
@@ -616,12 +381,3 @@ class HttpRequesterWithRateLimiter(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         return self._body_json_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-
-    def request_kwargs(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        return {}
