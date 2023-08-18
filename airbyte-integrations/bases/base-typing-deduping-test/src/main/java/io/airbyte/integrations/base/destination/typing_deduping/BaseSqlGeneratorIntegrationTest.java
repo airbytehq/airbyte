@@ -442,29 +442,28 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         List.of(
             Jsons.deserialize(
                 """
-                    {
-                      "_airbyte_raw_id": "c5bcae50-962e-4b92-b2eb-1659eae31693",
-                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                      "_airbyte_data": {
-                        "id1": 1,
-                        "id2": 100,
-                        "string": "foo"
-                      }
-                    }
-                    """),
+                {
+                  "_airbyte_raw_id": "c5bcae50-962e-4b92-b2eb-1659eae31693",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {
+                    "id1": 1,
+                    "id2": 100,
+                    "string": "foo"
+                  }
+                }
+                """),
             Jsons.deserialize(
                 """
-                    {
-                      "_airbyte_raw_id": "93f1bdd8-1916-4e6c-94dc-29a5d9701179",
-                      "_airbyte_extracted_at": "2023-01-01T01:00:00Z",
-                      "_airbyte_data": {
-                        "id1": 1,
-                        "id2": 100,
-                        "string": "bar"
-                      }
-                    }
-                    """)
-            ));
+                {
+                  "_airbyte_raw_id": "93f1bdd8-1916-4e6c-94dc-29a5d9701179",
+                  "_airbyte_extracted_at": "2023-01-01T01:00:00Z",
+                  "_airbyte_data": {
+                    "id1": 1,
+                    "id2": 100,
+                    "string": "bar"
+                  }
+                }
+                """)));
     final StreamConfig streamConfig = new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
@@ -485,8 +484,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         actualFinalRecords);
     assertAll(
         () -> assertEquals("bar", actualRawRecords.get(0).get("_airbyte_data").get("string").asText()),
-        () -> assertEquals("bar", actualFinalRecords.get(0).get("string").asText())
-    );
+        () -> assertEquals("bar", actualFinalRecords.get(0).get("string").asText()));
   }
 
   @Test
