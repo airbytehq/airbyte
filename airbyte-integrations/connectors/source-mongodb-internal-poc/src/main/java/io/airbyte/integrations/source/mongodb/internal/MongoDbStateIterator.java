@@ -27,33 +27,37 @@ import org.slf4j.LoggerFactory;
 class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIterator.class);
+
   private final MongoCursor<Document> iter;
-
   private final ConfiguredAirbyteStream stream;
-
   private final List<String> fields;
-
   private final Instant emittedAt;
-  private final int batchSize;
+  private final Integer checkpointInterval;
+
   /**
    * Counts the number of records seen in this batch, resets when a state-message has been generated.
    */
   private int count = 0;
+
   /**
    * Pointer to the last document seen by this iterator, necessary to track the _id field for state
    * messages
    */
   private Document last = null;
+
   /**
    * This iterator outputs a final state when the wrapped `iter` has concluded. When this is true, the
    * final message will be returned.
    */
   private boolean finalStateNext = false;
 
-  MongoDbStateIterator(final MongoCursor<Document> iter, final ConfiguredAirbyteStream stream, final Instant emittedAt, final int batchSize) {
+  MongoDbStateIterator(final MongoCursor<Document> iter,
+                       final ConfiguredAirbyteStream stream,
+                       final Instant emittedAt,
+                       final Integer checkpointInterval) {
     this.iter = iter;
     this.stream = stream;
-    this.batchSize = batchSize;
+    this.checkpointInterval = checkpointInterval;
     this.emittedAt = emittedAt;
     fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
   }
@@ -79,7 +83,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public AirbyteMessage next() {
-    if ((count > 0 && count % batchSize == 0) || finalStateNext) {
+    if ((count > 0 && count % checkpointInterval == 0) || finalStateNext) {
       count = 0;
 
       final var streamState = new AirbyteStreamState()
