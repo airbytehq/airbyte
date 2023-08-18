@@ -200,7 +200,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         The output of this method is cached so we don't need to list the files more than once.
         This means we won't pick up changes to the files during a sync.
         """
-        return list(self._stream_reader.get_matching_files(self.config.globs or [], self.logger))
+        return list(self._stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger))
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
