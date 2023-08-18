@@ -42,9 +42,11 @@ public class Jsons {
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
+  // sort of a hotfix; I don't know how bad the performance hit is so not turning this on by default
+  // at time of writing (2023-08-18) this is only used in tests, so we don't care.
   private static final ObjectMapper OBJECT_MAPPER_EXACT;
   static {
-    OBJECT_MAPPER_EXACT = new ObjectMapper();
+    OBJECT_MAPPER_EXACT = MoreMappers.initMapper();
     OBJECT_MAPPER_EXACT.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
   }
 

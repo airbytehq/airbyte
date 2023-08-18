@@ -48,12 +48,7 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage));
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
-      if (useObjectForData()) {
-        destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA,
-            StandardNameTransformer.formatJsonPath(recordMessage.getData()));
-      } else {
-        destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
-      }
+      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
       return Jsons.jsonNode(destinationV2record);
     } else {
       return Jsons.jsonNode(Map.of(
