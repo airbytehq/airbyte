@@ -80,6 +80,7 @@ class LegacyConfigTransformer:
                 "delimiter": format_options.delimiter,
                 "quote_char": format_options.quote_char,
                 "double_quote": format_options.double_quote,
+                # values taken from https://github.com/apache/arrow/blob/43c05c56b37daa93e76b94bc3e6952d56d1ea3f2/cpp/src/arrow/csv/options.cc#L41-L45
                 "null_values": additional_reader_options["null_values"] if "null_values" in additional_reader_options else ["", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN", "N/A", "NA",  "NULL", "NaN",  "n/a", "nan", "null"],
                 "true_values": additional_reader_options["true_values"] if "true_values" in additional_reader_options else ["1", "True", "TRUE", "true"],
                 "false_values": additional_reader_options["false_values"] if "false_values" in additional_reader_options else ["0", "False", "FALSE", "false"],
