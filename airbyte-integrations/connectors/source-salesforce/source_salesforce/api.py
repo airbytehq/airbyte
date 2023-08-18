@@ -125,6 +125,7 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "SessionHijackingEvent",
     "UriEventStream",
     "UserRecordAccess",
+    "DatacloudContact",
 ]
 
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
@@ -177,6 +178,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AccountBrandShare",
     "AccountFeed",
     "AssetFeed",
+    "WorkStepStatus",
 ]
 
 UNSUPPORTED_FILTERING_STREAMS = [
@@ -199,6 +201,8 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "ReportEvent",
     "TabDefinition",
     "UriEvent",
+    "PermissionSetEventStore",
+    "ActivityFieldHistory",
 ]
 
 RESOURCE_PRIMARY_KEY_MAP = {
