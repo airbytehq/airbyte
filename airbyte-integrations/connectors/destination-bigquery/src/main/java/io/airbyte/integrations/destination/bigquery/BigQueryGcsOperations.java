@@ -140,6 +140,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
           .setFormatOptions(FormatOptions.csv())
           .setSchema(tableSchema)
           .setWriteDisposition(WriteDisposition.WRITE_APPEND)
+          .setJobTimeoutMs(60000L)
           .build();
 
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
@@ -151,6 +152,12 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
             tableId, datasetId);
       } catch (final BigQueryException | InterruptedException e) {
+        LOGGER.error(e.getMessage());
+        final var job = this.bigQuery.getJob(loadJob.getJobId());
+        LOGGER.info("JOB: {}", job.toString());
+        LOGGER.info("STATUS: {}", job.getStatus().toString());
+        LOGGER.info("STATUS: {}", job.getStatistics().toString());
+
         throw new RuntimeException(
             String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
                 tableId, datasetId),
