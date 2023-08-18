@@ -1,24 +1,24 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
   dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-gcs
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
   icon: gcs.svg
   license: ELv2
   name: GCS
-  releaseStage: alpha
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
-  documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
+  releaseStage: alpha
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"

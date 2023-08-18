@@ -1,9 +1,13 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerImageTag: 0.1.16
   dockerRepository: airbyte/source-okta
+  documentationUrl: https://docs.airbyte.com/integrations/sources/okta
   githubIssueLabel: source-okta
   icon: okta.svg
   license: MIT
@@ -14,11 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/okta
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"
