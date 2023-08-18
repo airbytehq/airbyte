@@ -252,7 +252,7 @@ public class RecordDiffer {
           // equals() expects the two values to be the same class.
           // We need to handle comparisons between e.g. LongNode and IntNode.
           || (expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.bigIntegerValue().equals(actualValue.bigIntegerValue()))
-          || (expectedValue.isNumber() && actualValue.isNumber() && expectedValue.isBigDecimal() && expectedValue.decimalValue().equals(actualValue.decimalValue()));
+          || (expectedValue.isNumber() && actualValue.isNumber() && expectedValue.decimalValue().equals(actualValue.decimalValue()));
     }
   }
 
@@ -303,14 +303,7 @@ public class RecordDiffer {
     if (node == null || !node.isNumber()) {
       return new BigDecimal(Double.MIN_VALUE);
     } else {
-      final Number number = node.numberValue();
-      if (number instanceof final BigDecimal bd) {
-        return bd;
-      } else if (number instanceof final BigInteger bi) {
-        return new BigDecimal(bi);
-      } else {
-        return BigDecimal.valueOf(number.doubleValue());
-      }
+      return node.decimalValue();
     }
   }
 
