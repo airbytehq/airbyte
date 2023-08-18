@@ -1,6 +1,7 @@
 data:
   allowedHosts:
     hosts:
+      - linkedin.com
       - api.linkedin.com
   connectorSubtype: api
   connectorType: source
