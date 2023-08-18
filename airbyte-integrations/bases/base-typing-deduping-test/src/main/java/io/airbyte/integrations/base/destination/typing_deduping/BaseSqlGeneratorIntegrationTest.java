@@ -780,7 +780,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
           final JsonNode originalData = Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText());
           JsonNode migratedData = v2RawRecords.get(0).get("_airbyte_data");
           if (migratedData.isTextual()) {
-            migratedData = Jsons.deserialize(migratedData.asText());
+            migratedData = Jsons.deserializeExact(migratedData.asText());
           }
           assertEquals(originalData, migratedData);
         },
