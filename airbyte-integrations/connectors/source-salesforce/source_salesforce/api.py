@@ -73,6 +73,7 @@ QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
     "UserEntityAccess",
     "UserFieldAccess",
     "Vote",
+    "FlowTestView",
 ]
 
 # The following objects are not supported by the query method being used.
