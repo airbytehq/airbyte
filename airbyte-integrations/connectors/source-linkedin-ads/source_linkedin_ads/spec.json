@@ -23,19 +23,19 @@
               "client_id": {
                 "type": "string",
                 "title": "Client ID",
-                "description": "The client ID of the LinkedIn Ads developer application. Refer to the <a href='https://learn.microsoft.com/en-us/linkedin/shared/authentication/client-credentials-flow?context=linkedin%2Fcontext#step-1-get-client-id-and-client-secret'>official docs</a> for more information.",
+                "description": "The client ID of your developer application. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information.",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "type": "string",
                 "title": "Client Secret",
-                "description": "The client secret of the LinkedIn Ads developer application. Refer to the <a href='https://learn.microsoft.com/en-us/linkedin/shared/authentication/client-credentials-flow?context=linkedin%2Fcontext#step-1-get-client-id-and-client-secret'>official docs</a> for more information.",
+                "description": "The client secret of your developer application. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "type": "string",
                 "title": "Refresh Token",
-                "description": "The key to refresh the expired access token. Refer to the <a href='https://learn.microsoft.com/en-us/linkedin/shared/authentication/programmatic-refresh-tokens?context=linkedin%2Fcontext#step-1-getting-a-refresh-token'>official docs</a> for more information.",
+                "description": "The key to refresh the expired access token. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information.",
                 "airbyte_secret": true
               }
             }
@@ -52,7 +52,7 @@
               "access_token": {
                 "type": "string",
                 "title": "Access Token",
-                "description": "The token value generated using the authentication code. See the <a href=\"https://docs.airbyte.com/integrations/sources/linkedin-ads#authentication\">docs</a> to obtain yours.",
+                "description": "The access token generated for your developer application. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information.",
                 "airbyte_secret": true
               }
             }
@@ -71,11 +71,11 @@
       "account_ids": {
         "title": "Account IDs",
         "type": "array",
-        "description": "Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all associated accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn Ads docs</a> to locate these IDs.",
+        "description": "Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all associated accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn docs</a> to locate these IDs.",
         "items": {
           "type": "integer"
         },
-        "examples": [123456789],
+        "examples": ["123456789"],
         "default": []
       },
       "ad_analytics_reports": {
@@ -88,8 +88,8 @@
           "required": ["name", "pivot_by", "time_granularity"],
           "properties": {
             "name": {
-              "title": "Name",
-              "description": "The name for the custom report",
+              "title": "Report Name",
+              "description": "The name for the custom report.",
               "type": "string"
             },
             "pivot_by": {
