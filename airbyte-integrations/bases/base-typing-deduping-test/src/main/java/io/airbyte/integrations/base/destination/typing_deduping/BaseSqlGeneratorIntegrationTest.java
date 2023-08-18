@@ -702,6 +702,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             put(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER);
             put(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
             put(generator.buildColumnId("$starts_with_dollar_sign"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes\"doublequote"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes'singlequote"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes`backtick"), AirbyteProtocolType.STRING);
           }
 
         });

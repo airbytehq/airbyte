@@ -115,7 +115,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON null).
       // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeStringLiteral(column.originalName()))).replace(
           """
           CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -126,7 +126,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeStringLiteral(column.originalName()))).replace(
           """
           CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -139,10 +139,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
       // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
       // This is to avoid needing to convert the raw SQL type back into JSON.
-      return "JSON_QUERY(`_airbyte_data`, '$.\"" + column.originalName() + "\"')";
+      return "JSON_QUERY(`_airbyte_data`, '$.\"" + escapeStringLiteral(column.originalName()) + "\"')";
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + column.originalName() + "\"') as " + dialectType.name() + ")";
+      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + escapeStringLiteral(column.originalName()) + "\"') as " + dialectType.name() + ")";
     }
   }
 
@@ -396,7 +396,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               );
 
             IF missing_pk_count > 0 THEN
-              RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
+              RAISE USING message = FORMAT('Raw table has %s rows missing a primary key', CAST(missing_pk_count AS STRING));
             END IF
             ;""");
   }
@@ -413,7 +413,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     } else {
       columnErrors = "ARRAY_CONCAT(" + streamColumns.entrySet().stream().map(
               col -> new StringSubstitutor(Map.of(
-                  "raw_col_name", col.getKey().originalName(),
+                  "raw_col_name", escapeStringLiteral(col.getKey().originalName()),
                   "col_type", toDialectType(col.getValue()).name(),
                   "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
                   """
@@ -421,7 +421,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                         WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
                           AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"')) != 'null')
                           AND (${json_extract} IS NULL)
-                          THEN ["Problem with `${raw_col_name}`"]
+                          THEN ['Problem with `${raw_col_name}`']
                         ELSE []
                       END"""))
           .collect(joining(",\n")) + ")";
@@ -613,6 +613,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 FROM ${v1_raw_table}
             );
             """);
+  }
+
+  private String escapeStringLiteral(final String stringContents) {
+    return stringContents.replace("'", "\\'");
   }
 
 }
