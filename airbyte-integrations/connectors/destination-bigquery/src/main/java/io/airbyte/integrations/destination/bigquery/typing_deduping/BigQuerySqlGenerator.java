@@ -216,6 +216,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream,
                            final TableDefinition existingTable) throws TableNotMigratedException {
     final var alterTableReport = buildAlterTableReport(stream, existingTable);
+    // TODO can this be removed now that migration is available?
     if (!alterTableReport.isDestinationV2Format()) {
       throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
     }
