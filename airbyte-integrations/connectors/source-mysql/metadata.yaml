@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 2.1.2
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mysql
   githubIssueLabel: source-mysql
   icon: mysql.svg
@@ -23,6 +23,11 @@ data:
   tags:
     - language:java
     - language:python
+  releases:
+    breakingChanges:
+      3.0.0:
+        message: "Add default cursor for cdc"
+        upgradeDeadline: "2023-08-17"
   ab_internal:
     sl: 300
     ql: 300
