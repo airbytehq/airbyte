@@ -56,7 +56,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
                         FROM information_schema.columns
                         WHERE table_catalog = ?
                           AND table_schema = ?
-                          AND table_name = ?
+                          AND table_name ilike(?)
                         ORDER BY ordinal_position;
                         """,
                     databaseName,
