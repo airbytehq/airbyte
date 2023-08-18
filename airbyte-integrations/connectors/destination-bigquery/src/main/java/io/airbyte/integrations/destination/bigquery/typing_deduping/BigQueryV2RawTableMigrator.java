@@ -50,9 +50,9 @@ public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefin
                     AS (
                       SELECT
                         _airbyte_raw_id,
-                        to_json_string(_airbyte_data) as _airbyte_data,
                         _airbyte_extracted_at,
-                        _airbyte_loaded_at
+                        _airbyte_loaded_at,
+                        to_json_string(_airbyte_data) as _airbyte_data
                       FROM ${raw_table}
                     );
                     """
