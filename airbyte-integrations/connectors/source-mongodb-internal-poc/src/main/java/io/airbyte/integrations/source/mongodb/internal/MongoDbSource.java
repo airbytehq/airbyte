@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -50,11 +51,6 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   /** Helper class for holding a collection-name and stream state together */
   private record CollectionNameState(Optional<String> name, Optional<MongodbStreamState> state) {}
-
-  /**
-   * Number of documents to read at once.
-   */
-  private static final int BATCH_SIZE = 1000;
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -186,14 +182,14 @@ public class MongoDbSource extends BaseConnector implements Source {
               .filter(state -> state.getKey().equals(airbyteStream.getStream().getName()))
               .findFirst()
               // TODO add type support here when we add support for _id fields that are not ObjectId types
-              .map(entry -> Filters.gt("_id", new ObjectId(entry.getValue().id())))
+              .map(entry -> Filters.gt(ID_FIELD, new ObjectId(entry.getValue().id())))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
           final var cursor = collection.find()
               .filter(filter)
               .projection(fields)
-              .sort(Sorts.ascending("_id"))
+              .sort(Sorts.ascending(ID_FIELD))
               .cursor();
 
           final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, emittedAt, CHECKPOINT_INTERVAL);
