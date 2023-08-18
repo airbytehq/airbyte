@@ -1,16 +1,28 @@
 # DuckDB
 
-:::danger
+:::caution
 
-This destination is meant to be used on a local workstation and won't work on Kubernetes
+This destination is meant to be used on a local workstation or with the MotherDuck service as the destination. Local file-based DBs will not work on Kubernetes or in Airbyte Cloud.
 
 :::
 
 ## Overview
 
-[DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destination is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on.
+[DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destination is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on. This destination writes data to the [MotherDuck](motherduck.com) service, or to a file on the _local_ filesystem on the host running Airbyte. 
 
-This destination writes data to a file on the _local_ filesystem on the host running Airbyte. By default, data is written to `/tmp/airbyte_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
+For file-based DBs, data is written to `/tmp/airbyte_local` by default. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
+
+## Use with MotherDuck
+
+This DuckDB destination is compatible with [MotherDuck](MotherDuck.com).
+
+### Specifying a MotherDuck Database
+
+To specify a MotherDuck-hosted database as your destination, simply provide your database uri with the normal `md:` database prefix in the `destination_path` configuration option.
+
+### Authenticating to MotherDuck
+
+For authentication, you can can provide your [MotherDuck Service Credential](https://motherduck.com/docs/authenticating-to-motherduck/#syntax) as the `api_key` configuration option. 
 
 ### Sync Overview
 
