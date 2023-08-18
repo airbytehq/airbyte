@@ -12,80 +12,60 @@ This page contains the setup guide and reference information for the LinkedIn Ad
 
 We recommend using **Oauth2.0** authentication for Airbyte Cloud, as this significantly simplifies the setup process, and allows you to authenticate your account directly from the Airbyte UI.
 
+<!-- /env:cloud -->
+
 <!-- env:oss -->
 
 ### Set up LinkedIn Ads authentication (Airbyte Open Source)
 
-You can authenticate the Linkedin Ads connector using one of the following options and credentials:
+To authenticate the Linkedin Ads connector, you will need to create a Linkedin developer application and use one of the following credentials:
 
-- OAuth2.0
-  - `Client ID` from your `Developer Application`
-  - `Client Secret` from your `Developer Application`
-  - `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
-- Access Token
-  - `Access Token` obtained from successful authorization with `Client ID` + `Client Secret`
+1. OAuth2.0 credentials, consisting of:
+
+   - Client ID
+   - Client Secret
+   - Refresh Token (expires after 12 months)
+
+2. Access Token (expires after 60 days)
+
+You can follow the steps laid out below to create the application and obtain the necessary credentials. For an overview of the LinkedIn authentication process, see the [official documentation](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication?context=linkedin%2Fcontext).
+
+#### Create a LinkedIn developer application
 
 1. [Log in to LinkedIn](https://developer.linkedin.com/) with a developer account.
-2. Click the **Create App** icon in the center of the page or [use here](https://www.linkedin.com/developers/apps). Fill in the required fields:  
+2. Navigate to the [Apps page](https://www.linkedin.com/developers/apps) and click the **Create App** icon. Fill in the fields below:
     1. For **App Name**, enter a name.
     2. For **LinkedIn Page**, enter your company's name or LinkedIn Company Page URL.
     3. For **Privacy policy URL**, enter the link to your company's privacy policy.
     4. For **App logo**, upload your company's logo.
-    5. For **Legal Agreement**, select **I have read and agree to these terms**.
-    6. Click **Create App**, on the bottom right of the screen. LinkedIn redirects you to a page showing the details of your application.
+    5. Check **I have read and agree to these terms**, then click **Create App**. LinkedIn redirects you to a page showing the details of your application.
 
 3. You can verify your app using the following steps:
-    1. To display the settings page, click the **Settings** tab. On the **App Settings** section, click **Verify** under **Company**. A popup window will be displayed. To generate the verification URL, click on **Generate URL**, then copy and send the URL to the Page Admin (this may be you). Click on **I'm done**.
-    If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on **Verify**. Finally, Refresh the tab of app creation, the app should now be associated with your Page.
+    1. Click the **Settings** tab. On the **App Settings** section, click **Verify** under **Company**. A popup window will be displayed. To generate the verification URL, click on **Generate URL**, then copy and send the URL to the Page Admin (this may be you). Click on **I'm done**. If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on **Verify**.
 
-    2. To display the Products page, click the **Product** tab. For **Marketing Developer Platform** click on the **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**.
+    2. To display the Products page, click the **Product** tab. For **Marketing Developer Platform**, click **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**.
 
-    3. To authorize your application, click the **Auth** tab. The authentication page is displayed. Copy the **client_id** and **client_secret** (for later steps). For **Oauth 2.0 settings**, Provide a **redirect_uri** (for later steps).
+#### Authorize your app
 
-    4. Click and review the **Analytics** tab. This page shows the daily application and user/member limits with the percent used for each resource endpoint.
+1. To authorize your application, click the **Auth** tab. Copy the **Client ID** and **Client Secret** (click the open eye icon to reveal the client secret). In the **Oauth 2.0 settings**, click the pencil icon and provide a redirect URL for your app.
 
-4. (Optional for Airbyte Cloud) Authorize your app. In case your authorization expires:
+2. Click the **OAuth 2.0 tools** link in the **Understanding authentication and OAuth 2.0** section on the right side of the page.
+3. Click **Create token**.
+4. Select the scopes you want to use for your app. We recommend using the following scopes:
+    - `r_emailaddress`
+    - `r_liteprofile`
+    - `r_ads`
+    - `r_ads_reporting`
+    - `r_organization_social`
+5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
 
-   The authorization token `lasts 60-days before expiring`. The connector app will need to be reauthorized when the authorization token expires.
-   Create an Authorization URL with the following steps:
+:::caution
+These tokens will not be displayed again, so make sure to copy them and store them securely.
+:::
 
-   1. Replace the highlighted parameters `YOUR_CLIENT_ID` and `YOUR_REDIRECT_URI` in the URL (`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`) from the scope obtain below.
+#### Set the necessary user roles
 
-   2. Set up permissions for the following scopes `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`. For **OAuth2.0**, copy the `Client ID`, and `Client Secret` from your `Developer Application`. And copy the `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
-
-   3. Enter the modified `URL` in the browser. You will be redirected.
-
-   4. To authorize the app, click **Allow**.
-
-   5. Copy the `code` parameter listed in the redirect URL in the Browser header URL.
-
-5. (Optional for Airbyte Cloud) Run the following curl command using `Terminal` or `Command line` with the parameters replaced to return your `access_token`. The `access_token` expires in 2-months.
-
-   ```text
-    curl -0 -v -X POST https://www.linkedin.com/oauth/v2/accessToken\
-    -H "Accept: application/json"\
-    -H "application/x-www-form-urlencoded"\
-    -d "grant_type=authorization_code"\
-    -d "code=YOUR_CODE"\
-    -d "client_id=YOUR_CLIENT_ID"\
-    -d "client_secret=YOUR_CLIENT_SECRET"\
-    -d "redirect_uri=YOUR_REDIRECT_URI"
-   ```
-
-6. (Optional for Airbyte Cloud) Use the `access_token`. Same as the approach in  `Step 5` to authorize LinkedIn Ads connector.
-
-:::note
-
-The API user account should be assigned the following permissions for the API endpoints:
-Endpoints such as: `Accounts`, `Account Users`, `Ad Direct Sponsored Contents`, `Campaign Groups`, `Campaigns`, and `Creatives` requires the following permissions set:
-
-- `r_ads`: read ads \(Recommended\), `rw_ads`: read-write ads
-  Endpoints such as: `Ad Analytics by Campaign`, and `Ad Analytics by Creatives` requires the following permissions set:
-- `r_ads_reporting`: read ads reporting
-  The complete set of permissions is as follows:
-- `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
-
-The API user account should be assigned one of the following roles:
+Before proceeding, ensure that the Linkedin Ads user is assigned one of the following roles:
 
 - ACCOUNT_BILLING_ADMIN
 - ACCOUNT_MANAGER
@@ -93,35 +73,45 @@ The API user account should be assigned one of the following roles:
 - CREATIVE_MANAGER
 - VIEWER \(Recommended\)
 
-To edit these roles, sign in to Campaign Manager and follow [these instructions](https://www.linkedin.com/help/lms/answer/a496075).
-
-:::
+To edit these roles, sign in to Campaign Manager and follow [these instructions](https://www.linkedin.com/help/lms/answer/a496075). More information on the access levels granted to each role can be found [here](https://www.linkedin.com/help/lms/answer/a425731/user-roles-and-permissions-in-campaign-manager?lang=en-us&intendedLocale=en).
 
 <!-- /env:oss -->
 
 ### Set up the LinkedIn Ads connector in Airbyte
 
-<!-- env:cloud -->
-#### For Airbyte Cloud:
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **LinkedIn Ads** from the list of available sources.
+4. For **Source name**, enter a name for the LinkedIn Ads connector.
+5. To authenticate:
 
-1. [Login to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **LinkedIn Ads** from the **Source type** dropdown.
-4. Enter a name for the LinkedIn Ads connector.
-5. Click **Authenticate your account**.
-6. Login and Authorize the LinkedIn Ads account
-7. Add `Start Date` - the starting point for your data replication.
-8. (Optional) Add your `Account IDs` if required.
-9. (Optional) Add `Custom Ad Analytics reports` by:
-   * click on **Add**
-   * complete the Name for the Report
-   * select **Pivot By** property for the report from the list
-   * select **Time Granularity** property for the report from the list
-10. Click **Set up source** and wait for the tests to complete.
+<!-- env:cloud -->
+#### For Airbyte Cloud
+
+- Click **Authenticate your account**.
+- Login and Authorize the LinkedIn Ads account
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-#### For Airbyte Open Source:
+#### For Airbyte Open Source
+
+- Choose between Authentication Options:
+    1. For **OAuth2.0:** Copy and paste info (**Client ID**, **Client Secret**) from your **LinkedIn Ads developer application**, and obtain the **Refresh Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
+    2. For **Access Token:** Obtain the **Access Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
+<!-- /env:oss -->
+
+6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
+7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs . If you do not specify any account IDs, the connector will replicate data from all accounts.
+8. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. To add a custom report:
+   1. Click on **Add**.
+   2. Enter a **Name** for your report. This name will be used as the stream name in Airbyte.
+   3. For **Pivot By** property for the report from the list
+   * select **Time Granularity** property for the report from the list
+9. Click **Set up source** and wait for the tests to complete.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+#### For Airbyte Open Source
 
 1. Go to the local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
