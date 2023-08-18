@@ -32,15 +32,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
             LOGGER.info(" authorizationHeader " + authorizationHeader);
             LOGGER.error(" authorizationHeader " + authorizationHeader);
-            LOGGER.info(" constant " + HttpHeaders.AUTHORIZATION);
-            LOGGER.error(" constant " + HttpHeaders.AUTHORIZATION);
             // Extract the token from the Authorization header
             String token = authorizationHeader
                     .substring(AUTHENTICATION_SCHEME.length()).trim();
             LOGGER.info(" Token " + token);
             LOGGER.error(" Token " + token);
-            LOGGER.info(" constant " + HttpHeaders.AUTHENTICATION_SCHEME);
-            LOGGER.error(" constant " + HttpHeaders.AUTHENTICATION_SCHEME);
             // Validate the Authorization header
             if (requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
                 requestContext.abortWith(Response.ok().build());
