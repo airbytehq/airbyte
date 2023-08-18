@@ -22,11 +22,11 @@ data:
     - language:python
   ab_internal:
     sl: 300
-    ql: 300
+    ql: 400
   releases:
     breakingChanges:
       4.0.0:
         message: "Implementing event based incremental syncs - changing cursor fields."
-        upgradeDeadline: "2023-08-01"
+        upgradeDeadline: "2023-09-01"
   supportLevel: certified
 metadataSpecVersion: "1.0"
