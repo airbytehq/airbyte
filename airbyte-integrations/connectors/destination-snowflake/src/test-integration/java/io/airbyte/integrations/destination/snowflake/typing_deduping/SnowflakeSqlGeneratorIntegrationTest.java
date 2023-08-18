@@ -30,7 +30,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<SnowflakeTableDefinition> {
 
   private static String databaseName;
@@ -39,7 +38,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @BeforeAll
   public static void setupSnowflake() {
-    JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")));
+    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")));
     databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
     dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     database = SnowflakeDatabase.getDatabase(dataSource);
@@ -61,12 +60,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void createNamespace(String namespace) throws SQLException {
+  protected void createNamespace(final String namespace) throws SQLException {
     database.execute("CREATE SCHEMA \"" + namespace + '"');
   }
 
   @Override
-  protected void createRawTable(StreamId streamId) throws Exception {
+  protected void createRawTable(final StreamId streamId) throws Exception {
     database.execute(new StringSubstitutor(Map.of(
         "raw_table_id", streamId.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
         """
@@ -80,8 +79,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception {
-    String cdcDeletedAt = includeCdcDeletedAt ? "\"_ab_cdc_deleted_at\" TIMESTAMP_TZ," : "";
+  protected void createFinalTable(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix) throws Exception {
+    final String cdcDeletedAt = includeCdcDeletedAt ? "\"_ab_cdc_deleted_at\" TIMESTAMP_TZ," : "";
     database.execute(new StringSubstitutor(Map.of(
         "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
         "cdc_deleted_at", cdcDeletedAt
@@ -112,12 +111,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception {
+  protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
     return SnowflakeTestUtils.dumpRawTable(database, streamId.rawTableId(SnowflakeSqlGenerator.QUOTE));
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
+  protected List<JsonNode> dumpFinalTableRecords(final StreamId streamId, final String suffix) throws Exception {
     return SnowflakeTestUtils.dumpFinalTable(
         database,
         databaseName,
@@ -126,16 +125,16 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void teardownNamespace(String namespace) throws SQLException {
+  protected void teardownNamespace(final String namespace) throws SQLException {
     database.execute("DROP SCHEMA IF EXISTS \"" + namespace + '"');
   }
 
   @Override
-  protected void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws Exception {
-    List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
-    String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
-    String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
-    String recordsText = records.stream()
+  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix, final List<JsonNode> records) throws Exception {
+    final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
+    final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
+    final String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
+    final String recordsText = records.stream()
                                 // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
                                 .map(record -> columnNames.stream()
                                                           .map(record::get)
@@ -143,7 +142,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                                             if (r == null) {
                                                               return "NULL";
                                                             }
-                                                            String stringContents;
+                                                            final String stringContents;
                                                             if (r.isTextual()) {
                                                               stringContents = r.asText();
                                                             } else {
@@ -214,8 +213,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception {
-    String recordsText = records.stream()
+  protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+    final String recordsText = records.stream()
                                 // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
                                 .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES.stream()
                                                                                           .map(record::get)
@@ -223,7 +222,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                                                                             if (r == null) {
                                                                                               return "NULL";
                                                                                             }
-                                                                                            String stringContents;
+                                                                                            final String stringContents;
                                                                                             if (r.isTextual()) {
                                                                                               stringContents = r.asText();
                                                                                             } else {
@@ -266,13 +265,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    String sql = generator.createTable(incrementalDedupStream, "");
+    final String sql = generator.createTable(incrementalDedupStream, "");
     destinationHandler.execute(sql);
 
-    Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))
+    final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))
                                          .stream().map(record -> record.get("kind").asText())
                                          .findFirst();
-    Map<String, String> columns = database.queryJsons(
+    final Map<String, String> columns = database.queryJsons(
                                               """
                                                   SELECT column_name, data_type, numeric_precision, numeric_scale
                                                   FROM information_schema.columns
@@ -288,7 +287,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                           .collect(toMap(
                                               record -> record.get("COLUMN_NAME").asText(),
                                               record -> {
-                                                String type = record.get("DATA_TYPE").asText();
+                                                final String type = record.get("DATA_TYPE").asText();
                                                 if (type.equals("NUMBER")) {
                                                   return String.format("NUMBER(%s, %s)", record.get("NUMERIC_PRECISION").asText(),
                                                                        record.get("NUMERIC_SCALE").asText()
@@ -335,8 +334,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   }
 
+  // TODO delete this after implementing https://github.com/airbytehq/airbyte/issues/28691
+  @Disabled
   @Override
-  public void testV1V2migration() throws Exception {
-    super.testV1V2migration();
+  @Test
+  public void testV1V2migration() {
   }
 }

@@ -16,6 +16,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
@@ -107,6 +108,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
+  public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
   public static final List<String> SSL_PARAMETERS = List.of(
       "useSSL=true",
       "requireSSL=true");
@@ -142,18 +144,30 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return stream;
   }
 
+  /*
+   * To prepare for Destination v2, cdc streams must have a default cursor field Cursor format: the
+   * airbyte [emittedAt(converted to nano seconds)] + [sync wide record counter]
+   */
+  private static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    }
+    return stream;
+  }
+
   // Note: in place mutation.
   private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
-
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
+    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
 
     return stream;
   }
@@ -181,6 +195,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           .map(MySqlSource::overrideSyncModes)
           .map(MySqlSource::removeIncrementalWithoutPk)
           .map(MySqlSource::setIncrementalToSourceDefined)
+          .map(MySqlSource::setDefaultCursorFieldForCdc)
           .map(MySqlSource::addCdcMetadataColumns)
           .collect(toList());
 
@@ -329,7 +344,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime, OptionalInt.empty());
 
       final MySqlCdcStateHandler mySqlCdcStateHandler = new MySqlCdcStateHandler(stateManager);
-      final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector = new MySqlCdcConnectorMetadataInjector();
+      final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
@@ -337,7 +352,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
           new MySqlCdcStateHandler(stateManager),
-          new MySqlCdcConnectorMetadataInjector(),
+          mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getDebeziumProperties(database),
           emittedAt,
           false);

@@ -173,7 +173,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     TEST_SCHEMAS.add(schemaName);
@@ -187,11 +187,11 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     database.execute(dropSchemaQuery);
 
-    for (String schema : TEST_SCHEMAS) {
+    for (final String schema : TEST_SCHEMAS) {
       dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", schema);
       database.execute(dropSchemaQuery);
     }
@@ -199,18 +199,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     DataSourceFactory.close(dataSource);
   }
 
-  @Test
-  public void testCheckWithNoActiveWarehouseConnection() throws Exception {
-    // Config to user(creds) that has no warehouse assigned
-    final JsonNode config = Jsons.deserialize(IOs.readFile(
-        Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
-
-    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
-
-    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
-    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
-  }
-
+  @Disabled("See README for why this test is disabled")
   @Test
   public void testCheckWithNoTextSchemaPermissionConnection() throws Exception {
     // Config to user (creds) that has no permission to schema

@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Queue;
 import java.util.function.Supplier;
 
@@ -33,8 +34,8 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   private AirbyteStateType stateType;
   private final Supplier<DestStateLifecycleManager> internalStateManagerSupplier;
 
-  public DefaultDestStateLifecycleManager() {
-    this(new DestSingleStateLifecycleManager(), new DestStreamStateLifecycleManager());
+  public DefaultDestStateLifecycleManager(final String defaultNamespace) {
+    this(new DestSingleStateLifecycleManager(), new DestStreamStateLifecycleManager(defaultNamespace));
   }
 
   @VisibleForTesting
@@ -113,6 +114,11 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   @Override
   public void markPendingAsCommitted() {
     internalStateManagerSupplier.get().markPendingAsCommitted();
+  }
+
+  @Override
+  public void markPendingAsCommitted(final AirbyteStreamNameNamespacePair stream) {
+    internalStateManagerSupplier.get().markPendingAsCommitted(stream);
   }
 
   @Override

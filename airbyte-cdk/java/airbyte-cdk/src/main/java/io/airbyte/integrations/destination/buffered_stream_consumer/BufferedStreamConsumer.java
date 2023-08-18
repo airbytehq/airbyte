@@ -158,7 +158,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-    this.stateManager = new DefaultDestStateLifecycleManager();
+    this.stateManager = new DefaultDestStateLifecycleManager(defaultNamespace);
     this.bufferFlushFrequency = flushFrequency;
     this.defaultNamespace = defaultNamespace;
   }
@@ -210,7 +210,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         } else if (BufferFlushType.FLUSH_SINGLE_STREAM.equals(flushType.get())) {
           if (stateManager.supportsPerStreamFlush()) {
             // per-stream instance can handle flush of just a single stream
-            markStatesAsFlushedToDestination();
+            markStatesAsFlushedToDestination(stream);
           }
           /*
            * We don't mark {@link AirbyteStateMessage} as committed in the case with GLOBAL/LEGACY because
@@ -235,6 +235,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    */
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
+    stateManager.listCommitted().forEach(outputRecordCollector);
+    stateManager.clearCommitted();
+    nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);
+  }
+
+  private void markStatesAsFlushedToDestination(final AirbyteStreamNameNamespacePair stream) {
+    stateManager.markPendingAsCommitted(stream);
     stateManager.listCommitted().forEach(outputRecordCollector);
     stateManager.clearCommitted();
     nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);

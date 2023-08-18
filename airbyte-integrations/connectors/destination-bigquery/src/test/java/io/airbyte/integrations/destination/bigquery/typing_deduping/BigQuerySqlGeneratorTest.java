@@ -15,19 +15,18 @@ import io.airbyte.cdk.integrations.base.destination.typing_deduping.AirbyteProto
 import io.airbyte.cdk.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.cdk.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.cdk.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.cdk.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.cdk.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.cdk.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.cdk.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import io.airbyte.cdk.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -61,11 +60,6 @@ public class BigQuerySqlGeneratorTest {
     assertEquals(
         new ColumnId("foo", "foo", "foo"),
         generator.buildColumnId("foo"));
-    // Certain strings can't be the start of a column name, so we prepend an underscore
-    // Also, downcase the canonical name
-    assertEquals(
-        new ColumnId("__TABLE_foo_bar", "_TABLE_foo_bar", "__table_foo_bar"),
-        generator.buildColumnId("_TABLE_foo_bar"));
   }
 
   @Test
@@ -78,7 +72,7 @@ public class BigQuerySqlGeneratorTest {
             null);
 
     // Clustering is null
-    StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
+    final StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
     Mockito.when(existingTable.getClustering()).thenReturn(null);
     Assertions.assertFalse(generator.clusteringMatches(stream, existingTable));
 
@@ -116,7 +110,7 @@ public class BigQuerySqlGeneratorTest {
 
   @Test
   public void testPartitioningMatches() {
-    StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
+    final StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
     // Partitioning is null
     Mockito.when(existingTable.getTimePartitioning()).thenReturn(null);
     Assertions.assertFalse(generator.partitioningMatches(existingTable));

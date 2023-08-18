@@ -29,6 +29,14 @@ public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
       final int columnCount = metadata.getColumnCount();
       final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
       for (int i = 1; i <= columnCount; i++) {
+        // attempt to access the column. this allows us to know if it is null before we do type-specific
+        // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
+        // checking for null values with jdbc.
+        queryContext.getObject(i);
+        if (queryContext.wasNull()) {
+          continue;
+        }
+
         // convert to java types that will convert into reasonable json.
         copyToJsonField(queryContext, i, jsonNode);
       }

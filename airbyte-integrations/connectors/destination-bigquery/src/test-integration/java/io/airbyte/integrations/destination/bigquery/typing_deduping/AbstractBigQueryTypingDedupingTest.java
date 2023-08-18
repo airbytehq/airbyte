@@ -7,9 +7,9 @@ import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
-import io.airbyte.cdk.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.cdk.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils;
@@ -71,6 +71,6 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
    * Subclasses using a config with a nonstandard raw table dataset should override this method.
    */
   protected String getRawDataset() {
-    return CatalogParser.DEFAULT_RAW_TABLE_NAMESPACE;
+    return JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
   }
 }
