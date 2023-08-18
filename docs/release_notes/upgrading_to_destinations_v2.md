@@ -161,7 +161,7 @@ In addtion to the the common fixes for all destinations described above, there a
 
 ### Snowflake
 
-1. `destination-snowflake` is now case sensitive, and was not previously.  This means that if you have a soure stream "users", `destination-snowflake` would have previously created a "USERS" table in your data warehouse.  We now correctly create a "users" table.
+1. `destination-snowflake` is now case sensitive, and was not previously.  This means that if you have a source stream "users", `destination-snowflake` would have previously created a "USERS" table in your data warehouse.  We now correctly create a "users" table.
     * Note that to properly query case-sensitive tables and columns in Snowflake, you will need to quote your table and column names, e.g. `select "first_name" from "users";`
-    * If you are migrating from Destinations v1 to Destinations V2, we will leave your old "USERS" table, and create a new "users" table - please note the case sensitivity diference.
-2. [Object properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as VARAINT columns.  Previously, we had used TEXT, which made querying sub-properties more difficult.
+    * If you are migrating from Destinations v1 to Destinations V2, we will leave your old "USERS" table, and create a new "users" table - please note the case sensitivity.
+
