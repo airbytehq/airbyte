@@ -20,20 +20,10 @@ from github import PullRequest
 
 from pipelines import hacks
 from pipelines.actions import secrets
-from pipelines.bases import (
-    CIContext,
-    ConnectorReport,
-    ConnectorWithModifiedFiles,
-    Report,
-)
+from pipelines.bases import CIContext, ConnectorReport, ConnectorWithModifiedFiles, Report
 from pipelines.github import update_commit_status_check
 from pipelines.slack import send_message_to_webhook
-from pipelines.utils import (
-    AIRBYTE_REPO_URL,
-    METADATA_FILE_NAME,
-    format_duration,
-    sanitize_gcs_credentials,
-)
+from pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
 
 
 class ContextState(Enum):
