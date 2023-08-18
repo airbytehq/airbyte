@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
@@ -173,16 +174,21 @@ public class MongoDbSource extends BaseConnector implements Source {
           // (or should this check and ignore them if all fields are selected)
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
-          // The filter determines the starting point of this iterator based on the state of this collection.
-          // If a state exists, it will use that state to create a query akin to "where _id > [last saved
-          // state] order by _id ASC".
-          // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
-          final Bson filter = states.entrySet().stream()
+          // find the existing state, if there is one, for this steam
+          final Optional<MongodbStreamState> existingState = states.entrySet().stream()
               // look only for states that match this stream's name
+              // TODO add namespace support
               .filter(state -> state.getKey().equals(airbyteStream.getStream().getName()))
-              .findFirst()
+              .map(Entry::getValue)
+              .findFirst();
+
+          // The filter determines the starting point of this iterator based on the state of this collection.
+          // If a state exists, it will use that state to create a query akin to
+          // "where _id > [last saved state] order by _id ASC".
+          // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
+          final Bson filter = existingState
               // TODO add type support here when we add support for _id fields that are not ObjectId types
-              .map(entry -> Filters.gt(ID_FIELD, new ObjectId(entry.getValue().id())))
+              .map(state -> Filters.gt(ID_FIELD, new ObjectId(state.id())))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
@@ -192,7 +198,7 @@ public class MongoDbSource extends BaseConnector implements Source {
               .sort(Sorts.ascending(ID_FIELD))
               .cursor();
 
-          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, emittedAt, CHECKPOINT_INTERVAL);
+          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, existingState, emittedAt, CHECKPOINT_INTERVAL);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
