@@ -16,7 +16,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private static final String REALM = "Bearer <BLOTOUT_TOKEN>";
     private static final String AUTHENTICATION_SCHEME = "Bearer";
-    private static final String EDGETAG_ORIGIN = "https://app.edgetag.io";
+    private static final String EDGETAG_ORIGIN = "https://api.edgetag.io";
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
     private final BlotoutAuthentication blotoutAuthentication = new BlotoutAuthentication();
