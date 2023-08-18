@@ -19,8 +19,8 @@ dependencies {
     implementation project(':airbyte-integrations:bases:debezium')
     implementation libs.airbyte.protocol
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    
-    implementation libs.debezium.mongodb
+
+    implementation 'org.mongodb:mongodb-driver-sync:4.10.2'
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation "org.jetbrains.kotlinx:kotlinx-cli:0.3.5"
