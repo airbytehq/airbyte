@@ -34,7 +34,7 @@ public class LoggerHelper {
       return StringUtils.EMPTY;
 
     }
-    return String.format("Error is happened during execution for job: %s, \n For more details see Big Query Error collection: %s:", job,
+    return String.format("An error occurred during execution of job: %s, \n For more details see Big Query Error collection: %s:", job,
         errors.stream().map(BigQueryError::toString).collect(Collectors.joining(",\n ")));
   }
 
