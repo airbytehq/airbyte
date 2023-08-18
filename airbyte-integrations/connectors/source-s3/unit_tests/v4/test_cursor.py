@@ -134,6 +134,16 @@ def _create_datetime(dt: str) -> datetime:
             },
             id="v4-migrated-from-v3",
         ),
+        pytest.param(
+            {"history": {}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
+            {
+                "history": {},
+                "_ab_source_file_last_modified": None,
+                "v3_min_sync_date": "2023-07-31T23:00:00.000000Z",
+            },
+            id="empty-history-with-cursor",
+        ),
+
     ],
 )
 def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state: MutableMapping[str, Any]) -> None:
