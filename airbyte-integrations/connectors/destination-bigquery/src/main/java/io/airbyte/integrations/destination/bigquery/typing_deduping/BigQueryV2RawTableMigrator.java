@@ -39,12 +39,18 @@ public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefin
       final Field dataColumn = fields.get(JavaBaseConstants.COLUMN_NAME_DATA);
       if (dataColumn.getType() == LegacySQLTypeName.JSON) {
         LOGGER.info("Raw table has _airbyte_data of type JSON. Migrating to STRING.");
+        final String tmpRawTableId = BigQuerySqlGenerator.QUOTE + streamConfig.id().rawNamespace() + BigQuerySqlGenerator.QUOTE + "." + BigQuerySqlGenerator.QUOTE + streamConfig.id().rawName() + "_airbyte_tmp" + BigQuerySqlGenerator.QUOTE;
         bq.query(QueryJobConfiguration.of(
             new StringSubstitutor(Map.of(
-                "raw_table", streamConfig.id().rawTableId(BigQuerySqlGenerator.QUOTE)
+                "raw_table", streamConfig.id().rawTableId(BigQuerySqlGenerator.QUOTE),
+                "tmp_raw_table", tmpRawTableId,
+                "real_raw_table", BigQuerySqlGenerator.QUOTE + streamConfig.id().rawName() + BigQuerySqlGenerator.QUOTE
             )).replace(
+                // In full refresh / append mode, standard inserts is creating a non-partitioned raw table. (possibly also in overwrite mode?).
+                // We can't just CREATE OR REPLACE the table because bigquery will complain that we're trying to change the partitioning scheme.
+                // Do an explicit CREATE tmp + DROP + RENAME, similar to how we overwrite the final tables in OVERWRITE mode.
                 """
-                    CREATE OR REPLACE TABLE ${raw_table}
+                    CREATE TABLE ${tmp_raw_table}
                     PARTITION BY DATE(_airbyte_extracted_at)
                     CLUSTER BY _airbyte_extracted_at
                     AS (
@@ -55,6 +61,8 @@ public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefin
                         to_json_string(_airbyte_data) as _airbyte_data
                       FROM ${raw_table}
                     );
+                    DROP TABLE IF EXISTS ${raw_table};
+                    ALTER TABLE ${tmp_raw_table} RENAME TO ${real_raw_table};
                     """
             )
         ));
