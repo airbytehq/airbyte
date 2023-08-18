@@ -105,7 +105,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected DestinationHandler<DialectTableDefinition> destinationHandler;
   protected String namespace;
 
-  private StreamId streamId;
+  protected StreamId streamId;
   private List<ColumnId> primaryKey;
   private ColumnId cursor;
 

@@ -63,7 +63,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     return new StreamId(
-        // TODO is this correct?
         nameTransformer.getNamespace(namespace),
         nameTransformer.convertStreamName(name),
         nameTransformer.getNamespace(rawNamespaceOverride),
@@ -74,26 +73,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public ColumnId buildColumnId(final String name) {
-    String quotedName = name;
-
-    // Column names aren't allowed to start with certain strings. Prepend an underscore if this happens.
-    final List<String> invalidColumnPrefixes = List.of(
-        "_table_",
-        "_file_",
-        "_partition_",
-        "_row_timestamp_",
-        "__root__",
-        "_colidentifier_"
-    );
-    String canonicalized = name.toLowerCase();
     // Bigquery columns are case-insensitive, so do all our validation on the lowercased name
-    if (invalidColumnPrefixes.stream().anyMatch(prefix -> name.toLowerCase().startsWith(prefix))) {
-      quotedName = "_" + quotedName;
-      canonicalized = "_" + canonicalized;
-    }
-
-    // TODO this is probably wrong
-    return new ColumnId(nameTransformer.getIdentifier(quotedName), name, canonicalized);
+    final String canonicalized = name.toLowerCase();
+    return new ColumnId(nameTransformer.getIdentifier(name), name, canonicalized);
   }
 
   public StandardSQLTypeName toDialectType(final AirbyteType type) {
