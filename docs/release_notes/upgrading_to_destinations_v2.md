@@ -149,3 +149,19 @@ For each destination connector, Destinations V2 is effective as of the following
 | TiDB                  | 0.1.3                 | 2.0.0+                     |
 | DuckDB                | 0.1.0                 | 2.0.0+                     |
 | Clickhouse            | 0.2.3                 | 2.0.0+                     |
+
+## Destinations V2 Implementation Differences 
+
+In addtion to the the common fixes for all destinations described above, there are some per-destination fixes and updates included in Destinations V2:
+
+### BigQuery
+
+1. [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns.  Previously, we had used TEXT, which made querying sub-properties more difficult.
+     * In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a *quirk* of Bigquery.  Learn more [here](https://github.com/airbytehq/airbyte/issues/29594). 
+
+### Snowflake
+
+1. `destination-snowflake` is now case sensitive, and was not previously.  This means that if you have a soure stream "users", `destination-snowflake` would have previously created a "USERS" table in your data warehouse.  We now correctly create a "users" table.
+    * Note that to properly query case-sensitive tables and columns in Snowflake, you will need to quote your table and column names, e.g. `select "first_name" from "users";`
+    * If you are migrating from Destinations v1 to Destinations V2, we will leave your old "USERS" table, and create a new "users" table - please note the case sensitivity diference.
+2. [Object properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as VARAINT columns.  Previously, we had used TEXT, which made querying sub-properties more difficult.
