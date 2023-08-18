@@ -8,13 +8,13 @@ from abc import ABC, abstractmethod
 from typing import Generic, Iterable, Optional
 
 from airbyte_cdk.connector import TConfig
-from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources.source import Source
 
 
 class SourceRunner(ABC, Generic[TConfig]):
     @abstractmethod
-    def check(self, config: TConfig) -> AirbyteConnectionStatus:
+    def spec(self) -> ConnectorSpecification:
         pass
 
     @abstractmethod
@@ -31,8 +31,8 @@ class CDKRunner(SourceRunner[TConfig]):
         self._source = source
         self._logger = logging.getLogger(name)
 
-    def check(self, config: TConfig) -> AirbyteConnectionStatus:
-        return self._source.check(self._logger, config)
+    def spec(self) -> ConnectorSpecification:
+        return self._source.spec(self._logger)
 
     def discover(self, config: TConfig) -> AirbyteCatalog:
         return self._source.discover(self._logger, config)
