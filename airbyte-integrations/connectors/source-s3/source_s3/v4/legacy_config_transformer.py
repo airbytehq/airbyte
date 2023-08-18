@@ -93,21 +93,16 @@ class LegacyConfigTransformer:
                 csv_options["encoding"] = format_options.encoding
             if skip_rows := advanced_options.pop("skip_rows", None):
                 csv_options["skip_rows_before_header"] = skip_rows
-            if skip_rows_after_names := advanced_options.pop(
-                "skip_rows_after_names", None
-            ):
+            if skip_rows_after_names := advanced_options.pop("skip_rows_after_names", None):
                 csv_options["skip_rows_after_header"] = skip_rows_after_names
-            if autogenerate_column_names := advanced_options.pop(
-                "autogenerate_column_names", None
-            ):
+            if autogenerate_column_names := advanced_options.pop("autogenerate_column_names", None):
                 csv_options["autogenerate_column_names"] = autogenerate_column_names
 
             cls._filter_legacy_noops(advanced_options)
 
             if advanced_options or additional_reader_options:
                 raise ValueError(
-                    f"The config options you selected are no longer supported.\n"
-                    + f"advanced_options={advanced_options}"
+                    "The config options you selected are no longer supported.\n" + f"advanced_options={advanced_options}"
                     if advanced_options
                     else "" + f"additional_reader_options={additional_reader_options}"
                     if additional_reader_options
@@ -122,9 +117,7 @@ class LegacyConfigTransformer:
             return {"filetype": "parquet", "decimal_as_float": True}
         else:
             # This should never happen because it would fail schema validation
-            raise ValueError(
-                f"Format filetype {format_options} is not a supported file type"
-            )
+            raise ValueError(f"Format filetype {format_options} is not a supported file type")
 
     @classmethod
     def parse_config_options_str(cls, options_field: str, options_value: Optional[str]) -> Dict[str, Any]:

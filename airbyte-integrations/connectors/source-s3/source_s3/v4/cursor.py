@@ -10,7 +10,6 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 
-
 logger = logging.Logger("source-S3")
 
 
@@ -114,7 +113,10 @@ class Cursor(DefaultFileBasedCursor):
 
             for filename in filenames:
                 if filename in converted_history:
-                    if datetime_obj > datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT):
+                    if datetime_obj > datetime.strptime(
+                        converted_history[filename],
+                        DefaultFileBasedCursor.DATE_TIME_FORMAT,
+                    ):
                         converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
                     else:
                         # If the file was already synced with a later timestamp, ignore
@@ -127,9 +129,7 @@ class Cursor(DefaultFileBasedCursor):
             cursor = f"{cursor_datetime}_{filename}"
         else:
             # Having a cursor with empty history is not expected, but we handle it.
-            logger.warning(
-                f"Cursor found without a history object; this is not expected. cursor_value={legacy_cursor}"
-            )
+            logger.warning(f"Cursor found without a history object; this is not expected. cursor_value={legacy_cursor}")
             # Note: we convert to the v4 cursor granularity, but since no items are in the history we simply use the
             # timestamp as the cursor value instead of the concatenation of timestamp_filename, which is the v4
             # cursor format.
