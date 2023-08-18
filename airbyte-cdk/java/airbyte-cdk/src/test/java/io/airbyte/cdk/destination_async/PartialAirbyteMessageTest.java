@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.integrations.destination_async;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;

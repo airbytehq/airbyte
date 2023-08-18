@@ -5,10 +5,10 @@
 package io.airbyte.cdk.integrations.source.relationaldb;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.List;
 import java.util.StringJoiner;

@@ -5,8 +5,8 @@
 package io.airbyte.cdk.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.commons.map.MoreMaps;
 import java.util.Map;
 import java.util.Objects;
 

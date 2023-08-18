@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
@@ -26,6 +25,7 @@ import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;

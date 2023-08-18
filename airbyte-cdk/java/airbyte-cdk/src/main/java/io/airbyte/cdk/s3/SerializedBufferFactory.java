@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination.s3;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
@@ -15,6 +14,7 @@ import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.jsonl.JsonLSerializedBuffer;
 import io.airbyte.cdk.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.parquet.ParquetSerializedBuffer;
+import io.airbyte.commons.json.Jsons;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -26,8 +26,8 @@ public class SerializedBufferFactory {
 
   /**
    * When running a
-   * {@link io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy}, it would
-   * usually need to instantiate new buffers when flushing data or when it receives data for a
+   * {@link io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy}, it
+   * would usually need to instantiate new buffers when flushing data or when it receives data for a
    * brand-new stream. This factory fills this need and @return the function to be called on such
    * events.
    * <p>

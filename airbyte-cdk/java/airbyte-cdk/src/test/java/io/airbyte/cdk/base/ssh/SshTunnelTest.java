@@ -11,8 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod;
+import io.airbyte.commons.json.Jsons;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.PrivateKey;

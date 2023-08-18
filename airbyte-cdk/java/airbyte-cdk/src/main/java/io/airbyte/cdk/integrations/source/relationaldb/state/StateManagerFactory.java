@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.integrations.source.relationaldb.state;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
