@@ -156,7 +156,7 @@ In addtion to the the common fixes for all destinations described above, there a
 
 ### BigQuery
 
-1. [Object properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns.  Previously, we had used TEXT, which made querying sub-properties more difficult.
+1. [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns.  Previously, we had used TEXT, which made querying sub-properties more difficult.
      * In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a *quirk* of Bigquery.  Learn more [here](https://github.com/airbytehq/airbyte/issues/29594). 
 
 ### Snowflake
