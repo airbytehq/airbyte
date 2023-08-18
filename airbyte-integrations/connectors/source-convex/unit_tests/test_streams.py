@@ -70,13 +70,12 @@ def test_parse_response(patch_base_class):
     inputs = {"response": resp, "stream_state": {}}
     expected_parsed_objects = [{"_id": "my_id", "field": "f", "_ts": 1234}]
     assert stream.parse_response(**inputs) == expected_parsed_objects
-    assert stream.state == {"snapshot_cursor": 1234, "snapshot_has_more": True, "delta_cursor": 2000}
 
 
 def test_request_headers(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    assert stream.request_headers(**inputs) == {}
+    assert stream.request_headers(**inputs) == {"Convex-Client": "airbyte-export-0.2.0"}
 
 
 def test_http_method(patch_base_class):

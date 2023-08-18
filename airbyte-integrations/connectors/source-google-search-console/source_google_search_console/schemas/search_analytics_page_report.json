@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "site_url": {
+      "type": ["null", "string"]
+    },
+    "search_type": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "page": {
+      "type": ["null", "string"]
+    },
+    "device": {
+      "type": ["null", "string"]
+    },
+    "clicks": {
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "type": ["null", "integer"]
+    },
+    "ctr": {
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
+    },
+    "position": {
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
+    }
+  }
+}

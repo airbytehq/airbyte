@@ -159,6 +159,82 @@
           }
         }
       }
+    },
+    "createdAt": {
+      "type": ["null", "string"]
+    },
+    "contentType": {
+      "type": ["null", "string"],
+      "enum": [
+        "canvas",
+        "embed"
+      ]
+    },
+    "createdBy": {
+      "type": "object",
+      "properties": {
+        "@context": {
+          "type": "string"
+        },
+        "@type": {
+          "type": "string"
+        },
+        "additionalType": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "authors": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "type": "string"
+          },
+          "@type": {
+            "type": "string"
+          },
+          "additionalType": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "updatedBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "@context": {
+          "type": "string"
+        },
+        "@type": {
+          "type": "string"
+        },
+        "additionalType": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "updatedAt": {
+      "type": ["null", "string"]
     }
   }
 }

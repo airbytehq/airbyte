@@ -121,7 +121,7 @@
       }
     },
     "signing_keys": {
-      "type": ["array", "null"],
+      "type": ["null", "array"],
       "items": {
         "type": ["object", "null"],
         "additionalProperties": true

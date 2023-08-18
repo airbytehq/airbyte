@@ -124,10 +124,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["_ab_cdc_updated_at"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["_ab_cdc_updated_at"],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
     },
@@ -156,10 +156,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["_ab_cdc_lsn"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["_ab_cdc_lsn"],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
     },
@@ -191,10 +191,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["_ab_cdc_lsn"]
       },
       "sync_mode": "full_refresh",
-      "cursor_field": [],
+      "cursor_field": ["_ab_cdc_lsn"],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
     },

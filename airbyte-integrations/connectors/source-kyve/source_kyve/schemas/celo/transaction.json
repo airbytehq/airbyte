@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "hash": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "integer"]
+    },
+    "accessList": {
+      "type": "null"
+    },
+    "blockHash": {
+      "type": ["null", "string"]
+    },
+    "blockNumber": {
+      "type": ["null", "integer"]
+    },
+    "transactionIndex": {
+      "type": ["null", "integer"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "gasPrice": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "hex": {
+          "type": ["null", "string"]
+        }
+      },
+      "required": [
+        "type",
+        "hex"
+      ]
+    },
+    "gasLimit": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "hex": {
+          "type": ["null", "string"]
+        }
+      },
+      "required": [
+        "type",
+        "hex"
+      ]
+    },
+    "to": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "hex": {
+          "type": ["null", "string"]
+        }
+      },
+      "required": [
+        "type",
+        "hex"
+      ]
+    },
+    "nonce": {
+      "type": ["null", "integer"]
+    },
+    "data": {
+      "type": ["null", "string"]
+    },
+    "r": {
+      "type": ["null", "string"]
+    },
+    "s": {
+      "type": ["null", "string"]
+    },
+    "v": {
+      "type": ["null", "integer"]
+    },
+    "creates": {
+      "type": "null"
+    },
+    "chainId": {
+      "type": ["null", "integer"]
+    }
+  },
+  "required": [
+    "hash",
+    "type",
+    "accessList",
+    "blockHash",
+    "blockNumber",
+    "transactionIndex",
+    "from",
+    "gasPrice",
+    "gasLimit",
+    "to",
+    "value",
+    "nonce",
+    "data",
+    "r",
+    "s",
+    "v",
+    "creates",
+    "chainId"
+  ]
+}

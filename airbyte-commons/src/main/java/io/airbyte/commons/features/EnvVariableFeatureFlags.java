@@ -17,22 +17,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   // Set this value to true to see all messages from the source to destination, set to one second
   // emission
   public static final String LOG_CONNECTOR_MESSAGES = "LOG_CONNECTOR_MESSAGES";
-  public static final String NEED_STATE_VALIDATION = "NEED_STATE_VALIDATION";
   public static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
-
   public static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
-
-  @Override
-  public boolean autoDisablesFailingConnections() {
-    log.info("Auto Disable Failing Connections: " + Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS")));
-
-    return Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS"));
-  }
-
-  @Override
-  public boolean forceSecretMigration() {
-    return Boolean.parseBoolean(System.getenv("FORCE_MIGRATE_SECRET_STORE"));
-  }
+  public static final String CONCURRENT_SOURCE_STREAM_READ = "CONCURRENT_SOURCE_STREAM_READ";
+  public static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
+  public static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
 
   @Override
   public boolean useStreamCapableState() {
@@ -50,8 +39,8 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   }
 
   @Override
-  public boolean needStateValidation() {
-    return getEnvOrDefault(NEED_STATE_VALIDATION, true, Boolean::parseBoolean);
+  public boolean concurrentSourceStreamRead() {
+    return getEnvOrDefault(CONCURRENT_SOURCE_STREAM_READ, false, Boolean::parseBoolean);
   }
 
   @Override
@@ -66,12 +55,12 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public String strictComparisonNormalizationWorkspaces() {
-    return "";
+    return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_WORKSPACES, "", (arg) -> arg);
   }
 
   @Override
   public String strictComparisonNormalizationTag() {
-    return "";
+    return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison2", (arg) -> arg);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

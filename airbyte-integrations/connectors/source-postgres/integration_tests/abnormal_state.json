@@ -7,7 +7,7 @@
         "stream_namespace": "public",
         "cursor_field": ["id"],
         "cursor": "4",
-        "cursor_record_count":1
+        "cursor_record_count": 1
       },
       "stream_descriptor": {
         "name": "id_and_name",

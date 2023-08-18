@@ -25,14 +25,6 @@ connectionSpecification:
       description: The search query. This just applies to Incremental syncs. If empty, it'll collect all logs.
       type: string
       order: 3
-    max_records_per_request:
-      type: integer
-      title: Max records per requests
-      default: 5000
-      minimum: 1
-      maximum: 5000
-      description: Maximum number of records to collect per request.
-      order: 4
     start_date:
       title: Start date
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -42,6 +34,13 @@ connectionSpecification:
       type: string
       examples:
         - "2022-10-01T00:00:00Z"
+      order: 4
+    site:
+      title: Site
+      description: The site where Datadog data resides in.
+      type: string
+      enum: ["datadoghq.com", "us3.datadoghq.com", "us5.datadoghq.com", "datadoghq.eu", "ddog-gov.com"]
+      default: "datadoghq.com"
       order: 5
     end_date:
       title: End date
@@ -54,3 +53,41 @@ connectionSpecification:
         - "2022-10-01T00:00:00Z"
       type: string
       order: 6
+    max_records_per_request:
+      type: integer
+      title: Max records per requests
+      default: 5000
+      minimum: 1
+      maximum: 5000
+      description: Maximum number of records to collect per request.
+      order: 7
+    queries:
+      title: Queries
+      description: >-
+        List of queries to be run and used as inputs.
+      type: array
+      order: 8
+      default: []
+      items:
+        type: object
+        required:
+          - name
+          - data_source
+          - query
+        properties:
+          name:
+            title: Query Name
+            description: The variable name for use in queries.
+            type: string
+            order: 1
+          data_source:
+            title: Data Source
+            description: A data source that is powered by the platform.
+            type: string
+            enum: [ "metrics", "cloud_cost", "logs", "rum" ]
+            order: 2
+          query:
+            title: Query
+            description: A classic query string.
+            type: string
+            order: 3

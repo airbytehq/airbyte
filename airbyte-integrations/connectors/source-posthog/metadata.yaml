@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.13
   dockerRepository: airbyte/source-posthog
   githubIssueLabel: source-posthog
   icon: posthog.svg
@@ -22,4 +22,8 @@ data:
   tags:
     - language:low-code
     - language:python
+  ab_internal:
+    sl: 200
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

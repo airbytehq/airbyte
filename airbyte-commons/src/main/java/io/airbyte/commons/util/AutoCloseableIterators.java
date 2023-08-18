@@ -174,6 +174,12 @@ public class AutoCloseableIterators {
     return new DefaultAutoCloseableIterator<>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close, airbyteStream);
   }
 
+  public static <T, F> AutoCloseableIterator<F> transformIterator(final Function<AutoCloseableIterator<T>, Iterator<F>> iteratorCreator,
+                                                                  final AutoCloseableIterator<T> autoCloseableIterator,
+                                                                  final AirbyteStreamNameNamespacePair airbyteStream) {
+    return new DefaultAutoCloseableIterator<F>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close, airbyteStream);
+  }
+
   @SafeVarargs
   public static <T> CompositeIterator<T> concatWithEagerClose(final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer,
                                                               final AutoCloseableIterator<T>... iterators) {
@@ -185,6 +191,15 @@ public class AutoCloseableIterators {
     return concatWithEagerClose(List.of(iterators), null);
   }
 
+  /**
+   * Creates a {@link CompositeIterator} that reads from the provided iterators in a serial fashion.
+   *
+   * @param iterators The list of iterators to be used in a serial fashion.
+   * @param airbyteStreamStatusConsumer The stream status consumer used to report stream status during
+   *        iteration.
+   * @return A {@link CompositeIterator}.
+   * @param <T> The type of data contained in each iterator.
+   */
   public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators,
                                                               final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
     return new CompositeIterator<>(iterators, airbyteStreamStatusConsumer);
