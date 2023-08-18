@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.core.util.Separators;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -41,6 +42,11 @@ public class Jsons {
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
+  private static final ObjectMapper OBJECT_MAPPER_EXACT;
+  static {
+    OBJECT_MAPPER_EXACT = new ObjectMapper();
+    OBJECT_MAPPER_EXACT.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+  }
 
   private static final ObjectMapper YAML_OBJECT_MAPPER = MoreMappers.initYamlMapper(new YAMLFactory());
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
@@ -92,6 +98,14 @@ public class Jsons {
   public static JsonNode deserialize(final String jsonString) {
     try {
       return OBJECT_MAPPER.readTree(jsonString);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static JsonNode deserializeExact(final String jsonString) {
+    try {
+      return OBJECT_MAPPER_EXACT.readTree(jsonString);
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
@@ -326,7 +340,7 @@ public class Jsons {
         Entry::getValue)));
   }
 
-  public static Map<String, String> deserializeToStringMap(JsonNode json) {
+  public static Map<String, String> deserializeToStringMap(final JsonNode json) {
     return OBJECT_MAPPER.convertValue(json, new TypeReference<>() {});
   }
 

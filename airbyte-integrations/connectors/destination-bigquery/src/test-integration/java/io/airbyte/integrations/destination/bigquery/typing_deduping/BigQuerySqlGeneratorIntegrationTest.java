@@ -475,7 +475,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
           // value.getTimestampInstant() fails to parse these types
           case DATE, DATETIME, TIME -> Jsons.jsonNode(value.getStringValue());
           // bigquery returns JSON columns as string; manually parse it into a JsonNode
-          case JSON -> Jsons.jsonNode(Jsons.deserialize(value.getStringValue()));
+          case JSON -> Jsons.jsonNode(Jsons.deserializeExact(value.getStringValue()));
 
           // Default case for weird types (struct, array, geography, interval, bytes)
           default -> Jsons.jsonNode(value.getStringValue());

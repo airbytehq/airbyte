@@ -116,14 +116,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
       return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
-          // Note the wide_number_mode here. We're not using the actual value, so we don't care about losing precision.
           """
           PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
               OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'object'
               THEN NULL
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
-          END)
+          END, wide_number_mode=>'round')
           """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
@@ -134,7 +133,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'array'
               THEN NULL
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
-          END)
+          END, wide_number_mode=>'round')
           """);
     } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse the airbyte_data to json
