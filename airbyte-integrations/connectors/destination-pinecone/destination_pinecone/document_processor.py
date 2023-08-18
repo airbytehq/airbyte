@@ -27,7 +27,7 @@ class DocumentProcessor:
 
         self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap
-        )        
+        )
         self.metadata_fields = config.meta_data_fields
         self.text_fields = config.text_fields
         self.logger = logging.getLogger("airbyte.document_processor")
@@ -87,7 +87,6 @@ class DocumentProcessor:
             if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
                 metadata[METADATA_RECORD_ID_FIELD] = self._extract_primary_key(record, current_stream)
         return metadata
-
 
     def _extract_primary_key(self, record: AirbyteRecordMessage, stream: ConfiguredAirbyteStream) -> dict:
         primary_key = []

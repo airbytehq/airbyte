@@ -20,13 +20,13 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_pinecone.batcher import Batcher
 from destination_pinecone.config import ConfigModel
 from destination_pinecone.document_processor import DocumentProcessor
-from destination_pinecone.embedder import Embedder, FakeEmbedder, OpenAIEmbedder, CohereEmbedder
+from destination_pinecone.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
 from destination_pinecone.indexer import Indexer, PineconeIndexer
 from langchain.document_loaders.base import Document
 
 BATCH_SIZE = 128
 
-indexer_map = {"pinecone": PineconeIndexer }
+indexer_map = {"pinecone": PineconeIndexer}
 
 embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
 

@@ -5,12 +5,13 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from destination_pinecone.config import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel
+from destination_pinecone.config import CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 from destination_pinecone.utils import format_exception
 from langchain.embeddings.base import Embeddings
+from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.embeddings.cohere import CohereEmbeddings
+
 
 class Embedder(ABC):
     def __init__(self):
@@ -34,6 +35,7 @@ class Embedder(ABC):
 OPEN_AI_VECTOR_SIZE = 1536
 COHERE_VECTOR_SIZE = 1024
 
+
 class OpenAIEmbedder(Embedder):
     def __init__(self, config: OpenAIEmbeddingConfigModel):
         super().__init__()
@@ -54,7 +56,8 @@ class OpenAIEmbedder(Embedder):
     def embedding_dimensions(self) -> int:
         # vector size produced by text-embedding-ada-002 model
         return OPEN_AI_VECTOR_SIZE
-    
+
+
 class CohereEmbedder(Embedder):
     def __init__(self, config: CohereEmbeddingConfigModel):
         super().__init__()
@@ -74,7 +77,7 @@ class CohereEmbedder(Embedder):
     @property
     def embedding_dimensions(self) -> int:
         # vector size produced by text-embedding-ada-002 model
-        return COHERE_VECTOR_SIZE   
+        return COHERE_VECTOR_SIZE
 
 
 class FakeEmbedder(Embedder):

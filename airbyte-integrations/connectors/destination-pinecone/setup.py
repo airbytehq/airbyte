@@ -18,7 +18,7 @@ MAIN_REQUIREMENTS = [
     "pydantic==1.10.8",
     "pandas==1.4.2",
     "sentence-transformers",
-    "cohere"
+    "cohere",
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]

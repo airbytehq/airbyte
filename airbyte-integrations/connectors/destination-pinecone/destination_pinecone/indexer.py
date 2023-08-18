@@ -3,20 +3,26 @@
 #
 
 import itertools
-from logging import INFO
-import os
 import uuid
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 import pinecone
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, AirbyteLogMessage, AirbyteMessage, DestinationSyncMode, Level, Type
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Level,
+    Type,
+)
 from destination_pinecone.config import PineconeIndexingModel
 from destination_pinecone.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from destination_pinecone.embedder import Embedder
 from destination_pinecone.measure_time import measure_time
 from destination_pinecone.utils import format_exception
 from langchain.schema import Document
+
 
 class Indexer(ABC):
     def __init__(self, config: Any, embedder: Embedder):
@@ -64,7 +70,7 @@ class PineconeIndexer(Indexer):
         pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment, threaded=True)
         index_description = pinecone.describe_index(config.index)
         self.pod_type = index_description.pod_type
-        
+
         self.pinecone_index = pinecone.Index(config.index, pool_threads=10)
         self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
         self.embedding_dimensions = embedder.embedding_dimensions
@@ -77,24 +83,24 @@ class PineconeIndexer(Indexer):
     def post_sync(self):
         return [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.WARN, message=self.embed_fn._get_stats()))]
 
-    def delete_vectors(self, filter):        
+    def delete_vectors(self, filter):
         if self.pod_type == "starter":
             # Starter pod types have a maximum of 100000 rows
             top_k = 10000
             self.delete_by_metadata(filter, top_k)
         else:
             self.pinecone_index.delete(filter=filter)
-    
+
     def delete_by_metadata(self, filter, top_k):
         zero_vector = [0.0] * self.embedding_dimensions
         query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k)
         vector_ids = [doc.id for doc in query_result.matches]
         if len(vector_ids) > 0:
             self.pinecone_index.delete(ids=vector_ids)
-    
+
     def index(self, document_chunks, delete_ids):
         if len(delete_ids) > 0:
-            self.delete_vectors(filter={ METADATA_RECORD_ID_FIELD: delete_ids })
+            self.delete_vectors(filter={METADATA_RECORD_ID_FIELD: delete_ids})
         embedding_vectors = self.embed_fn([chunk.page_content for chunk in document_chunks])
         pinecone_docs = []
         for i in range(len(document_chunks)):
