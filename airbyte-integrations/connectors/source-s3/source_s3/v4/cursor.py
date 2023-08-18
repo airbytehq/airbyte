@@ -10,6 +10,8 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 
+logger = logging.Logger("source-S3")
+
 
 logger = logging.Logger("source-S3")
 
@@ -114,7 +116,10 @@ class Cursor(DefaultFileBasedCursor):
 
             for filename in filenames:
                 if filename in converted_history:
-                    if datetime_obj > datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT):
+                    if datetime_obj > datetime.strptime(
+                        converted_history[filename],
+                        DefaultFileBasedCursor.DATE_TIME_FORMAT,
+                    ):
                         converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
                     else:
                         # If the file was already synced with a later timestamp, ignore
