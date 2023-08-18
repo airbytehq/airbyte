@@ -16,13 +16,14 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private static final String REALM = "Bearer <BLOTOUT_TOKEN>";
     private static final String AUTHENTICATION_SCHEME = "Bearer";
-    private static final String EDGETAG_ORIGIN = "https://app.edgetag.io";
+    private static final String EDGETAG_ORIGIN = "https://api.edgetag.io";
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
     private final BlotoutAuthentication blotoutAuthentication = new BlotoutAuthentication();
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
+
         if (!"v1/health".equalsIgnoreCase(requestContext.getUriInfo().getPath())) {
             // Get the Authorization header from the request
             String authorizationHeader =
@@ -30,7 +31,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             // Extract the token from the Authorization header
             String token = authorizationHeader
                     .substring(AUTHENTICATION_SCHEME.length()).trim();
-            LOGGER.info(" Token " + token);
             // Validate the Authorization header
             if (requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
                 requestContext.abortWith(Response.ok().build());
@@ -39,7 +39,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             // Validate origin based authentication
             String originHeader =
                     requestContext.getHeaderString("origin");
-            LOGGER.info(" originHeader " + originHeader);
             if (isEdgeTagBasedAuthentication(originHeader)) {
                 try {
                     if (!validateEdgeBasedToken(originHeader, token)) {
@@ -118,7 +117,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private boolean validateEdgeBasedToken(String origin, String token) throws Exception {
         return blotoutAuthentication.validateEdgeTagBasedAuthentication(origin, token);
-
     }
 
 }
