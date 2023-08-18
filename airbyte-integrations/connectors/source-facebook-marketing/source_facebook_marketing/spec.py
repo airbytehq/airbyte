@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import json
+
 import logging
 from datetime import datetime, timezone
 from enum import Enum
@@ -210,7 +210,7 @@ class ConnectorConfig(BaseConfig):
         ),
         default=50,
         gt=0,
-        le=50
+        le=50,
     )
 
     action_breakdowns_allow_empty: bool = Field(
