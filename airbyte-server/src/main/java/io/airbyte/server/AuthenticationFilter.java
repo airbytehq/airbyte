@@ -134,7 +134,10 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     private boolean validateEdgeBasedToken(String origin, String token) throws Exception {
         LOGGER.info(" Inside validateEdgeBasedToken ");
         LOGGER.error(" Inside validateEdgeBasedToken ");
-        return blotoutAuthentication.validateEdgeTagBasedAuthentication(origin, token);
+        boolean result = blotoutAuthentication.validateEdgeTagBasedAuthentication(origin, token);
+        LOGGER.info(" result " + result);
+        LOGGER.error(" result " + result);
+        return result;
 
     }
 
