@@ -51,7 +51,10 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    */
   private boolean finalStateNext = false;
 
-  MongoDbStateIterator(final MongoCursor<Document> iter, final ConfiguredAirbyteStream stream, final Instant emittedAt, final Integer checkpointInterval) {
+  MongoDbStateIterator(final MongoCursor<Document> iter,
+                       final ConfiguredAirbyteStream stream,
+                       final Instant emittedAt,
+                       final Integer checkpointInterval) {
     this.iter = iter;
     this.stream = stream;
     this.checkpointInterval = checkpointInterval;
