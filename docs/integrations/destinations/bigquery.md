@@ -135,6 +135,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.9.0   | 2023-08-17 | [\#29560](https://github.com/airbytehq/airbyte/pull/29560) | Destinations v2: throw an error on disallowed column name prefixes                                                       |
 | 1.8.1   | 2023-08-17 | [\#29522](https://github.com/airbytehq/airbyte/pull/29522) | Migration BugFix - ensure raw dataset created                                                                            |
 | 1.8.0   | 2023-08-17 | [\#29498](https://github.com/airbytehq/airbyte/pull/29498) | Fix checkpointing logic in GCS staging mode                                                                              |
 | 1.7.8   | 2023-08-15 | [\#29461](https://github.com/airbytehq/airbyte/pull/29461) | Migration BugFix - ensure migration happens before table creation for GCS staging.                                       |
