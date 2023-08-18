@@ -1,16 +1,16 @@
-# Airbyte Pro
+# Airbyte Enterprise
 
-Airbyte Pro is a self-hosted version of Airbyte with additional features for enterprise customers. Airbyte Pro is currently in early development. Interested in Airbyte Pro for your organization? [Talk to sales](https://airbyte.com/company/talk-to-sales).
+Airbyte Enterprise is a self-hosted version of Airbyte with additional features for enterprise customers. Airbyte Enterprise is currently in early development. Interested in Airbyte Enterprise for your organization? [Learn more](https://airbyte.com/solutions/airbyte-enterprise).
 
-## Airbyte Pro License Key
+## Airbyte Enterprise License Key
 
-A valid license key is required for Airbyte Pro. Talk to your Sales Representative to receive your license key before installing Airbyte Pro.
+A valid license key is required for Airbyte Enterprise. Talk to your Sales Representative to receive your license key before installing Airbyte Enterprise.
 
 ## Single Sign-On (SSO)
 
-Airbyte Pro supports Single Sign-On, allowing an organization to manage user acces to their Airbyte Pro instance through the configuration of an Identity Provider (IdP).
+Airbyte Enterprise supports Single Sign-On, allowing an organization to manage user acces to their Airbyte Enterprise instance through the configuration of an Identity Provider (IdP).
 
-Airbyte Pro currently supports SSO via OIDC with [Okta](https://www.okta.com/) as an IdP.
+Airbyte Enterprise currently supports SSO via OIDC with [Okta](https://www.okta.com/) as an IdP.
 
 ### Setting up Okta for SSO
 
@@ -50,7 +50,7 @@ _Example values_
 
 `<your-airbyte-domain>` should point to where your Airbyte instance will be available, including the http/https protocol.
 
-#### Deploying Airbyte Pro with Okta
+#### Deploying Airbyte Enterprise with Okta
 
 Your Okta app is now set up and you're ready to deploy Airbyte with SSO! Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
 
@@ -59,4 +59,4 @@ Your Okta app is now set up and you're ready to deploy Airbyte with SSO! Take no
 - Client ID
 - Client Secret
 
-Visit [Airbyte Pro deployment](/deploying-airbyte/on-kubernetes-via-helm#alpha-airbyte-pro-deployment) for instructions on how to deploy Airbyte Pro using `kubernetes`, `kubectl` and `helm`.
+Visit [Airbyte Enterprise deployment](/deploying-airbyte/on-kubernetes-via-helm#alpha-airbyte-pro-deployment) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
