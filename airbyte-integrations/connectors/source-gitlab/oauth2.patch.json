@@ -1,6 +1,6 @@
 {
   "provider": "gitlab",
-  "authUrlTemplate": "https://gitlab.com/oauth/authorize?client_id={{{ client_id }}}&redirect_uri={{{ redirect_uri }}}&response_type=code&state=STATE&scope=read_api",
+  "authUrlTemplate": "https://gitlab.com/oauth/authorize?client_id={{{ client_id }}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{{ state }}}&scope=read_api",
   "accessTokenUrlTemplate": "https://gitlab.example.com/oauth/token",
   "accessTokenBody": "client_id={{{ client_id }}}&client_secret={{{ client_secret }}}code={{{ code }}}&grant_type=authorization_code&redirect_uri={{{ redirect_uri }}}",
   "accessTokenHeaders": {},
