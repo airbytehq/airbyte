@@ -73,6 +73,7 @@ public class BlotoutAuthentication {
                 .build();
         HttpResponse response = httpClient.send(request, BodyHandlers.ofString());
         LOGGER.info(" response " + response.body());
+        LOGGER.error(" response " + response.body());
         if (response.statusCode() == 200) {
             return true;
         } else {
