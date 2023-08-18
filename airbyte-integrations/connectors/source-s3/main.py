@@ -10,8 +10,8 @@ from typing import List
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
-from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 from source_s3 import SourceS3 as SourceS3V3
+from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 
 def get_source(args: List[str]):
