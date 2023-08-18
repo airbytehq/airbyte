@@ -1,9 +1,13 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 4942d392-c7b5-4271-91f9-3b4f4e51eb3e
   dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-zoho-crm
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   githubIssueLabel: source-zoho-crm
   icon: zohocrm.svg
   license: MIT
@@ -14,11 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"
