@@ -18,7 +18,7 @@ We recommend using **Oauth2.0** authentication for Airbyte Cloud, as this signif
 
 ### Set up LinkedIn Ads authentication (Airbyte Open Source)
 
-To authenticate the Linkedin Ads connector, you will need to create a Linkedin developer application and obtain one of the following credentials:
+To authenticate the connector in Airbyte Open Source, you will need to create a Linkedin developer application and obtain one of the following credentials:
 
 1. OAuth2.0 credentials, consisting of:
 
@@ -63,6 +63,10 @@ You can follow the steps laid out below to create the application and obtain the
 These tokens will not be displayed again, so make sure to copy them and store them securely.
 :::
 
+:::tip
+If either of your tokens expire, you can generate new ones by returning to LinkedIn's [Token Generator](https://www.linkedin.com/developers/tools/oauth/token-generator). You can also check on the status of your tokens using the [Token Inspector](https://www.linkedin.com/developers/tools/oauth/token-inspector).
+:::
+
 <!-- /env:oss -->
 
 ### Set up the LinkedIn Ads connector in Airbyte
@@ -83,21 +87,21 @@ These tokens will not be displayed again, so make sure to copy them and store th
 #### For Airbyte Open Source
 
 - Select an option from the Authentication dropdown:
-    1. For **OAuth2.0:** Enter your **Client ID**, **Client Secret** and **Refresh Token**. Please note that the refresh token expires after 12 months.
-    2. For **Access Token:** Enter your **Access Token**. Please note that the access token expires after 60 days. You can refresh the token
+  1. **OAuth2.0:** Enter your **Client ID**, **Client Secret** and **Refresh Token**. Please note that the refresh token expires after 12 months.
+  2. **Access Token:** Enter your **Access Token**. Please note that the access token expires after 60 days.
 <!-- /env:oss -->
 
 6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
 7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all associated accounts.
-8. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. To add a custom report:
+8. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled form LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
-   2. Enter a **Report Name**.
-   3. Select a **Pivot Category** from the dropdown. This will be used to pivot the data in the report.
+   2. Enter a **Report Name**. This will be used as the stream name during replication.
+   3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
    4. Select a **Time Granularity** to group the data in your report by time. The options are:
-      - `ALL`: Data is not grouped by time, and returns summarized in a single result.
-      - `DAILY`: Returns data grouped by day.
-      - `MONTHLY`: Returns data grouped by month.
-      - `YEARLY`: Returns data grouped by year.
+      - `ALL`: Data is not grouped by time, providing a cumulative view.
+      - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
+      - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
+      - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
 9. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
