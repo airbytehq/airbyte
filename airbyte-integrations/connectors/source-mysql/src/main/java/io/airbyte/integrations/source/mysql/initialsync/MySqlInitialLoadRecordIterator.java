@@ -47,6 +47,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   // Represents the number of rows to get with each query.
   private final long chunkSize;
   private final PrimaryKeyInfo pkInfo;
+  private final boolean isCompositeKeyLoad;
   private int numSubqueries = 0;
   private AutoCloseableIterator<JsonNode> currentIterator;
 
@@ -57,7 +58,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       final MySqlInitialLoadStateManager initialLoadStateManager,
       final List<String> columnNames,
       final AirbyteStreamNameNamespacePair pair,
-      final long chunkSize) {
+      final long chunkSize,
+      final boolean isCompositeKeyLoad) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -66,6 +68,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     this.pair = pair;
     this.chunkSize = chunkSize;
     this.pkInfo = initialLoadStateManager.getPrimaryKeyInfo(pair);
+    this.isCompositeKeyLoad = isCompositeKeyLoad;
   }
 
   @CheckForNull
@@ -114,17 +117,31 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       if (pkLoadStatus == null) {
         LOGGER.info("pkLoadStatus is null");
         final String quotedCursorField = enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
-        final String sql = String.format("SELECT %s FROM %s ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
-            quotedCursorField, chunkSize);
+        final String sql;
+        // We cannot load in chunks for a composite key load, since each field might not have distinct values.
+        if (isCompositeKeyLoad) {
+          sql = String.format("SELECT %s FROM %s ORDER BY %s", wrappedColumnNames, fullTableName,
+              quotedCursorField);
+        } else {
+          sql = String.format("SELECT %s FROM %s ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
+              quotedCursorField, chunkSize);
+        }
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       } else {
         LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
         final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
-        // Since a pk is unique, we can issue a > query instead of a >=, as there cannot be two records with the same pk.
-        final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
-            quotedCursorField, quotedCursorField, chunkSize);
+        final String sql;
+        // We cannot load in chunks for a composite key load, since each field might not have distinct values. Furthermore, we have to issue a >=
+        // query since we may not have processed all of the data associated with the last saved primary key value.
+        if (isCompositeKeyLoad) {
+          sql = String.format("SELECT %s FROM %s WHERE %s >= ? ORDER BY %s", wrappedColumnNames, fullTableName,
+              quotedCursorField, quotedCursorField);
+        } else {
+          sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
+              quotedCursorField, quotedCursorField, chunkSize);
+        }
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         final MysqlType cursorFieldType = pkInfo.fieldType();
         sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());
