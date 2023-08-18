@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.1
+Pin airbyte-protocol-model to <1.0.0.
+
 ## 1.0.0
 Bump to Python 3.10, use dagger instead of docker-py in the ConnectorRunner.
 
