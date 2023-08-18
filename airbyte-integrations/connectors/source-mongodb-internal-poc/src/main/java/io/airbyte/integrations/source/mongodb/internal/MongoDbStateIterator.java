@@ -26,29 +26,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A state-emitting iterator that emits a state message every batchSize messages when iterating over a MongoCursor.
+ * A state-emitting iterator that emits a state message every checkpointInterval messages when iterating over a MongoCursor.
  *
  * Will also output a state message as the last message after the wrapper iterator has completed.
  */
 class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIterator.class);
+
   private final MongoCursor<Document> iter;
-
   private final ConfiguredAirbyteStream stream;
-
   private final List<String> fields;
-
   private final Instant emittedAt;
-  private final int batchSize;
+  private final Integer checkpointInterval;
+
   /**
    * Counts the number of records seen in this batch, resets when a state-message has been generated.
    */
   private int count = 0;
+
   /**
    * Pointer to the last document _id seen by this iterator, necessary to track for state messages.
    */
   private String lastId = null;
+
   /**
    * This iterator outputs a final state when the wrapped `iter` has concluded. When this is true, the
    * final message will be returned.
@@ -62,12 +63,16 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    * @param stream the stream that this iterator represents
    * @param state the initial state of this stream
    * @param emittedAt when this iterator was started
-   * @param batchSize how often a state message should be emitted.
+   * @param checkpointInterval how often a state message should be emitted.
    */
-  MongoDbStateIterator(final MongoCursor<Document> iter, final ConfiguredAirbyteStream stream, Optional<MongodbStreamState> state, final Instant emittedAt, final int batchSize) {
+  MongoDbStateIterator(final MongoCursor<Document> iter,
+      final ConfiguredAirbyteStream stream,
+      Optional<MongodbStreamState> state,
+      final Instant emittedAt,
+      final int checkpointInterval) {
     this.iter = iter;
     this.stream = stream;
-    this.batchSize = batchSize;
+    this.checkpointInterval = checkpointInterval;
     this.emittedAt = emittedAt;
     fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
     lastId = state.map(MongodbStreamState::id).orElse(null);
@@ -94,7 +99,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public AirbyteMessage next() {
-    if ((count > 0 && count % batchSize == 0) || finalStateNext) {
+    if ((count > 0 && count % checkpointInterval == 0) || finalStateNext) {
       count = 0;
 
       final var streamState = new AirbyteStreamState()

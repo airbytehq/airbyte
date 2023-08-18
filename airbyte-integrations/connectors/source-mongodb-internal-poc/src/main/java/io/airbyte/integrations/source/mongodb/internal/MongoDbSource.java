@@ -4,8 +4,9 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.FETCH_SIZE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -51,11 +52,6 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   /** Helper class for holding a collection-name and stream state together */
   private record CollectionNameState(Optional<String> name, Optional<MongodbStreamState> state) {}
-
-  /**
-   * Number of documents to read at once.
-   */
-  private static final int BATCH_SIZE = 1000;
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -109,7 +105,6 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state) {
     final var databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
-    final var fetchSize = config.has(FETCH_SIZE_CONFIGURATION_KEY) ? config.get(FETCH_SIZE_CONFIGURATION_KEY).asInt() : BATCH_SIZE;
     final var emittedAt = Instant.now();
 
     final var states = convertState(state);
@@ -119,7 +114,7 @@ public class MongoDbSource extends BaseConnector implements Source {
       final var database = mongoClient.getDatabase(databaseName);
       // TODO treat INCREMENTAL and FULL_REFRESH differently?
       return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(
-          convertCatalogToIterators(catalog, states, database, emittedAt, fetchSize),
+          convertCatalogToIterators(catalog, states, database, emittedAt),
           AirbyteTraceMessageUtility::emitStreamStatusTrace),
           mongoClient::close);
     } catch (final Exception e) {
@@ -164,8 +159,7 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                 final Map<String, MongodbStreamState> states,
                                                                                 final MongoDatabase database,
-                                                                                final Instant emittedAt,
-                                                                                final Integer fetchSize) {
+                                                                                final Instant emittedAt) {
     return catalog.getStreams()
         .stream()
         .peek(airbyteStream -> {
@@ -194,18 +188,17 @@ public class MongoDbSource extends BaseConnector implements Source {
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = existingState
               // TODO add type support here when we add support for _id fields that are not ObjectId types
-              .map(state -> Filters.gt("_id", new ObjectId(state.id())))
+              .map(state -> Filters.gt(ID_FIELD, new ObjectId(state.id())))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
           final var cursor = collection.find()
               .filter(filter)
               .projection(fields)
-              .sort(Sorts.ascending("_id"))
-              .batchSize(fetchSize)
+              .sort(Sorts.ascending(ID_FIELD))
               .cursor();
 
-          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, existingState, emittedAt, fetchSize);
+          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, existingState, emittedAt, CHECKPOINT_INTERVAL);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
