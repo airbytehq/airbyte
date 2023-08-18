@@ -18,7 +18,7 @@ We recommend using **Oauth2.0** authentication for Airbyte Cloud, as this signif
 
 ### Set up LinkedIn Ads authentication (Airbyte Open Source)
 
-To authenticate the Linkedin Ads connector, you will need to create a Linkedin developer application and use one of the following credentials:
+To authenticate the Linkedin Ads connector, you will need to create a Linkedin developer application and obtain one of the following credentials:
 
 1. OAuth2.0 credentials, consisting of:
 
@@ -63,18 +63,6 @@ You can follow the steps laid out below to create the application and obtain the
 These tokens will not be displayed again, so make sure to copy them and store them securely.
 :::
 
-#### Set the necessary user roles
-
-Before proceeding, ensure that the Linkedin Ads user is assigned one of the following roles:
-
-- ACCOUNT_BILLING_ADMIN
-- ACCOUNT_MANAGER
-- CAMPAIGN_MANAGER
-- CREATIVE_MANAGER
-- VIEWER \(Recommended\)
-
-To edit these roles, sign in to Campaign Manager and follow [these instructions](https://www.linkedin.com/help/lms/answer/a496075). More information on the access levels granted to each role can be found [here](https://www.linkedin.com/help/lms/answer/a425731/user-roles-and-permissions-in-campaign-manager?lang=en-us&intendedLocale=en).
-
 <!-- /env:oss -->
 
 ### Set up the LinkedIn Ads connector in Airbyte
@@ -88,48 +76,30 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 <!-- env:cloud -->
 #### For Airbyte Cloud
 
-- Click **Authenticate your account**.
-- Login and Authorize the LinkedIn Ads account
+- Select **OAuth2.0** from the Authentication dropdown, then click **Authenticate your LinkedIn Ads account**. Sign in to your account and click **Allow**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 #### For Airbyte Open Source
 
-- Choose between Authentication Options:
-    1. For **OAuth2.0:** Copy and paste info (**Client ID**, **Client Secret**) from your **LinkedIn Ads developer application**, and obtain the **Refresh Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
-    2. For **Access Token:** Obtain the **Access Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
+- Select an option from the Authentication dropdown:
+    1. For **OAuth2.0:** Enter your **Client ID**, **Client Secret** and **Refresh Token**. Please note that the refresh token expires after 12 months.
+    2. For **Access Token:** Enter your **Access Token**. Please note that the access token expires after 60 days. You can refresh the token
 <!-- /env:oss -->
 
 6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
-7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs . If you do not specify any account IDs, the connector will replicate data from all accounts.
+7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all associated accounts.
 8. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. To add a custom report:
    1. Click on **Add**.
-   2. Enter a **Name** for your report. This name will be used as the stream name in Airbyte.
-   3. For **Pivot By** property for the report from the list
-   * select **Time Granularity** property for the report from the list
+   2. Enter a **Report Name**.
+   3. Select a **Pivot Category** from the dropdown. This will be used to pivot the data in the report.
+   4. Select a **Time Granularity** to group the data in your report by time. The options are:
+      - `ALL`: Data is not grouped by time, and returns summarized in a single result.
+      - `DAILY`: Returns data grouped by day.
+      - `MONTHLY`: Returns data grouped by month.
+      - `YEARLY`: Returns data grouped by year.
 9. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
-
-<!-- env:oss -->
-#### For Airbyte Open Source
-
-1. Go to the local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the Set up the source page, enter the name for the connector and select **LinkedIn Ads** from the Source type dropdown.
-4. Add `Start Date` - the starting point for your data replication.
-5. Add your `Account IDs (Optional)` if required.
-6. Choose between Authentication Options:
-    1. For **OAuth2.0:** Copy and paste info (**Client ID**, **Client Secret**) from your **LinkedIn Ads developer application**, and obtain the **Refresh Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
-    2. For **Access Token:** Obtain the **Access Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
-7. Add `Start Date` - the starting point for your data replication.
-8. (Optional) Add your `Account IDs` if required.
-9. (Optional) Add `Custom Ad Analytics reports` by:
-   * click on **Add**
-   * complete the Name for the Report
-   * select **Pivot By** property for the report from the list
-   * select **Time Granularity** property for the report from the list
-10. Click **Set up source**.
-<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -140,7 +110,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Accounts](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-2023-05#search-for-accounts)
 - [Account Users](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts)
