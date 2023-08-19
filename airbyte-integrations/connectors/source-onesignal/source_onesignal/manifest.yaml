@@ -27,6 +27,26 @@ definitions:
     request_parameters:
       app_id: "{{ config['applications'][0]['app_id'] }}"
 
+  retriever_with_pagination:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 5
+      page_token_option:
+        type: "RequestOption"
+        field_name: "offset"
+        inject_into: "request_parameter"
+    requester:
+      $ref: "#/definitions/rest_api_requester"
+
   user_auth_base_stream:
     type: DeclarativeStream
     retriever:
@@ -76,24 +96,28 @@ definitions:
   devices_stream:
     $ref: "#/definitions/rest_api_key_auth_base_stream"
     $parameters:
+      name: "devices"
+      primary_key: "id"
       extractorPath: "players"
       incremental_cursor: "last_active"
       path: "players"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"  
-    name: "devices"
-    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever_with_pagination"
 
   notifications_stream:
     $ref: "#/definitions/rest_api_key_auth_base_stream"
     $parameters:
+      name: "notifications"
+      primary_key: "id"
       extractorPath: "notifications"
       incremental_cursor: "queued_at"
       path: "notifications"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"  
-    name: "notifications"
-    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever_with_pagination"
 
   outcomes_stream:
     $ref: "#/definitions/rest_api_key_auth_base_stream"
