@@ -21,7 +21,7 @@ class MockSqlGenerator implements SqlGenerator<String> {
 
   @Override
   public String createTable(StreamConfig stream, String suffix) {
-    return "CREATE TABLE " + stream.id().finalTableId(suffix, "");
+    return "CREATE TABLE " + stream.id().finalTableId("", suffix);
   }
 
   @Override
@@ -36,12 +36,17 @@ class MockSqlGenerator implements SqlGenerator<String> {
 
   @Override
   public String updateTable(StreamConfig stream, String finalSuffix) {
-    return "UPDATE TABLE " + stream.id().finalTableId(finalSuffix, "");
+    return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix);
   }
 
   @Override
   public String overwriteFinalTable(StreamId stream, String finalSuffix) {
-    return "OVERWRITE TABLE " + stream.finalTableId("") + " FROM " + stream.finalTableId(finalSuffix, "");
+    return "OVERWRITE TABLE " + stream.finalTableId("") + " FROM " + stream.finalTableId("", finalSuffix);
+  }
+
+  @Override
+  public String migrateFromV1toV2(final StreamId streamId, String namespace, String tableName) {
+    return "MIGRATE TABLE " + String.join(".", namespace, tableName) + " TO " + streamId.rawTableId("");
   }
 
 }

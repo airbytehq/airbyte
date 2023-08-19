@@ -6,14 +6,15 @@ package io.airbyte.integrations.destination.s3_glue;
 
 import io.airbyte.integrations.destination.s3.S3BaseJsonlDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
+import java.util.HashSet;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public class S3GlueJsonlDestinationAcceptanceTest extends S3BaseJsonlDestinationAcceptanceTest {
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    super.tearDown(testEnv);
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+    super.tearDown(testEnv, TEST_SCHEMAS);
 
     GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(configJson);
     try (var glueTestClient = new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {

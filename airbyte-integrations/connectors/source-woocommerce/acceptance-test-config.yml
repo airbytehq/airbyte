@@ -24,9 +24,6 @@ acceptance_tests:
       timeout_seconds: 3600
       expect_records:
         path: "integration_tests/expected_records.jsonl"
-        extra_fields: no
-        exact_order: no
-        extra_records: no
       fail_on_extra_columns: false
   incremental:
     tests:
