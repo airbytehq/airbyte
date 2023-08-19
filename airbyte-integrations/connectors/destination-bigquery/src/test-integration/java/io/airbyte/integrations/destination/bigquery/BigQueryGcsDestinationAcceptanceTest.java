@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
+import java.util.HashSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
@@ -28,15 +29,15 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   /**
-   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This
-   * function will be called before EACH test.
+   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This function will be called before EACH test.
    *
-   * @see DestinationAcceptanceTest#setUpInternal()
-   * @param testEnv - information about the test environment.
+   * @param testEnv      - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
+   * @see DestinationAcceptanceTest#setUpInternal()
    */
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     // use secrets file with GCS staging config
     secretsFile = Path.of("secrets/credentials-gcs-staging.json");
     setUpBigQuery();
@@ -52,12 +53,13 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   /**
    * Removes data from bigquery and GCS This function will be called after EACH test
    *
-   * @see DestinationAcceptanceTest#tearDownInternal()
-   * @param testEnv - information about the test environment.
+   * @param testEnv      - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
+   * @see DestinationAcceptanceTest#tearDownInternal()
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     tearDownBigQuery();
     tearDownGcs();
   }

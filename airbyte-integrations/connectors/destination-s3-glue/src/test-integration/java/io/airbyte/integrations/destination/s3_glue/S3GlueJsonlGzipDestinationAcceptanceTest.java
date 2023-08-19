@@ -5,12 +5,13 @@
 package io.airbyte.integrations.destination.s3_glue;
 
 import io.airbyte.integrations.destination.s3.S3BaseJsonlGzipDestinationAcceptanceTest;
+import java.util.HashSet;
 
 public class S3GlueJsonlGzipDestinationAcceptanceTest extends S3BaseJsonlGzipDestinationAcceptanceTest {
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    super.tearDown(testEnv);
+  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+    super.tearDown(testEnv, TEST_SCHEMAS);
 
     GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(configJson);
     try (var glueTestClient = new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {
