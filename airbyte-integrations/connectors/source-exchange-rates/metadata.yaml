@@ -17,7 +17,7 @@ data:
   icon: exchangeratesapi.svg
   license: MIT
   name: Exchange Rates Api
-  releaseDate: TODO
+  releaseDate: 2023-08-19
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/exchange-rates
