@@ -29,7 +29,7 @@ data:
   tags:
     - language:java
   ab_internal:
-    sl: 200
+    sl: 100
     ql: 300
-  supportLevel: certified
+  supportLevel: community
 metadataSpecVersion: "1.0"

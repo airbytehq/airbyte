@@ -18,6 +18,8 @@ NOW = 1234567
         ("simple_match", [{"d": "2022-02-03"}], {"d": "%Y-%m-%d"}),
         ("timestamp_match_integer", [{"d": 1686058051}], {"d": "%s"}),
         ("timestamp_match_string", [{"d": "1686058051"}], {"d": "%s"}),
+        ("timestamp_ms_match_integer", [{"d": 1686058051000}], {"d": "%ms"}),
+        ("timestamp_ms_match_string", [{"d": "1686058051000"}], {"d": "%ms"}),
         ("timestamp_no_match_integer", [{"d": 99}], {}),
         ("timestamp_no_match_string", [{"d": "99999999999999999999"}], {}),
         ("simple_no_match", [{"d": "20220203"}], {}),
