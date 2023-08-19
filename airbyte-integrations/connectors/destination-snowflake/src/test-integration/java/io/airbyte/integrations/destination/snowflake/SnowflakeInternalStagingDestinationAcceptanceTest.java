@@ -31,10 +31,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 public class SnowflakeInternalStagingDestinationAcceptanceTest extends SnowflakeInsertDestinationAcceptanceTest {
 
   public JsonNode getStaticConfig() {
-    final JsonNode internalStagingConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
-    Preconditions.checkArgument(!SnowflakeDestinationResolver.isS3Copy(internalStagingConfig));
-    Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(internalStagingConfig));
-    return internalStagingConfig;
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
   }
 
   @Disabled("See README for why this test is disabled")
