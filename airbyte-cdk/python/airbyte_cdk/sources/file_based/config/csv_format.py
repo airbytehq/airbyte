@@ -4,9 +4,9 @@
 
 import codecs
 from enum import Enum
-from typing import Any, Mapping, Optional, Set
+from typing import Optional, Set
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, validator
 from typing_extensions import Literal
 
 
@@ -113,11 +113,3 @@ class CsvFormat(BaseModel):
         except LookupError:
             raise ValueError(f"invalid encoding format: {v}")
         return v
-
-    @root_validator
-    def validate_option_combinations(cls, values: Mapping[str, Any]) -> Mapping[str, Any]:
-        skip_rows_before_header = values.get("skip_rows_before_header", 0)
-        auto_generate_column_names = values.get("autogenerate_column_names", False)
-        if skip_rows_before_header > 0 and auto_generate_column_names:
-            raise ValueError("Cannot skip rows before header and autogenerate column names at the same time.")
-        return values

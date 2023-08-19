@@ -55,8 +55,8 @@ These iterations are more conveniently achieved by remaining in the current dire
 9. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
 10. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
 11. Open a PR on our GitHub repository
-12. Run the unit test on the CI by running `/legacy-test connector=bases/connector-acceptance-test` in a GitHub comment
-13. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test` in a GitHub comment
+12. This [Github action workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/cat-tests.yml) will be triggered an run the unit tests on your branch.
+13. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test run-tests=false` in a GitHub comment
 14. Merge your PR
 
 ## Migrating `acceptance-test-config.yml` to latest configuration format
