@@ -11,13 +11,13 @@
       "type": ["null", "integer"]
     },
     "base": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "rates": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "AED": {
           "type": ["null", "number"]

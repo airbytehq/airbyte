@@ -18,6 +18,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.PrimaryKeyAttributesFromDb;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -29,6 +31,8 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -228,6 +232,27 @@ public class MySqlSourceTests {
       final AirbyteConnectionStatus check = new MySqlSource().check(config);
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
     }
+  }
+
+  @Test
+  public void testPrimaryKeyOrder() {
+    final List<PrimaryKeyAttributesFromDb> primaryKeys = new ArrayList<>();
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col1", 3));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol1", 3));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col2", 2));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol2", 2));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col3", 1));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol3", 1));
+
+    final Map<String, List<String>> result = AbstractJdbcSource.aggregatePrimateKeys(primaryKeys);
+    assertEquals(2, result.size());
+    assertTrue(result.containsKey("stream-a"));
+    assertEquals(3, result.get("stream-a").size());
+    assertEquals(Arrays.asList("col3", "col2", "col1"), result.get("stream-a"));
+
+    assertTrue(result.containsKey("stream-b"));
+    assertEquals(3, result.get("stream-b").size());
+    assertEquals(Arrays.asList("xcol3", "xcol2", "xcol1"), result.get("stream-b"));
   }
 
 }
