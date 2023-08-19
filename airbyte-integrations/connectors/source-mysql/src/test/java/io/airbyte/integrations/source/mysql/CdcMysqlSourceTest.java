@@ -8,6 +8,7 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
+import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
 import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -38,6 +40,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -156,6 +159,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertNull(data.get(CDC_LOG_POS));
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
+    assertNull(data.get(CDC_DEFAULT_CURSOR));
   }
 
   @Override
@@ -163,6 +167,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertNotNull(data.get(CDC_LOG_FILE));
     assertNotNull(data.get(CDC_LOG_POS));
     assertNotNull(data.get(CDC_UPDATED_AT));
+    assertNotNull(data.get(CDC_DEFAULT_CURSOR));
     if (deletedAtNull) {
       assertTrue(data.get(CDC_DELETED_AT).isNull());
     } else {
@@ -176,6 +181,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     data.remove(CDC_LOG_POS);
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
+    data.remove(CDC_DEFAULT_CURSOR);
   }
 
   @Override
@@ -183,18 +189,21 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
+    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
   }
 
   @Override
   protected void addCdcDefaultCursorField(final AirbyteStream stream) {
-    // Leaving empty until cdc default cursor is implemented for MySQL
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    }
   }
 
   @Override
@@ -298,5 +307,4 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
     assertExpectedStateMessages(stateMessages);
   }
-
 }
