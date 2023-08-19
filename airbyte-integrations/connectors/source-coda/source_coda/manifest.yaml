@@ -42,27 +42,43 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
+  base_paginator:
+    type: "DefaultPaginator"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ last_records['href'] }}"
+    page_token_option:
+      type: "RequestPath"
+      field_name: "from"
+      inject_into: "url_base"
+
   docs_stream:
     $ref: "#/definitions/parent_base_stream"
-    name: "docs"
-    primary_key: "id"
     $parameters:
+      name: "docs"
+      primary_key: "id"
       path: "docs"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
 
   categories_stream:
     $ref: "#/definitions/parent_base_stream"
-    name: "categories"
-    primary_key: "name"
     $parameters:
+      name: "categories"
+      primary_key: "name"
       path: "categories"
 
   permissions_stream:
     $parameters:
       name: "permissions"
-    primary_key: "id"
+      primary_key: "id"
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever_with_partition"
+      paginator:
+        $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/acl/permissions"
@@ -74,6 +90,8 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever_with_partition"
+      paginator:
+        $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/pages"
@@ -85,6 +103,8 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever_with_partition"
+      paginator:
+        $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/tables"
@@ -96,6 +116,8 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever_with_partition"
+      paginator:
+        $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/formulas"
@@ -107,6 +129,8 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever_with_partition"
+      paginator:
+        $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/controls"
