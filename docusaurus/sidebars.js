@@ -37,11 +37,16 @@ const sourcePostgres = {
        id: 'integrations/sources/postgres',
    },
    items: [
-      {
+        {
+          type: "doc",
+          label: "Cloud SQL for Postgres",
+          id: "integrations/sources/postgres/cloud-sql-postgres",
+        },
+        {
         type: "doc",
         label: "Troubleshooting",
         id: "integrations/sources/postgres/postgres-troubleshooting",
-      }
+        }
    ],
 };
 
@@ -461,7 +466,7 @@ module.exports = {
     },
     {
       type: 'doc',
-      id: 'airbyte-pro',
+      id: 'airbyte-enterprise',
     },
     sectionHeader("Developer Guides"),
     {
@@ -518,6 +523,7 @@ module.exports = {
       },
       items: [
         "release_notes/upgrading_to_destinations_v2",
+        "release_notes/july_2023",
         "release_notes/june_2023",
         "release_notes/may_2023",
         "release_notes/april_2023",
