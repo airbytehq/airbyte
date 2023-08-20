@@ -10,7 +10,7 @@ To review the sync summary:
 
     :::note 
     
-    Airbyte will try to sync your data five times. After a fifth failure, it will stop attempting to sync.
+    In the event of a failure, Airbyte will make several attempts to sync your data before giving up. The latest rules can be read about [here](../../understanding-airbyte/jobs.md#retry-rules).
     
     :::
     
