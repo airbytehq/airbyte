@@ -1805,7 +1805,8 @@ public abstract class DestinationAcceptanceTest {
           .filter(testCase -> testCase.get("enabled").asBoolean())
           .map(testCase -> Arguments.of(
               testCase.get("id").asText(),
-              testCase.get("namespace").asText(),
+              // Randomise namespace to avoid collisions between tests.
+              Strings.addRandomSuffix(testCase.get("namespace").asText(),"", 5),
               testCase.get("normalized").asText()));
     }
 
