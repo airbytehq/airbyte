@@ -1806,7 +1806,7 @@ public abstract class DestinationAcceptanceTest {
           .map(testCase -> Arguments.of(
               testCase.get("id").asText(),
               // Randomise namespace to avoid collisions between tests.
-              Strings.addRandomSuffix(testCase.get("namespace").asText(),"", 5),
+              Strings.addRandomSuffix(testCase.get("namespace").asText(), "", 5),
               testCase.get("normalized").asText()));
     }
 
