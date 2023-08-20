@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Grids Schema",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "isSource": {
+            "type": ["null", "boolean"]
+          },
+          "isTarget": {
+            "type": ["null", "boolean"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          },
+          "languageCode": {
+            "type": ["null", "string"]
+          },
+          "localizationType": {
+            "type": ["null", "string"]
+          },
+          "dependsOn": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "defaultAccessViewId": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "defaultAccessViewId": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "recordIdentifierType": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    }
+  }
+}

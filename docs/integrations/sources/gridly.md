@@ -36,4 +36,5 @@ Gridly support version control, by default the `grid id` is the same to the `bra
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.2.0   | 2023-08-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate to low code |
 | 0.1.1   | 2022-12-08 | [20048](https://github.com/airbytehq/airbyte/pull/20048) | Source Gridly: add icon and make grid_id parameter required |

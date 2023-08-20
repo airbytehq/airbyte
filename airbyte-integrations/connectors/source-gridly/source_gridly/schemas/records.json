@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Records Schema",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "cells": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "columnId": {
+            "type": ["null", "string"]
+          },
+          "value": {},
+          "sourceStatus": {
+            "type": ["null", "string"]
+          },
+          "dependencyStatus": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
