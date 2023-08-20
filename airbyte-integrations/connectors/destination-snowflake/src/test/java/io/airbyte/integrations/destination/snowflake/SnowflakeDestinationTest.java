@@ -40,8 +40,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class SnowflakeDestinationTest {
 
-  private static final ObjectMapper mapper = MoreMappers.initMapper();
-
   @BeforeEach
   public void setup() {
     DestinationConfig.initialize(Jsons.emptyObject());
@@ -89,43 +87,6 @@ public class SnowflakeDestinationTest {
     assertEquals(isMatch, matcher.find());
   }
 
-  @Test
-  @DisplayName("When given S3 credentials should use COPY")
-  public void useS3CopyStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("s3_bucket_name", "fake-bucket");
-    stubLoadingMethod.put("access_key_id", "test");
-    stubLoadingMethod.put("secret_access_key", "test key");
-
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
-
-    assertTrue(SnowflakeDestinationResolver.isS3Copy(stubConfig));
-  }
-
-  @Test
-  @DisplayName("When given GCS credentials should use COPY")
-  public void useGcsCopyStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("project_id", "my-project");
-    stubLoadingMethod.put("bucket_name", "my-bucket");
-    stubLoadingMethod.put("credentials_json", "hunter2");
-
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
-
-    assertTrue(SnowflakeDestinationResolver.isGcsCopy(stubConfig));
-  }
-
-  @Test
-  @DisplayName("When not given S3 credentials should use INSERT")
-  public void useInsertStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
-    assertFalse(SnowflakeDestinationResolver.isS3Copy(stubConfig));
-  }
-
   @ParameterizedTest
   @MethodSource("destinationTypeToConfig")
   public void testS3ConfigType(final String configFileName, final DestinationType expectedDestinationType) throws Exception {
@@ -135,10 +96,7 @@ public class SnowflakeDestinationTest {
   }
 
   private static Stream<Arguments> destinationTypeToConfig() {
-    return Stream.of(
-        arguments("copy_gcs_config.json", DestinationType.COPY_GCS),
-        arguments("copy_s3_config.json", DestinationType.COPY_S3),
-        arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
+    return Stream.of(arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }
 
   @Test
@@ -148,44 +106,5 @@ public class SnowflakeDestinationTest {
         .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
     assertEquals(AsyncStreamConsumer.class, consumer.getClass());
   }
-
-  static class TestEnableAsyncArgumentsProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-      final var mapper = new ObjectMapper();
-      final var standard = mapper.createObjectNode();
-      final var internalStagingSpace = mapper.createObjectNode();
-      final var internalStagingSpaceCapital = mapper.createObjectNode();
-      final var internalStagingDash = mapper.createObjectNode();
-      final var internalStagingUnderscore = mapper.createObjectNode();
-      final var noLoadingMethod = mapper.createObjectNode();
-      standard.put("loading_method", mapper.createObjectNode().put("method", "standard"));
-      internalStagingSpace.put("loading_method", mapper.createObjectNode().put("method", "internal staging"));
-      internalStagingSpaceCapital.put("loading_method", mapper.createObjectNode().put("method", "INTERNAL STAGING"));
-      internalStagingDash.put("loading_method", mapper.createObjectNode().put("method", "internal-staging"));
-      internalStagingUnderscore.put("loading_method", mapper.createObjectNode().put("method", "internal_staging"));
-      noLoadingMethod.put("loading_method", "standard");
-
-      return Stream.of(
-              Arguments.of(standard, false),
-              Arguments.of(internalStagingSpace, true),
-              Arguments.of(internalStagingSpaceCapital, true),
-              Arguments.of(internalStagingDash, true),
-              Arguments.of(internalStagingUnderscore, true),
-              Arguments.of(mapper.createObjectNode(), false),
-              Arguments.of(noLoadingMethod, false)
-      );
-    }
-  }
-
-
-  @ParameterizedTest
-  @ArgumentsSource(TestEnableAsyncArgumentsProvider.class)
-  public void testEnableAsync(final JsonNode config, boolean expected) {
-    final var actual = SnowflakeDestination.useAsyncSnowflake(config);
-    Assertions.assertEquals(expected, actual);
-  }
-
 
 }
