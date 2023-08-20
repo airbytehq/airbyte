@@ -165,7 +165,7 @@ Connector documentation and changelogs are markdown files living either [here fo
 ## Using credentials in CI
 
 In order to run integration tests in CI, you'll often need to inject credentials into CI. There are a few steps for doing this:
-1. **Place the credentials into Google Secret Manager(GSM)**: Airbyte uses a project 'Google Secret Manager' service as the source of truth for all CI secrets. Place the credentials **exactly as they should be used by the connector** into a GSM secret [here](https://console.cloud.google.com/security/secret-manager?referrer=search&orgonly=true&project=dataline-integration-testing&supportedpurview=organizationId) i.e.: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `SECRET_<capital source OR destination name>_CREDS` e.g: `SECRET_SOURCE-S3_CREDS` or `SECRET_DESTINATION-SNOWFLAKE_CREDS`.
+1. **Place the credentials into Google Secret Manager(GSM)**: Airbyte uses a project 'Google Secret Manager' service as the source of truth for all CI secrets. Place the credentials **exactly as they should be used by the connector** into a GSM secret [here](https://console.cloud.google.com/security/secret-manager?referrer=search&orgonly=true&project=ab-connector-integration-test&supportedpurview=organizationId) i.e.: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `SECRET_<capital source OR destination name>_CREDS` e.g: `SECRET_SOURCE-S3_CREDS` or `SECRET_DESTINATION-SNOWFLAKE_CREDS`.
 2. **Add the GSM secret's labels**:
     * `connector` (required) -- unique connector's name or set of connectors' names with '_' as delimiter i.e.: `connector=source-s3`, `connector=destination-snowflake`
     * `filename` (optional) -- custom target secret file. Unfortunately Google doesn't use '.' into labels' values and so Airbyte CI scripts will add '.json' to the end automatically. By default secrets will be saved to `./secrets/config.json` i.e: `filename=config_auth` => `secrets/config_auth.json`
@@ -174,8 +174,8 @@ In order to run integration tests in CI, you'll often need to inject credentials
 
 #### Access CI secrets on GSM
 Access to GSM storage is limited to Airbyte employees. To give an employee permissions to the project:
-1. Go to the permissions' [page](https://console.cloud.google.com/iam-admin/iam?project=dataline-integration-testing)
-2. Add a new principal to `dataline-integration-testing`:
+1. Go to the permissions' [page](https://console.cloud.google.com/iam-admin/iam?project=ab-connector-integration-test)
+2. Add a new principal to `ab-connector-integration-test`:
 - input their login email
 - select the role `Development_CI_Secrets`
 3. Save
