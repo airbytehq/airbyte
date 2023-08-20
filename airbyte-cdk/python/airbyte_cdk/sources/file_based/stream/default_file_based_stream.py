@@ -6,7 +6,7 @@ import asyncio
 import itertools
 import traceback
 from functools import cache
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
@@ -20,7 +20,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     StopSyncPerValidationPolicy,
 )
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema
+from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
@@ -84,7 +84,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             n_skipped = line_no = 0
 
             try:
-                for record in parser.parse_records(self.config, file, self._stream_reader, self.logger):
+                for record in parser.parse_records(self.config, file, self._stream_reader, self.logger, schema):
                     line_no += 1
                     if self.config.schemaless:
                         record = {"data": record}
@@ -101,7 +101,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(
                         level=Level.WARN,
-                        message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy} n_skipped={n_skipped}",
+                        message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy.value} n_skipped={n_skipped}",
                     ),
                 )
                 break
@@ -162,7 +162,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
-            return self.config.input_schema  # type: ignore
+            return self.config.get_input_schema()  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
         else:
@@ -200,7 +200,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         The output of this method is cached so we don't need to list the files more than once.
         This means we won't pick up changes to the files during a sync.
         """
-        return list(self._stream_reader.get_matching_files(self.config.globs or [], self.logger))
+        return list(self._stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger))
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
@@ -231,8 +231,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         Each file type has a corresponding `infer_schema` handler.
         Dispatch on file type.
         """
-        base_schema: Dict[str, Any] = {}
-        pending_tasks: Set[asyncio.tasks.Task[Dict[str, Any]]] = set()
+        base_schema: SchemaType = {}
+        pending_tasks: Set[asyncio.tasks.Task[SchemaType]] = set()
 
         n_started, n_files = 0, len(files)
         files_iterator = iter(files)
@@ -251,7 +251,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         return base_schema
 
-    async def _infer_file_schema(self, file: RemoteFile) -> Dict[str, Any]:
+    async def _infer_file_schema(self, file: RemoteFile) -> SchemaType:
         try:
             return await self.get_parser(self.config.file_type).infer_schema(self.config, file, self._stream_reader, self.logger)
         except Exception as exc:

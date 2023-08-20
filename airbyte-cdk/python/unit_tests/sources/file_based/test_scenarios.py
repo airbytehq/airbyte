@@ -11,6 +11,7 @@ import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
+from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from pytest import LogCaptureFixture
@@ -42,7 +43,6 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_custom_null_values_scenario,
     csv_double_quote_is_set_scenario,
     csv_escape_char_is_set_scenario,
-    csv_legacy_format_scenario,
     csv_multi_stream_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_newline_in_values_quoted_value_scenario,
@@ -50,6 +50,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_skip_after_header_scenario,
     csv_skip_before_and_after_header_scenario,
     csv_skip_before_header_scenario,
+    csv_string_are_not_null_if_strings_can_be_null_is_false_scenario,
     csv_string_can_be_null_with_input_schemas_scenario,
     csv_string_not_null_if_no_null_values_scenario,
     csv_strings_can_be_null_not_quoted_scenario,
@@ -97,9 +98,9 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     multi_parquet_scenario,
     parquet_file_with_decimal_as_float_scenario,
     parquet_file_with_decimal_as_string_scenario,
-    parquet_file_with_decimal_legacy_config_scenario,
     parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
+    parquet_with_invalid_config_scenario,
     single_parquet_scenario,
     single_partitioned_parquet_scenario,
 )
@@ -117,8 +118,6 @@ from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import 
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
-    invalid_validation_policy,
-    no_validation_policy,
     skip_record_scenario_multi_stream,
     skip_record_scenario_single_stream,
     wait_for_rediscovery_scenario_multi_stream,
@@ -148,7 +147,6 @@ discover_scenarios = [
     single_csv_file_is_skipped_if_same_modified_at_as_in_history,
     single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
     csv_custom_format_scenario,
-    csv_legacy_format_scenario,
     earlier_csv_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
@@ -170,7 +168,6 @@ discover_scenarios = [
     multi_stream_user_input_schema_scenario_schema_is_invalid,
     valid_multi_stream_user_input_schema_scenario,
     valid_single_stream_user_input_schema_scenario,
-    parquet_file_with_decimal_legacy_config_scenario,
     single_jsonl_scenario,
     multi_jsonl_with_different_keys_scenario,
     multi_jsonl_stream_n_file_exceeds_limit_for_inference,
@@ -181,6 +178,7 @@ discover_scenarios = [
     schemaless_jsonl_scenario,
     schemaless_jsonl_multi_stream_scenario,
     csv_string_can_be_null_with_input_schemas_scenario,
+    csv_string_are_not_null_if_strings_can_be_null_is_false_scenario,
     csv_string_not_null_if_no_null_values_scenario,
     csv_strings_can_be_null_not_quoted_scenario,
     csv_newline_in_values_quoted_value_scenario,
@@ -200,7 +198,8 @@ discover_scenarios = [
     avro_file_with_double_as_number_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_autogenerate_column_names_scenario,
-    single_partitioned_parquet_scenario
+    parquet_with_invalid_config_scenario,
+    single_partitioned_parquet_scenario,
 ]
 
 
@@ -226,8 +225,6 @@ def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Te
 read_scenarios = discover_scenarios + [
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
-    invalid_validation_policy,
-    no_validation_policy,
     skip_record_scenario_multi_stream,
     skip_record_scenario_single_stream,
     wait_for_rediscovery_scenario_multi_stream,
@@ -238,6 +235,7 @@ read_scenarios = discover_scenarios + [
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
 def test_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
+    caplog.handler.setFormatter(AirbyteLogFormatter())
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, caplog, tmp_path, scenario)
     else:
@@ -377,23 +375,23 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
 
 
 def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
-    launch(
-        scenario.source,
-        [
-            "read",
-            "--config",
-            make_file(tmp_path / "config.json", scenario.config),
-            "--catalog",
-            make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.full_refresh)),
-        ],
-    )
-    captured = capsys.readouterr().out.splitlines()
-    logs = caplog.records
-    return {
-        "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
-        "logs": [msg["log"] for msg in (json.loads(line) for line in captured) if msg["type"] == "LOG"]
-        + [{"level": log.levelname, "message": log.message} for log in logs],
-    }
+    with caplog.handler.stream as logger_stream:
+        launch(
+            scenario.source,
+            [
+                "read",
+                "--config",
+                make_file(tmp_path / "config.json", scenario.config),
+                "--catalog",
+                make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.full_refresh)),
+            ],
+        )
+        captured = capsys.readouterr().out.splitlines() + logger_stream.getvalue().split("\n")[:-1]
+
+        return {
+            "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
+            "logs": [msg["log"] for msg in (json.loads(line) for line in captured) if msg["type"] == "LOG"],
+        }
 
 
 def read_with_state(

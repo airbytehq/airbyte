@@ -16,6 +16,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
     DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL = 3
     DEFAULT_MAX_HISTORY_SIZE = 10_000
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+    CURSOR_FIELD = "_ab_source_file_last_modified"
 
     def __init__(self, stream_config: FileBasedStreamConfig, **_: Any):
         super().__init__(stream_config)
@@ -48,7 +49,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
                 )
 
     def get_state(self) -> StreamState:
-        state = {"history": self._file_to_datetime_history, "_ab_source_file_last_modified": self._get_cursor()}
+        state = {"history": self._file_to_datetime_history, self.CURSOR_FIELD: self._get_cursor()}
         return state
 
     def _get_cursor(self) -> Optional[str]:

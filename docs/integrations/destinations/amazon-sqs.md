@@ -18,7 +18,7 @@ Amazon SQS messages can only contain JSON, XML or text, and this connector suppo
 | :--- | :--- | :--- |
 | Full Refresh Sync | No |  |
 | Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No |  |
+| Incremental - Append + Deduped | No |  |
 | Namespaces | No |  |
 
 ## Getting started
@@ -33,7 +33,7 @@ Amazon SQS messages can only contain JSON, XML or text, and this connector suppo
 
 If the target SQS Queue is not public, you will need the following permissions on the Queue:
 
-* `sqs:SendMessage` 
+* `sqs:SendMessage`
 
 ### Properties
 
@@ -54,9 +54,9 @@ Required properties are 'Queue URL' and 'AWS Region' as noted in **bold** below.
 * Message Body Key (STRING)
   * Rather than sending the entire Record as the Message Body, use this property to reference a Key in the Record to use as the message body. The value of this property should be the Key name in the input Record. The key must be at the top level of the Record, nested Keys are not supported.
 * Message Group Id (STRING)
-  * When using a FIFO queue, this property is **required**. 
+  * When using a FIFO queue, this property is **required**.
   * See the [AWS SQS documentation](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html) for more detail.
-  
+
 ### Setup guide
 
 * [Create IAM Keys](https://aws.amazon.com/premiumsupport/knowledge-center/create-access-key/)

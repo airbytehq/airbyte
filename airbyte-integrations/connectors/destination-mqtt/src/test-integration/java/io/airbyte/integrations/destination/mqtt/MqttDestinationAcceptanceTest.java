@@ -22,6 +22,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -139,7 +140,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws MqttException {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws MqttException {
     recordsPerTopic.clear();
     client = new MqttClient("tcp://" + extension.getHost() + ":" + extension.getMqttPort(), UUID.randomUUID().toString(), new MemoryPersistence());
 
@@ -156,7 +157,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws MqttException {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws MqttException {
     client.disconnectForcibly();
     client.close();
   }

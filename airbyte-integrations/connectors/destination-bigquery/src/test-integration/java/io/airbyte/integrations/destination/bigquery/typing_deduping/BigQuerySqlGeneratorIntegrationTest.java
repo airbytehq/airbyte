@@ -8,11 +8,13 @@ import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.DatasetInfo;
@@ -27,19 +29,27 @@ import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +78,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
-  protected void createNamespace(String namespace) {
+  protected void createNamespace(final String namespace) {
     bq.create(DatasetInfo.newBuilder(namespace)
         // This unfortunately doesn't delete the actual dataset after 3 days, but at least we'll clear out old tables automatically
         .setDefaultTableLifetime(Duration.ofDays(3).toMillis())
@@ -76,7 +86,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
-  protected void createRawTable(StreamId streamId) throws InterruptedException {
+  protected void createRawTable(final StreamId streamId) throws InterruptedException {
     bq.query(QueryJobConfiguration.newBuilder(
             new StringSubstitutor(Map.of(
                 "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
@@ -90,28 +100,48 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                       DATE_TRUNC(_airbyte_extracted_at, DAY)
                     ) CLUSTER BY _airbyte_loaded_at;
                     """))
-        .build());
+                                  .build());
   }
 
   @Override
-  protected void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws InterruptedException {
-    String cdcDeletedAt = includeCdcDeletedAt ? "`_ab_cdc_deleted_at` TIMESTAMP," : "";
+  protected void createV1RawTable(final StreamId v1RawTable) throws Exception {
+    bq.query(
+        QueryJobConfiguration
+            .newBuilder(
+                new StringSubstitutor(Map.of(
+                    "raw_table_id", v1RawTable.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
+                    """
+                        CREATE TABLE ${raw_table_id} (
+                          _airbyte_ab_id STRING NOT NULL,
+                          _airbyte_data STRING NOT NULL,
+                          _airbyte_emitted_at TIMESTAMP NOT NULL,
+                        ) PARTITION BY (
+                          DATE_TRUNC(_airbyte_emitted_at, DAY)
+                        ) CLUSTER BY _airbyte_emitted_at;
+                        """))
+            .build());
+  }
+
+  @Override
+  protected void createFinalTable(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix) throws InterruptedException {
+    final String cdcDeletedAt = includeCdcDeletedAt ? "`_ab_cdc_deleted_at` TIMESTAMP," : "";
     bq.query(QueryJobConfiguration.newBuilder(
-            new StringSubstitutor(Map.of(
-                "final_table_id", streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix),
-                "cdc_deleted_at", cdcDeletedAt)).replace(
-                """
-                    CREATE TABLE ${final_table_id} (
-                      _airbyte_raw_id STRING NOT NULL,
-                      _airbyte_extracted_at TIMESTAMP NOT NULL,
-                      _airbyte_meta JSON NOT NULL,
-                      `id1` INT64,
-                      `id2` INT64,
-                      `updated_at` TIMESTAMP,
-                      ${cdc_deleted_at}
-                      `struct` JSON,
-                      `array` JSON,
-                      `string` STRING,
+                                      new StringSubstitutor(Map.of(
+                                          "final_table_id", streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix),
+                                          "cdc_deleted_at", cdcDeletedAt
+                                      )).replace(
+                                          """
+                                              CREATE TABLE ${final_table_id} (
+                                                _airbyte_raw_id STRING NOT NULL,
+                                                _airbyte_extracted_at TIMESTAMP NOT NULL,
+                                                _airbyte_meta JSON NOT NULL,
+                                                `id1` INT64,
+                                                `id2` INT64,
+                                                `updated_at` TIMESTAMP,
+                                                ${cdc_deleted_at}
+                                                `struct` JSON,
+                                                `array` JSON,
+                                                `string` STRING,
                       `number` NUMERIC,
                       `integer` INT64,
                       `boolean` BOOL,
@@ -129,11 +159,11 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
-  protected void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws InterruptedException {
-    List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
-    String cdcDeletedAtDecl = includeCdcDeletedAt ? ",`_ab_cdc_deleted_at` TIMESTAMP" : "";
-    String cdcDeletedAtName = includeCdcDeletedAt ? ",`_ab_cdc_deleted_at`" : "";
-    String recordsText = records.stream()
+  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix, final List<JsonNode> records) throws InterruptedException {
+    final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
+    final String cdcDeletedAtDecl = includeCdcDeletedAt ? ",`_ab_cdc_deleted_at` TIMESTAMP" : "";
+    final String cdcDeletedAtName = includeCdcDeletedAt ? ",`_ab_cdc_deleted_at`" : "";
+    final String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
         .map(record -> columnNames.stream()
             .map(record::get)
@@ -141,7 +171,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
               if (r == null) {
                 return "NULL";
               }
-              String stringContents;
+              final String stringContents;
               if (r.isTextual()) {
                 stringContents = r.asText();
               } else {
@@ -231,65 +261,93 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                       ${records}
                     ])
                     """))
-        .build());
+                                  .build());
+  }
+
+  private String stringifyRecords(final List<JsonNode> records, final List<String> columnNames) {
+    return records.stream()
+                  // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
+                  .map(record -> columnNames.stream()
+                                            .map(record::get)
+                                            .map(r -> {
+                                              if (r == null) {
+                                                return "NULL";
+                                              }
+                                              final String stringContents;
+                                              if (r.isTextual()) {
+                                                stringContents = r.asText();
+                                              } else {
+                                                stringContents = r.toString();
+                                              }
+                                              return '"' + stringContents
+                                                  // Serialized json might contain backslashes and double quotes. Escape them.
+                                                  .replace("\\", "\\\\")
+                                                  .replace("\"", "\\\"") + '"';
+                                            })
+                                            .collect(joining(",")))
+                  .map(row -> "(" + row + ")")
+                  .collect(joining(","));
   }
 
   @Override
-  protected void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws InterruptedException {
-    String recordsText = records.stream()
-        // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
-        .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES.stream()
-            .map(record::get)
-            .map(r -> {
-              if (r == null) {
-                return "NULL";
-              }
-              String stringContents;
-              if (r.isTextual()) {
-                stringContents = r.asText();
-              } else {
-                stringContents = r.toString();
-              }
-              return '"' + stringContents
-                  // Serialized json might contain backslashes and double quotes. Escape them.
-                  .replace("\\", "\\\\")
-                  .replace("\"", "\\\"") + '"';
-            })
-            .collect(joining(",")))
-        .map(row -> "(" + row + ")")
-        .collect(joining(","));
+  protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws InterruptedException {
+    final String recordsText = stringifyRecords(records, JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES);
 
     bq.query(QueryJobConfiguration.newBuilder(
-            new StringSubstitutor(Map.of(
-                "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
-                "records", recordsText)).replace(
-                // Note the parse_json call, and that _airbyte_data is declared as a string.
-                // This is needed because you can't insert a string literal into a JSON column
-                // so we build a struct literal with a string field, and then parse the field when inserting to the table.
-                """
-                    INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
-                    SELECT _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, parse_json(_airbyte_data) FROM UNNEST([
-                      STRUCT<`_airbyte_raw_id` STRING, `_airbyte_extracted_at` TIMESTAMP, `_airbyte_loaded_at` TIMESTAMP, _airbyte_data STRING>
-                      ${records}
-                    ])
-                    """))
-        .build());
+                                      new StringSubstitutor(Map.of(
+                                          "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
+                                          "records", recordsText
+                                      )).replace(
+                                          // Note the parse_json call, and that _airbyte_data is declared as a string.
+                                          // This is needed because you can't insert a string literal into a JSON column
+                                          // so we build a struct literal with a string field, and then parse the field when inserting to the table.
+                                          """
+                                              INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
+                                              SELECT _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, parse_json(_airbyte_data) FROM UNNEST([
+                                                STRUCT<`_airbyte_raw_id` STRING, `_airbyte_extracted_at` TIMESTAMP, `_airbyte_loaded_at` TIMESTAMP, _airbyte_data STRING>
+                                                ${records}
+                                              ])
+                                              """))
+                                  .build());
   }
 
   @Override
-  protected List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception {
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.rawTableId(BigQuerySqlGenerator.QUOTE)));
+  protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+    final String recordsText = stringifyRecords(records, JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS);
+    bq.query(
+        QueryJobConfiguration
+            .newBuilder(
+                new StringSubstitutor(Map.of(
+                    "v1_raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
+                    "records", recordsText
+                )).replace(
+                    """
+                        INSERT INTO ${v1_raw_table_id} (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at)
+                        SELECT _airbyte_ab_id, _airbyte_data, _airbyte_emitted_at FROM UNNEST([
+                          STRUCT<`_airbyte_ab_id` STRING, _airbyte_data STRING, `_airbyte_emitted_at` TIMESTAMP>
+                          ${records}
+                        ])
+                        """
+                )
+            )
+            .build()
+    );
+  }
+
+  @Override
+  protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
+    final TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.rawTableId(BigQuerySqlGenerator.QUOTE)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix)));
+  protected List<JsonNode> dumpFinalTableRecords(final StreamId streamId, final String suffix) throws Exception {
+    final TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
   @Override
-  protected void teardownNamespace(String namespace) {
+  protected void teardownNamespace(final String namespace) {
     bq.delete(namespace, BigQuery.DatasetDeleteOption.deleteContents());
   }
 
@@ -331,7 +389,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Test
   public void testCreateTableInOtherRegion() throws InterruptedException {
-    BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
+    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
 
@@ -350,6 +408,40 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
       }
     }
     fail("Dataset does not exist");
+  }
+
+  /**
+   * Bigquery column names aren't allowed to start with certain prefixes. Verify that we throw an error in these cases.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "_table_",
+      "_file_",
+      "_partition_",
+      "_row_timestamp_",
+      "__root__",
+      "_colidentifier_"
+  })
+  public void testFailureOnReservedColumnNamePrefix(final String prefix) {
+    final StreamConfig stream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND,
+        null,
+        Optional.empty(),
+        new LinkedHashMap<>() {
+
+          {
+            put(generator.buildColumnId(prefix + "the_column_name"), AirbyteProtocolType.STRING);
+          }
+
+        });
+
+    final String createTable = generator.createTable(stream, "");
+    assertThrows(
+        BigQueryException.class,
+        () -> destinationHandler.execute(createTable)
+    );
   }
 
   /**

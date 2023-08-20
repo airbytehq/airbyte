@@ -5,7 +5,7 @@ connectionSpecification:
   type: object
   required:
     - docker_username
-  additionalProperties: false
+  additionalProperties: true
   properties:
     docker_username:
       type: string

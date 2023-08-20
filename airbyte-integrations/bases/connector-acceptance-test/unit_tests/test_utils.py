@@ -12,15 +12,12 @@ from pathlib import Path
 from typing import Iterable
 from unittest.mock import Mock
 
-import docker
 import pytest
 import yaml
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from connector_acceptance_test.config import EmptyStreamConfiguration
 from connector_acceptance_test.utils import common
 from connector_acceptance_test.utils.compare import make_hashable
-from connector_acceptance_test.utils.connector_runner import ConnectorRunner
-from docker.errors import ContainerError, NotFound
 
 
 def not_sorted_data():
@@ -208,93 +205,6 @@ def binary_generator(lengths, last_line=None):
         yield ("bla-1234567890-bla\n" + last_line).encode()
 
 
-def test_successful_logs_reading():
-    line_count = 100
-    line_lengths = [random.randint(0, 256) for _ in range(line_count)]
-    lines = [
-        line for line in ConnectorRunner.read(container=MockContainer(status={"StatusCode": 0}, iter_logs=binary_generator(line_lengths)))
-    ]
-    assert line_count == len(lines)
-    for line, length in zip(lines, line_lengths):
-        assert len(line) - 1 == length
-
-
-@pytest.mark.parametrize(
-    "traceback,container_error,last_line,expected_error",
-    (
-        # container returns a some internal error
-        (
-            "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'",
-            "Some Container Error",
-            "Last Container Logs Line",
-            "Some Container Error",
-        ),
-        # container returns a raw traceback
-        (
-            "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'",
-            None,
-            "Last Container Logs Line",
-            "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'",
-        ),
-        # container doesn't return any tracebacks or errors
-        (
-            None,
-            None,
-            "Last Container Logs Line",
-            "Last Container Logs Line",
-        ),
-    ),
-    ids=["interal_error", "traceback", "last_line"],
-)
-def test_failed_reading(traceback, container_error, last_line, expected_error):
-    line_count = 10
-    line_lengths = [random.randint(0, 32) for _ in range(line_count)]
-
-    with pytest.raises(ContainerError) as exc:
-        status = {"StatusCode": 1}
-        if container_error:
-            status["Error"] = container_error
-        list(
-            ConnectorRunner.read(
-                container=MockContainer(
-                    status=status, iter_logs=binary_generator(line_lengths, traceback or last_line)
-                )
-            )
-        )
-
-    assert expected_error == exc.value.stderr
-
-
-@pytest.mark.parametrize(
-    "command,wait_timeout,expected_count",
-    (
-        (
-            "cnt=0; while [ $cnt -lt 10 ]; do cnt=$((cnt+1)); echo something; done",
-            0,
-            10,
-        ),
-        # Sometimes a container can finish own work before python tries to read it
-        ("echo something;", 0.1, 1),
-    ),
-    ids=["standard", "waiting"],
-)
-def test_docker_runner(command, wait_timeout, expected_count):
-    client = docker.from_env()
-    new_container = client.containers.run(
-        image="busybox",
-        command=f"""sh -c '{command}'""",
-        detach=True,
-    )
-    if wait_timeout:
-        time.sleep(wait_timeout)
-    lines = list(ConnectorRunner.read(new_container, command=command))
-    assert set(lines) == set(["something\n"])
-    assert len(lines) == expected_count
-
-    for container in client.containers.list(all=True, ignore_removed=True):
-        assert container.id != new_container.id, "Container should be removed after reading"
-
-
 def wait_status(container, expected_statuses):
     """Waits expected_statuses for 5 sec"""
     for _ in range(500):
@@ -303,23 +213,6 @@ def wait_status(container, expected_statuses):
         time.sleep(0.01)
     assert False, f"container of the image {container.image} has the status '{container.status}', "
     f"expected statuses: {expected_statuses}"
-
-
-def test_not_found_container():
-    """Case when a container was removed before its reading"""
-    client = docker.from_env()
-    cmd = """sh -c 'sleep 100; exit 0'"""
-    new_container = client.containers.run(
-        image="busybox",
-        command=cmd,
-        detach=True,
-        auto_remove=True,
-    )
-    wait_status(new_container, ["running", "created"])
-    new_container.remove(force=True)
-
-    with pytest.raises(NotFound):
-        list(ConnectorRunner.read(new_container, command=cmd))
 
 
 class TestLoadYamlOrJsonPath:
