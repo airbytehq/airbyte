@@ -134,6 +134,16 @@ def _create_datetime(dt: str) -> datetime:
             },
             id="v4-migrated-from-v3",
         ),
+        pytest.param(
+            {"history": {}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
+            {
+                "history": {},
+                "_ab_source_file_last_modified": None,
+                "v3_min_sync_date": "2023-07-31T23:00:00.000000Z",
+            },
+            id="empty-history-with-cursor",
+        ),
+
     ],
 )
 def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state: MutableMapping[str, Any]) -> None:
@@ -406,7 +416,7 @@ def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync,
             id="legacy_state_with_invalid_last_modified_datetime_format_is_not_legacy",
         ),
         pytest.param(
-            {"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, False, id="legacy_state_without_history_is_not_legacy_state"
+            {"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, True, id="legacy_state_without_history_is_legacy_state"
         ),
         pytest.param({"history": {"2023-08-01": ["file1.txt"]}}, False, id="legacy_state_without_last_modified_cursor_is_not_legacy_state"),
         pytest.param(
