@@ -1,0 +1,22 @@
+{"properties": {
+  "id": {
+    "type": ["string"]
+  },
+  "object": {
+    "type": ["string", "null"]
+  },
+  "livemode": {
+    "type": ["boolean", "null"]
+  },
+  "quantity": {
+    "type": ["integer", "null"]
+  },
+  "subscription_item": {
+    "type": ["string", "null"]    
+  },
+  "timestamp": {
+  "type": ["integer"], 
+  "format": "date-time"
+  }
+}
+}
