@@ -70,6 +70,7 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -905,6 +906,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception Exception happening in the test.
    */
+  @Disabled("Disabled 'verifyCheckpointStatesBySeconds' test as flaky. https://github.com/airbytehq/airbyte/issues/29411")
   @Test
   protected void verifyCheckpointStatesBySeconds() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
