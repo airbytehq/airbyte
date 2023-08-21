@@ -14,6 +14,7 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
@@ -216,10 +217,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream,
                            final TableDefinition existingTable) throws TableNotMigratedException {
     final var alterTableReport = buildAlterTableReport(stream, existingTable);
-    // TODO can this be removed now that migration is available?
-    if (!alterTableReport.isDestinationV2Format()) {
-      throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
-    }
     boolean tableClusteringMatches = false;
     boolean tablePartitioningMatches = false;
     if (existingTable instanceof final StandardTableDefinition standardExistingTable) {
@@ -273,8 +270,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     // Columns in the current schema that are no longer in the StreamConfig
     final Set<String> columnsToRemove = existingSchema.keySet().stream()
-            .filter(name -> !containsIgnoreCase(streamSchema.keySet(), name) && !containsIgnoreCase(FINAL_TABLE_AIRBYTE_COLUMNS, name))
-            .collect(Collectors.toSet());
+                                                      .filter(name -> !containsIgnoreCase(streamSchema.keySet(), name) && !containsIgnoreCase(
+                                                          JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS, name))
+                                                      .collect(Collectors.toSet());
 
     // Columns that are typed differently than the StreamConfig
     final Set<String> columnsToChangeType = streamSchema.keySet().stream()
@@ -297,13 +295,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   /**
    * Checks the schema to determine whether the table contains all expected final table airbyte columns
+   *
    * @param columnNames the column names of the schema to check
-   * @return whether all the {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS} are present
+   * @return whether all the {@link JavaBaseConstants#V2_FINAL_TABLE_METADATA_COLUMNS} are present
    */
   @VisibleForTesting
   public static boolean schemaContainAllFinalTableV2AirbyteColumns(final Collection<String> columnNames) {
-    return FINAL_TABLE_AIRBYTE_COLUMNS.stream()
-            .allMatch(column -> containsIgnoreCase(columnNames, column));
+    return JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
+                                                            .allMatch(column -> containsIgnoreCase(columnNames, column));
   }
 
   @Override
