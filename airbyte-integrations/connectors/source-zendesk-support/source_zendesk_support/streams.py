@@ -746,8 +746,7 @@ class TicketForms(SourceZendeskSupportOffsetPaginationStream):
         params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
         stream_state = (stream_state or {}).get(self.cursor_field)
         if stream_state:
-            stream_state = datetime.strptime(stream_state, self.STATE_DATE_FROMAT)
-            stream_state = self.datetime2str(stream_state)
+            stream_state = self.datetime2str(datetime.strptime(stream_state, self.STATE_DATE_FROMAT))
         start_time = self.str2unixtime(stream_state)
         params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
         if next_page_token:
