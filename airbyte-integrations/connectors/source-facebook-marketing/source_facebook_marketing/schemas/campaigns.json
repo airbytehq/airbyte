@@ -28,6 +28,9 @@
     "bid_strategy": {
       "type": ["null", "string"]
     },
+    "boosted_object_id":{
+      "type": ["null", "string"]
+    },
     "budget_rebalance_flag": {
       "type": ["null", "boolean"]
     },
