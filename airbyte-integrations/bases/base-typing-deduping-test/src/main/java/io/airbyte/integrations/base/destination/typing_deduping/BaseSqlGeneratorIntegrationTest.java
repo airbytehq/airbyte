@@ -705,6 +705,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             put(generator.buildColumnId("includes\"doublequote"), AirbyteProtocolType.STRING);
             put(generator.buildColumnId("includes'singlequote"), AirbyteProtocolType.STRING);
             put(generator.buildColumnId("includes`backtick"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes.period"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes$$doubledollar"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("endswithbackslash\\"), AirbyteProtocolType.STRING);
           }
 
         });
@@ -720,6 +723,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "sqlgenerator/weirdcolumnnames_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
   }
+
+  // TODO tests for weird stream name+namespace
 
   /**
    * A stream with no columns is weird, but we shouldn't treat it specially in any way. It should

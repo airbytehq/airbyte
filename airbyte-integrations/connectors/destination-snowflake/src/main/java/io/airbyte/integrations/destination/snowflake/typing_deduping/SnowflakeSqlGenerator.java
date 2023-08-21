@@ -36,7 +36,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public ColumnId buildColumnId(final String name) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new ColumnId(name, name, name);
+    return new ColumnId(escapeIdentifier(name), name, name);
   }
 
   public String toDialectType(final AirbyteType type) {
@@ -176,7 +176,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       // 12:34:56.7+08:00
       // 12:34:56.7890123-0800
       // 12:34:56-08
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
           """
           CASE
             WHEN NOT ("_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
@@ -187,7 +187,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     } else {
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
-        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
           // Handle offsets in +/-HHMM and +/-HH formats
           // The four cases, in order, match:
           // 2023-01-01T12:34:56-0800
@@ -209,12 +209,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 END
                 """);
         // try_cast doesn't support variant/array/object, so handle them specially
-        case "VARIANT" -> "\"_airbyte_data\":\"" + column.originalName() + "\"";
+        case "VARIANT" -> "\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"";
         // We need to validate that the struct is actually a struct.
         // Note that struct columns are actually nullable in two ways. For a column `foo`:
         // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
         // JSON null).
-        case "OBJECT" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+        case "OBJECT" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
             """
             CASE
               WHEN TYPEOF("_airbyte_data":"${column_name}") != 'OBJECT'
@@ -223,7 +223,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             END
             """);
         // Much like the object case, arrays need special handling.
-        case "ARRAY" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+        case "ARRAY" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
             """
             CASE
               WHEN TYPEOF("_airbyte_data":"${column_name}") != 'ARRAY'
@@ -231,7 +231,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               ELSE "_airbyte_data":"${column_name}"
             END
             """);
-        default -> "TRY_CAST(\"_airbyte_data\":\"" + column.originalName() + "\"::text as " + dialectType + ")";
+        default -> "TRY_CAST(\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"::text as " + dialectType + ")";
       };
     }
   }
@@ -277,7 +277,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .collect(joining("\n"));
     final String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
-            "raw_col_name", col.getKey().originalName(),
+            "raw_col_name", escapeIdentifier(col.getKey().originalName()),
+            "printable_col_name", escapeForString(col.getKey().originalName()),
             "col_type", toDialectType(col.getValue()),
             "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
             // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
@@ -285,7 +286,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 CASE
                   WHEN (TYPEOF("_airbyte_data":"${raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
                     AND (${json_extract} IS NULL)
-                    THEN ['Problem with `${raw_col_name}`']
+                    THEN ['Problem with `${printable_col_name}`']
                   ELSE []
                 END"""))
         .reduce(
@@ -460,5 +461,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     return "";
+  }
+
+  private String escapeIdentifier(final String identifier) {
+    return identifier.replace("\"", "\"\"");
+  }
+
+  private String escapeForString(final String str) {
+    return str.replace("'", "\\'");
   }
 }

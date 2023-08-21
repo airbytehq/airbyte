@@ -622,10 +622,22 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
    * for single-quotes (needed for SQL) and the double-backslash for double-quotes (needed for JSON path).
    */
   private String escapeColumnNameForJsonPath(final String stringContents) {
+    // This is not a place of honor.
     return stringContents
-        .replace("'", "\\'")
-        // This is not a place of honor.
-        .replace("\"", "\\\\\"");
+        // Consider the JSON blob {"foo\\bar": 42}.
+        // This is an object with key foo\bar.
+        // The JSONPath for this is (something like...?) $."foo\\bar" (i.e. 2 backslashes).
+        // TODO is that jsonpath correct?
+        // When we represent that path as a SQL string, the backslashes are doubled (to 4): '$."foo\\\\bar"'
+        // And we're writing that in a Java string, so we have to type out 8 backslashes: "'$.\"foo\\\\\\\\bar\"'"
+        .replace("\\", "\\\\\\\\")
+        // Similar situation here:
+        // a literal " needs to be \" in a JSONPath: $."foo\"bar"
+        // which is \\" in a SQL string: '$."foo\\"bar"'
+        // The backslashes become \\\\ in java, and the quote becomes \": "'$.\"foo\\\\\"bar\"'"
+        .replace("\"", "\\\\\"")
+        // Here we're escaping a SQL string, so we only need a single backslash (which is 2, beacuse Java).
+        .replace("'", "\\'");
   }
 
 }
