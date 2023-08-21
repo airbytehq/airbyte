@@ -73,6 +73,7 @@ QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
     "UserEntityAccess",
     "UserFieldAccess",
     "Vote",
+    "FlowTestView",
 ]
 
 # The following objects are not supported by the query method being used.
@@ -125,6 +126,7 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "SessionHijackingEvent",
     "UriEventStream",
     "UserRecordAccess",
+    "DatacloudContact",
 ]
 
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
@@ -177,6 +179,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AccountBrandShare",
     "AccountFeed",
     "AssetFeed",
+    "WorkStepStatus",
 ]
 
 UNSUPPORTED_FILTERING_STREAMS = [
@@ -199,6 +202,8 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "ReportEvent",
     "TabDefinition",
     "UriEvent",
+    "PermissionSetEventStore",
+    "ActivityFieldHistory",
 ]
 
 RESOURCE_PRIMARY_KEY_MAP = {
@@ -210,7 +215,7 @@ RESOURCE_PRIMARY_KEY_MAP = {
     "Publisher": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_publisher.htm
     "ApexPageInfo": "DurableId" # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_apexpageinfo.htm
 }
-UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
+UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup", "PromotionTarget", "PromotionQualifier"]
 
 
 class Salesforce:
