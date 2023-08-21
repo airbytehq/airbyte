@@ -1,3 +1,9 @@
-{
-  "users": { "updated_at": "3021-09-08T07:04:28.000Z" }
-}
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "5000-08-02T16:18:47.824Z" },
+      "stream_descriptor": { "name": "users" }
+    }
+  }
+]

@@ -4,38 +4,45 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.MongoCommandException;
-import com.mongodb.MongoException;
-import com.mongodb.MongoSecurityException;
-import com.mongodb.client.AggregateIterable;
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.connection.ClusterType;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.util.ArrayList;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import org.bson.Document;
+import org.bson.BsonDocument;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,11 +50,8 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
-  /**
-   * Set of collection prefixes that should be ignored when performing operations, such as discover to
-   * avoid access issues.
-   */
-  private static final Set<String> IGNORED_COLLECTIONS = Set.of("system.", "replset.", "oplog.");
+  /** Helper class for holding a collection-name and stream state together */
+  private record CollectionNameState(Optional<String> name, Optional<MongodbStreamState> state) {}
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -58,7 +62,7 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    try (final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config)) {
+    try (final MongoClient mongoClient = createMongoClient(config)) {
       final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
 
       /*
@@ -66,7 +70,7 @@ public class MongoDbSource extends BaseConnector implements Source {
        * needs to actually execute a command in order to fetch the cluster description. Querying for the
        * authorized collections guarantees that the cluster description will be available to the driver.
        */
-      if (getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
+      if (MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
         return new AirbyteConnectionStatus()
             .withMessage("Target MongoDB database does not contain any authorized collections.")
             .withStatus(AirbyteConnectionStatus.Status.FAILED);
@@ -89,100 +93,119 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   @Override
   public AirbyteCatalog discover(final JsonNode config) {
-    final List<AirbyteStream> streams = discoverInternal(config);
-    return new AirbyteCatalog().withStreams(streams);
+    try (final MongoClient mongoClient = createMongoClient(config)) {
+      final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
+      final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
+      return new AirbyteCatalog().withStreams(streams);
+    }
   }
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    return null;
-  }
+                                                    final JsonNode state) {
+    final var databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
+    final var emittedAt = Instant.now();
 
-  private Set<String> getAuthorizedCollections(final MongoClient mongoClient, final String databaseName) {
-    /*
-     * db.runCommand ({listCollections: 1.0, authorizedCollections: true, nameOnly: true }) the command
-     * returns only those collections for which the user has privileges. For example, if a user has find
-     * action on specific collections, the command returns only those collections; or, if a user has
-     * find or any other action, on the database resource, the command lists all collections in the
-     * database.
-     */
+    final var states = convertState(state);
+    final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
+
     try {
-      final Document document = mongoClient.getDatabase(databaseName).runCommand(new Document("listCollections", 1)
-          .append("authorizedCollections", true)
-          .append("nameOnly", true))
-          .append("filter", "{ 'type': 'collection' }");
-      return document.toBsonDocument()
-          .get("cursor").asDocument()
-          .getArray("firstBatch")
-          .stream()
-          .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-          .filter(this::isSupportedCollection)
-          .collect(Collectors.toSet());
-    } catch (final MongoSecurityException e) {
-      final MongoCommandException exception = (MongoCommandException) e.getCause();
-      throw new ConnectionErrorException(String.valueOf(exception.getCode()), e);
-    } catch (final MongoException e) {
-      throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
+      final var database = mongoClient.getDatabase(databaseName);
+      // TODO treat INCREMENTAL and FULL_REFRESH differently?
+      return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(
+          convertCatalogToIterators(catalog, states, database, emittedAt),
+          AirbyteTraceMessageUtility::emitStreamStatusTrace),
+          mongoClient::close);
+    } catch (final Exception e) {
+      mongoClient.close();
+      throw e;
     }
   }
 
-  private List<AirbyteStream> discoverInternal(final JsonNode config) {
-    final List<AirbyteStream> streams = new ArrayList<>();
-    try (final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config)) {
-      final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
-      final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
-      authorizedCollections.parallelStream().forEach(collectionName -> {
-        final List<Field> fields = getFields(mongoClient.getDatabase(databaseName).getCollection(collectionName));
-        streams.add(CatalogHelpers.createAirbyteStream(collectionName, "", fields));
-      });
-      return streams;
-    }
+  /**
+   * Converts the JsonNode into a map of mongodb collection names to stream states.
+   */
+  @VisibleForTesting
+  protected Map<String, MongodbStreamState> convertState(final JsonNode state) {
+    // I'm unsure if the JsonNode data is going to be a singular AirbyteStateMessage or an array of
+    // AirbyteStateMessages.
+    // So this currently handles both cases, converting the singular message into a list of messages,
+    // leaving the list of messages
+    // as a list of messages, or returning an empty list.
+    final List<AirbyteStateMessage> states = Jsons.tryObject(state, AirbyteStateMessage.class)
+        .map(List::of)
+        .orElseGet(() -> Jsons.tryObject(state, AirbyteStateMessage[].class)
+            .map(Arrays::asList)
+            .orElse(List.of()));
+
+    // TODO add namespace support?
+    return states.stream()
+        .filter(s -> s.getType() == AirbyteStateType.STREAM)
+        .map(s -> new CollectionNameState(
+            Optional.ofNullable(s.getStream().getStreamDescriptor()).map(StreamDescriptor::getName),
+            Jsons.tryObject(s.getStream().getStreamState(), MongodbStreamState.class)))
+        // only keep states that could be parsed
+        .filter(p -> p.name.isPresent() && p.state.isPresent())
+        .collect(Collectors.toMap(
+            p -> p.name.orElseThrow(),
+            p -> p.state.orElseThrow()));
   }
 
-  private List<Field> getFields(final MongoCollection collection) {
-    final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
-        "as", "each",
-        "in", Map.of("k", "$$each.k", "v", Map.of("$type", "$$each.v")));
+  /**
+   * Converts the streams in the catalog into a list of AutoCloseableIterators.
+   */
+  private List<AutoCloseableIterator<AirbyteMessage>> convertCatalogToIterators(
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final Map<String, MongodbStreamState> states,
+                                                                                final MongoDatabase database,
+                                                                                final Instant emittedAt) {
+    return catalog.getStreams()
+        .stream()
+        .peek(airbyteStream -> {
+          if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+            LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
+        })
+        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+        .map(airbyteStream -> {
+          final var collectionName = airbyteStream.getStream().getName();
+          final var collection = database.getCollection(collectionName);
+          // TODO verify that if all fields are selected that all fields are returned here
+          // (or should this check and ignore them if all fields are selected)
+          final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
-    final Document mapFunction = new Document("$map", fieldsMap);
-    final Document arrayToObjectAggregation = new Document("$arrayToObject", mapFunction);
-    final Document projection = new Document("$project", new Document("fields", arrayToObjectAggregation));
+          // find the existing state, if there is one, for this steam
+          final Optional<MongodbStreamState> existingState = states.entrySet().stream()
+              // look only for states that match this stream's name
+              // TODO add namespace support
+              .filter(state -> state.getKey().equals(airbyteStream.getStream().getName()))
+              .map(Entry::getValue)
+              .findFirst();
 
-    final Map<String, Object> groupMap = new HashMap<>();
-    groupMap.put("_id", null);
-    groupMap.put("fields", Map.of("$addToSet", "$fields"));
+          // The filter determines the starting point of this iterator based on the state of this collection.
+          // If a state exists, it will use that state to create a query akin to
+          // "where _id > [last saved state] order by _id ASC".
+          // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
+          final Bson filter = existingState
+              // TODO add type support here when we add support for _id fields that are not ObjectId types
+              .map(state -> Filters.gt(ID_FIELD, new ObjectId(state.id())))
+              // if nothing was found, return a new BsonDocument
+              .orElseGet(BsonDocument::new);
 
-    final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-        projection,
-        new Document("$unwind", "$fields"),
-        new Document("$group", groupMap)));
+          final var cursor = collection.find()
+              .filter(filter)
+              .projection(fields)
+              .sort(Sorts.ascending(ID_FIELD))
+              .cursor();
 
-    final MongoCursor<Document> cursor = output.cursor();
-    if (cursor.hasNext()) {
-      final Map<String, String> fields = ((List<Map<String, String>>) output.cursor().next().get("fields")).get(0);
-      return fields.entrySet().stream()
-          .map(e -> new Field(e.getKey(), convertToSchemaType(e.getValue())))
-          .collect(Collectors.toList());
-    } else {
-      return List.of();
-    }
+          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, existingState, emittedAt, CHECKPOINT_INTERVAL);
+          return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
+        })
+        .toList();
   }
 
-  private JsonSchemaType convertToSchemaType(final String type) {
-    return switch (type) {
-      case "boolean" -> JsonSchemaType.BOOLEAN;
-      case "int", "long", "double", "decimal" -> JsonSchemaType.NUMBER;
-      case "array" -> JsonSchemaType.ARRAY;
-      case "object", "javascriptWithScope" -> JsonSchemaType.OBJECT;
-      default -> JsonSchemaType.STRING;
-    };
-  }
-
-  private boolean isSupportedCollection(final String collectionName) {
-    return !IGNORED_COLLECTIONS.stream().anyMatch(s -> collectionName.startsWith(s));
+  protected MongoClient createMongoClient(final JsonNode config) {
+    return MongoConnectionUtils.createMongoClient(config);
   }
 
 }

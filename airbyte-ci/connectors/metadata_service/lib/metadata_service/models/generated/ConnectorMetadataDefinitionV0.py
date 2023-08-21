@@ -110,10 +110,10 @@ class VersionBreakingChange(BaseModel):
 
 class AirbyteInternal(BaseModel):
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
-    field_sl: Literal[100, 200, 300] = Field(..., alias="_sl")
-    field_ql: Literal[100, 200, 300, 400, 500, 600] = Field(..., alias="_ql")
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -185,7 +185,7 @@ class Registry(BaseModel):
 
 class Data(BaseModel):
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
     name: str
     icon: Optional[str] = None
@@ -224,7 +224,7 @@ class Data(BaseModel):
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
-    field_ab_internal: Optional[AirbyteInternal] = Field(None, alias="_ab_internal")
+    ab_internal: Optional[AirbyteInternal] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):
