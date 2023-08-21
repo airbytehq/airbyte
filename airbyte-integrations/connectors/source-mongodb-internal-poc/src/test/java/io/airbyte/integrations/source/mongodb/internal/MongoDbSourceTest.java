@@ -78,12 +78,14 @@ class MongoDbSourceTest {
   private static final ObjectId OBJECT_ID3 = new ObjectId("64c0029d95ad260d69ef28a3");
   private static final ObjectId OBJECT_ID4 = new ObjectId("64c0029d95ad260d69ef28a4");
   private static final ObjectId OBJECT_ID5 = new ObjectId("64c0029d95ad260d69ef28a5");
+  private static final ObjectId OBJECT_ID6 = new ObjectId("64c0029d95ad260d69ef28a6");
 
   private static final String NAME1 = "name1";
   private static final String NAME2 = "name2";
   private static final String NAME3 = "name3";
   private static final String NAME4 = "name4";
   private static final String NAME5 = "name5";
+  private static final String NAME6 = "name6";
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -325,6 +327,11 @@ class MongoDbSourceTest {
           new Document(Map.of(
               CURSOR_FIELD, OBJECT_ID5,
               NAME_FIELD, NAME5))));
+
+      insertDocuments(COLLECTION3, List.of(
+          new Document(Map.of(
+              CURSOR_FIELD, OBJECT_ID6,
+              NAME_FIELD, NAME6))));
 
       final AutoCloseableIterator<AirbyteMessage> airbyteMessagesIterator =
           source.read(
