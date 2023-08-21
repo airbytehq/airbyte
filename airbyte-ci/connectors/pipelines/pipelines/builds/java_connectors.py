@@ -2,25 +2,30 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dagger import ExecError, File, QueryError
+
 from pipelines.actions import environments
 from pipelines.bases import StepResult, StepStatus
-from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
+from pipelines.builds.common import (
+    BuildConnectorImageBase,
+    BuildConnectorImageForAllPlatformsBase,
+)
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
-from dagger import ExecError, File, QueryError
 
 
 class BuildConnectorDistributionTar(GradleTask):
-
     title = "Build connector tar"
     gradle_task_name = "distTar"
 
     async def _run(self) -> StepResult:
+        cdk_includes = ["./airbyte-cdk/java/airbyte-cdk/**"]
         with_built_tar = (
             environments.with_gradle(
                 self.context,
-                self.build_include,
+                self.build_include + cdk_includes,
             )
+            .with_exec(["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"])
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_exec(self._get_gradle_command())
             .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
