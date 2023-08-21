@@ -732,7 +732,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @ParameterizedTest
   @ValueSource(strings = {"$", "\"", "'", "`", ".", "$$", "\\"})
-  public void noCrashOnSpecialCharactersAsPrimaryKeyOrCursor(final String specialChars) throws Exception {
+  public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
     final String str = namespace + "_" + specialChars;
     final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
     final StreamId modifiedStreamId = new StreamId(
