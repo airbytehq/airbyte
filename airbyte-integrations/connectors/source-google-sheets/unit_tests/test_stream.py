@@ -2,8 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import pytest
 import requests
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+)
 from airbyte_cdk.utils import AirbyteTracedException
 from apiclient import errors
 from google.auth import exceptions as google_exceptions
@@ -11,6 +20,7 @@ from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.client import GoogleSheetsClient
 from source_google_sheets.helpers import SCOPES
 from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+from source_google_sheets.helpers import SCOPES, Helpers
 
 
 def test_invalid_credentials_error_message(invalid_config):
@@ -146,3 +156,29 @@ def test_get_credentials_old_style():
     }
     expected_config = {'auth_type': 'Service', 'service_account_info': 'some old style data'}
     assert expected_config == SourceGoogleSheets.get_credentials(old_style_config)
+
+
+def test_read_429_error(mocker, invalid_config, caplog):
+    source = SourceGoogleSheets()
+    resp = requests.Response()
+    resp.status = 429
+    resp.reason = "Request a higher quota limit"
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=mocker.Mock)
+    mocker.patch.object(Helpers, "get_sheets_in_spreadsheet", side_effect=errors.HttpError(resp=resp, content=b''))
+
+    sheet1 = "soccer_team"
+    sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
+    sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
+        ]
+    )
+    records = list(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
+    assert [] == records
+    assert "Stopped syncing process due to rate limits. Request a higher quota limit" in caplog.text

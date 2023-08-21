@@ -78,9 +78,16 @@ class FBMarketingStream(Stream, ABC):
             # although it is Optional in the signature for compatibility, we need it always
             assert request, "Missing a request object"
             resp_body = response.json()
-            if not isinstance(resp_body, dict) or resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE:
+            if not isinstance(resp_body, dict) or (
+                resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE
+                and resp_body.get("error", {}).get("message")
+                != "Please reduce the amount of data you're asking for, then retry your request"
+            ):
                 # response body is not a json object or the error code is different
                 raise RuntimeError(f"Batch request failed with response: {resp_body}")
+            if resp_body.get("error", {}).get("message") == "Please reduce the amount of data you're asking for, then retry your request":
+                logger.warning("Caught retryable error: Too much data was requested in batch. Reducing batch size...")
+                self.max_batch_size = int(self.max_batch_size / 2)
             requests_q.put(request)
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
