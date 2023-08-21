@@ -112,7 +112,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       }
 
       final var stateMessage = new AirbyteStateMessage()
-          .withType(AirbyteStateType.STREAM)
+          .withType(AirbyteStateType.GLOBAL)
           .withStream(streamState);
 
       return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
