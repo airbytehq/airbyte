@@ -9,7 +9,6 @@ import dpath.util
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode
 from destination_pinecone.config import ProcessingConfigModel
-from dpath.exceptions import PathNotFound
 from langchain.document_loaders.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
@@ -28,7 +27,7 @@ class DocumentProcessor:
         self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap
         )
-        self.metadata_fields = config.meta_data_fields
+        self.metadata_fields = config.metadata_fields
         self.text_fields = config.text_fields
         self.logger = logging.getLogger("airbyte.document_processor")
 
@@ -71,21 +70,50 @@ class DocumentProcessor:
             relevant_fields = record.data
         return relevant_fields
 
+    def _extract_pattern(self, data, pattern):
+        # Initialize the values with the input data
+        values = [data]
+
+        # Iterate through each part of the pattern
+        for key in pattern.split("."):
+            new_values = []
+
+            # Iterate through the current values
+            for value in values:
+                # If the key is a wildcard '*' and the value is a list or dictionary
+                if isinstance(value, (dict, list)) and key == "*":
+                    # Extend the new_values with the list itself or the values of the dictionary
+                    new_values.extend(value if isinstance(value, list) else value.values())
+                # If the key is in the dictionary
+                elif isinstance(value, dict) and key in value:
+                    # Append the value for the key to new_values
+                    new_values.append(value[key])
+
+            # Update values with new_values for the next iteration
+            values = new_values
+
+        return values
+
     def _extract_metadata(self, record: AirbyteRecordMessage) -> dict:
         metadata = {}
+
         if self.metadata_fields:
             for field in self.metadata_fields:
-                try:
-                    value = dpath.util.get(record.data, field, separator=".")
-                    dpath.util.new(metadata, field, value, separator=".")
-                except PathNotFound:
-                    pass  # if the field doesn't exist, do nothing
-            metadata = self._truncate_metadata(metadata)
-            stream_identifier = self._stream_identifier(record)
-            current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
-            metadata[METADATA_STREAM_FIELD] = stream_identifier
-            if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
-                metadata[METADATA_RECORD_ID_FIELD] = self._extract_primary_key(record, current_stream)
+                # Extract the values that match the pattern
+                values = self._extract_pattern(record.data, field)
+
+                # Assign the values to metadata based on the pattern
+                # If the pattern includes a wildcard '*', use the values as an array
+                # Otherwise, use the first value if there are any values, else use None
+                metadata[field] = values if "*" in field else values[0] if values else None
+
+        # Additional processing for stream identifier and primary key
+        stream_identifier = self._stream_identifier(record)
+        current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
+        metadata[METADATA_STREAM_FIELD] = stream_identifier
+        if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
+            metadata[METADATA_RECORD_ID_FIELD] = self._extract_primary_key(record, current_stream)
+
         return metadata
 
     def _extract_primary_key(self, record: AirbyteRecordMessage, stream: ConfiguredAirbyteStream) -> dict:

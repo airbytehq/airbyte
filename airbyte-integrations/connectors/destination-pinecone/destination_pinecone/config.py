@@ -29,7 +29,7 @@ class ProcessingConfigModel(BaseModel):
         always_show=True,
         examples=["text", "user.name", "users.*.name"],
     )
-    meta_data_fields: Optional[List[str]] = Field(
+    metadata_fields: Optional[List[str]] = Field(
         ...,
         title="Metadata fields",
         description="List of fields in the record that should be stored as metadata. ",
