@@ -91,6 +91,16 @@ class CustomAudiences(FBMarketingStream):
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_custom_audiences(params=params)
 
+    @cached_property
+    def fields(self) -> List[str]:
+        """
+        The `rule` field is excluded from the list because it caused the error message "Please reduce the amount of data" for certain connections.
+        https://github.com/airbytehq/oncall/issues/2765
+        """
+        fields = super().fields
+        fields.remove("rule")
+        return fields
+
 
 class Ads(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup"""
