@@ -264,11 +264,7 @@ jobs:
           EOF
 
       - name: Build
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: ./gradlew :airbyte-cdk:java:airbyte-cdk:build --scan
-          attempt_limit: 1
-          attempt_delay: 5000 # in ms
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:build --scan
 
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
