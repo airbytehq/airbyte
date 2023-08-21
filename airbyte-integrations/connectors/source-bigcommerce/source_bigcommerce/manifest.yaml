@@ -6,760 +6,250 @@ check:
   stream_names:
     - customers
 
-streams:
-  - type: DeclarativeStream
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - data
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      inject_into: request_parameter
+      field_name: limit
+      type: RequestOption
+    pagination_strategy:
+      type: PageIncrement
+      start_from_page: 1
+      page_size: 250
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date_modified
+    cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S+00:00'
+    datetime_format: '%Y-%m-%d'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%d'
+    start_time_option:
+      inject_into: request_parameter
+      field_name: date_modified:min
+      type: RequestOption
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+  order_id_partition_router:
+    - type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: id
+          partition_field: order_id
+          stream:
+            $ref: "#/definitions/orders_stream"
+  requester:
+    type: HttpRequester
+    url_base: https://api.bigcommerce.com/stores/{{ config["store_hash"] }}/
+    http_method: GET
+    request_headers:
+      Accept: application/json
+      Content-Type: application/json
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["access_token"] }}'
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: X-Auth-Token
+    request_body_json: {}
+  customers_stream:
+    type: DeclarativeStream
     name: customers
-    primary_key:
-      - id
-    schema_loader:
-      type: InlineSchemaLoader
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v3/customers
-        http_method: GET
         request_parameters:
           sort: date_modified:asc
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
+        $ref: "#/definitions/paginator"
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date_modified
-      cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%d'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_time_option:
-        inject_into: request_parameter
-        field_name: date_modified:min
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
+      $ref: "#/definitions/incremental_sync"   
+  orders_stream:
+    type: DeclarativeStream
     name: orders
-    primary_key:
-      - id
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v2/orders
-        http_method: GET
         request_parameters:
           sort: date_modified:asc
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
-  - type: DeclarativeStream
+        $ref: "#/definitions/paginator"
+  transactions_stream:
+    type: DeclarativeStream
     name: transactions
-    primary_key:
-      - id
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v2/orders/{{ stream_partition.order_id }}/transactions
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
+        $ref: "#/definitions/paginator"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: order_id
-              stream:
-                type: DeclarativeStream
-                name: orders
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/schema#
-                    properties:
-                      base_handling_cost:
-                        type: string
-                      base_shipping_cost:
-                        type: string
-                      base_wrapping_cost:
-                        type: string
-                      billing_address:
-                        properties:
-                          city:
-                            type: string
-                          company:
-                            type: string
-                          country:
-                            type: string
-                          country_iso2:
-                            type: string
-                          email:
-                            type: string
-                          first_name:
-                            type: string
-                          form_fields:
-                            type: array
-                          last_name:
-                            type: string
-                          phone:
-                            type: string
-                          state:
-                            type: string
-                          street_1:
-                            type: string
-                          street_2:
-                            type: string
-                          zip:
-                            type: string
-                        type: object
-                      cart_id:
-                        type: string
-                      channel_id:
-                        type: number
-                      consignments:
-                        properties:
-                          resource:
-                            type: string
-                          url:
-                            type: string
-                        type: object
-                      coupon_discount:
-                        type: string
-                      coupons:
-                        properties:
-                          resource:
-                            type: string
-                          url:
-                            type: string
-                        type: object
-                      credit_card_type:
-                        type:
-                          - 'null'
-                          - string
-                      currency_code:
-                        type: string
-                      currency_exchange_rate:
-                        type: string
-                      currency_id:
-                        type: number
-                      custom_status:
-                        type: string
-                      customer_id:
-                        type: number
-                      customer_locale:
-                        type: string
-                      customer_message:
-                        type: string
-                      date_created:
-                        type: string
-                      date_modified:
-                        type: string
-                      date_shipped:
-                        type: string
-                      default_currency_code:
-                        type: string
-                      default_currency_id:
-                        type: number
-                      discount_amount:
-                        type: string
-                      ebay_order_id:
-                        type: string
-                      external_order_id:
-                        type: string
-                      geoip_country:
-                        type: string
-                      geoip_country_iso2:
-                        type: string
-                      gift_certificate_amount:
-                        type: string
-                      handling_cost_ex_tax:
-                        type: string
-                      handling_cost_inc_tax:
-                        type: string
-                      handling_cost_tax:
-                        type: string
-                      handling_cost_tax_class_id:
-                        type: number
-                      id:
-                        type: number
-                      ip_address:
-                        type: string
-                      ip_address_v6:
-                        type: string
-                      is_deleted:
-                        type: boolean
-                      is_email_opt_in:
-                        type: boolean
-                      items_shipped:
-                        type: number
-                      items_total:
-                        type: number
-                      order_is_digital:
-                        type: boolean
-                      order_source:
-                        type: string
-                      payment_method:
-                        type: string
-                      payment_status:
-                        type: string
-                      products:
-                        properties:
-                          resource:
-                            type: string
-                          url:
-                            type: string
-                        type: object
-                      refunded_amount:
-                        type: string
-                      shipping_address_count:
-                        type: number
-                      shipping_addresses:
-                        properties:
-                          resource:
-                            type: string
-                          url:
-                            type: string
-                        type: object
-                      shipping_cost_ex_tax:
-                        type: string
-                      shipping_cost_inc_tax:
-                        type: string
-                      shipping_cost_tax:
-                        type: string
-                      shipping_cost_tax_class_id:
-                        type: number
-                      staff_notes:
-                        type: string
-                      status:
-                        type: string
-                      status_id:
-                        type: number
-                      store_credit_amount:
-                        type: string
-                      store_default_currency_code:
-                        type: string
-                      store_default_to_transactional_exchange_rate:
-                        type: string
-                      subtotal_ex_tax:
-                        type: string
-                      subtotal_inc_tax:
-                        type: string
-                      subtotal_tax:
-                        type: string
-                      tax_provider_id:
-                        type: string
-                      total_ex_tax:
-                        type: string
-                      total_inc_tax:
-                        type: string
-                      total_tax:
-                        type: string
-                      wrapping_cost_ex_tax:
-                        type: string
-                      wrapping_cost_inc_tax:
-                        type: string
-                      wrapping_cost_tax:
-                        type: string
-                      wrapping_cost_tax_class_id:
-                        type: number
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: >-
-                      https://api.bigcommerce.com/stores/{{ config['store_hash']
-                      }}/
-                    path: v2/orders
-                    http_method: GET
-                    request_parameters:
-                      sort: date_modified:asc
-                    request_headers:
-                      Accept: application/json
-                      Content-Type: application/json
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''access_token''] }}'
-                      inject_into:
-                        type: RequestOption
-                        inject_into: header
-                        field_name: X-Auth-Token
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestOption
-                      inject_into: request_parameter
-                      field_name: page
-                    page_size_option:
-                      inject_into: request_parameter
-                      field_name: limit
-                      type: RequestOption
-                    pagination_strategy:
-                      type: PageIncrement
-                      start_from_page: 1
-                      page_size: 250
-  - type: DeclarativeStream
+        $ref: "#/definitions/order_id_partition_router"
+  pages_stream:
+    type: DeclarativeStream
     name: pages
-    primary_key:
-      - id
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v3/content/pages
-        http_method: GET
         request_parameters:
           sort: date_modified:asc
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
+        $ref: "#/definitions/paginator"
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date_modified
-      cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%d'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_time_option:
-        inject_into: request_parameter
-        field_name: date_modified:min
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
+      $ref: "#/definitions/incremental_sync"
+  products_stream:
+    type: DeclarativeStream
     name: products
-    primary_key:
-      - id
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v3/catalog/products
-        http_method: GET
         request_parameters:
           sort: date_modified
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
+        $ref: "#/definitions/paginator"
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date_modified
-      cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%d'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_time_option:
-        inject_into: request_parameter
-        field_name: date_modified:min
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
+      $ref: "#/definitions/incremental_sync"
+  channels_stream:
+    type: DeclarativeStream
     name: channels
-    primary_key:
-      - id
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: channels
-        http_method: GET
         request_parameters:
           sort: date_modified
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
+        $ref: "#/definitions/paginator"
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date_modified
-      cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%d'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_time_option:
-        inject_into: request_parameter
-        field_name: date_modified:min
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
+      $ref: "#/definitions/incremental_sync"
+  store_stream:
+    type: DeclarativeStream
     name: store
-    primary_key:
-      - id
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v2/store
-        http_method: GET
         request_parameters:
           sort: date_modified:asc
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
-  - type: DeclarativeStream
-    name: orderproducts
-    primary_key:
-      - id
+        $ref: "#/definitions/paginator"
+  order_products_stream:
+    type: DeclarativeStream
+    name: order_products
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v2/orders/{{ stream_partition.order_id }}/products
-        http_method: GET
         request_parameters:
           sort: date_modified:asc
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
-  - type: DeclarativeStream
+        $ref: "#/definitions/paginator"
+      partition_router:
+        $ref: "#/definitions/order_id_partition_router"
+  brands_stream:
+    type: DeclarativeStream
     name: brands
-    primary_key:
-      - id
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v3/catalog/brands
-        http_method: GET
         request_parameters:
           sort: id
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
-  - type: DeclarativeStream
+        $ref: "#/definitions/paginator"
+  categories_stream:
+    type: DeclarativeStream
     name: categories
-    primary_key:
-      - id
+    primary_key: "id"
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.bigcommerce.com/stores/{{ config['store_hash'] }}/
+        $ref: "#/definitions/requester"
         path: v3/catalog/categories
-        http_method: GET
         request_parameters:
           sort: id
-        request_headers:
-          Accept: application/json
-          Content-Type: application/json
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''access_token''] }}'
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Auth-Token
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 250
+        $ref: "#/definitions/paginator"
+
+streams:
+  - "#/definitions/customers_stream"
+  - "#/definitions/orders_stream"
+  - "#/definitions/transactions_stream"
+  - "#/definitions/pages_stream"
+  - "#/definitions/products_stream"
+  - "#/definitions/channels_stream"
+  - "#/definitions/store_stream"
+  - "#/definitions/order_products_stream"
+  - "#/definitions/brands_stream"
+  - "#/definitions/categories_stream"
 
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/bigcommerce
