@@ -139,7 +139,13 @@
       "type": ["null", "array"]
     },
     "workspace_info": {
-      "type": ["null", "string"]
+      "type": ["null","array"],
+      "items": {
+        "additionalProperties": true
+      }
+    },
+    "work_schedule_id": {
+      "type": ["null", "integer"]
     }
   }
 }
