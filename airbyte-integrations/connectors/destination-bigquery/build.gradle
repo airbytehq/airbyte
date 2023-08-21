@@ -10,6 +10,8 @@ application {
 }
 
 dependencies {
+    implementation 'io.airbyte:airbyte-cdk:0.0.1'
+
     implementation 'com.google.cloud:google-cloud-bigquery:2.27.0'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-csv:1.4'
