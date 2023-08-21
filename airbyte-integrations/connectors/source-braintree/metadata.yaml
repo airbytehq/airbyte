@@ -1,9 +1,13 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 63cea06f-1c75-458d-88fe-ad48c7cb27fd
   dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-braintree
+  documentationUrl: https://docs.airbyte.com/integrations/sources/braintree
   githubIssueLabel: source-braintree
   icon: braintree.svg
   license: MIT
@@ -14,11 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/braintree
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"
