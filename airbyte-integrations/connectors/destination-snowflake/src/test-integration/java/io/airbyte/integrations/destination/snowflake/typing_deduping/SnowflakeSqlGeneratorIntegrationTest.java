@@ -331,23 +331,25 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
-    new StringSubstitutor(Map.of(
+    final var recordsText = records
+        .stream()
+        .map(record -> JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
+            .stream()
+            .map(record::get)
+            .map(value -> value == null ? "NULL" : value.isTextual() ? value.asText() : value.toString())
+            .collect(joining(",")))
+        .map(row -> "(%s)".formatted(row))
+        .collect(joining(","));
+    final var insert = new StringSubstitutor(Map.of(
         "v1_raw_table_id", String.join(".", streamId.rawNamespace(), streamId.rawName()),
         "records", recordsText
     )).replace(
         """
             INSERT INTO ${v1_raw_table_id} (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at)
-            SELECT _airbyte_ab_id, _airbyte_data, _airbyte_emitted_at FROM UNNEST([
-              STRUCT<`_airbyte_ab_id` STRING, _airbyte_data STRING, `_airbyte_emitted_at` TIMESTAMP>
-              ${records}
-            ])
+            SELECT _airbyte_ab_id, _airbyte_data, _airbyte_emitted_at FROM VALUES
+              ${records};
             """
-    )
-            )
-  }
-
-  @Override
-  @Test
-  public void testV1V2migration() {
+    );
+    database.execute(insert);
   }
 }
