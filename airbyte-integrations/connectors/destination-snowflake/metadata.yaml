@@ -2,16 +2,12 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 2.0.0
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/destination-snowflake
   githubIssueLabel: destination-snowflake
   icon: snowflake.svg
   license: ELv2
   name: Snowflake
-  normalizationConfig:
-    normalizationIntegrationType: snowflake
-    normalizationRepository: airbyte/normalization-snowflake
-    normalizationTag: 0.4.3
   registries:
     cloud:
       enabled: true
@@ -33,6 +29,8 @@ data:
       2.0.0:
         message: "Remove GCS/S3 loading method support."
         upgradeDeadline: "2023-08-31"
+      3.0.0:
+        message: Destinations V2 includes enhanced final table structures, better error handling, and other usability improvements. Learn more about what's new [here](https://docs.airbyte.com/understanding-airbyte/typing-deduping) and how to upgrade [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2). This breaking change will change the format of your final tables.
   ab_internal:
     sl: 200
     ql: 400

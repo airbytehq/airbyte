@@ -10,7 +10,9 @@ import org.elasticsearch.common.Strings;
 public class TypingAndDedupingFlag {
 
   public static boolean isDestinationV2() {
-    return DestinationConfig.getInstance().getBooleanValue("use_1s1t_format");
+    //TODO: Refactor this whole class away
+    // return DestinationConfig.getInstance().getBooleanValue("use_1s1t_format");
+    return true;
   }
 
   public static Optional<String> getRawNamespaceOverride(String option) {

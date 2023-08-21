@@ -2,16 +2,12 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 1.9.1
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/destination-bigquery
   githubIssueLabel: destination-bigquery
   icon: bigquery.svg
   license: ELv2
   name: BigQuery
-  normalizationConfig:
-    normalizationIntegrationType: bigquery
-    normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.3
   registries:
     cloud:
       enabled: true
@@ -24,6 +20,10 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: Destinations V2 includes enhanced final table structures, better error handling, and other usability improvements. Learn more about what's new [here](https://docs.airbyte.com/understanding-airbyte/typing-deduping) and how to upgrade [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2). This breaking change will change the format of your final tables.
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   supportsDbt: true
   tags:
