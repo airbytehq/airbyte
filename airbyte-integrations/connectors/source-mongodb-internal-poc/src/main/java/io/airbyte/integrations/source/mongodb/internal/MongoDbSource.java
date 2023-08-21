@@ -141,7 +141,7 @@ public class MongoDbSource extends BaseConnector implements Source {
 
     // TODO add namespace support?
     return states.stream()
-        .filter(s -> s.getType() == AirbyteStateType.STREAM)
+        .filter(s -> s.getType() == AirbyteStateType.GLOBAL)
         .map(s -> new CollectionNameState(
             Optional.ofNullable(s.getStream().getStreamDescriptor()).map(StreamDescriptor::getName),
             Jsons.tryObject(s.getStream().getStreamState(), MongodbStreamState.class)))
