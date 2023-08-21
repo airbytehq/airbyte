@@ -107,6 +107,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected StreamId streamId;
   private List<ColumnId> primaryKey;
   private ColumnId cursor;
+  private LinkedHashMap<ColumnId, AirbyteType> COLUMNS;
 
   protected abstract SqlGenerator<DialectTableDefinition> getSqlGenerator();
 
@@ -177,24 +178,24 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     primaryKey = List.of(id1, id2);
     cursor = generator.buildColumnId("updated_at");
 
-    final LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
-    columns.put(id1, AirbyteProtocolType.INTEGER);
-    columns.put(id2, AirbyteProtocolType.INTEGER);
-    columns.put(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    columns.put(generator.buildColumnId("struct"), new Struct(new LinkedHashMap<>()));
-    columns.put(generator.buildColumnId("array"), new Array(AirbyteProtocolType.UNKNOWN));
-    columns.put(generator.buildColumnId("string"), AirbyteProtocolType.STRING);
-    columns.put(generator.buildColumnId("number"), AirbyteProtocolType.NUMBER);
-    columns.put(generator.buildColumnId("integer"), AirbyteProtocolType.INTEGER);
-    columns.put(generator.buildColumnId("boolean"), AirbyteProtocolType.BOOLEAN);
-    columns.put(generator.buildColumnId("timestamp_with_timezone"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    columns.put(generator.buildColumnId("timestamp_without_timezone"), AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
-    columns.put(generator.buildColumnId("time_with_timezone"), AirbyteProtocolType.TIME_WITH_TIMEZONE);
-    columns.put(generator.buildColumnId("time_without_timezone"), AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
-    columns.put(generator.buildColumnId("date"), AirbyteProtocolType.DATE);
-    columns.put(generator.buildColumnId("unknown"), AirbyteProtocolType.UNKNOWN);
+    COLUMNS = new LinkedHashMap<>();
+    COLUMNS.put(id1, AirbyteProtocolType.INTEGER);
+    COLUMNS.put(id2, AirbyteProtocolType.INTEGER);
+    COLUMNS.put(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    COLUMNS.put(generator.buildColumnId("struct"), new Struct(new LinkedHashMap<>()));
+    COLUMNS.put(generator.buildColumnId("array"), new Array(AirbyteProtocolType.UNKNOWN));
+    COLUMNS.put(generator.buildColumnId("string"), AirbyteProtocolType.STRING);
+    COLUMNS.put(generator.buildColumnId("number"), AirbyteProtocolType.NUMBER);
+    COLUMNS.put(generator.buildColumnId("integer"), AirbyteProtocolType.INTEGER);
+    COLUMNS.put(generator.buildColumnId("boolean"), AirbyteProtocolType.BOOLEAN);
+    COLUMNS.put(generator.buildColumnId("timestamp_with_timezone"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    COLUMNS.put(generator.buildColumnId("timestamp_without_timezone"), AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
+    COLUMNS.put(generator.buildColumnId("time_with_timezone"), AirbyteProtocolType.TIME_WITH_TIMEZONE);
+    COLUMNS.put(generator.buildColumnId("time_without_timezone"), AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+    COLUMNS.put(generator.buildColumnId("date"), AirbyteProtocolType.DATE);
+    COLUMNS.put(generator.buildColumnId("unknown"), AirbyteProtocolType.UNKNOWN);
 
-    final LinkedHashMap<ColumnId, AirbyteType> cdcColumns = new LinkedHashMap<>(columns);
+    final LinkedHashMap<ColumnId, AirbyteType> cdcColumns = new LinkedHashMap<>(COLUMNS);
     cdcColumns.put(generator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
 
     namespace = Strings.addRandomSuffix("sql_generator_test", "_", 5);
@@ -210,14 +211,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         DestinationSyncMode.APPEND_DEDUP,
         primaryKey,
         Optional.of(cursor),
-        columns);
+        COLUMNS);
     incrementalAppendStream = new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
         primaryKey,
         Optional.of(cursor),
-        columns);
+        COLUMNS);
 
     cdcIncrementalDedupStream = new StreamConfig(
         streamId,
@@ -425,6 +426,64 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpRawTableRecords(streamId),
         "sqlgenerator/incrementaldedup_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * We shouldn't crash on a sync with null cursor. Insert two records and verify that we keep the
+   * record with higher extracted_at.
+   */
+  @Test
+  public void incrementalDedupNoCursor() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(false, streamId, "");
+    insertRawTableRecords(
+        streamId,
+        List.of(
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "c5bcae50-962e-4b92-b2eb-1659eae31693",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {
+                    "id1": 1,
+                    "id2": 100,
+                    "string": "foo"
+                  }
+                }
+                """),
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "93f1bdd8-1916-4e6c-94dc-29a5d9701179",
+                  "_airbyte_extracted_at": "2023-01-01T01:00:00Z",
+                  "_airbyte_data": {
+                    "id1": 1,
+                    "id2": 100,
+                    "string": "bar"
+                  }
+                }
+                """)));
+    final StreamConfig streamConfig = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND_DEDUP,
+        primaryKey,
+        Optional.empty(),
+        COLUMNS);
+
+    final String sql = generator.updateTable(streamConfig, "");
+    destinationHandler.execute(sql);
+
+    final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
+    final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "");
+    verifyRecordCounts(
+        1,
+        actualRawRecords,
+        1,
+        actualFinalRecords);
+    assertAll(
+        () -> assertEquals("bar", actualRawRecords.get(0).get("_airbyte_data").get("string").asText()),
+        () -> assertEquals("bar", actualFinalRecords.get(0).get("string").asText()));
   }
 
   @Test

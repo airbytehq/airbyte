@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -339,7 +340,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
+      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
@@ -476,21 +477,24 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   String dedupFinalTable(final StreamId id,
                          final String finalSuffix,
                          final List<ColumnId> primaryKey,
-                         final ColumnId cursor) {
+                         final Optional<ColumnId> cursor) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+    final String cursorOrderClause = cursor
+        .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
+        .orElse("");
 
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
-        "cursor_name", cursor.name(QUOTE))
-        ).replace(
+        "cursor_order_clause", cursorOrderClause
+        )).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE
               `_airbyte_raw_id` IN (
                 SELECT `_airbyte_raw_id` FROM (
                   SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC NULLS LAST, `_airbyte_extracted_at` DESC
+                    PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
                   ) as row_number FROM ${final_table_id}
                 )
                 WHERE row_number != 1
