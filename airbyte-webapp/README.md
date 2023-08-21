@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.08.21
+1. FE: show more items per page on connections page
 #### 2023.08.16
 1. Remove signup and signin page on airbyte-webapp
 #### 2023.08.15

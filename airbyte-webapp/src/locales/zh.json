@@ -820,5 +820,6 @@
   "settings.support.select.option.other": "其他",
   "settings.support.submit.success.title": "谢谢！",
   "settings.support.submit.success.text": "您的消息已成功发送。 \n我们将尽快回复您。",
-  "table.name.open.newTab": "在新选项卡中打开"
+  "table.name.open.newTab": "在新选项卡中打开",
+  "table.page.size.label": "Items per page"
 }
