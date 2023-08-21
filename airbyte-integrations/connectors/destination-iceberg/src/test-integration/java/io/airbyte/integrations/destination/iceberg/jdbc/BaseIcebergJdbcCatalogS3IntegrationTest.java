@@ -34,6 +34,7 @@ import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.MinioContainer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.util.HostPortResolver;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
   private MinioContainer s3Storage;
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     catalogDb = new PostgreSQLContainer<>("postgres:13-alpine");
     catalogDb.start();
     LOGGER.info("==> Started PostgreSQL docker container...");
@@ -62,7 +63,7 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     IcebergIntegrationTestUtil.stopAndCloseContainer(s3Storage, "Minio");
     IcebergIntegrationTestUtil.stopAndCloseContainer(catalogDb, "PostgreSQL");
   }

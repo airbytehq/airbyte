@@ -62,6 +62,7 @@ def github_metadata_file_md5s(context):
 
     return Output(metadata_file_paths, metadata={"preview": metadata_file_paths})
 
+
 def _should_publish_have_ran(datetime_string: str) -> bool:
     """
     Return true if the datetime is 2 hours old.
@@ -71,6 +72,7 @@ def _should_publish_have_ran(datetime_string: str) -> bool:
     now = datetime.datetime.now(datetime.timezone.utc)
     two_hours_ago = now - datetime.timedelta(hours=2)
     return dt < two_hours_ago
+
 
 def _to_time_ago(datetime_string: str) -> str:
     """
@@ -86,6 +88,7 @@ def _is_stale(github_file_info: dict, latest_gcs_metadata_md5s: dict) -> bool:
     """
     not_in_gcs = latest_gcs_metadata_md5s.get(github_file_info["md5"]) is None
     return not_in_gcs and _should_publish_have_ran(github_file_info["last_modified"])
+
 
 @asset(required_resource_keys={"slack", "latest_metadata_file_blobs"}, group_name=GROUP_NAME)
 def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> OutputDataFrame:

@@ -132,11 +132,24 @@ class SourceGoogleSheets(Source):
 
         except errors.HttpError as err:
             reason = str(err)
-            if err.resp.status == status_codes.NOT_FOUND:
-                reason = "Requested spreadsheet was not found."
+            config_error_status_codes = [status_codes.NOT_FOUND, status_codes.FORBIDDEN]
+            if err.resp.status in config_error_status_codes:
+                if err.resp.status == status_codes.NOT_FOUND:
+                    reason = f"Requested spreadsheet with id {spreadsheet_id} was not found"
+                if err.resp.status == status_codes.FORBIDDEN:
+                    reason = f"Forbidden when requesting spreadsheet with id {spreadsheet_id}"
+                message = (
+                    f"{reason}. {err.reason}. See docs for more details here: "
+                    f"https://cloud.google.com/service-infrastructure/docs/service-control/reference/rpc/google.api/servicecontrol.v1#code"
+                )
+                raise AirbyteTracedException(
+                    message=message,
+                    internal_message=message,
+                    failure_type=FailureType.config_error,
+                ) from err
             raise Exception(f"Could not run discovery: {reason}")
 
-    def read(
+    def _read(
         self,
         logger: AirbyteLogger,
         config: json,
@@ -159,33 +172,56 @@ class SourceGoogleSheets(Source):
         logger.info(f"Row counts: {sheet_row_counts}")
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
-            column_index_to_name = sheet_to_column_index_to_name[sheet]
-            row_cursor = 2  # we start syncing past the header row
-            # For the loop, it is necessary that the initial row exists when we send a request to the API,
-            # if the last row of the interval goes outside the sheet - this is normal, we will return
-            # only the real data of the sheet and in the next iteration we will loop out.
-            while row_cursor <= sheet_row_counts[sheet]:
-                range = f"{sheet}!{row_cursor}:{row_cursor + row_batch_size}"
-                logger.info(f"Fetching range {range}")
-                row_batch = SpreadsheetValues.parse_obj(
-                    client.get_values(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
-                )
+            # We revalidate the sheet here to avoid errors in case the sheet was changed after the sync started
+            is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet)
+            if is_valid:
+                column_index_to_name = sheet_to_column_index_to_name[sheet]
+                row_cursor = 2  # we start syncing past the header row
+                # For the loop, it is necessary that the initial row exists when we send a request to the API,
+                # if the last row of the interval goes outside the sheet - this is normal, we will return
+                # only the real data of the sheet and in the next iteration we will loop out.
+                while row_cursor <= sheet_row_counts[sheet]:
+                    range = f"{sheet}!{row_cursor}:{row_cursor + row_batch_size}"
+                    logger.info(f"Fetching range {range}")
+                    row_batch = SpreadsheetValues.parse_obj(
+                        client.get_values(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
+                    )
 
-                row_cursor += row_batch_size + 1
-                # there should always be one range since we requested only one
-                value_ranges = row_batch.valueRanges[0]
+                    row_cursor += row_batch_size + 1
+                    # there should always be one range since we requested only one
+                    value_ranges = row_batch.valueRanges[0]
 
-                if not value_ranges.values:
-                    break
+                    if not value_ranges.values:
+                        break
 
-                row_values = value_ranges.values
-                if len(row_values) == 0:
-                    break
+                    row_values = value_ranges.values
+                    if len(row_values) == 0:
+                        break
 
-                for row in row_values:
-                    if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
-                        yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
-        logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
+                    for row in row_values:
+                        if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
+                            yield AirbyteMessage(
+                                type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name)
+                            )
+            else:
+                logger.info(f"Skipping syncing sheet {sheet}: {reason}")
+
+    def read(
+        self,
+        logger: AirbyteLogger,
+        config: json,
+        catalog: ConfiguredAirbyteCatalog,
+        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+    ) -> Generator[AirbyteMessage, None, None]:
+        try:
+            yield from self._read(logger, config, catalog, state)
+        except errors.HttpError as e:
+            if e.status_code == 429:
+                logger.info(f"Stopped syncing process due to rate limits. {e.reason}")
+            else:
+                logger.info(f"{e.status_code}: {e.reason}")
+        finally:
+            logger.info(f"Finished syncing spreadsheet {Helpers.get_spreadsheet_id(config['spreadsheet_id'])}")
 
     @staticmethod
     def get_credentials(config):
