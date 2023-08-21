@@ -722,6 +722,15 @@ class TicketFields(SourceZendeskSupportStream):
 
 class TicketForms(SourceZendeskSupportOffsetPaginationStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
+    
+    """
+    Date format in state for this resource is different from other streams
+    causing issues when handling it.
+    {"ticket_forms": {"updated_at": "2023-01-18T09:42:27+11:00"}}
+    {"ticket_fields": {"updated_at": "2022-10-06T09:50:57Z"}}
+    """
+    STATE_DATE_FROMAT = "%Y-%m-%dT%H:%M:%S%z"
+
 
     # next_page field from API response has page number instead of start_time being expected in parent class
     # hence we need to override below methods
@@ -735,7 +744,10 @@ class TicketForms(SourceZendeskSupportOffsetPaginationStream):
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
-        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
+        stream_state = (stream_state or {}).get(self.cursor_field)
+        if stream_state:
+            stream_state = self.datetime2str(datetime.strptime(stream_state, self.STATE_DATE_FROMAT))
+        start_time = self.str2unixtime(stream_state)
         params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
         if next_page_token:
             params["page"] = next_page_token
