@@ -5,6 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 public interface SqlGenerator<DialectTableDefinition> {
+
   String SOFT_RESET_SUFFIX = "_ab_soft_reset";
 
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
@@ -26,7 +27,7 @@ public interface SqlGenerator<DialectTableDefinition> {
   /**
    * Check the final table's schema and compare it to what the stream config would generate.
    *
-   * @param stream        the stream/stable in question
+   * @param stream the stream/stable in question
    * @param existingTable the existing table mapped to the stream
    * @return whether the existing table matches the expected schema
    */

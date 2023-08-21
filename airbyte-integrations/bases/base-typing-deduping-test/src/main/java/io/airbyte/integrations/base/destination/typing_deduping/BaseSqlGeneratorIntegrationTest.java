@@ -764,8 +764,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     insertV1RawTableRecords(v1RawTableStreamId, singletonList(Jsons.jsonNode(Map.of(
         "_airbyte_ab_id", "v1v2",
         "_airbyte_emitted_at", "2023-01-01T00:00:00Z",
-        "_airbyte_data", "{\"hello\": \"world\"}"
-    ))));
+        "_airbyte_data", "{\"hello\": \"world\"}"))));
     final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
     final List<JsonNode> v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId);
@@ -780,8 +779,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_ab_id").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
         () -> assertEquals(Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText()), v2RawRecords.get(0).get("_airbyte_data")),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_emitted_at").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
-        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at"))
-    );
+        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at")));
   }
 
   protected List<JsonNode> dumpV1RawTableRecords(StreamId streamId) throws Exception {
@@ -795,19 +793,15 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertAll(
         () -> DIFFER.diffRawTableRecords(
             BaseTypingDedupingTest.readRecords(expectedRawRecordsFile),
-            actualRawRecords
-        ),
+            actualRawRecords),
         () -> assertEquals(
             0,
             actualRawRecords.stream()
-                            .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
-                            .count()
-        ),
+                .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
+                .count()),
         () -> DIFFER.diffFinalTableRecords(
             BaseTypingDedupingTest.readRecords(expectedFinalRecordsFile),
-            actualFinalRecords
-        )
-    );
+            actualFinalRecords));
   }
 
   private void verifyRecordCounts(final int expectedRawRecords,
