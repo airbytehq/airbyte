@@ -23,9 +23,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Collection of utility methods related to the Debezium offset state.
  */
-public class MongodbDebeziumStateUtil {
+public class MongoDbDebeziumStateUtil {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDebeziumStateUtil.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbDebeziumStateUtil.class);
 
   /**
    * Constructs the initial Debezium offset state that will be used by the incremental CDC snapshot
@@ -42,14 +42,14 @@ public class MongodbDebeziumStateUtil {
     final BsonTimestamp timestamp = ResumeTokens.getTimestamp(resumeToken);
 
     final List<Map<String, Object>> key = List.of(
-        Map.of(MongodbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet,
-            MongodbDebeziumConstants.OffsetState.KEY_SERVER_ID, database));
+        Map.of(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet,
+            MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database));
 
     final Map<String, Object> value = new HashMap<>();
-    value.put(MongodbDebeziumConstants.OffsetState.VALUE_SECONDS, timestamp.getTime());
-    value.put(MongodbDebeziumConstants.OffsetState.VALUE_INCREMENT, timestamp.getInc());
-    value.put(MongodbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
-    value.put(MongodbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);
+    value.put(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS, timestamp.getTime());
+    value.put(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT, timestamp.getInc());
+    value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
+    value.put(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);
 
     final JsonNode state = Jsons.jsonNode(Map.of(key, value));
     LOGGER.info("Initial Debezium state constructed: {}", state);

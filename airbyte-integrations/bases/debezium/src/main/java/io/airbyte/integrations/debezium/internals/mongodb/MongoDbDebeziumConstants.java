@@ -7,7 +7,7 @@ package io.airbyte.integrations.debezium.internals.mongodb;
 /**
  * A collection of constants for use with the Debezium MongoDB Connector.
  */
-public class MongodbDebeziumConstants {
+public class MongoDbDebeziumConstants {
 
   /**
    * Constants for Debezium Offset State storage.
