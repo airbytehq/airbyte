@@ -27,9 +27,11 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.jooq.impl.DSL;
@@ -55,7 +57,6 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
 
   private Database database;
-  private DataSource dataSource;
   private Connection connection;
   protected TestDestinationEnv testDestinationEnv;
 
@@ -247,16 +248,26 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
 
   protected Database createDatabase() {
     System.out.println("CREATE DATABASE");
-    dataSource = DataSourceFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+    /*dataSource = DataSourceFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
             baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.REDSHIFT.getDriverClassName(),
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
                     baseConfig.get(JdbcUtils.HOST_KEY).asText(),
                     baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
                     baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS);*/
+
     try {
-      connection = dataSource.getConnection();
+      Properties properties = new Properties();
+      properties.put("user", baseConfig.get(JdbcUtils.USERNAME_KEY).asText());
+      properties.put("password", baseConfig.get(JdbcUtils.PASSWORD_KEY).asText());
+      RedshiftInsertDestination.SSL_JDBC_PARAMETERS.forEach((k, v) -> properties.put(k, v));
+
+      connection = DriverManager.getConnection(String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+              baseConfig.get(JdbcUtils.HOST_KEY).asText(),
+              baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
+              baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
+              properties);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

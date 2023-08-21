@@ -31,10 +31,12 @@ import org.jooq.impl.DSL;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDestinationAcceptanceTest {
@@ -46,8 +48,6 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   protected JsonNode config;
 
   private Database database;
-
-  private DataSource dataSource;
 
   private Connection connection;
 
@@ -149,16 +149,17 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   private Database createDatabaseFromConfig(final JsonNode config) {
-    dataSource = DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.REDSHIFT.getDriverClassName(),
-            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                    config.get(JdbcUtils.HOST_KEY).asText(),
-                    config.get(JdbcUtils.PORT_KEY).asInt(),
-                    config.get(JdbcUtils.DATABASE_KEY).asText()),
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
     try {
-      connection = dataSource.getConnection();
+      Properties properties = new Properties();
+      properties.put("user", baseConfig.get(JdbcUtils.USERNAME_KEY).asText());
+      properties.put("password", baseConfig.get(JdbcUtils.PASSWORD_KEY).asText());
+      RedshiftInsertDestination.SSL_JDBC_PARAMETERS.forEach((k, v) -> properties.put(k, v));
+
+      connection = DriverManager.getConnection(String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                      baseConfig.get(JdbcUtils.HOST_KEY).asText(),
+                      baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
+                      baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
+              properties);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
