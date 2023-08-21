@@ -28,7 +28,7 @@ public class ConnectionFactory {
 
            return DriverManager.getConnection(jdbcConnectionString,
                     properties);
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }
