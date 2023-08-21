@@ -1082,12 +1082,13 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.NAMESPACE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
-        messages, namespace);
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
 
     final JsonNode config = getConfig();
     try {
       runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
+      // Add to the list of schemas to clean up.
+      TEST_SCHEMAS.add(namespace);
     } catch (final Exception e) {
       throw new IOException(String.format(
           "[Test Case %s] Destination failed to sync data to namespace %s, see \"namespace_test_cases.json for details\"",
