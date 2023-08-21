@@ -222,13 +222,15 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                                                                             if (r == null) {
                                                                                               return "NULL";
                                                                                             }
-                                                                                            final String stringContents;
+                                                                                            String stringContents;
                                                                                             if (r.isTextual()) {
                                                                                               stringContents = r.asText();
                                                                                             } else {
                                                                                               stringContents = r.toString();
                                                                                             }
-                                                                                            // Use dollar quotes to avoid needing to escape anything
+                                                                                            // Use dollar quotes to avoid needing to escape quotes
+                                                                                            // so we only have to escape dollar signs
+                                                                                            stringContents = stringContents.replace("$$", "\\$\\$");
                                                                                             return "$$" + stringContents + "$$";
                                                                                           })
                                                                                           .collect(joining(",")))

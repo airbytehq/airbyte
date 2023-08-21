@@ -240,18 +240,24 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   String validatePrimaryKeys(final StreamId id,
                              final List<ColumnId> primaryKeys,
                              final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+    if (streamColumns.keySet().stream().anyMatch(c -> c.originalName().contains("`"))) {
+      // TODO why is snowflake throwing a bizarre error when we try to use a column with a backtick in it?
+      // E.g. even this trivial procedure fails: (it should return the string `'foo`bar')
+      // execute immediate 'BEGIN RETURN \'foo`bar\'; END;'
+      return "";
+    }
+
     final String pkNullChecks = primaryKeys.stream().map(
         pk -> {
           final String jsonExtract = extractAndCast(pk, streamColumns.get(pk));
           return "AND " + jsonExtract + " IS NULL";
         }).collect(joining("\n"));
 
-    return new StringSubstitutor(Map.of(
+    final String script = new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "pk_null_checks", pkNullChecks)).replace(
             // Wrap this inside a script block so that we can use the scripting language
         """
-        EXECUTE IMMEDIATE $$
         BEGIN
         LET missing_pk_count INTEGER := (
           SELECT COUNT(1)
@@ -266,8 +272,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         END IF;
         RETURN 'SUCCESS';
         END;
-        $$;
         """);
+    return "EXECUTE IMMEDIATE '" + escapeSingleQuotedString(script) + "';";
   }
 
   @VisibleForTesting
@@ -278,7 +284,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", escapeIdentifier(col.getKey().originalName()),
-            "printable_col_name", escapeForString(col.getKey().originalName()),
+            "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
             "col_type", toDialectType(col.getValue()),
             "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
             // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
@@ -463,11 +469,19 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return "";
   }
 
-  private String escapeIdentifier(final String identifier) {
+  public static String escapeIdentifier(final String identifier) {
+    // Note that we don't need to escape backslashes here!
+    // The only special character in an identifier is the double-quote, which needs to be doubled.
     return identifier.replace("\"", "\"\"");
   }
 
-  private String escapeForString(final String str) {
-    return str.replace("'", "\\'");
+  public static String escapeSingleQuotedString(final String str) {
+    return str
+        .replace("\\", "\\\\")
+        .replace("'", "\\'");
+  }
+
+  public static String escapeDollarString(final String str) {
+    return str.replace("$$", "\\$\\$");
   }
 }
