@@ -17,7 +17,6 @@ MAIN_REQUIREMENTS = [
     "typing_extensions==4.5.0",
     "pydantic==1.10.8",
     "pandas==1.4.2",
-    "sentence-transformers",
     "cohere",
 ]
 

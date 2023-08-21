@@ -20,7 +20,7 @@ def initialize_processor():
                 stream=AirbyteStream(name="stream1", json_schema={}, namespace="namespace1", supported_sync_modes=[SyncMode.full_refresh]),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
-                primary_key=[["id"]],
+                preimary_key=[["id"]],
             ),
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="stream2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
