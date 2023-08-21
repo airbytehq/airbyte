@@ -16,18 +16,17 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.debezium.connector.mongodb.ResumeTokens;
 import org.bson.BsonDocument;
-import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class MongodbDebeziumStateUtilTest {
+class MongoDbDebeziumStateUtilTest {
 
-  private MongodbDebeziumStateUtil mongodbDebeziumStateUtil;
+  private MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
 
   @BeforeEach
   void setup() {
-    mongodbDebeziumStateUtil = new MongodbDebeziumStateUtil();
+    mongoDbDebeziumStateUtil = new MongoDbDebeziumStateUtil();
   }
 
   @Test
@@ -35,29 +34,27 @@ class MongodbDebeziumStateUtilTest {
     final String database = "test";
     final String replicaSet = "test_rs";
     final String resumeToken = "8264BEB9F3000000012B0229296E04";
-    final BsonDocument resumeTokenDocument = mock(BsonDocument.class);
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
     final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
 
-    when(resumeTokenDocument.containsKey("_data")).thenReturn(true);
-    when(resumeTokenDocument.get("_data")).thenReturn(new BsonString(resumeToken));
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final JsonNode initialState = mongodbDebeziumStateUtil.constructInitialDebeziumState(mongoClient,
+    final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient,
         database, replicaSet);
 
     assertNotNull(initialState);
     assertEquals(1, initialState.size());
     final BsonTimestamp timestamp = ResumeTokens.getTimestamp(resumeTokenDocument);
     final JsonNode offsetState = initialState.fields().next().getValue();
-    assertEquals(resumeToken, offsetState.get(MongodbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText());
-    assertEquals(timestamp.getTime(), offsetState.get(MongodbDebeziumConstants.OffsetState.VALUE_SECONDS).asInt());
-    assertEquals(timestamp.getInc(), offsetState.get(MongodbDebeziumConstants.OffsetState.VALUE_INCREMENT).asInt());
-    assertEquals("null", offsetState.get(MongodbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID).asText());
+    assertEquals(resumeToken, offsetState.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText());
+    assertEquals(timestamp.getTime(), offsetState.get(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS).asInt());
+    assertEquals(timestamp.getInc(), offsetState.get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT).asInt());
+    assertEquals("null", offsetState.get(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID).asText());
   }
 
 }
