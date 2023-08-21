@@ -11,9 +11,8 @@ public abstract class CtidStateManager {
 
   public static final long CTID_STATUS_VERSION = 2;
   public static final String STATE_TYPE_KEY = "state_type";
-  public static final String STATE_VER_KEY = "version";
 
-  private final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
+  protected final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
 
   protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
     this.pairToCtidStatus = pairToCtidStatus;

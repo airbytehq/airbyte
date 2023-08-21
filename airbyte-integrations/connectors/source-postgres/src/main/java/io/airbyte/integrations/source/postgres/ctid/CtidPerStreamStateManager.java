@@ -65,6 +65,7 @@ public class CtidPerStreamStateManager extends CtidStateManager {
 
   @Override
   public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
+    pairToCtidStatus.put(pair, ctidStatus);
     final AirbyteStreamState airbyteStreamState =
         new AirbyteStreamState()
             .withStreamDescriptor(

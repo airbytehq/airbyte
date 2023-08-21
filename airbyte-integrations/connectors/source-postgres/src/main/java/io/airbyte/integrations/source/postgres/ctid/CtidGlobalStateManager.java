@@ -70,6 +70,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   @Override
   public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
+    pairToCtidStatus.put(pair, ctidStatus);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
