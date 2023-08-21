@@ -7,8 +7,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
@@ -86,7 +86,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
    * Subclasses using a config with a nonstandard raw table schema should override this method.
    */
   protected String getRawSchema() {
-    return CatalogParser.DEFAULT_RAW_TABLE_NAMESPACE;
+    return JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
   }
 
   private String getDefaultSchema() {
