@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -89,12 +90,18 @@ public class RecordDiffer {
   }
 
   /**
+   * Lift _airbyte_data fields to the root level. If _airbyte_data is a string, deserialize it first.
+   *
    * @return A copy of the record, but with all fields in _airbyte_data lifted to the top level.
    */
   private static JsonNode copyWithLiftedData(final JsonNode record) {
     final ObjectNode copy = record.deepCopy();
     copy.remove("_airbyte_data");
-    Streams.stream(record.get("_airbyte_data").fields()).forEach(field -> {
+    JsonNode airbyteData = record.get("_airbyte_data");
+    if (airbyteData.isTextual()) {
+      airbyteData = Jsons.deserializeExact(airbyteData.asText());
+    }
+    Streams.stream(airbyteData.fields()).forEach(field -> {
       if (!copy.has(field.getKey())) {
         copy.set(field.getKey(), field.getValue());
       } else {
@@ -243,8 +250,9 @@ public class RecordDiffer {
       return expectedValue.equals(actualValue)
           // equals() expects the two values to be the same class.
           // We need to handle comparisons between e.g. LongNode and IntNode.
-          || (expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
-          || (expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble());
+          || (expectedValue.isIntegralNumber() && actualValue.isIntegralNumber()
+              && expectedValue.bigIntegerValue().equals(actualValue.bigIntegerValue()))
+          || (expectedValue.isNumber() && actualValue.isNumber() && expectedValue.decimalValue().equals(actualValue.decimalValue()));
     }
   }
 
@@ -291,11 +299,11 @@ public class RecordDiffer {
     }
   }
 
-  private static double asDouble(final JsonNode node) {
+  private static BigDecimal asNumber(final JsonNode node) {
     if (node == null || !node.isNumber()) {
-      return Double.MIN_VALUE;
+      return new BigDecimal(Double.MIN_VALUE);
     } else {
-      return node.longValue();
+      return node.decimalValue();
     }
   }
 
@@ -376,7 +384,7 @@ public class RecordDiffer {
     if (type instanceof final AirbyteProtocolType t) {
       return switch (t) {
         case STRING -> asString(node.get(field));
-        case NUMBER -> asDouble(node.get(field));
+        case NUMBER -> asNumber(node.get(field));
         case INTEGER -> asInt(node.get(field));
         case BOOLEAN -> asBoolean(node.get(field));
         case TIMESTAMP_WITH_TIMEZONE -> asTimestampWithTimezone(node.get(field));

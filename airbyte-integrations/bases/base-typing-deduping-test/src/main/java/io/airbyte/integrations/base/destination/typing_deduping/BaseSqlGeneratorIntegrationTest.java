@@ -823,7 +823,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     insertV1RawTableRecords(v1RawTableStreamId, singletonList(Jsons.jsonNode(Map.of(
         "_airbyte_ab_id", "v1v2",
         "_airbyte_emitted_at", "2023-01-01T00:00:00Z",
-        "_airbyte_data", "{\"hello\": \"world\"}"))));
+        "_airbyte_data",
+        // 67.174118 gets rounded to 67.17411800000001 as a float64. Verify that we don't throw an error.
+        """
+        {"hello": "world", "foo": 67.174118}"""))));
     final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
     final List<JsonNode> v1RawRecords = dumpRawTableRecords(v1RawTableStreamId);
@@ -832,7 +835,16 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         () -> assertEquals(1, v1RawRecords.size()),
         () -> assertEquals(1, v2RawRecords.size()),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_ab_id").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
-        () -> assertEquals(Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText()), v2RawRecords.get(0).get("_airbyte_data")),
+        () -> {
+          final JsonNode originalData = Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText());
+          JsonNode migratedData = v2RawRecords.get(0).get("_airbyte_data");
+          if (migratedData.isTextual()) {
+            migratedData = Jsons.deserializeExact(migratedData.asText());
+          }
+          // hacky thing because we only care about the data contents.
+          // diffRawTableRecords makes some assumptions about the structure of the blob.
+          DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
+        },
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_emitted_at").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
         () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at")));
 
