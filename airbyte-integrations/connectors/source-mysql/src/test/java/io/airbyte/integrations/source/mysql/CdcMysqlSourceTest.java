@@ -307,4 +307,5 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
     assertExpectedStateMessages(stateMessages);
   }
+
 }

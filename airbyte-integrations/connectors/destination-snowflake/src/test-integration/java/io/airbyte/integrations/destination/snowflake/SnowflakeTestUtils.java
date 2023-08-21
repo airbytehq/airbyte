@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import static java.util.stream.Collectors.joining;
@@ -18,27 +22,26 @@ public class SnowflakeTestUtils {
             quote(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
             timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)),
             timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
-            quote(JavaBaseConstants.COLUMN_NAME_DATA)
-        ),
+            quote(JavaBaseConstants.COLUMN_NAME_DATA)),
         database,
         tableIdentifier);
   }
 
   public static List<JsonNode> dumpFinalTable(JdbcDatabase database, String databaseName, String schema, String table) throws SQLException {
-    // We have to discover the column names, because if we just SELECT * then snowflake will upcase all column names.
+    // We have to discover the column names, because if we just SELECT * then snowflake will upcase all
+    // column names.
     List<String> columns = database.queryJsons(
-            """
-                SELECT column_name, data_type
-                FROM information_schema.columns
-                WHERE table_catalog = ?
-                  AND table_schema = ?
-                  AND table_name = ?
-                ORDER BY ordinal_position;
-                """,
-            databaseName,
-            schema,
-            table
-        ).stream()
+        """
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_catalog = ?
+          AND table_schema = ?
+          AND table_name = ?
+        ORDER BY ordinal_position;
+        """,
+        databaseName,
+        schema,
+        table).stream()
         .map(column -> {
           String quotedName = quote(column.get("COLUMN_NAME").asText());
           String type = column.get("DATA_TYPE").asText();
@@ -58,21 +61,22 @@ public class SnowflakeTestUtils {
   }
 
   /**
-   * This is mostly identical to SnowflakeInsertDestinationAcceptanceTest, except it doesn't verify table type.
+   * This is mostly identical to SnowflakeInsertDestinationAcceptanceTest, except it doesn't verify
+   * table type.
    * <p>
-   * The columns param is a list of column names/aliases. For example, {@code "_airbyte_extracted_at :: varchar AS "_airbyte_extracted_at"}.
+   * The columns param is a list of column names/aliases. For example,
+   * {@code "_airbyte_extracted_at :: varchar AS "_airbyte_extracted_at"}.
    *
    * @param tableIdentifier Table identifier (e.g. "schema.table"), with quotes if necessary.
    */
   public static List<JsonNode> dumpTable(List<String> columns, JdbcDatabase database, String tableIdentifier) throws SQLException {
     return database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(new StringSubstitutor(Map.of(
-       "columns", columns.stream().collect(joining(",")),
-       "table", tableIdentifier
-   )).replace(
-       """
-           SELECT ${columns} FROM ${table} ORDER BY "_airbyte_extracted_at" ASC
-           """
-       )), new SnowflakeTestSourceOperations()::rowToJson);
+        "columns", columns.stream().collect(joining(",")),
+        "table", tableIdentifier)).replace(
+            """
+            SELECT ${columns} FROM ${table} ORDER BY "_airbyte_extracted_at" ASC
+            """)),
+        new SnowflakeTestSourceOperations()::rowToJson);
   }
 
   private static String quote(String name) {
@@ -82,4 +86,5 @@ public class SnowflakeTestUtils {
   private static String timestampToString(String quotedName) {
     return "TO_VARCHAR(" + quotedName + ", 'YYYY-MM-DD\"T\"HH24:MI:SS.FFTZH:TZM') as " + quotedName;
   }
+
 }

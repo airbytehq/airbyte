@@ -29,9 +29,10 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   /**
-   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This function will be called before EACH test.
+   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This
+   * function will be called before EACH test.
    *
-   * @param testEnv      - information about the test environment.
+   * @param testEnv - information about the test environment.
    * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    * @see DestinationAcceptanceTest#setUpInternal()
@@ -53,7 +54,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   /**
    * Removes data from bigquery and GCS This function will be called after EACH test
    *
-   * @param testEnv      - information about the test environment.
+   * @param testEnv - information about the test environment.
    * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    * @see DestinationAcceptanceTest#tearDownInternal()

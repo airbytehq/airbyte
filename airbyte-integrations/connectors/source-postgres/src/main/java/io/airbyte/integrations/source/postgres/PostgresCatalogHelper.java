@@ -126,11 +126,12 @@ public final class PostgresCatalogHelper {
   }
 
   /*
-   * To prepare for Destination v2, cdc streams must have a default cursor field
-   * this defaults to lsn as a cursor as it is monotonically increasing and unique
+   * To prepare for Destination v2, cdc streams must have a default cursor field this defaults to lsn
+   * as a cursor as it is monotonically increasing and unique
    */
   public static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
     stream.setDefaultCursorField(ImmutableList.of(CDC_LSN));
     return stream;
   }
+
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
@@ -23,14 +27,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This record iterator operates over a single stream. It continuously reads data from a table via multiple queries with the configured
- * chunk size until the entire table is processed. The next query uses the highest watermark of the primary key seen in the previous
- * subquery. Consider a table with chunk size = 1,000,000, and 3,500,000 records. The series of queries executed are :
- * Query 1 : select * from table order by pk limit 1,800,000, pk_max = pk_max_1
- * Query 2 : select * from table where pk > pk_max_1 order by pk limit 1,800,000, pk_max = pk_max_2
- * Query 3 : select * from table where pk > pk_max_2 order by pk limit 1,800,000, pk_max = pk_max_3
- * Query 4 : select * from table where pk > pk_max_3 order by pk limit 1,800,000, pk_max = pk_max_4
- * Query 5 : select * from table where pk > pk_max_4 order by pk limit 1,800,000. Final query, since there are zero records processed here.
+ * This record iterator operates over a single stream. It continuously reads data from a table via
+ * multiple queries with the configured chunk size until the entire table is processed. The next
+ * query uses the highest watermark of the primary key seen in the previous subquery. Consider a
+ * table with chunk size = 1,000,000, and 3,500,000 records. The series of queries executed are :
+ * Query 1 : select * from table order by pk limit 1,800,000, pk_max = pk_max_1 Query 2 : select *
+ * from table where pk > pk_max_1 order by pk limit 1,800,000, pk_max = pk_max_2 Query 3 : select *
+ * from table where pk > pk_max_2 order by pk limit 1,800,000, pk_max = pk_max_3 Query 4 : select *
+ * from table where pk > pk_max_3 order by pk limit 1,800,000, pk_max = pk_max_4 Query 5 : select *
+ * from table where pk > pk_max_4 order by pk limit 1,800,000. Final query, since there are zero
+ * records processed here.
  */
 public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     implements AutoCloseableIterator<JsonNode> {
@@ -51,13 +57,13 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   private AutoCloseableIterator<JsonNode> currentIterator;
 
   MySqlInitialLoadRecordIterator(
-      final JdbcDatabase database,
-      final MySqlInitialLoadSourceOperations sourceOperations,
-      final String quoteString,
-      final MySqlInitialLoadStateManager initialLoadStateManager,
-      final List<String> columnNames,
-      final AirbyteStreamNameNamespacePair pair,
-      final long chunkSize) {
+                                 final JdbcDatabase database,
+                                 final MySqlInitialLoadSourceOperations sourceOperations,
+                                 final String quoteString,
+                                 final MySqlInitialLoadStateManager initialLoadStateManager,
+                                 final List<String> columnNames,
+                                 final AirbyteStreamNameNamespacePair pair,
+                                 final long chunkSize) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -95,7 +101,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   }
 
   private boolean shouldBuildNextSubquery() {
-    // The next sub-query should be built if (i) it is the first subquery in the sequence. (ii) the previous subquery has finished.
+    // The next sub-query should be built if (i) it is the first subquery in the sequence. (ii) the
+    // previous subquery has finished.
     return currentIterator == null || !currentIterator.hasNext();
   }
 
@@ -122,7 +129,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       } else {
         LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
         final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
-        // Since a pk is unique, we can issue a > query instead of a >=, as there cannot be two records with the same pk.
+        // Since a pk is unique, we can issue a > query instead of a >=, as there cannot be two records with
+        // the same pk.
         final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
             quotedCursorField, quotedCursorField, chunkSize);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -142,4 +150,5 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       currentIterator.close();
     }
   }
+
 }

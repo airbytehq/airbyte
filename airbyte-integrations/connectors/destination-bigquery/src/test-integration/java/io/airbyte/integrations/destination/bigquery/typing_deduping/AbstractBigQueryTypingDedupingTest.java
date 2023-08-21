@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,7 +46,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
+    TableResult result =
+        bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
@@ -60,7 +65,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to create it)
+    // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to
+    // create it)
     // so we don't need to do any existence checks here.
     bq.delete(TableId.of(getRawDataset(), StreamId.concatenateRawTableName(streamNamespace, streamName)));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
@@ -72,4 +78,5 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   protected String getRawDataset() {
     return JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
   }
+
 }

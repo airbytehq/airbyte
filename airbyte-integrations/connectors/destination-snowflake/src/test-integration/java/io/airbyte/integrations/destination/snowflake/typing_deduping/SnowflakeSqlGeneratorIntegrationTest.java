@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static java.util.stream.Collectors.joining;
@@ -68,7 +72,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   protected void createRawTable(final StreamId streamId) throws Exception {
     database.execute(new StringSubstitutor(Map.of(
         "raw_table_id", streamId.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
-        """
+            """
             CREATE TABLE ${raw_table_id} (
               "_airbyte_raw_id" TEXT NOT NULL,
               "_airbyte_data" VARIANT NOT NULL,
@@ -83,9 +87,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     final String cdcDeletedAt = includeCdcDeletedAt ? "\"_ab_cdc_deleted_at\" TIMESTAMP_TZ," : "";
     database.execute(new StringSubstitutor(Map.of(
         "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
-        "cdc_deleted_at", cdcDeletedAt
-    )).replace(
-        """
+        "cdc_deleted_at", cdcDeletedAt)).replace(
+            """
             CREATE TABLE ${final_table_id} (
               "_airbyte_raw_id" TEXT NOT NULL,
               "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
@@ -130,42 +133,45 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix, final List<JsonNode> records) throws Exception {
+  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
+                                         final StreamId streamId,
+                                         final String suffix,
+                                         final List<JsonNode> records)
+      throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
     final String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
     final String recordsText = records.stream()
-                                // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
-                                .map(record -> columnNames.stream()
-                                                          .map(record::get)
-                                                          .map(r -> {
-                                                            if (r == null) {
-                                                              return "NULL";
-                                                            }
-                                                            final String stringContents;
-                                                            if (r.isTextual()) {
-                                                              stringContents = r.asText();
-                                                            } else {
-                                                              stringContents = r.toString();
-                                                            }
-                                                            return "$$" + stringContents + "$$";
-                                                          })
-                                                          .collect(joining(",")))
-                                .map(row -> "(" + row + ")")
-                                .collect(joining(","));
+        // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
+        .map(record -> columnNames.stream()
+            .map(record::get)
+            .map(r -> {
+              if (r == null) {
+                return "NULL";
+              }
+              final String stringContents;
+              if (r.isTextual()) {
+                stringContents = r.asText();
+              } else {
+                stringContents = r.toString();
+              }
+              return "$$" + stringContents + "$$";
+            })
+            .collect(joining(",")))
+        .map(row -> "(" + row + ")")
+        .collect(joining(","));
 
     database.execute(new StringSubstitutor(
         Map.of(
             "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
             "cdc_deleted_at_name", cdcDeletedAtName,
             "cdc_deleted_at_extract", cdcDeletedAtExtract,
-            "records", recordsText
-        ),
+            "records", recordsText),
         "#{",
-        "}"
-    ).replace(
-        // Similar to insertRawTableRecords, some of these columns are declared as string and wrapped in parse_json().
-        """
+        "}").replace(
+            // Similar to insertRawTableRecords, some of these columns are declared as string and wrapped in
+            // parse_json().
+            """
             INSERT INTO #{final_table_id} (
               "_airbyte_raw_id",
               "_airbyte_extracted_at",
@@ -215,36 +221,34 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
     final String recordsText = records.stream()
-                                // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
-                                .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES.stream()
-                                                                                          .map(record::get)
-                                                                                          .map(r -> {
-                                                                                            if (r == null) {
-                                                                                              return "NULL";
-                                                                                            }
-                                                                                            final String stringContents;
-                                                                                            if (r.isTextual()) {
-                                                                                              stringContents = r.asText();
-                                                                                            } else {
-                                                                                              stringContents = r.toString();
-                                                                                            }
-                                                                                            // Use dollar quotes to avoid needing to escape anything
-                                                                                            return "$$" + stringContents + "$$";
-                                                                                          })
-                                                                                          .collect(joining(",")))
-                                .map(row -> "(" + row + ")")
-                                .collect(joining(","));
+        // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
+        .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES.stream()
+            .map(record::get)
+            .map(r -> {
+              if (r == null) {
+                return "NULL";
+              }
+              final String stringContents;
+              if (r.isTextual()) {
+                stringContents = r.asText();
+              } else {
+                stringContents = r.toString();
+              }
+              // Use dollar quotes to avoid needing to escape anything
+              return "$$" + stringContents + "$$";
+            })
+            .collect(joining(",")))
+        .map(row -> "(" + row + ")")
+        .collect(joining(","));
     database.execute(new StringSubstitutor(
         Map.of(
             "raw_table_id", streamId.rawTableId(SnowflakeSqlGenerator.QUOTE),
-            "records_text", recordsText
-        ),
+            "records_text", recordsText),
         // Use different delimiters because we're using dollar quotes in the query.
         "#{",
-        "}"
-    ).replace(
-        // Snowflake doesn't let you directly insert a parse_json expression, so we have to use a subquery.
-        """
+        "}").replace(
+            // Snowflake doesn't let you directly insert a parse_json expression, so we have to use a subquery.
+            """
             INSERT INTO #{raw_table_id} (
               "_airbyte_raw_id",
               "_airbyte_extracted_at",
@@ -258,8 +262,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
               PARSE_JSON(column4)
             FROM VALUES
               #{records_text};
-            """
-    ));
+            """));
   }
 
   @Override
@@ -269,59 +272,54 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     destinationHandler.execute(sql);
 
     final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))
-                                         .stream().map(record -> record.get("kind").asText())
-                                         .findFirst();
+        .stream().map(record -> record.get("kind").asText())
+        .findFirst();
     final Map<String, String> columns = database.queryJsons(
-                                              """
-                                                  SELECT column_name, data_type, numeric_precision, numeric_scale
-                                                  FROM information_schema.columns
-                                                  WHERE table_catalog = ?
-                                                    AND table_schema = ?
-                                                    AND table_name = ?
-                                                  ORDER BY ordinal_position;
-                                                  """,
-                                              databaseName,
-                                              namespace,
-                                              "users_final"
-                                          ).stream()
-                                          .collect(toMap(
-                                              record -> record.get("COLUMN_NAME").asText(),
-                                              record -> {
-                                                final String type = record.get("DATA_TYPE").asText();
-                                                if (type.equals("NUMBER")) {
-                                                  return String.format("NUMBER(%s, %s)", record.get("NUMERIC_PRECISION").asText(),
-                                                                       record.get("NUMERIC_SCALE").asText()
-                                                  );
-                                                }
-                                                return type;
-                                              }
-                                          ));
+        """
+        SELECT column_name, data_type, numeric_precision, numeric_scale
+        FROM information_schema.columns
+        WHERE table_catalog = ?
+          AND table_schema = ?
+          AND table_name = ?
+        ORDER BY ordinal_position;
+        """,
+        databaseName,
+        namespace,
+        "users_final").stream()
+        .collect(toMap(
+            record -> record.get("COLUMN_NAME").asText(),
+            record -> {
+              final String type = record.get("DATA_TYPE").asText();
+              if (type.equals("NUMBER")) {
+                return String.format("NUMBER(%s, %s)", record.get("NUMERIC_PRECISION").asText(),
+                    record.get("NUMERIC_SCALE").asText());
+              }
+              return type;
+            }));
     assertAll(
         () -> assertEquals(Optional.of("TABLE"), tableKind, "Table should be permanent, not transient"),
         () -> assertEquals(
             ImmutableMap.builder()
-                        .put("_airbyte_raw_id", "TEXT")
-                        .put("_airbyte_extracted_at", "TIMESTAMP_TZ")
-                        .put("_airbyte_meta", "VARIANT")
-                        .put("id1", "NUMBER(38, 0)")
-                        .put("id2", "NUMBER(38, 0)")
-                        .put("updated_at", "TIMESTAMP_TZ")
-                        .put("struct", "OBJECT")
-                        .put("array", "ARRAY")
-                        .put("string", "TEXT")
-                        .put("number", "FLOAT")
-                        .put("integer", "NUMBER(38, 0)")
-                        .put("boolean", "BOOLEAN")
-                        .put("timestamp_with_timezone", "TIMESTAMP_TZ")
-                        .put("timestamp_without_timezone", "TIMESTAMP_NTZ")
-                        .put("time_with_timezone", "TEXT")
-                        .put("time_without_timezone", "TIME")
-                        .put("date", "DATE")
-                        .put("unknown", "VARIANT")
-                        .build(),
-            columns
-        )
-    );
+                .put("_airbyte_raw_id", "TEXT")
+                .put("_airbyte_extracted_at", "TIMESTAMP_TZ")
+                .put("_airbyte_meta", "VARIANT")
+                .put("id1", "NUMBER(38, 0)")
+                .put("id2", "NUMBER(38, 0)")
+                .put("updated_at", "TIMESTAMP_TZ")
+                .put("struct", "OBJECT")
+                .put("array", "ARRAY")
+                .put("string", "TEXT")
+                .put("number", "FLOAT")
+                .put("integer", "NUMBER(38, 0)")
+                .put("boolean", "BOOLEAN")
+                .put("timestamp_with_timezone", "TIMESTAMP_TZ")
+                .put("timestamp_without_timezone", "TIMESTAMP_NTZ")
+                .put("time_with_timezone", "TEXT")
+                .put("time_without_timezone", "TIME")
+                .put("date", "DATE")
+                .put("unknown", "VARIANT")
+                .build(),
+            columns));
   }
 
   @Override
@@ -338,6 +336,6 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Disabled
   @Override
   @Test
-  public void testV1V2migration() {
-  }
+  public void testV1V2migration() {}
+
 }
