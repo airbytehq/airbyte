@@ -19,7 +19,7 @@ data:
   releaseDate: 2022-01-14
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/baton
+  documentationUrl: https://docs.airbyte.com/integrations/sources/hellobaton
   tags:
     - language:low-code
   ab_internal:
