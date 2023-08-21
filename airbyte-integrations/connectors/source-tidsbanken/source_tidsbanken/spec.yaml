@@ -1,0 +1,23 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Tidsbanken Spec
+  type: object
+  required:
+    - api_key
+    - start_date
+    - slice_interval
+  properties:
+    api_key:
+      type: string
+      description: The api secret for authenticating with Tidsbanken
+      airbyte_secret: true
+    start_date:
+      type: string
+      default: "2023-06-01T00:00:00Z"
+      format: date-time
+      description: The date to start syncing from
+    slice_interval: 
+      type: integer
+      default: 7
+      description: The number of days for each slice (current_date, current_date.add(slice_interval)) when syncing data
