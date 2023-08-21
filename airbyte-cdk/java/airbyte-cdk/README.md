@@ -69,7 +69,7 @@ version.properties`.
    - Note: you will need to export the env vars `CLOUDREPO_USER` and `CLOUDREPO_PASSWORD` before publishing.
 3. Remove the `-SNAPSHOT` suffix from any connector(s) using the latest version.
    - E.g. If modifying `source-mysql`, then remove `-SNAPSHOT` from the CDK `implements` declaration in `airbyte-integrations/connectors/source-mysql/build.gradle`.
-4. Publish the modified connector(s), as per the normal process.
+4. As per the normal process, modified connector(s) will be automatically published after they are merged to the main branch.
 
 Note:
 
@@ -98,5 +98,5 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                               |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------ |
-| 0.0.2   | 2023-08-16 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Version bump only (no other changes). |
+| 0.0.2   | 2023-08-21 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Version bump only (no other changes). |
 | 0.0.1   | 2023-08-08 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Initial release for testing.          |
