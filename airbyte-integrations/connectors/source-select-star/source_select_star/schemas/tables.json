@@ -703,7 +703,8 @@
       "type": "array"
     },
     "updated_on": {
-      "type": "string"
+      "format": "date-time",
+      "type": ["string", "null"]
     },
     "upstream_objects_counts": {
       "properties": {

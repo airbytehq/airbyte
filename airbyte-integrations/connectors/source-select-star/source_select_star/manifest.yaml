@@ -24,6 +24,18 @@ definitions:
 
   tables_stream:
     primary_key: "guid"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_on"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "PT0.000001S"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: "P1M"
     retriever:
       record_selector:
         type: RecordSelector
