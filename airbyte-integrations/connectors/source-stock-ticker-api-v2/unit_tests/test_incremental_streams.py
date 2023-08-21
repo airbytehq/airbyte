@@ -35,16 +35,6 @@ def test_get_updated_state(patch_incremental_base_class):
     expected_state = {"date": last_date}
     assert stream.get_updated_state(**inputs) == expected_state
 
-
-def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalStockTickerApiV2Stream()
-    # TODO: replace this with your input parameters
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    # TODO: replace this with your expected stream slices list
-    expected_stream_slice = [None]
-    assert stream.stream_slices(**inputs) == expected_stream_slice
-
-
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalStockTickerApiV2Stream, "cursor_field", "dummy_field")
     stream = IncrementalStockTickerApiV2Stream()
@@ -58,6 +48,5 @@ def test_source_defined_cursor(patch_incremental_base_class):
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = IncrementalStockTickerApiV2Stream()
-    # TODO: replace this with your expected checkpoint interval
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

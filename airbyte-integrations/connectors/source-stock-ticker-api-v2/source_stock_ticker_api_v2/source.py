@@ -30,39 +30,16 @@ There are additional required TODOs in the files within the integration_tests fo
 
 # Basic full refresh stream
 class StockTickerApiV2Stream(HttpStream, ABC):
-    """
-    TODO remove this comment
-
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class StockTickerApiV2Stream(HttpStream, ABC)` which is the current class
-    `class Customers(StockTickerApiV2Stream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(StockTickerApiV2Stream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalStockTickerApiV2Stream((StockTickerApiV2Stream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # TODO: Fill in the url base. Required.
     url_base = "https://api.polygon.io/v2/aggs/"
 
     data_field = "results"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({'sort': 'asc', 'limit': 120, })
+        return params
 
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -105,12 +82,6 @@ class Ticker(IncrementalStockTickerApiV2Stream, IncrementalMixin):
     def next_page_token(self, *args, **kwargs):
         return None
 
-    def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        params.update({'sort': 'asc', 'limit': 120, })
-        return params
 
     def path(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
              next_page_token: Mapping[str, Any] = None) -> str:
@@ -155,16 +126,7 @@ class Ticker(IncrementalStockTickerApiV2Stream, IncrementalMixin):
 # Source
 class SourceStockTickerApiV2(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
 
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.yaml
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
         if not config.get("api_key"):
             return False, f"Missing required config fields `api_key`."
         if not config.get("stock_ticker"):
@@ -176,8 +138,6 @@ class SourceStockTickerApiV2(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth = TokenAuthenticator(config.get('api_key'))
