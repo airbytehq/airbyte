@@ -4,8 +4,9 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.FETCH_SIZE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -41,6 +42,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.Document;
+import java.util.Map.Entry;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -52,11 +54,6 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   /** Helper class for holding a collection-name and stream state together */
   private record CollectionNameState(Optional<String> name, Optional<MongodbStreamState> state) {}
-
-  /**
-   * Number of documents to read at once.
-   */
-  private static final int BATCH_SIZE = 1000;
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -110,17 +107,16 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state) {
     final var databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
-    final var fetchSize = config.has(FETCH_SIZE_CONFIGURATION_KEY) ? config.get(FETCH_SIZE_CONFIGURATION_KEY).asInt() : BATCH_SIZE;
     final var emittedAt = Instant.now();
 
     final var states = convertState(state);
-    //WARNING: do not close the client here since it needs to be used by the iterator
-    final MongoClient mongoClient = createMongoClient(config);
+    final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 
     try {
       final var database = mongoClient.getDatabase(databaseName);
+      // TODO treat INCREMENTAL and FULL_REFRESH differently?
       return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(
-          convertCatalogToIterators(catalog, states, database, emittedAt, fetchSize),
+          convertCatalogToIterators(catalog, states, database, emittedAt),
           AirbyteTraceMessageUtility::emitStreamStatusTrace),
           mongoClient::close);
     } catch (final Exception e) {
@@ -165,8 +161,7 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                 final Map<String, MongodbStreamState> states,
                                                                                 final MongoDatabase database,
-                                                                                final Instant emittedAt,
-                                                                                final Integer fetchSize) {
+                                                                                final Instant emittedAt) {
     return catalog.getStreams()
         .stream()
         .peek(airbyteStream -> {
@@ -179,9 +174,18 @@ public class MongoDbSource extends BaseConnector implements Source {
           // TODO verify that if all fields are selected that all fields are returned here
           // (or should this check and ignore them if all fields are selected)
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
-          final var cursor = getRecords(database, fields, collectionName, states, fetchSize);
 
-          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, emittedAt, fetchSize);
+          // find the existing state, if there is one, for this steam
+          final Optional<MongodbStreamState> existingState = states.entrySet().stream()
+              // look only for states that match this stream's name
+              // TODO add namespace support
+              .filter(state -> state.getKey().equals(airbyteStream.getStream().getName()))
+              .map(Entry::getValue)
+              .findFirst();
+
+          final var cursor = getRecords(database, fields, collectionName, existingState);
+
+          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, existingState, emittedAt, CHECKPOINT_INTERVAL);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
@@ -195,29 +199,24 @@ public class MongoDbSource extends BaseConnector implements Source {
       final MongoDatabase database,
       final Bson fields,
       final String collectionName,
-      final Map<String, MongodbStreamState> states,
-      final Integer fetchSize) {
+      final Optional<MongodbStreamState> existingState) {
 
     final var collection = database.getCollection(collectionName);
 
     // The filter determines the starting point of this iterator based on the state of this collection.
-    // If a state exists, it will use that state to create a query akin to "where _id > [last saved
-    // state] order by _id ASC".
+    // If a state exists, it will use that state to create a query akin to
+    // "where _id > [last saved state] order by _id ASC".
     // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
-    final Bson filter = states.entrySet().stream()
-        // look only for states that match this stream's name
-        .filter(state -> state.getKey().equals(collectionName))
-        .findFirst()
+    final Bson filter = existingState
         // TODO add type support here when we add support for _id fields that are not ObjectId types
-        .map(entry -> Filters.gt("_id", new ObjectId(entry.getValue().id())))
+        .map(state -> Filters.gt(ID_FIELD, new ObjectId(state.id())))
         // if nothing was found, return a new BsonDocument
         .orElseGet(BsonDocument::new);
 
     return collection.find()
         .filter(filter)
         .projection(fields)
-        .sort(Sorts.ascending("_id"))
-        .batchSize(fetchSize)
+        .sort(Sorts.ascending(ID_FIELD))
         .cursor();
   }
 }
