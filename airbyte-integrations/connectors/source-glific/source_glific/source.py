@@ -5,13 +5,16 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 import requests
 import json
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.core import StreamData
+from datetime import datetime
 
 
 
@@ -32,6 +35,8 @@ stream_json_schema = {
 class GlificStream(HttpStream, ABC):
 
     primary_key = None
+    cursor_value = None
+    latest_updated_date = None
 
     """
     This class represents a stream output by the connector.
@@ -66,6 +71,7 @@ class GlificStream(HttpStream, ABC):
         self.pagination_limit = pagination_limit
         self.start_time = config['start_time']
         self.offset = 0
+        self.last_record = None
 
     @property
     def url_base(self) -> str:
@@ -86,23 +92,18 @@ class GlificStream(HttpStream, ABC):
     
     def path(self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         return ""
+    
+    def update_state(self) -> None:
+        
+        if self.latest_updated_date:
+            if self.latest_updated_date> self.state['updated_at']:
+                self.state = {self.cursor_field: self.latest_updated_date}
+        self.latest_updated_date = None
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-
+        
+        
         json_resp = response.json()
         if json_resp['data']['organizationExportData'] is not None:
             records_str = json_resp['data']['organizationExportData']['data']
@@ -114,20 +115,21 @@ class GlificStream(HttpStream, ABC):
                     self.offset += 1
                     return {"offset": self.offset, "limit": self.pagination_limit}
 
+        self.update_state()
+
         return None
 
     def request_headers(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        """Add the authorization token in the headers"""
+        
         return {'authorization': self.credentials['access_token'], 'Content-Type': 'application/json'}
 
-    
+
     def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping:
-        """Request body to post"""
 
         query = "query organizationExportData($filter: ExportFilter) { organizationExportData(filter: $filter) {data errors { key message } } }"
-        
+            
         filter_obj = {
-            "startTime": self.start_time,
+            "startTime": self.state['updated_at'],
             "offset": self.offset,
             "limit": self.pagination_limit,
             "tables": [self.stream_name]
@@ -140,24 +142,52 @@ class GlificStream(HttpStream, ABC):
         return {"query":  query, "variables": {"filter": filter_obj}}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
+
         json_resp = response.json()
         if json_resp['data']['organizationExportData'] is not None:
             records_str = json_resp['data']['organizationExportData']['data']
             records_obj = json.loads(records_str)
-            if self.stream_name in records_obj['data']:
-                records = json.loads(records_str)['data'][f'{self.stream_name}']
-                col_names = records[0].split(',')
-                print("NOOO OFFF COOLLLSS", len(col_names))
-                for i in range(1, len(records)): # each record
-                    record = {}
-                    print("RECORD NOO OOFFF VALLLSS",i, len(records[i].split(',')))
-                    for j, col_val in enumerate(records[i].split(',')): # each col_val
-                        record[col_names[j]] = col_val
-                    yield record
+            yield from records_obj['data'][self.stream_name]
+
+    
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None,) -> Iterable[StreamData]:
+        records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        
+        for record in records:
+            if(len(record['updated_at'])==19):
+                record['updated_at'] = record['updated_at'] + 'Z'
+            else:
+                record['updated_at'] = datetime.strptime(record['updated_at'], "%Y-%m-%dT%H:%M:%S.%f").strftime("%Y-%m-%dT%H:%M:%SZ")
+            
+            if self.latest_updated_date:
+                if record['updated_at']>self.latest_updated_date:
+                    self.latest_updated_date = record['updated_at']
+            else:
+                self.latest_updated_date = record['updated_at']
+            yield record
+
+
+class IncrementalGlificStream(GlificStream, IncrementalMixin, ABC):
+    
+    state_checkpoint_interval = None
+
+    @property
+    def cursor_field(self) -> str:
+        return "updated_at"
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+
+        if self.cursor_value:
+            return {self.cursor_field: self.cursor_value}
+        else:
+            return {self.cursor_field: self.start_time}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self.cursor_value = value[self.cursor_field]
+        self._state = value
+
 
 # Source
 class SourceGlific(AbstractSource):
@@ -244,7 +274,7 @@ class SourceGlific(AbstractSource):
         export_config = json.loads(data['data']['organizationExportConfig']['data'])
         streams = []
         for table in export_config['tables']:
-            stream_obj = GlificStream(table, self.API_URL, self.PAGINATION_LIMIT, credentials, config)
+            stream_obj = IncrementalGlificStream(table, self.API_URL, self.PAGINATION_LIMIT, credentials, config)
             streams.append(stream_obj)
 
         return streams
