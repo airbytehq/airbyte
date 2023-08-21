@@ -30,4 +30,5 @@ public class Database {
   public void close() {
     dslContext.close();
   }
+
 }
