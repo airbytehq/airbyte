@@ -1,4 +1,5 @@
 connector_image: airbyte/source-appfollow:dev
+test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
@@ -18,7 +19,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+        empty_streams:
+          - name: "ratings"
+            bypass_reason: "Endpoint not allowed in integration account"
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
