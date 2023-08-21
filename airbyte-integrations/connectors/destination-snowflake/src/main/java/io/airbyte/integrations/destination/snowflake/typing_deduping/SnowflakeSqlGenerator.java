@@ -77,19 +77,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String createTable(final StreamConfig stream, final String suffix) {
+  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
         .collect(joining("\n"));
-    // TODO indexes and stuff
+    final String forceCreateTable = force ? "OR REPLACE" : "";
+
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
         "final_table_id", stream.id().finalTableId(QUOTE, suffix),
+        "force_create_table", forceCreateTable,
         "column_declarations", columnDeclarations)).replace(
         """
         CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
-        CREATE TABLE ${final_table_id} (
+        CREATE ${force_create_table} TABLE ${final_table_id} (
           "_airbyte_raw_id" TEXT NOT NULL,
           "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
           "_airbyte_meta" VARIANT NOT NULL
@@ -443,7 +445,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String softReset(final StreamConfig stream) {
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);

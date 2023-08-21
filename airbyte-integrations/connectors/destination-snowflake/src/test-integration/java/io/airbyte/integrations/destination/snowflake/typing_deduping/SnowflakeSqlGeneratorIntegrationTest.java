@@ -265,7 +265,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    final String sql = generator.createTable(incrementalDedupStream, "");
+    final String sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
     final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))

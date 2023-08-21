@@ -18,14 +18,17 @@ public interface SqlGenerator<DialectTableDefinition> {
   /**
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
-   * The generated SQL may throw an exception if the table already exists. Callers should use
-   * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known
-   * to exist.
+   * The generated SQL should throw an exception if the table already exists and {@code force} is false.
+   * Callers should use {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if
+   * the table is known to exist, and potentially {@link #softReset(StreamConfig)}.
    *
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
+   * @param force If true, will overwrite an existing table. If false, will throw an exception if the
+   *        table already exists. If you're passing a non-empty prefix, you likely want to set this
+   *        to true.
    */
-  String createTable(final StreamConfig stream, final String suffix);
+  String createTable(final StreamConfig stream, final String suffix, boolean force);
 
   /**
    * Check the final table's schema and compare it to what the stream config would generate.
