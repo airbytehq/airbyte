@@ -32,4 +32,5 @@ public class Database {
     dslContext.parsingConnection().close();
     dslContext.diagnosticsConnection().close();
   }
+
 }
