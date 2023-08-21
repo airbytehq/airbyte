@@ -738,12 +738,12 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final StreamId modifiedStreamId = new StreamId(
         originalStreamId.finalNamespace(),
         originalStreamId.finalName(),
-        // hack for testing simplicity: put the raw tables in the final namespace. This makes cleanup easier.
+        // hack for testing simplicity: put the raw tables in the final namespace. This makes cleanup
+        // easier.
         originalStreamId.finalNamespace(),
         "raw_table",
         null,
-        null
-    );
+        null);
     final ColumnId columnId = generator.buildColumnId(str);
     try {
       createNamespace(modifiedStreamId.finalNamespace());
@@ -753,8 +753,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
           List.of(Jsons.jsonNode(Map.of(
               "_airbyte_raw_id", "758989f2-b148-4dd3-8754-30d9c17d05fb",
               "_airbyte_extracted_at", "2023-01-01T00:00:00Z",
-              "_airbyte_data", Map.of(str, "bar")
-          ))));
+              "_airbyte_data", Map.of(str, "bar")))));
       final StreamConfig stream = new StreamConfig(
           modifiedStreamId,
           SyncMode.INCREMENTAL,
