@@ -6,7 +6,7 @@
     "store": {
       "type": ["null", "string"]
     },
-    "review_stats": {
+    "reviews_stat": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

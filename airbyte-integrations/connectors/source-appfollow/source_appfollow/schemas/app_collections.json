@@ -3,7 +3,7 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "title-normalized": {
+    "title_normalized": {
       "type": ["null", "string"]
     },
     "created": {
@@ -13,7 +13,7 @@
       "type": ["null", "integer"]
     },
     "languages": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "title": {
       "type": ["null", "string"]
@@ -25,8 +25,11 @@
       "type": ["null", "string"]
     },
     "tags": {
-      "type": ["null", "object"],
-      "additionalProperties": true
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     }
   }
 }
