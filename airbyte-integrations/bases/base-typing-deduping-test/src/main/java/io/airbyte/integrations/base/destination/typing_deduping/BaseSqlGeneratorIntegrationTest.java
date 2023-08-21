@@ -764,19 +764,28 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     insertV1RawTableRecords(v1RawTableStreamId, singletonList(Jsons.jsonNode(Map.of(
         "_airbyte_ab_id", "v1v2",
         "_airbyte_emitted_at", "2023-01-01T00:00:00Z",
-        "_airbyte_data", "{\"hello\": \"world\"}"))));
+        "_airbyte_data", "{\"hello\": \"world\"}"
+    ))));
     final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
-    final List<JsonNode> v1RawRecords = dumpRawTableRecords(v1RawTableStreamId);
+    final List<JsonNode> v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId);
     final List<JsonNode> v2RawRecords = dumpRawTableRecords(streamId);
+    migrationAssertions(v1RawRecords, v2RawRecords);
+  }
+
+  protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
     assertAll(
         () -> assertEquals(1, v1RawRecords.size()),
         () -> assertEquals(1, v2RawRecords.size()),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_ab_id").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
         () -> assertEquals(Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText()), v2RawRecords.get(0).get("_airbyte_data")),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_emitted_at").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
-        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at")));
+        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at"))
+    );
+  }
 
+  protected List<JsonNode> dumpV1RawTableRecords(StreamId streamId) throws Exception {
+    return dumpRawTableRecords(streamId);
   }
 
   private void verifyRecords(final String expectedRawRecordsFile,
@@ -786,15 +795,19 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertAll(
         () -> DIFFER.diffRawTableRecords(
             BaseTypingDedupingTest.readRecords(expectedRawRecordsFile),
-            actualRawRecords),
+            actualRawRecords
+        ),
         () -> assertEquals(
             0,
             actualRawRecords.stream()
-                .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
-                .count()),
+                            .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
+                            .count()
+        ),
         () -> DIFFER.diffFinalTableRecords(
             BaseTypingDedupingTest.readRecords(expectedFinalRecordsFile),
-            actualFinalRecords));
+            actualFinalRecords
+        )
+    );
   }
 
   private void verifyRecordCounts(final int expectedRawRecords,

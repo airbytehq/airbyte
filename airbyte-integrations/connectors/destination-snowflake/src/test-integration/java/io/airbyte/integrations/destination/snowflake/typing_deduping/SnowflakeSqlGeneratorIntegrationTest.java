@@ -1,9 +1,11 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
+import static io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.timestampToString;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,12 +19,14 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperations;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -61,7 +65,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected void createNamespace(final String namespace) throws SQLException {
-    database.execute("CREATE SCHEMA \"" + namespace + '"');
+    database.execute("CREATE SCHEMA IF NOT EXISTS \"" + namespace + '"');
   }
 
   @Override
@@ -207,7 +211,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     }
     final String stringContents = node.isTextual() ? node.asText() : node.toString();
     // Use dollar quotes to avoid needing to escape anything
-    return StringUtils.wrap("$$", stringContents);
+    return StringUtils.wrap(stringContents, "$$");
   }
 
   @Override
@@ -315,12 +319,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   protected void createV1RawTable(final StreamId v1RawTable) throws Exception {
     database.execute(String.format(
         """
-            CREATE TABLE IF NOT EXISTS %s.%s (
-              %s VARCHAR PRIMARY KEY,
-              %s VARIANT,
-              %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
-            ) data_retention_time_in_days = 0;
-        """,
+                CREATE SCHEMA IF NOT EXISTS %s;
+                CREATE TABLE IF NOT EXISTS %s.%s (
+                  %s VARCHAR PRIMARY KEY,
+                  %s VARIANT,
+                  %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
+                ) data_retention_time_in_days = 0;
+            """,
+        v1RawTable.rawNamespace(),
         v1RawTable.rawNamespace(),
         v1RawTable.rawName(),
         JavaBaseConstants.COLUMN_NAME_AB_ID,
@@ -337,19 +343,53 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             .stream()
             .map(record::get)
             .map(value -> value == null ? "NULL" : value.isTextual() ? value.asText() : value.toString())
+            .map(v -> "NULL".equals(v) ? v : StringUtils.wrap(v, "$$"))
             .collect(joining(",")))
         .map(row -> "(%s)".formatted(row))
         .collect(joining(","));
     final var insert = new StringSubstitutor(Map.of(
         "v1_raw_table_id", String.join(".", streamId.rawNamespace(), streamId.rawName()),
         "records", recordsText
-    )).replace(
+    ),
+                                             // Use different delimiters because we're using dollar quotes in the query.
+                                             "#{",
+                                             "}"
+    ).replace(
         """
-            INSERT INTO ${v1_raw_table_id} (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at)
-            SELECT _airbyte_ab_id, _airbyte_data, _airbyte_emitted_at FROM VALUES
-              ${records};
+            INSERT INTO #{v1_raw_table_id} (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at)
+            SELECT column1, PARSE_JSON(column2), column3 FROM VALUES
+              #{records};
             """
     );
     database.execute(insert);
+  }
+
+  @Override
+  protected List<JsonNode> dumpV1RawTableRecords(StreamId streamId) throws Exception {
+    final var columns = Stream.of(
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        timestampToString(JavaBaseConstants.COLUMN_NAME_EMITTED_AT),
+        JavaBaseConstants.COLUMN_NAME_DATA
+    ).collect(joining(","));
+    return database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(new StringSubstitutor(Map.of(
+        "columns", columns,
+        "table", String.join(".", streamId.rawNamespace(), streamId.rawName())
+    )).replace(
+        """
+            SELECT ${columns} FROM ${table} ORDER BY _airbyte_emitted_at ASC
+            """
+    )), new SnowflakeTestSourceOperations()::rowToJson);
+  }
+
+  @Override
+  protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
+    assertAll(
+        () -> assertEquals(1, v1RawRecords.size()),
+        () -> assertEquals(1, v2RawRecords.size()),
+        () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_AB_ID").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
+        () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_DATA"), v2RawRecords.get(0).get("_airbyte_data")),
+        () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_EMITTED_AT").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
+        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at"))
+    );
   }
 }
