@@ -53,6 +53,12 @@ vector_store = Pinecone(index, embeddings.embed_query, "text")
 qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
 ```
 
+:::caution
+
+For Pinecone pods of type starter, only up to 10,000 chunks can be indexed. For production use, please use a higher tier.
+
+:::
+
 #### Chroma vector store
 
 The [Chroma vector store](https://trychroma.com) is running the Chroma embedding database as persistent client and stores the vectors in a local file.
@@ -133,6 +139,7 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.7   | 2023-08-18 | [#29513](https://github.com/airbytehq/airbyte/pull/29513)     | Fix for starter pods  |
 | 0.0.6   | 2023-08-02 | [#28977](https://github.com/airbytehq/airbyte/pull/28977)     | Validate pinecone index dimensions during check  |
 | 0.0.5   | 2023-07-25 | [#28605](https://github.com/airbytehq/airbyte/pull/28605)     | Add Chroma support  |
 | 0.0.4   | 2023-07-21 | [#28556](https://github.com/airbytehq/airbyte/pull/28556)     | Correctly dedupe records with composite and nested primary keys  |
