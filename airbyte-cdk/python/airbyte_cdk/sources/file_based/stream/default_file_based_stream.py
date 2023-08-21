@@ -65,7 +65,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
 
-    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
+    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
 
@@ -127,9 +127,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         stack_trace=traceback.format_exc(),
                     ),
                 )
-                break
 
-            else:
+            finally:
                 if n_skipped:
                     yield AirbyteMessage(
                         type=MessageType.LOG,
