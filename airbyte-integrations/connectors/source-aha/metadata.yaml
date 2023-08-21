@@ -1,9 +1,13 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 81ca39dc-4534-4dd2-b848-b0cfd2c11fce
   dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-aha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aha
   githubIssueLabel: source-aha
   icon: aha.svg
   license: MIT
@@ -14,12 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/aha
+  supportLevel: community
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 200
-  supportLevel: certified
 metadataSpecVersion: "1.0"
