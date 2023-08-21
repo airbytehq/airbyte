@@ -15,11 +15,31 @@ from airbyte_cdk.models.airbyte_protocol import (
 )
 from airbyte_cdk.utils import AirbyteTracedException
 from apiclient import errors
-from google.auth import exceptions as google_exceptions
 from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.client import GoogleSheetsClient
 from source_google_sheets.helpers import SCOPES, Helpers
 from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+
+
+def set_http_error_for_google_sheets_client(mocker, resp):
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", side_effect=errors.HttpError(resp=resp, content=b''))
+
+
+def set_resp_http_error(status_code, error_message=None):
+    resp = requests.Response()
+    resp.status = status_code
+    if error_message:
+        resp.reason = error_message
+    return resp
+
+
+def set_sheets_type_grid(sheet_first_row):
+    data = [
+        GridData(rowData=[RowData(values=[CellData(formattedValue=v) for v in sheet_first_row])
+                          ])]
+    sheet = Sheet(properties=SheetProperties(title='sheet1', gridProperties='true', sheetType="GRID"), data=data)
+    return sheet
 
 
 def test_invalid_credentials_error_message(invalid_config):
@@ -31,10 +51,7 @@ def test_invalid_credentials_error_message(invalid_config):
 
 def test_invalid_link_error_message(mocker, invalid_config):
     source = SourceGoogleSheets()
-    resp = requests.Response()
-    resp.status = 404
-    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
-    mocker.patch.object(GoogleSheetsClient, "get", side_effect=errors.HttpError(resp=resp, content=b''))
+    set_http_error_for_google_sheets_client(mocker, set_resp_http_error(404))
     with pytest.raises(AirbyteTracedException) as e:
         source.check(logger=None, config=invalid_config)
     expected_message = 'Config error: The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync.'
@@ -43,11 +60,7 @@ def test_invalid_link_error_message(mocker, invalid_config):
 
 def test_discover_404_error(mocker, invalid_config):
     source = SourceGoogleSheets()
-    resp = requests.Response()
-    resp.status = 404
-    resp.reason = "Requested entity was not found"
-    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
-    mocker.patch.object(GoogleSheetsClient, "get", side_effect=errors.HttpError(resp=resp, content=b''))
+    set_http_error_for_google_sheets_client(mocker, set_resp_http_error(404, "Requested entity was not found"))
 
     with pytest.raises(AirbyteTracedException) as e:
         source.discover(logger=mocker.MagicMock(), config=invalid_config)
@@ -58,11 +71,7 @@ def test_discover_404_error(mocker, invalid_config):
 
 def test_discover_403_error(mocker, invalid_config):
     source = SourceGoogleSheets()
-    resp = requests.Response()
-    resp.status = 403
-    resp.reason = "The caller does not have right permissions"
-    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
-    mocker.patch.object(GoogleSheetsClient, "get", side_effect=errors.HttpError(resp=resp, content=b''))
+    set_http_error_for_google_sheets_client(mocker, set_resp_http_error(403, "The caller does not have right permissions"))
 
     with pytest.raises(AirbyteTracedException) as e:
         source.discover(logger=mocker.MagicMock(), config=invalid_config)
@@ -81,22 +90,41 @@ def test_check_invalid_creds_json_file(invalid_config):
 
 def test_check_access_expired(mocker, invalid_config):
     source = SourceGoogleSheets()
-    resp = requests.Response()
-    resp.status = 403
-    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
-    mocker.patch.object(GoogleSheetsClient, "get", side_effect=google_exceptions.GoogleAuthError(resp=resp, content=b''))
-    with pytest.raises(AirbyteTracedException) as e:
-        source.check(logger=None, config=invalid_config)
+    set_http_error_for_google_sheets_client(mocker, set_resp_http_error(403))
     expected_message = 'Access to the spreadsheet expired or was revoked. Re-authenticate to restore access.'
-    assert e.value.args[0] == expected_message
+    with pytest.raises(AirbyteTracedException):
+        res = source.check(logger=None, config=invalid_config)
+        assert res.message == expected_message
+
+
+def test_check_expected_to_read_data_from_1_sheet(mocker, invalid_config, caplog):
+    source = SourceGoogleSheets()
+    spreadsheet = Spreadsheet(spreadsheetId='spreadsheet_id', sheets=[set_sheets_type_grid(["1", "2"]), set_sheets_type_grid(["3", "4"])])
+    source = SourceGoogleSheets()
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=spreadsheet)
+    res = source.check(logger=logging.getLogger('airbyte'), config=invalid_config)
+    assert str(res.status) == "Status.FAILED"
+    assert "Unexpected return result: Sheet sheet1 was expected to contain data on exactly 1 sheet." in caplog.text
+
+
+def test_check_duplicated_headers(invalid_config, mocker, caplog):
+    source = SourceGoogleSheets()
+    spreadsheet = Spreadsheet(spreadsheetId='spreadsheet_id', sheets=[set_sheets_type_grid(["1", "1", "3", "4"])])
+    source = SourceGoogleSheets()
+    expected_message = "The following duplicate headers were found in the following sheets. Please fix them to continue: [sheet:sheet1, headers:['1']]"
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=spreadsheet)
+    res = source.check(logger=logging.getLogger('airbyte'), config=invalid_config)
+    assert str(res.status) == "Status.FAILED"
+    assert expected_message in res.message
 
 
 def test_check_status_succeeded(mocker, invalid_config):
     source = SourceGoogleSheets()
     mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
-    expected_sheets = ["1", "2", "3", "4"]
     mocker.patch.object(GoogleSheetsClient, "get", return_value=Spreadsheet(
-            spreadsheetId='spreadsheet_id', sheets=[Sheet(properties=SheetProperties(title=t)) for t in expected_sheets]
+            spreadsheetId='spreadsheet_id', sheets=[Sheet(properties=SheetProperties(title=t)) for t in ["1", "2", "3", "4"]]
         ))
 
     res = source.check(logger=None, config=invalid_config)
@@ -106,37 +134,35 @@ def test_check_status_succeeded(mocker, invalid_config):
 def test_discover_with_non_grid_sheets(mocker, invalid_config):
     source = SourceGoogleSheets()
     mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
-    expected_sheets = ["1", "2", "3", "4"]
     mocker.patch.object(GoogleSheetsClient, "get", return_value=Spreadsheet(
-        spreadsheetId='spreadsheet_id', sheets=[Sheet(properties=SheetProperties(title=t)) for t in expected_sheets]
+        spreadsheetId='spreadsheet_id', sheets=[Sheet(properties=SheetProperties(title=t)) for t in ["1", "2", "3", "4"]]
     ))
     res = source.discover(logger=mocker.MagicMock(), config=invalid_config)
     assert res.streams == []
 
 
 def test_discover(mocker, invalid_config):
-    sheet1_first_row = ["1", "2", "3", "4"]
-    data = [
-        GridData(rowData=[RowData(values=[CellData(formattedValue=v) for v in sheet1_first_row])
-                          ])]
-    sheet = Sheet(properties=SheetProperties(title='sheet1', gridProperties='true', sheetType="GRID"), data=data)
-
-    spreadsheet = Spreadsheet(spreadsheetId='spreadsheet_id', sheets=[sheet])
     source = SourceGoogleSheets()
+    spreadsheet = Spreadsheet(spreadsheetId='spreadsheet_id', sheets=[set_sheets_type_grid(["1", "2", "3", "4"])])
     mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
     mocker.patch.object(GoogleSheetsClient, "get", return_value=spreadsheet)
     res = source.discover(logger=mocker.MagicMock(), config=invalid_config)
     assert len(res.streams) == 1
 
 
-def test_discover_incorrect_spreadsheet_name(mocker, invalid_config):
-    sheet1_first_row = ["1", "2", "3", "4"]
-    data = [
-        GridData(rowData=[RowData(values=[CellData(formattedValue=v) for v in sheet1_first_row])
-                          ])]
-    sheet = Sheet(properties=SheetProperties(title='sheet1 test test', gridProperties='true', sheetType="GRID"), data=data)
+def test_discover_with_names_conversion(mocker, invalid_config):
+    invalid_config["names_conversion"] = True
+    spreadsheet = Spreadsheet(spreadsheetId='spreadsheet_id', sheets=[set_sheets_type_grid(["1 тест", "2", "3", "4"])])
+    source = SourceGoogleSheets()
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=spreadsheet)
+    res = source.discover(logger=mocker.MagicMock(), config=invalid_config)
+    assert len(res.streams) == 1
+    assert "_1_test" in res.streams[0].json_schema["properties"].keys()
 
-    spreadsheet = Spreadsheet(spreadsheetId='spreadsheet_id', sheets=[sheet])
+
+def test_discover_incorrect_spreadsheet_name(mocker, invalid_config):
+    spreadsheet = Spreadsheet(spreadsheetId='spreadsheet_id', sheets=[set_sheets_type_grid(["1", "2", "3", "4"])])
     source = SourceGoogleSheets()
     mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
     mocker.patch.object(GoogleSheetsClient, "get", return_value=spreadsheet)
@@ -146,11 +172,7 @@ def test_discover_incorrect_spreadsheet_name(mocker, invalid_config):
 
 def test_discover_could_not_run_discover(mocker, invalid_config):
     source = SourceGoogleSheets()
-    resp = requests.Response()
-    resp.status = 500
-    resp.reason = "Interval Server error"
-    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
-    mocker.patch.object(GoogleSheetsClient, "get", side_effect=errors.HttpError(resp=resp, content=b''))
+    set_http_error_for_google_sheets_client(mocker, set_resp_http_error(500, "Interval Server error"))
 
     with pytest.raises(Exception) as e:
         source.discover(logger=mocker.MagicMock(), config=invalid_config)
@@ -177,12 +199,9 @@ def test_get_credentials_old_style():
 
 def test_read_429_error(mocker, invalid_config, caplog):
     source = SourceGoogleSheets()
-    resp = requests.Response()
-    resp.status = 429
-    resp.reason = "Request a higher quota limit"
     mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
     mocker.patch.object(GoogleSheetsClient, "get", return_value=mocker.Mock)
-    mocker.patch.object(Helpers, "get_sheets_in_spreadsheet", side_effect=errors.HttpError(resp=resp, content=b''))
+    mocker.patch.object(Helpers, "get_sheets_in_spreadsheet", side_effect=errors.HttpError(resp=set_resp_http_error(429, "Request a higher quota limit"), content=b''))
 
     sheet1 = "soccer_team"
     sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
@@ -198,4 +217,89 @@ def test_read_429_error(mocker, invalid_config, caplog):
     )
     records = list(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
     assert [] == records
-    assert "Request a higher quota limit" in caplog.text
+    assert "Stopped syncing process due to rate limits. Rate limit has been reached. Please try later or request a higher quota for your account" in caplog.text
+
+
+def test_read_403_error(mocker, invalid_config, caplog):
+    source = SourceGoogleSheets()
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=mocker.Mock)
+    mocker.patch.object(Helpers, "get_sheets_in_spreadsheet", side_effect=errors.HttpError(resp=set_resp_http_error(403, "Permission denied"), content=b''))
+
+    sheet1 = "soccer_team"
+    sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
+    sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
+        ]
+    )
+    with pytest.raises(AirbyteTracedException) as e:
+        next(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
+    assert str(e.value) == "The authenticated Google Sheets user does not have permissions to view the spreadsheet with id invalid_spreadsheet_id. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support"
+
+
+def test_read_expected_data_on_1_sheet(invalid_config, mocker, caplog):
+    source = SourceGoogleSheets()
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    sheet1 = "soccer_team"
+    sheet2 = "soccer_team2"
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=Spreadsheet(
+        spreadsheetId='spreadsheet_id', sheets=[Sheet(properties=SheetProperties(title=t)) for t in [sheet1, sheet2]]
+    ))
+
+    sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
+    sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=sheet2, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
+        ]
+    )
+
+    with pytest.raises(Exception) as e:
+        next(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
+    assert "Unexpected return result: Sheet soccer_team was expected to contain data on exactly 1 sheet." in str(e.value)
+
+
+def test_read_emply_sheet(invalid_config, mocker, caplog):
+    source = SourceGoogleSheets()
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    sheet1 = "soccer_team"
+    sheet2 = "soccer_team2"
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=Spreadsheet(
+        spreadsheetId=invalid_config["spreadsheet_id"],
+        sheets=[Sheet(properties=SheetProperties(title=t), data=[{"test1": "12", "test2": "123"},]) for t in [sheet1, ]]
+    ))
+
+    sheet1_columns = frozenset(["arsenal", "chelsea"])
+    sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=sheet2, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
+        ]
+    )
+    records = list(source.read(logger=logging.getLogger("airbyte"), catalog=catalog,config=invalid_config))
+    assert records == []
+    assert "The sheet soccer_team (ID invalid_spreadsheet_id) is empty!" in caplog.text

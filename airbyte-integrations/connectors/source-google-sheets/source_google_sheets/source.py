@@ -212,14 +212,14 @@ class SourceGoogleSheets(Source):
         except errors.HttpError as e:
             error_description = exception_description_by_status_code(e.status_code, spreadsheet_id)
 
-            if e.status_code == status_codes.TOO_MANY_REQUESTS:
-                logger.info(f"Stopped syncing process due to rate limits. {error_description}")
             if e.status_code == status_codes.FORBIDDEN:
                 raise AirbyteTracedException(
                     message=f"Stopped syncing process. {error_description}",
                     internal_message=error_description,
                     failure_type=FailureType.config_error,
                 ) from e
+            if e.status_code == status_codes.TOO_MANY_REQUESTS:
+                logger.info(f"Stopped syncing process due to rate limits. {error_description}")
             else:
                 logger.info(f"{e.status_code}: {e.reason}. {error_description}")
         finally:
