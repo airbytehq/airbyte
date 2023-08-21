@@ -1,10 +1,10 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - api.serpstat.com
   registries:
     oss:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3b2e8fb2-9137-41ff-a1e1-83ecb39e26c8
@@ -14,7 +14,7 @@ data:
   icon: serpstat.svg
   license: MIT
   name: Serpstat
-  releaseDate: TODO
+  releaseDate: 2023-08-21
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/serpstat
   tags:
