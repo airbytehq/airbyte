@@ -24,6 +24,7 @@ data:
     breakingChanges:
       2.0.0:
         message: Destinations V2 includes enhanced final table structures, better error handling, and other usability improvements. Learn more about what's new [here](https://docs.airbyte.com/understanding-airbyte/typing-deduping) and how to upgrade [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2). This breaking change will change the format of your final tables.
+        upgradeDeadline: "2023-11-01"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   supportsDbt: true
   tags:
