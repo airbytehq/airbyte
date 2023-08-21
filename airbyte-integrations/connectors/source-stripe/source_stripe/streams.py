@@ -379,6 +379,7 @@ class IncrementalStripeStream(StripeStream):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self._cursor_field = cursor_field
         created_cursor_stream = CreatedCursorIncrementalStripeStream(
             *args,
             cursor_field=cursor_field,
@@ -395,6 +396,10 @@ class IncrementalStripeStream(StripeStream):
             **kwargs,
         )
         self.stream_selector = IncrementalStripeStreamSelector(created_cursor_stream, updated_cursor_stream)
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return [self._cursor_field]
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
