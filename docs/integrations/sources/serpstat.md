@@ -49,4 +49,4 @@ The maximum sync speed is limited by the number of requests per second per API k
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2023-07-11 | []()   | Release Serpstat Connector                                                                |
+| 0.1.0   | 2023-08-21 | [28147](https://github.com/airbytehq/airbyte/pull/28147)   | Release Serpstat Connector                                                                |
