@@ -12,12 +12,12 @@ This page contains the setup guide and reference information for the Intercom so
 
 ### Obtain an Intercom access token (Airbyte Open Source)
 
-To authenticate the connector in **Airbyte Open Source**, you will need to obtain an access token. You can follow the steps below to create an Intercom app and generate the token, or refer to the [official Intercom documentation](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token).
+To authenticate the connector in **Airbyte Open Source**, you will need to obtain an access token. You can follow the setup steps below to create an Intercom app and generate the token. For more information on Intercom's authentication flow, refer to the [official documentation](https://developers.intercom.com/building-apps/docs/authentication-types).
 
 1. Log in to your Intercom account and navigate to the [Developer Hub](https://developers.intercom.com/).
 2. Click **Your apps** in the top-right corner, then click **New app**.
 3. Choose an **App name**, select your Workspace from the dropdown, and click **Create app**.
-4. To set the appropriate permissions, from the **Authentication** tab, click **Edit** in the top right corner and check the permissions you want to grant to the app. We recommend only granting **read** permissions. Click **Save** when you are finished.
+4. To set the appropriate permissions, from the **Authentication** tab, click **Edit** in the top right corner and check the permissions you want to grant to the app. We recommend only granting **read** permissions (not **write**). Click **Save** when you are finished.
 5. Under the **Access token** header, you will be prompted to regenerate your access token. Follow the instructions to do so, and copy the new token.
 
 <!-- /env:oss -->
@@ -34,7 +34,7 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 - For **Airbyte Cloud**, click **Authenticate your Intercom account**. When the pop-up appears, select the appropriate workspace from the dropdown and click **Authorize access**.
 <!-- /env:cloud -->
 <!-- env:oss -->
-- For **Airbyte Open Source**, enter your Access Token to authenticate your account.
+- For **Airbyte Open Source**, enter your access token to authenticate your account.
 <!-- /env:oss -->
 
 6. For **Start date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
