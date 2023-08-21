@@ -17,6 +17,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.ConnectionFactory;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
@@ -149,20 +150,13 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   private Database createDatabaseFromConfig(final JsonNode config) {
-    try {
-      Properties properties = new Properties();
-      properties.put("user", baseConfig.get(JdbcUtils.USERNAME_KEY).asText());
-      properties.put("password", baseConfig.get(JdbcUtils.PASSWORD_KEY).asText());
-      RedshiftInsertDestination.SSL_JDBC_PARAMETERS.forEach((k, v) -> properties.put(k, v));
-
-      connection = DriverManager.getConnection(String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                      baseConfig.get(JdbcUtils.HOST_KEY).asText(),
-                      baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
-                      baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
-              properties);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    connection = ConnectionFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
+            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                    config.get(JdbcUtils.HOST_KEY).asText(),
+                    config.get(JdbcUtils.PORT_KEY).asInt(),
+                    config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     return new Database(DSL.using(connection));
   }
@@ -228,7 +222,6 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
     connection.setAutoCommit(false);
     connection.commit();
     connection.close();
-    System.out.println("IS_CONNECTION_CLOSED: " + connection.isClosed());
   }
 
 }

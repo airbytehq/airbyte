@@ -14,8 +14,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.ConnectionFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -38,8 +37,6 @@ import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
 
 /**
  * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
@@ -216,7 +213,6 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
-    System.out.println("SETTING_UP: " + TEST_SCHEMAS);
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
@@ -243,34 +239,16 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     connection.setAutoCommit(false);
     connection.commit();
     connection.close();
-    System.out.println("IS_CONNECTION_CLOSED: " + connection.isClosed());
   }
 
   protected Database createDatabase() {
-    System.out.println("CREATE DATABASE");
-    /*dataSource = DataSourceFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+    connection = ConnectionFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
             baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.REDSHIFT.getDriverClassName(),
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
                     baseConfig.get(JdbcUtils.HOST_KEY).asText(),
                     baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
-                    baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS);*/
-
-    try {
-      Properties properties = new Properties();
-      properties.put("user", baseConfig.get(JdbcUtils.USERNAME_KEY).asText());
-      properties.put("password", baseConfig.get(JdbcUtils.PASSWORD_KEY).asText());
-      RedshiftInsertDestination.SSL_JDBC_PARAMETERS.forEach((k, v) -> properties.put(k, v));
-
-      connection = DriverManager.getConnection(String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-              baseConfig.get(JdbcUtils.HOST_KEY).asText(),
-              baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
-              baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
-              properties);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+                    baseConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
     return new Database(DSL.using(connection));
   }
