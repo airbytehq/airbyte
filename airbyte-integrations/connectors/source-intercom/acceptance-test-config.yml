@@ -6,6 +6,9 @@ acceptance_tests:
   spec:
     tests:
     - spec_path: "source_intercom/spec.json"
+      # Small fix: advanced auth configuration contain `client_id` and `client_secret` fields but they were missing in spec. 
+      backward_compatibility_tests_config:
+        disable_for_version: "0.2.1"
   connection:
     tests:
     - config_path: "secrets/config.json"

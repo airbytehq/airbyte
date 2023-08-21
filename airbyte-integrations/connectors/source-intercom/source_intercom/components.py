@@ -15,11 +15,12 @@ from airbyte_cdk.sources.declarative.partition_routers.substream_partition_route
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import (
+    InterpolatedNestedRequestInputProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import InterpolatedNestedRequestInputProvider
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
-
 
 RequestInput = Union[str, Mapping[str, str]]
 
@@ -141,9 +142,7 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
     def set_initial_state(self, stream_state: StreamState):
         super().set_initial_state(stream_state=stream_state)
         if self.parent_stream_name in stream_state and stream_state.get(self.parent_stream_name, {}).get(self.parent_cursor_field):
-            parent_stream_state = {
-                self.parent_cursor_field: stream_state[self.parent_stream_name][self.parent_cursor_field]
-            }
+            parent_stream_state = {self.parent_cursor_field: stream_state[self.parent_stream_name][self.parent_cursor_field]}
             self._state[self.parent_stream_name] = parent_stream_state
             if "prior_state" in self._state:
                 self._state["prior_state"][self.parent_stream_name] = parent_stream_state
@@ -164,18 +163,13 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
         self.parent_stream.state = stream_state
 
         parent_stream_slices_gen = self.parent_stream.stream_slices(
-            sync_mode=sync_mode,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for parent_slice in parent_stream_slices_gen:
 
             parent_records_gen = self.parent_stream.read_records(
-                sync_mode=sync_mode,
-                cursor_field=cursor_field,
-                stream_slice=parent_slice,
-                stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
             )
 
             for parent_record in parent_records_gen:
@@ -189,7 +183,7 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
                     cursor_field: self._state.get(cursor_field),
                     self.parent_stream_name: {
                         self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
-                    }
+                    },
                 }
 
 
@@ -325,8 +319,8 @@ class HttpRequesterWithRateLimiter(HttpRequester):
     the default requester's logic doesn't allow to handle the status of 200 with `should_retry()`.
     """
 
-    request_headers:    Optional[RequestInput] = None
-    request_body_json:  Optional[RequestInput] = None
+    request_body_json: Optional[RequestInput] = None
+    request_headers: Optional[RequestInput] = None
     request_parameters: Optional[RequestInput] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -372,7 +366,7 @@ class HttpRequesterWithRateLimiter(HttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-    
+
     def get_request_body_json(
         self,
         *,

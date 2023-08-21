@@ -23,6 +23,8 @@ definitions:
     request_headers:
       Intercom-Version: '2.5' # ATTENTION: API version change is possible here
       Accept: 'application/json'
+    error_handler:
+      type: "DefaultErrorHandler"
   retriever:
     description: "Base Retriever for Full Refresh streams"
     record_selector:
@@ -67,7 +69,7 @@ definitions:
         'page': {{ next_page_token.get('next_page_token').get('page') }},
         'starting_after': '{{ next_page_token.get('next_page_token').get('starting_after') }}'
       }"
-  
+
   ## streams
   # full-refresh
   stream_full_refresh:
