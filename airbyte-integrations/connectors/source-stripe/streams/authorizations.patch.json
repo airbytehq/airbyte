@@ -1,0 +1,54 @@
+{
+    "properties": {
+      "transactions": {
+        "items": null,
+        "properties": {
+          "purchase_details": {
+            "fuel": null,
+            "properties": {
+              "fuel": {
+                "properties": {
+                  "type": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "unit": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "unit_cost_decimal": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "volume_decimal": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                },
+                "type": [
+                  "null",
+                  "object"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "null",
+          "array"
+        ]
+      }
+    }
+  }

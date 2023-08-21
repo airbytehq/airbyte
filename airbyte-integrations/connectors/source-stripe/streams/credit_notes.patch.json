@@ -1,0 +1,26 @@
+{
+    "properties": {
+      "lines": {
+        "has_more": null,
+        "url": null,
+        "properties": {
+          "has_more": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      }
+    }
+  }
