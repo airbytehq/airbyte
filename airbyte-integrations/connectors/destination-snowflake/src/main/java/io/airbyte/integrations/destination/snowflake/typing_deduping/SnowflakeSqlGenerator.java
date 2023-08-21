@@ -246,7 +246,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   String validatePrimaryKeys(final StreamId id,
                              final List<ColumnId> primaryKeys,
                              final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-    if (streamColumns.keySet().stream().anyMatch(c -> c.originalName().contains("`"))) {
+    if (primaryKeys.stream().anyMatch(c -> c.originalName().contains("`"))) {
       // TODO why is snowflake throwing a bizarre error when we try to use a column with a backtick in it?
       // E.g. even this trivial procedure fails: (it should return the string `'foo`bar')
       // execute immediate 'BEGIN RETURN \'foo`bar\'; END;'
