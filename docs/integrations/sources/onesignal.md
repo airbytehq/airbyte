@@ -75,6 +75,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
+| 1.0.1   | 2023-03-14 | [24076](https://github.com/airbytehq/airbyte/pull/24076) | Fix schema and add additionalProperties true |
 | 1.0.0   | 2023-03-14 | [24076](https://github.com/airbytehq/airbyte/pull/24076) | Update connectors spec; fix incremental sync |
 | 0.1.2   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description    |
 | 0.1.1   | 2021-11-10 | [7617](https://github.com/airbytehq/airbyte/pull/7617)   | Fix get_update state                         |
