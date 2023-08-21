@@ -66,7 +66,7 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/intercom-api-reference/reference#rate-limiting).
+The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/intercom-api-reference/reference/rate-limiting).
 
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
