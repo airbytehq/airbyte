@@ -110,7 +110,7 @@ public class MongoDbSource extends BaseConnector implements Source {
     final var emittedAt = Instant.now();
 
     final var states = convertState(state);
-    final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
+    final MongoClient mongoClient = createMongoClient(config);
 
     try {
       final var database = mongoClient.getDatabase(databaseName);
