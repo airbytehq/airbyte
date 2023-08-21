@@ -384,8 +384,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
     assertAll(
-        () -> assertEquals(1, v1RawRecords.size()),
-        () -> assertEquals(1, v2RawRecords.size()),
+        () -> assertEquals(4, v1RawRecords.size()),
+        () -> assertEquals(4, v2RawRecords.size()),
         () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_AB_ID").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
         () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_DATA"), v2RawRecords.get(0).get("_airbyte_data")),
         () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_EMITTED_AT").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),

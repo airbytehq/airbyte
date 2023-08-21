@@ -22,7 +22,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
@@ -761,10 +760,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // for something that is going away
     final StreamId v1RawTableStreamId = new StreamId(null, null, streamId.finalNamespace(), "v1_" + streamId.rawName(), null, null);
     createV1RawTable(v1RawTableStreamId);
-    insertV1RawTableRecords(v1RawTableStreamId, singletonList(Jsons.jsonNode(Map.of(
-        "_airbyte_ab_id", "v1v2",
-        "_airbyte_emitted_at", "2023-01-01T00:00:00Z",
-        "_airbyte_data", "{\"hello\": \"world\"}"))));
+    insertV1RawTableRecords(v1RawTableStreamId, BaseTypingDedupingTest.readRecords("sqlgenerator/all_types_v1_inpurtrecords.jsonl"));
     final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
     final List<JsonNode> v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId);
@@ -774,8 +770,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
     assertAll(
-        () -> assertEquals(1, v1RawRecords.size()),
-        () -> assertEquals(1, v2RawRecords.size()),
+        () -> assertEquals(4, v1RawRecords.size()),
+        () -> assertEquals(4, v2RawRecords.size()),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_ab_id").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
         () -> assertEquals(Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText()), v2RawRecords.get(0).get("_airbyte_data")),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_emitted_at").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
