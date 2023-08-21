@@ -69,7 +69,7 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         self._stream_config.file_type = self._FILE_TYPE
         self._stream_config.name = "a stream name"
         self._catalog_schema = Mock()
-        self._stream_reader = Mock(sepc=AbstractFileBasedStreamReader)
+        self._stream_reader = Mock(spec=AbstractFileBasedStreamReader)
         self._availability_strategy = Mock(spec=AbstractFileBasedAvailabilityStrategy)
         self._discovery_policy = Mock(spec=AbstractDiscoveryPolicy)
         self._parser = Mock(spec=FileTypeParser)
@@ -95,9 +95,10 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
 
     def test_given_exception_when_read_records_from_slice_then_do_process_other_files(self) -> None:
         """
-        This behavior is somewhat counter-intuitive as we could this we should fail the sync in case of unexpected errors. However, this is
-        the current behavior for source-s3 v3 and hence, we will keep this behaviour for now. One example we can easily reproduce this is by
-        having a file with gzip extension that is not actually a gzip file. The reader will fail to open the file but the sync won't fail.
+        The current behavior for source-s3 v3 does not fail sync on some errors and hence, we will keep this behaviour for now. One example
+        we can easily reproduce this is by having a file with gzip extension that is not actually a gzip file. The reader will fail to open
+        the file but the sync won't fail.
+        Ticket: https://github.com/airbytehq/airbyte/issues/29680
         """
         self._parser.parse_records.side_effect = [ValueError("An error"), [self._A_RECORD]]
 
