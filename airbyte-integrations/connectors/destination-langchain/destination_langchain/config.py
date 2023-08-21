@@ -6,9 +6,9 @@ import json
 import re
 from typing import List, Literal, Optional, Union
 
+import dpath.util
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
-import dpath.util
 
 
 class ProcessingConfigModel(BaseModel):
@@ -136,7 +136,7 @@ class ConfigModel(BaseModel):
         pyschema: dict = json.loads(str_schema)
         del pyschema["definitions"]
         return pyschema
-    
+
     @staticmethod
     def remove_discriminator(schema: dict) -> None:
         """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
