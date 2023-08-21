@@ -51,8 +51,8 @@ def test_discover_404_error(mocker, invalid_config):
 
     with pytest.raises(AirbyteTracedException) as e:
         source.discover(logger=mocker.MagicMock(), config=invalid_config)
-    expected_message = ("Requested spreadsheet with id invalid_spreadsheet_id was not found. Requested entity was not found. "
-                        "See docs for more details here: https://cloud.google.com/service-infrastructure/docs/service-control/reference/rpc/google.api/servicecontrol.v1#code")
+    expected_message = ("The requested Google Sheets spreadsheet with id invalid_spreadsheet_id does not exist."
+                        " Please ensure the Spreadsheet Link you have set is valid and Spreadsheet exists. If the issue persists, contact support. Requested entity was not found.")
     assert e.value.args[0] == expected_message
 
 
@@ -66,8 +66,10 @@ def test_discover_403_error(mocker, invalid_config):
 
     with pytest.raises(AirbyteTracedException) as e:
         source.discover(logger=mocker.MagicMock(), config=invalid_config)
-    expected_message = ("Forbidden when requesting spreadsheet with id invalid_spreadsheet_id. The caller does not have right permissions. "
-                        "See docs for more details here: https://cloud.google.com/service-infrastructure/docs/service-control/reference/rpc/google.api/servicecontrol.v1#code")
+    expected_message = ("The authenticated Google Sheets user does not have permissions to view the "
+                        "spreadsheet with id invalid_spreadsheet_id. Please ensure the authenticated user has access"
+                        " to the Spreadsheet and reauthenticate. If the issue persists, contact support. "
+                        "The caller does not have right permissions.")
     assert e.value.args[0] == expected_message
 
 
@@ -127,6 +129,21 @@ def test_discover(mocker, invalid_config):
     assert len(res.streams) == 1
 
 
+def test_discover_incorrect_spreadsheet_name(mocker, invalid_config):
+    sheet1_first_row = ["1", "2", "3", "4"]
+    data = [
+        GridData(rowData=[RowData(values=[CellData(formattedValue=v) for v in sheet1_first_row])
+                          ])]
+    sheet = Sheet(properties=SheetProperties(title='sheet1 test test', gridProperties='true', sheetType="GRID"), data=data)
+
+    spreadsheet = Spreadsheet(spreadsheetId='spreadsheet_id', sheets=[sheet])
+    source = SourceGoogleSheets()
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=spreadsheet)
+    res = source.discover(logger=mocker.MagicMock(), config=invalid_config)
+    assert len(res.streams) == 1
+
+
 def test_discover_could_not_run_discover(mocker, invalid_config):
     source = SourceGoogleSheets()
     resp = requests.Response()
@@ -137,7 +154,8 @@ def test_discover_could_not_run_discover(mocker, invalid_config):
 
     with pytest.raises(Exception) as e:
         source.discover(logger=mocker.MagicMock(), config=invalid_config)
-    expected_message = 'Could not run discovery: <HttpError 500 "Interval Server error">'
+    expected_message = ("Could not discover the schema of your spreadsheet. There was an issue with the Google Sheets API."
+                        " This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support. Interval Server error.")
     assert e.value.args[0] == expected_message
 
 
@@ -180,4 +198,4 @@ def test_read_429_error(mocker, invalid_config, caplog):
     )
     records = list(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
     assert [] == records
-    assert "Stopped syncing process due to rate limits. Request a higher quota limit" in caplog.text
+    assert "Request a higher quota limit" in caplog.text
