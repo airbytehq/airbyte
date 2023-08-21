@@ -84,8 +84,9 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         if (currentIterator != null) {
           currentIterator.close();
         }
-        // WE SHOULD NOT BUILD THE NEXT SUBQUERY IF we are in composite key mode and have already executed a subquery
-        if (isCompositeKeyLoad && numSubqueries >=1) {
+        // We will only issue one query for a composite key load. If we have already processed all the data associated with this
+        // query, we should indicate that we are done processing for the given stream.
+        if (isCompositeKeyLoad && numSubqueries >= 1) {
           return endOfData();
         }
         currentIterator = AutoCloseableIterators.fromStream(stream, pair);
