@@ -27,7 +27,9 @@ public class Database {
     return dslContext.transactionResult(configuration -> transform.query(DSL.using(configuration)));
   }
 
-  public void close() {
-    dslContext.close();
+  public void close() throws SQLException {
+    System.out.println("CLOSING DATABASE");
+    dslContext.parsingConnection().close();
+    dslContext.diagnosticsConnection().close();
   }
 }

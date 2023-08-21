@@ -18,6 +18,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -25,7 +26,12 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import org.jooq.impl.DSL;
+
+import javax.sql.DataSource;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +45,11 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   // config which refers to the schema that the test is being run in.
   protected JsonNode config;
 
-  protected Database database;
+  private Database database;
+
+  private DataSource dataSource;
+
+  private Connection connection;
 
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
   private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
@@ -138,18 +148,22 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
     return new RedshiftTestDataComparator();
   }
 
-  private static Database createDatabaseFromConfig(final JsonNode config) {
-    return new Database(
-            DSLContextFactory.create(
-                    config.get(JdbcUtils.USERNAME_KEY).asText(),
-                    config.get(JdbcUtils.PASSWORD_KEY).asText(),
-                    DatabaseDriver.REDSHIFT.getDriverClassName(),
-                    String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                            config.get(JdbcUtils.HOST_KEY).asText(),
-                            config.get(JdbcUtils.PORT_KEY).asInt(),
-                            config.get(JdbcUtils.DATABASE_KEY).asText()),
-                    null,
-                    RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
+  private Database createDatabaseFromConfig(final JsonNode config) {
+    dataSource = DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.REDSHIFT.getDriverClassName(),
+            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                    config.get(JdbcUtils.HOST_KEY).asText(),
+                    config.get(JdbcUtils.PORT_KEY).asInt(),
+                    config.get(JdbcUtils.DATABASE_KEY).asText()),
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
+    try {
+      connection = dataSource.getConnection();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return new Database(DSL.using(connection));
   }
 
   private Database getDatabase() {
@@ -210,8 +224,10 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         config -> {
           getDatabase().query(ctx -> ctx.fetch(String.format("DROP USER IF EXISTS %s;", USER_WITHOUT_CREDS)));
         });
-
-    database.close();
+    connection.setAutoCommit(false);
+    connection.commit();
+    connection.close();
+    System.out.println("IS_CONNECTION_CLOSED: " + connection.isClosed());
   }
 
 }

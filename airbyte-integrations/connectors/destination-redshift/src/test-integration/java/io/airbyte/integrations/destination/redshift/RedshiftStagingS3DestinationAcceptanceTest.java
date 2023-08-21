@@ -15,6 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -25,13 +26,18 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
 
 /**
  * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
@@ -49,6 +55,8 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
 
   private Database database;
+  private DataSource dataSource;
+  private Connection connection;
   protected TestDestinationEnv testDestinationEnv;
 
   private final ObjectMapper mapper = new ObjectMapper();
@@ -207,6 +215,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+    System.out.println("SETTING_UP: " + TEST_SCHEMAS);
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
@@ -224,27 +233,35 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
-    System.out.println("TEST_SCHEMAS: " + TEST_SCHEMAS);
+    System.out.println("TEARING_DOWN_SCHEMAS: " + TEST_SCHEMAS);
     getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText())));
     for (String schema : TEST_SCHEMAS) {
       getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schema)));
     }
     getDatabase().query(ctx -> ctx.execute(String.format("drop user if exists %s;", USER_WITHOUT_CREDS)));
-    database.close();
+    connection.setAutoCommit(false);
+    connection.commit();
+    connection.close();
+    System.out.println("IS_CONNECTION_CLOSED: " + connection.isClosed());
   }
 
   protected Database createDatabase() {
-    return new Database(
-            DSLContextFactory.create(
-                    baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-                    baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
-                    DatabaseDriver.REDSHIFT.getDriverClassName(),
-                    String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                            baseConfig.get(JdbcUtils.HOST_KEY).asText(),
-                            baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
-                            baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
-                    null,
-                    RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
+    System.out.println("CREATE DATABASE");
+    dataSource = DataSourceFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+            baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.REDSHIFT.getDriverClassName(),
+            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                    baseConfig.get(JdbcUtils.HOST_KEY).asText(),
+                    baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
+                    baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
+    try {
+      connection = dataSource.getConnection();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return new Database(DSL.using(connection));
   }
 
   protected Database getDatabase() {
