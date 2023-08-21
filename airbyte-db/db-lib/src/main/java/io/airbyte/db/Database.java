@@ -27,4 +27,7 @@ public class Database {
     return dslContext.transactionResult(configuration -> transform.query(DSL.using(configuration)));
   }
 
+  public void close() {
+    dslContext.close();
+  }
 }

@@ -39,6 +39,8 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   // config which refers to the schema that the test is being run in.
   protected JsonNode config;
 
+  protected Database database;
+
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
   private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
 
@@ -122,7 +124,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
         config -> {
-          return getDatabaseFromConfig(config).query(ctx -> ctx
+          return getDatabase().query(ctx -> ctx
               .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
               .stream()
               .map(this::getJsonFromRecord)
@@ -136,18 +138,22 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
     return new RedshiftTestDataComparator();
   }
 
-  private static Database getDatabaseFromConfig(final JsonNode config) {
+  private static Database createDatabaseFromConfig(final JsonNode config) {
     return new Database(
-        DSLContextFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.REDSHIFT.getDriverClassName(),
-            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()),
-            null,
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
+            DSLContextFactory.create(
+                    config.get(JdbcUtils.USERNAME_KEY).asText(),
+                    config.get(JdbcUtils.PASSWORD_KEY).asText(),
+                    DatabaseDriver.REDSHIFT.getDriverClassName(),
+                    String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                            config.get(JdbcUtils.HOST_KEY).asText(),
+                            config.get(JdbcUtils.PORT_KEY).asInt(),
+                            config.get(JdbcUtils.DATABASE_KEY).asText()),
+                    null,
+                    RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
+  }
+
+  private Database getDatabase() {
+    return database;
   }
 
   @Override
@@ -163,14 +169,15 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
     TEST_SCHEMAS.add(schemaName);
     ((ObjectNode) configForSchema).put("schema", schemaName);
     config = configForSchema;
-
+    database = createDatabaseFromConfig(config);
     // create the schema
+
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
         config -> {
-          getDatabaseFromConfig(config).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
+          getDatabase().query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
         });
 
     // create the user
@@ -179,7 +186,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
         config -> {
-          getDatabaseFromConfig(config).query(ctx -> ctx.fetch(String.format("CREATE USER %s WITH PASSWORD '%s' SESSION TIMEOUT 60;",
+          getDatabase().query(ctx -> ctx.fetch(String.format("CREATE USER %s WITH PASSWORD '%s' SESSION TIMEOUT 60;",
               USER_WITHOUT_CREDS, baseConfig.get("password").asText())));
         });
   }
@@ -192,7 +199,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
         config -> {
-          getDatabaseFromConfig(config).query(ctx -> ctx.fetch(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", schemaName)));
+          getDatabase().query(ctx -> ctx.fetch(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", schemaName)));
         });
 
     // blow away the user at the end.
@@ -201,8 +208,10 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
         config -> {
-          getDatabaseFromConfig(config).query(ctx -> ctx.fetch(String.format("DROP USER IF EXISTS %s;", USER_WITHOUT_CREDS)));
+          getDatabase().query(ctx -> ctx.fetch(String.format("DROP USER IF EXISTS %s;", USER_WITHOUT_CREDS)));
         });
+
+    database.close();
   }
 
 }
