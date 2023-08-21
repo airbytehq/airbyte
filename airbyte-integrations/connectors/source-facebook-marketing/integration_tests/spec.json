@@ -374,6 +374,7 @@
                 "default": 50,
                 "order": 9,
                 "exclusiveMinimum": 0,
+                "maximum": 50,
                 "type": "integer"
             },
             "action_breakdowns_allow_empty": {
