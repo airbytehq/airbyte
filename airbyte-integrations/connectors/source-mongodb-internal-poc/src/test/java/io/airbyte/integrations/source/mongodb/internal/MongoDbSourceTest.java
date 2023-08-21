@@ -263,7 +263,7 @@ class MongoDbSourceTest {
       final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
       when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
       final MongoCursor<Document> mongoCursor = mock(MongoCursor.class);
-      doReturn(mongoCursor).when(source).getRecords(any(), any(), any(), any(), any());
+      doReturn(mongoCursor).when(source).getRecords(any(), any(), any(), any());
 
       when(mongoCursor.hasNext()).thenReturn(true, false);
       when(mongoCursor.next()).thenReturn(
@@ -439,8 +439,7 @@ class MongoDbSourceTest {
       final AirbyteMessage collection1SateMessage2 = airbyteMessagesIteratorWithState.next();
       assertEquals(Type.STATE, collection1SateMessage2.getType());
       assertEquals(COLLECTION1, collection1SateMessage2.getState().getStream().getStreamDescriptor().getName());
-      //assertEquals(OBJECT_ID2.toString(), collection1SateMessage2.getState().getStream().getStreamState().get("id").asText());
-      assertNull(collection1SateMessage2.getState().getStream().getStreamState());
+      assertEquals(OBJECT_ID2.toString(), collection1SateMessage2.getState().getStream().getStreamState().get("id").asText());
 
       //collection2 skips first record
       final AirbyteMessage collection2StreamMessage2 = airbyteMessagesIteratorWithState.next();
