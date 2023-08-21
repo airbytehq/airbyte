@@ -1,0 +1,27 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ticker",
+        "json_schema": {
+          "properties": {
+            "date": {
+              "type": "string",
+              "description": "Date of the stock price",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "price": {
+              "type": "number"
+            },
+            "stock_ticker": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

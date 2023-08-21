@@ -1,0 +1,29 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ticker",
+        "supported_sync_modes": ["full_refresh"],
+        "json_schema": {
+          "properties": {
+            "date": {
+              "type": "string",
+              "format": "date",
+              "airbyte_type": "date",
+              "description": "Date of the stock price",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "price": {
+              "type": "number"
+            },
+            "stock_ticker": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

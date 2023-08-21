@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${host}
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cdb4e42a-2340-4d9a-89eb-5ebb2219f7e9
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-stock-ticker-api-v2
+  githubIssueLabel: source-stock-ticker-api-v2
+  icon: stock-ticker-api-v2.svg
+  license: MIT
+  name: Stock Ticker Api V2
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/stock-ticker-api-v2
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
