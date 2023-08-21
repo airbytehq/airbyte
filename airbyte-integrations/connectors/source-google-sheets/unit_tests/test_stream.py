@@ -18,9 +18,8 @@ from apiclient import errors
 from google.auth import exceptions as google_exceptions
 from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.client import GoogleSheetsClient
-from source_google_sheets.helpers import SCOPES
-from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 from source_google_sheets.helpers import SCOPES, Helpers
+from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 
 
 def test_invalid_credentials_error_message(invalid_config):
