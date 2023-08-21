@@ -120,7 +120,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     return SnowflakeTestUtils.dumpFinalTable(
         database,
         databaseName,
-        namespace,
+        streamId.finalNamespace(),
         streamId.finalName() + suffix);
   }
 

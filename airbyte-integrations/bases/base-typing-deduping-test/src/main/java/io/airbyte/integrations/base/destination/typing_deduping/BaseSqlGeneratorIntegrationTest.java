@@ -726,41 +726,58 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
+  /**
+   * Verify that we don't crash when there are special characters in the stream namespace, name,
+   * primary key, or cursor.
+   */
   @ParameterizedTest
   @ValueSource(strings = {"$", "\"", "'", "`", ".", "$$", "\\"})
   public void noCrashOnSpecialCharactersAsPrimaryKeyOrCursor(final String specialChars) throws Exception {
-    final String rawName = "foo" + specialChars;
-    final ColumnId columnId = generator.buildColumnId(rawName);
-    createRawTable(streamId);
-    insertRawTableRecords(
-        streamId,
-        List.of(Jsons.jsonNode(Map.of(
-            "_airbyte_raw_id", "758989f2-b148-4dd3-8754-30d9c17d05fb",
-            "_airbyte_extracted_at", "2023-01-01T00:00:00Z",
-            "_airbyte_data", Map.of(rawName, "bar")
-        ))));
-    final StreamConfig stream = new StreamConfig(
-        streamId,
-        SyncMode.INCREMENTAL,
-        DestinationSyncMode.APPEND_DEDUP,
-        List.of(columnId),
-        Optional.of(columnId),
-        new LinkedHashMap<>() {
+    final String str = namespace + "_" + specialChars;
+    final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
+    final StreamId modifiedStreamId = new StreamId(
+        originalStreamId.finalNamespace(),
+        originalStreamId.finalName(),
+        // hack for testing simplicity: put the raw tables in the final namespace. This makes cleanup easier.
+        originalStreamId.finalNamespace(),
+        "raw_table",
+        null,
+        null
+    );
+    final ColumnId columnId = generator.buildColumnId(str);
+    try {
+      createNamespace(modifiedStreamId.finalNamespace());
+      createRawTable(modifiedStreamId);
+      insertRawTableRecords(
+          modifiedStreamId,
+          List.of(Jsons.jsonNode(Map.of(
+              "_airbyte_raw_id", "758989f2-b148-4dd3-8754-30d9c17d05fb",
+              "_airbyte_extracted_at", "2023-01-01T00:00:00Z",
+              "_airbyte_data", Map.of(str, "bar")
+          ))));
+      final StreamConfig stream = new StreamConfig(
+          modifiedStreamId,
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP,
+          List.of(columnId),
+          Optional.of(columnId),
+          new LinkedHashMap<>() {
 
-          {
-            put(columnId, AirbyteProtocolType.STRING);
-          }
+            {
+              put(columnId, AirbyteProtocolType.STRING);
+            }
 
-        });
+          });
 
-    final String createTable = generator.createTable(stream, "");
-    destinationHandler.execute(createTable);
-    final String updateTable = generator.updateTable(stream, "");
-    // Not verifying anything about the data at all, but we should at least not crash.
-    destinationHandler.execute(updateTable);
+      final String createTable = generator.createTable(stream, "");
+      destinationHandler.execute(createTable);
+      final String updateTable = generator.updateTable(stream, "");
+      // Not verifying anything about the data; let's just make sure we don't crash.
+      destinationHandler.execute(updateTable);
+    } finally {
+      teardownNamespace(modifiedStreamId.finalNamespace());
+    }
   }
-
-  // TODO tests for weird stream name+namespace
 
   /**
    * A stream with no columns is weird, but we shouldn't treat it specially in any way. It should

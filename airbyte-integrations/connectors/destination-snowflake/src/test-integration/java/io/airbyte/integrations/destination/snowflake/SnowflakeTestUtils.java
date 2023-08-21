@@ -36,9 +36,9 @@ public class SnowflakeTestUtils {
                   AND table_name = ?
                 ORDER BY ordinal_position;
                 """,
-            databaseName,
-            schema,
-            table
+            unescapeIdentifier(databaseName),
+            unescapeIdentifier(schema),
+            unescapeIdentifier(table)
         ).stream()
         .map(column -> {
           final String quotedName = quote(column.get("COLUMN_NAME").asText());
@@ -82,5 +82,9 @@ public class SnowflakeTestUtils {
 
   private static String timestampToString(final String quotedName) {
     return "TO_VARCHAR(" + quotedName + ", 'YYYY-MM-DD\"T\"HH24:MI:SS.FFTZH:TZM') as " + quotedName;
+  }
+
+  private static String unescapeIdentifier(final String escapedIdentifier) {
+    return escapedIdentifier.replace("\"\"", "\"");
   }
 }
