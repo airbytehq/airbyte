@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseTypingDedupingTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTypingDedupingTest.class);
-  private static final JsonNode SCHEMA;
+  protected static final JsonNode SCHEMA;
   static {
     try {
       SCHEMA = Jsons.deserialize(MoreResources.readResource("dat/schema.json"));
@@ -76,8 +76,8 @@ public abstract class BaseTypingDedupingTest {
 
   private String randomSuffix;
   private JsonNode config;
-  private String streamNamespace;
-  private String streamName;
+  protected String streamNamespace;
+  protected String streamName;
   private List<AirbyteStreamNameNamespacePair> streamsToTearDown;
 
   /**
@@ -569,7 +569,7 @@ public abstract class BaseTypingDedupingTest {
     // this test probably needs some configuration per destination to specify what values are supported?
   }
 
-  private void verifySyncResult(final List<JsonNode> expectedRawRecords, final List<JsonNode> expectedFinalRecords) throws Exception {
+  protected void verifySyncResult(final List<JsonNode> expectedRawRecords, final List<JsonNode> expectedFinalRecords) throws Exception {
     verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName);
   }
 
@@ -592,7 +592,7 @@ public abstract class BaseTypingDedupingTest {
         .toList();
   }
 
-  private List<AirbyteMessage> readMessages(final String filename) throws IOException {
+  protected List<AirbyteMessage> readMessages(final String filename) throws IOException {
     return readMessages(filename, streamNamespace, streamName);
   }
 
@@ -629,7 +629,11 @@ public abstract class BaseTypingDedupingTest {
         Collections.emptyMap());
   }
 
-  private void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages) throws Exception {
+  protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages) throws Exception {
+    runSync(catalog, messages, getImageName());
+  }
+
+  protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName) throws Exception {
     catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
@@ -640,7 +644,7 @@ public abstract class BaseTypingDedupingTest {
     final AirbyteDestination destination = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(
         "0",
         0,
-        getImageName(),
+        imageName,
         processFactory,
         null,
         null,
