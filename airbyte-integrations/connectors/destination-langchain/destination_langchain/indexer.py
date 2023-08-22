@@ -69,16 +69,33 @@ class PineconeIndexer(Indexer):
         self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
+        index_description = pinecone.describe_index(self.config.index)
+        self._pod_type = index_description.pod_type
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self.pinecone_index.delete(filter={METADATA_STREAM_FIELD: stream.stream.name})
+                self._delete_vectors({METADATA_STREAM_FIELD: stream.stream.name})
 
     def post_sync(self):
         return [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.WARN, message=self.embed_fn._get_stats()))]
 
+    def _delete_vectors(self, filter):
+        if self._pod_type == "starter":
+            # Starter pod types have a maximum of 1000000 rows
+            top_k = 10000
+            self._delete_by_metadata(filter, top_k)
+        else:
+            self.pinecone_index.delete(filter=filter)
+
+    def _delete_by_metadata(self, filter, top_k):
+        zero_vector = [0.0] * self.embedder.embedding_dimensions
+        query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k)
+        vector_ids = [doc.id for doc in query_result.matches]
+        if len(vector_ids) > 0:
+            self.pinecone_index.delete(ids=vector_ids)
+
     def index(self, document_chunks, delete_ids):
         if len(delete_ids) > 0:
-            self.pinecone_index.delete(filter={METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
+            self._delete_vectors({METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
         embedding_vectors = self.embed_fn([chunk.page_content for chunk in document_chunks])
         pinecone_docs = []
         for i in range(len(document_chunks)):
