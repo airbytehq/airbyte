@@ -185,7 +185,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     TEST_SCHEMAS.add(config.get("schema").asText());
     for (final String schema : TEST_SCHEMAS) {
       // we need to wrap namespaces in quotes, but that means we have to manually upcase them.

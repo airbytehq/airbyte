@@ -100,7 +100,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
-  private static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
+  protected static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
 
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
