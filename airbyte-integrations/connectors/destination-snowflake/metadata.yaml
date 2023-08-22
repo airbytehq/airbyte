@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 1.3.3
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/destination-snowflake
   githubIssueLabel: destination-snowflake
   icon: snowflake.svg
@@ -28,6 +28,11 @@ data:
   supportsDbt: true
   tags:
     - language:java
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Remove GCS/S3 loading method support."
+        upgradeDeadline: "2023-08-31"
   ab_internal:
     sl: 200
     ql: 400

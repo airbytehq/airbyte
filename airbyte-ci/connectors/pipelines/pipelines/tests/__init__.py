@@ -9,11 +9,16 @@ from typing import List
 import anyio
 import asyncer
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
+
 from pipelines.bases import ConnectorReport, StepResult
 from pipelines.contexts import ConnectorContext
 from pipelines.pipelines.metadata import MetadataValidation
 from pipelines.tests import java_connectors, python_connectors
-from pipelines.tests.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
+from pipelines.tests.common import (
+    QaChecks,
+    VersionFollowsSemverCheck,
+    VersionIncrementCheck,
+)
 
 LANGUAGE_MAPPING = {
     "run_all_tests": {
@@ -111,12 +116,15 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
         async with context:
             async with asyncer.create_task_group() as task_group:
                 tasks = [
-                    task_group.soonify(run_metadata_validation)(context),
-                    task_group.soonify(run_version_checks)(context),
-                    task_group.soonify(run_qa_checks)(context),
-                    task_group.soonify(run_code_format_checks)(context),
                     task_group.soonify(run_all_tests)(context),
+                    task_group.soonify(run_code_format_checks)(context),
                 ]
+                if not context.code_tests_only:
+                    tasks += [
+                        task_group.soonify(run_metadata_validation)(context),
+                        task_group.soonify(run_version_checks)(context),
+                        task_group.soonify(run_qa_checks)(context),
+                    ]
             results = list(itertools.chain(*(task.value for task in tasks)))
             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
