@@ -1,17 +1,38 @@
 ## Prerequisites
 
-- An [Amazon user](https://www.amazon.com) with access to an [Amazon Ads account](https://advertising.amazon.com)
+- An Amazon account with access permissions for the Amazon Advertising services.
+
+<!-- env:oss -->
+:::info
+To use the Amazon Ads source connector with **Airbyte Open Source**, you will first need to complete Amazon's onboarding process and obtain the credentials to authenticate the connection. Please refer to [our full Amazon Ads documentation](https://docs.airbyte.com/integrations/sources/amazon-ads/#setup-guide) for more information.
+:::
+<!-- /env:oss -->
 
 ## Setup Guide
 
-1. Click `Authenticate your Amazon Ads account`. Log in and authorize access to the Amazon account.
-2. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [Amazon Ads documentation](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-3. (Optional) **Start Date** can be used to generate reports starting from the specified start date in the format YYYY-MM-DD. The date should not be more than 60 days in the past. If not specified, today's date is used. The date is treated in the timezone of the processed profile.
-4. (Optional) **Profile ID(s)** you want to fetch data for. A profile is an advertiser's account in a specific marketplace. See [Amazon Ads docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details. If not specified, data from all Profiles will be synced.
-5. (Optional) **State Filter** Filter for Display, Product, and Brand Campaign streams with a state of enabled, paused, or archived. If not specified, all streams regardless of state will be synced.
-6. (Optional) **Look Back Window** The amount of days to go back in time to get the updated data from Amazon Ads. After the first sync, data from this date will be synced. 
-7. (Optional) **Report Record Types** Optional configuration which accepts an array of string of record types. Leave blank for default behaviour to pull all report types. Use this config option only if you want to pull specific report type(s). See [Amazon Ads docs](https://advertising.amazon.com/API/docs/en-us/reporting/v2/report-types) for more details
-9. Click `Set up source`.
+1. Enter a **Source name** to help you identify this source.
+2. To authenticate the connection:
+
+<!-- env:cloud -->
+  - **For Airbyte Cloud**: Click **Authenticate your Amazon Ads account**. Follow the instructions to authorize Airbyte to access your Amazon Ads account.
+<!-- /env:cloud -->
+<!-- env:oss -->
+  - **For Airbyte Open Source**: Enter your Amazon Ads **Client ID**, **Client Secret** and **Refresh Token**.
+<!-- /env:oss -->
+
+3. Select the **Region** of the country you selected when registering your Amazon account. The options are **North America (NA)**, **Europe (EU)**, and **Far East (FE)**. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for a list of each region's associated Marketplaces.
+4. (Optional) For **Start Date**, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. This determines the starting date for reports generated from the API. Please do not set this value more than 60 days in the past. If left blank, today's date is used. The date is tied to the timezone of the processed profile.
+5. (Optional) For **Profile IDs**, you may enter one or more IDs of profiles associated with your account that you want to fetch data for. If left blank, data will be fetched from all profiles associated with the Amazon Ads account. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more information on profiles.
+6. (Optional) For **State Filter**, you may enter one or more "states" to filter the data for the Display, Product, and Brand Campaign streams. The options are:
+
+  **enabled**: Filters for campaigns that are currently active and running.
+  **paused**: Filters for campaigns that are set up but not currently running.
+  **archived**: Filters for campaigns that are no longer active and have been archived for record-keeping.
+  
+  If this field is left blank, no filters will be applied.
+7. (Optional) For **Lookback Window**, you may specify a window of time in days from the present to re-fetch data that may have been updated in the Amazon Ads API. By default, this window is set to 3 days to align with Amazon's [traffic validation process](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/faq#how-long-does-it-take-for-sponsored-ads-reporting-data-to-become-available), during which time small changes to impression and click data may occur.
+8. (Optional) For **Report Types**, you may optionally specify one or more report types you would like to query from the API. Depending on the type of sponsored ad, performance can be analyzed using different dimensions. Each type of sponsored ad supports different report types. For more information on this topic, see the [Amazon documentation](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types). Leaving this field blank will pull all available report types.
+9. Click **Set up source** and wait for the tests to complete.
 
 ### Report Timezones
 

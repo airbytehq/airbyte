@@ -8,19 +8,29 @@ This page contains the setup guide and reference information for the Amazon Ads 
 
 ## Setup guide
 
-### Step 1: Set up Amazon Ads
-
 <!-- env:oss -->
-**For Airbyte Open Source:**
-To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). Please note that the onboarding process has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
+### Set up Amazon Ads (Airbyte Open Source)
+
+To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview), which is broadly divided into three steps:
+
+1. Create a Login with Amazon (LwA) application
+2. Apply for API access
+3. Assign API access to the LwA application
+
+:::info
+Please note that the review of your API access application may take up to 72 hours to complete.
+:::
+
+After completing all the steps above, you will have to obtain your Amazon client application's **Client ID**, **Client Secret** and **Refresh Token** to authenticate the connection. You can follow Amazon's instructions to [retrieve your client credentials](https://advertising.amazon.com/API/docs/en-us/guides/onboarding/create-lwa-app#retrieve-your-security-credentials) and [obtain your refresh token](https://advertising.amazon.com/API/docs/en-us/guides/get-started/retrieve-access-token#call-the-authorization-url-to-request-access-and-refresh-tokens).
 <!-- /env:oss -->
 
 ### Set up the Amazon Ads connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Amazon Ads** from the list of available sources.
-4. To authenticate the connection:
+4. Enter a **Source name** to help you identify this source.
+5. To authenticate the connection:
 
 <!-- env:cloud -->
   - **For Airbyte Cloud**: Click **Authenticate your Amazon Ads account**. Follow the instructions to authorize Airbyte to access your Amazon Ads account.
@@ -29,19 +39,19 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
   - **For Airbyte Open Source**: Enter your Amazon Ads **Client ID**, **Client Secret** and **Refresh Token**.
 <!-- /env:oss -->
 
-1. Select the **Region** of the country you selected when registering your Amazon account. The options are **North America (NA)**, **Europe (EU)**, and **Far East (FE)**. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for a list of each region's associated Marketplaces.
-2. (Optional) For **Start Date**, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. This determines the starting date for reports generated from the API. Please do not set this value more than 60 days in the past. If left blank, today's date is used. The date is tied to the timezone of the processed profile.
-3. (Optional) For **Profile IDs**, you may enter one or more IDs of profiles associated with your account that you want to fetch data for. If left blank, data will be fetched from all profiles associated with the Amazon Ads account. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more information on profiles.
-4. (Optional) For **State Filter**, you may enter one or more "states" to filter the data for the Display, Product, and Brand Campaign streams. The options are:
+6. Select the **Region** of the country you selected when registering your Amazon account. The options are **North America (NA)**, **Europe (EU)**, and **Far East (FE)**. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for a list of each region's associated Marketplaces.
+7. (Optional) For **Start Date**, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. This determines the starting date for reports generated from the API. Please do not set this value more than 60 days in the past. If left blank, today's date is used. The date is tied to the timezone of the processed profile.
+8. (Optional) For **Profile IDs**, you may enter one or more IDs of profiles associated with your account that you want to fetch data for. If left blank, data will be fetched from all profiles associated with the Amazon Ads account. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more information on profiles.
+9. (Optional) For **State Filter**, you may enter one or more "states" to filter the data for the Display, Product, and Brand Campaign streams. The options are:
 
   **enabled**: Filters for campaigns that are currently active and running.
   **paused**: Filters for campaigns that are set up but not currently running.
   **archived**: Filters for campaigns that are no longer active and have been archived for record-keeping.
   
   If this field is left blank, no filters will be applied.
-5. (Optional) For **Lookback Window**, you may specify a window of time in days from the present to re-export data that may have been updated in the Amazon Ads API. By default, this window is set to 3 days to align with Amazon's [traffic validation process](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/faq#how-long-does-it-take-for-sponsored-ads-reporting-data-to-become-available), during which time small changes to impression and click data may occur.
-6. (Optional) For **Report Types**, you may optionally specify one or more report types you would like to query from the API. Depending on the type of sponsored ad, performance can be analyzed using different dimensions. Each type of sponsored ad supports different report types. For more information on this topic, see the [Amazon documentation](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types). Leaving this field blank will pull all available report types.
-7. Click **Set up source** and wait for the tests to complete.
+10. (Optional) For **Lookback Window**, you may specify a window of time in days from the present to re-fetch data that may have been updated in the Amazon Ads API. By default, this window is set to 3 days to align with Amazon's [traffic validation process](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/faq#how-long-does-it-take-for-sponsored-ads-reporting-data-to-become-available), during which time small changes to impression and click data may occur.
+11. (Optional) For **Report Types**, you may optionally specify one or more report types you would like to query from the API. Depending on the type of sponsored ad, performance can be analyzed using different dimensions. Each type of sponsored ad supports different report types. For more information on this topic, see the [Amazon documentation](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types). Leaving this field blank will pull all available report types.
+12. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
