@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -149,6 +150,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * The two dump methods are defined identically as in {@link BaseTypingDedupingTest}, but with
    * slightly different method signature. This test expects subclasses to respect the raw/finalTableId
    * on the StreamId object, rather than hardcoding e.g. the airbyte_internal dataset.
+   * <p>
+   * The {@code _airbyte_data} field must be deserialized into an ObjectNode, even if it's stored in
+   * the destination as a string.
    */
   protected abstract List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception;
 
@@ -836,11 +840,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         () -> assertEquals(1, v2RawRecords.size()),
         () -> assertEquals(v1RawRecords.get(0).get("_airbyte_ab_id").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
         () -> {
-          final JsonNode originalData = Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText());
-          JsonNode migratedData = v2RawRecords.get(0).get("_airbyte_data");
-          if (migratedData.isTextual()) {
-            migratedData = Jsons.deserializeExact(migratedData.asText());
-          }
+          final JsonNode originalData = v1RawRecords.get(0).get("_airbyte_data");
+          final JsonNode migratedData = v2RawRecords.get(0).get("_airbyte_data");
           // hacky thing because we only care about the data contents.
           // diffRawTableRecords makes some assumptions about the structure of the blob.
           DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
