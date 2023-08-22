@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-zendesk-sunshine:dev
+test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
@@ -20,20 +21,22 @@ acceptance_tests:
       - config_path: "integration_tests/invalid_config_oauth.json"
         status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.1"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.1"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-    - config_path: "secrets/config_api_token.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-    - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-  #  incremental: #  complex state ( {parent_id: {cur_field: value}} still not supported )
-  #    - config_path: "secrets/config.json"
-  #      configured_catalog_path: "integration_tests/configured_catalog.json"
-  #      future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config_api_token.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config_oauth.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+    #  incremental: #  complex state ( {parent_id: {cur_field: value}} still not supported )
+    #    - config_path: "secrets/config.json"
+    #      configured_catalog_path: "integration_tests/configured_catalog.json"
+    #      future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
