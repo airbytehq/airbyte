@@ -80,7 +80,9 @@ class FBMarketingStream(Stream, ABC):
 
         def reduce_batch_size(request: FacebookRequest):
             if self.max_batch_size == 1 and set(self.fields_exceptions) & set(request._fields):
-                logger.warning(f"Removing fields from object {self.name} with id={request._node_id} : {set(self.fields_exceptions) & set(request._fields)}")
+                logger.warning(
+                    f"Removing fields from object {self.name} with id={request._node_id} : {set(self.fields_exceptions) & set(request._fields)}"
+                )
                 request._fields = [x for x in request._fields if x not in self.fields_exceptions]
             elif self.max_batch_size == 1:
                 raise RuntimeError("Batch request failed with only 1 request in it")
