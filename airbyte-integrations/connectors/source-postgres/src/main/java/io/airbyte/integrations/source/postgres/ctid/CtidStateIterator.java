@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.Function;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private boolean hasEmittedFinalState;
   private String lastCtid;
   private final JsonNode streamStateForIncrementalRun;
-  private final long relationFileNode;
+  private final Function<AirbyteStreamNameNamespacePair, Long> relationFileNode;
   private final CtidStateManager stateManager;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
@@ -44,7 +45,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
 
   public CtidStateIterator(final Iterator<AirbyteMessageWithCtid> messageIterator,
                            final AirbyteStreamNameNamespacePair pair,
-                           final long relationFileNode,
+                           final Function<AirbyteStreamNameNamespacePair, Long> relationFileNode,
                            final CtidStateManager stateManager,
                            final JsonNode streamStateForIncrementalRun,
                            final Duration checkpointDuration,
@@ -70,7 +71,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
             .withStateType(StateType.CTID)
             .withCtid(lastCtid)
             .withIncrementalState(streamStateForIncrementalRun)
-            .withRelationFilenode(relationFileNode);
+            .withRelationFilenode(relationFileNode.apply(pair));
         LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
         recordCount = 0L;
         lastCheckpoint = Instant.now();

@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.stream.Stream;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidIterator.class);
+  private static final int MAX_ALLOWED_RESYNCS = 5;
   private static final int QUERY_TARGET_SIZE_GB = 1;
   private static final double MEGABYTE = Math.pow(1024, 2);
   private static final double GIGABYTE = MEGABYTE * 1024;
@@ -39,6 +41,7 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
   private final List<String> columnNames;
   private final CtidStateManager ctidStateManager;
   private final JdbcDatabase database;
+  private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
   private final String quoteString;
   private final String schemaName;
   private final CtidPostgresSourceOperations sourceOperations;
@@ -46,7 +49,9 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
   private final String tableName;
   private final long tableSize;
   private AutoCloseableIterator<RowDataWithCtid> currentIterator;
+
   private Long lastKnownFileNode;
+  private int numberOfTimesReSynced = 0;
 
   public CtidIterator(final CtidStateManager ctidStateManager,
       final JdbcDatabase database,
@@ -56,12 +61,14 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
       final String schemaName,
       final String tableName,
       final long tableSize,
-      final long blockSize) {
+      final long blockSize,
+      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     this.airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     this.blockSize = blockSize;
     this.columnNames = columnNames;
     this.ctidStateManager = ctidStateManager;
     this.database = database;
+    this.fileNodes = fileNodes;
     this.quoteString = quoteString;
     this.schemaName = schemaName;
     this.sourceOperations = sourceOperations;
@@ -92,9 +99,15 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
                   fileNode,
                   lastKnownFileNode,
                   airbyteStream);
+              if (numberOfTimesReSynced > MAX_ALLOWED_RESYNCS) {
+                throw new RuntimeException("Airbyte has tried re-syncing stream " + airbyteStream + " more than " + MAX_ALLOWED_RESYNCS
+                    + " times but VACUUM is still happening in between the sync, Please reach out to the customer to understand their VACUUM frequency.");
+              }
               subQueriesPlan.clear();
               subQueriesPlan.addAll(ctidQueryPlan(Ctid.of(0, 0),
                   tableSize, blockSize, QUERY_TARGET_SIZE_GB));
+              fileNodes.put(airbyteStream, fileNode);
+              numberOfTimesReSynced++;
             } else {
               LOGGER.info("The latest file node {} for stream {} is equal to the last known file node {} known to Airbyte.",
                   fileNode,

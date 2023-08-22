@@ -127,7 +127,7 @@ public class PostgresCtidHandler {
                                                                 final long blockSize) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return new CtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize);
+    return new CtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize, fileNodes);
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
@@ -169,9 +169,14 @@ public class PostgresCtidHandler {
     final JsonNode incrementalState =
         (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
             : currentCtidStatus.getIncrementalState();
-    final Long latestFileNode = fileNodes.get(pair);
-    assert latestFileNode != null;
-
+    /**
+     * We use a function and not the direct value cause the fileNodes Map can be updated by {@link CtidIterator} if it identifies a VACUUM in the middle of the sync.
+     */
+    final Function<AirbyteStreamNameNamespacePair, Long> latestFileNode = (p) -> {
+      final Long fileNode = fileNodes.get(p);
+      assert fileNode != null;
+      return fileNode;
+    };
     final Duration syncCheckpointDuration =
         config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
             : CtidStateIterator.SYNC_CHECKPOINT_DURATION;
