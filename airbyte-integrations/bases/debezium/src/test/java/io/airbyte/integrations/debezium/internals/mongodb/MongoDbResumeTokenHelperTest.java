@@ -63,7 +63,7 @@ class MongoDbResumeTokenHelperTest {
     final JsonNode changeEvent = Jsons.deserialize(changeEventJson);
 
     final BsonTimestamp timestamp = MongoDbResumeTokenHelper
-            .extractTimestampFromSource(changeEvent.get(MongoDbDebeziumConstants.ChangeEvent.SOURCE));
+        .extractTimestampFromSource(changeEvent.get(MongoDbDebeziumConstants.ChangeEvent.SOURCE));
     assertNotNull(timestamp);
     assertEquals(expectedTimestamp, timestamp);
   }
