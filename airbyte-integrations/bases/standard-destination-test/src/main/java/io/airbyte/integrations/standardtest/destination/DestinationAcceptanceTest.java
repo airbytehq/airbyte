@@ -1802,13 +1802,16 @@ public abstract class DestinationAcceptanceTest {
         throws Exception {
       final JsonNode testCases =
           Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON));
+      final var randomSuffix = Strings.addRandomSuffix("", "_", 5);
       return MoreIterators.toList(testCases.elements()).stream()
           .filter(testCase -> testCase.get("enabled").asBoolean())
           .map(testCase -> Arguments.of(
               testCase.get("id").asText(),
               // Randomise namespace to avoid collisions between tests.
-              Strings.addRandomSuffix(testCase.get("namespace").asText(), "", 5),
-              testCase.get("normalized").asText()));
+              testCase.get("namespace").asText() + randomSuffix,
+              testCase.get("normalized").asText() + randomSuffix
+               )
+          );
     }
 
   }

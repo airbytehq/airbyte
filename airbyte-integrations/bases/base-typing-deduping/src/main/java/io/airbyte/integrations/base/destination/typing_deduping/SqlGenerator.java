@@ -4,11 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import java.util.Set;
-
 public interface SqlGenerator<DialectTableDefinition> {
 
-  Set<String> FINAL_TABLE_AIRBYTE_COLUMNS = Set.of("_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta");
   String SOFT_RESET_SUFFIX = "_ab_soft_reset";
 
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
@@ -33,10 +30,8 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @param stream the stream/stable in question
    * @param existingTable the existing table mapped to the stream
    * @return whether the existing table matches the expected schema
-   * @throws TableNotMigratedException if the table does not contain all
-   *         {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS}
    */
-  boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
+  boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable);
 
   /**
    * SQL Statement which will rebuild the final table using the raw table data. Should not cause data

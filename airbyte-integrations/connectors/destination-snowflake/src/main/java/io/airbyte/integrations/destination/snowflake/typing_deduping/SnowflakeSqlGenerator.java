@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition> {
@@ -101,9 +102,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable) throws TableNotMigratedException {
-    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS)) {
-      throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
-    }
 
     // Check that the columns match, with special handling for the metadata columns.
     final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
@@ -463,6 +461,40 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
-    return "";
+    // In the SQL below, the v2 values are quoted to preserve their case while the v1 values are
+    // intentionally _not_ quoted. This is to preserve the implicit upper-casing behavior in v1.
+    return new StringSubstitutor(Map.of(
+        "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
+        "raw_table_name", streamId.rawTableId(QUOTE),
+        "raw_id", JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+        "extracted_at", JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        "loaded_at", JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        "data", JavaBaseConstants.COLUMN_NAME_DATA,
+        "v1_raw_id", JavaBaseConstants.COLUMN_NAME_AB_ID,
+        "emitted_at", JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+        "v1_raw_table", String.join(".", namespace, tableName)
+    ))
+        .replace(
+            """
+                CREATE SCHEMA IF NOT EXISTS ${raw_namespace};
+
+                CREATE OR REPLACE TABLE ${raw_table_name} (
+                  "${raw_id}" VARCHAR PRIMARY KEY,
+                  "${extracted_at}" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+                  "${loaded_at}" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+                  "${data}" VARIANT
+                )
+                data_retention_time_in_days = 0
+                AS (
+                  SELECT
+                    ${v1_raw_id} AS "${raw_id}",
+                    ${emitted_at} AS "${extracted_at}",
+                    CAST(NULL AS TIMESTAMP WITH TIME ZONE) AS "${loaded_at}",
+                    PARSE_JSON(${data}) AS "${data}"
+                  FROM ${v1_raw_table}
+                )
+                ;
+                """
+        );
   }
 }
