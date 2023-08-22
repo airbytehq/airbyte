@@ -14,7 +14,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.ConnectionFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -25,10 +25,15 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
+
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +53,8 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
   private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
 
+  private Database database;
+  private Connection connection;
   protected TestDestinationEnv testDestinationEnv;
 
   private final ObjectMapper mapper = new ObjectMapper();
@@ -119,8 +126,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   @Test
   public void testGetFileBufferDefault() {
     final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    assertEquals(destination.getNumberOfFileBuffers(config),
-        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+    assertEquals(destination.getNumberOfFileBuffers(config), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   @Test
@@ -171,11 +177,11 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema)
-      throws Exception {
+          throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
-        .map(j -> j.get(JavaBaseConstants.COLUMN_NAME_DATA))
-        .collect(Collectors.toList());
+            .stream()
+            .map(j -> j.get(JavaBaseConstants.COLUMN_NAME_DATA))
+            .collect(Collectors.toList());
   }
 
   @Override
@@ -185,7 +191,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
-      throws Exception {
+          throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     if (!tableName.startsWith("\"")) {
       // Currently, Normalization always quote tables identifiers
@@ -196,11 +202,11 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return getDatabase().query(
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .stream()
-            .map(this::getJsonFromRecord)
-            .collect(Collectors.toList()));
+            ctx -> ctx
+                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                    .stream()
+                    .map(this::getJsonFromRecord)
+                    .collect(Collectors.toList()));
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
@@ -209,9 +215,10 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
+    database = createDatabase();
     getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
     final String createUser = String.format("create user %s with password '%s' SESSION TIMEOUT 60;",
-        USER_WITHOUT_CREDS, baseConfig.get("password").asText());
+            USER_WITHOUT_CREDS, baseConfig.get("password").asText());
     getDatabase().query(ctx -> ctx.execute(createUser));
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
@@ -222,26 +229,29 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
-    System.out.println("TEST_SCHEMAS: " + TEST_SCHEMAS);
+    System.out.println("TEARING_DOWN_SCHEMAS: " + TEST_SCHEMAS);
     getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText())));
     for (String schema : TEST_SCHEMAS) {
       getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schema)));
     }
     getDatabase().query(ctx -> ctx.execute(String.format("drop user if exists %s;", USER_WITHOUT_CREDS)));
+    RedshiftConnectionHandler.close(connection);
+  }
+
+  protected Database createDatabase() {
+    connection = ConnectionFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+            baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
+            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                    baseConfig.get(JdbcUtils.HOST_KEY).asText(),
+                    baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
+                    baseConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+
+    return new Database(DSL.using(connection));
   }
 
   protected Database getDatabase() {
-    return new Database(
-        DSLContextFactory.create(
-            baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-            baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.REDSHIFT.getDriverClassName(),
-            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                baseConfig.get(JdbcUtils.HOST_KEY).asText(),
-                baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
-                baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
-            null,
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
+    return database;
   }
 
   public RedshiftSQLNameTransformer getNamingResolver() {
