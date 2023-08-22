@@ -85,7 +85,10 @@ class DebeziumEventUtilsTest {
     }
 
     @Override
-    public String name(JsonNode source) { return source.get("table").asText(); }
+    public String name(JsonNode source) {
+      return source.get("table").asText();
+    }
+
   }
 
 }
