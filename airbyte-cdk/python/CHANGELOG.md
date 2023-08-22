@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.51.3
+File-based CDK: Do not stop processing files in slice on error
+
+## 0.51.2
+Check config against spec in embedded sources and remove list endpoint from connector builder module
+
 ## 0.51.1
 low-code: allow formatting datetime as milliseconds since unix epoch
 
