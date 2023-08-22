@@ -9,20 +9,22 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import org.codehaus.plexus.util.StringUtils;
+
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.codehaus.plexus.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DebeziumPropertiesManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumPropertiesManager.class);
   private static final String BYTE_VALUE_256_MB = Integer.toString(256 * 1024 * 1024);
+
+  public static final String NAME_KEY = "name";
+  public static final String TOPIC_PREFIX_KEY = "topic.prefix";
+
   private final JsonNode config;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
@@ -78,17 +80,10 @@ public class DebeziumPropertiesManager {
     props.setProperty("value.converter.schemas.enable", "false");
 
     // debezium names
-    props.setProperty("name", config.get(JdbcUtils.DATABASE_KEY).asText());
+    props.setProperty(NAME_KEY, getName(config));
 
-    // db connection configuration
-    props.setProperty("database.hostname", config.get(JdbcUtils.HOST_KEY).asText());
-    props.setProperty("database.port", config.get(JdbcUtils.PORT_KEY).asText());
-    props.setProperty("database.user", config.get(JdbcUtils.USERNAME_KEY).asText());
-    props.setProperty("database.dbname", config.get(JdbcUtils.DATABASE_KEY).asText());
-
-    if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      props.setProperty("database.password", config.get(JdbcUtils.PASSWORD_KEY).asText());
-    }
+    // connection configuration
+    props.putAll(getConnectionConfiguration(config));
 
     // By default "decimal.handing.mode=precise" which's caused returning this value as a binary.
     // The "double" type may cause a loss of precision, so set Debezium's config to store it as a String
@@ -102,13 +97,43 @@ public class DebeziumPropertiesManager {
 
     // WARNING : Never change the value of this otherwise all the connectors would start syncing from
     // scratch
-    props.setProperty("topic.prefix", config.get(JdbcUtils.DATABASE_KEY).asText());
+    props.setProperty(TOPIC_PREFIX_KEY, getName(config));
+
+    // includes
+    props.putAll(getIncludeConfiguration(catalog, config));
+
+    return props;
+  }
+
+  protected Properties getConnectionConfiguration(final JsonNode config) {
+    final Properties properties = new Properties();
+
+    // db connection configuration
+    properties.setProperty("database.hostname", config.get(JdbcUtils.HOST_KEY).asText());
+    properties.setProperty("database.port", config.get(JdbcUtils.PORT_KEY).asText());
+    properties.setProperty("database.user", config.get(JdbcUtils.USERNAME_KEY).asText());
+    properties.setProperty("database.dbname", config.get(JdbcUtils.DATABASE_KEY).asText());
+
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      properties.setProperty("database.password", config.get(JdbcUtils.PASSWORD_KEY).asText());
+    }
+
+    return properties;
+  }
+
+  protected String getName(final JsonNode config) {
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
+  }
+
+  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
+    final Properties properties = new Properties();
 
     // table selection
-    props.setProperty("table.include.list", getTableIncludelist(catalog));
+    properties.setProperty("table.include.list", getTableIncludelist(catalog));
     // column selection
-    props.setProperty("column.include.list", getColumnIncludeList(catalog));
-    return props;
+    properties.setProperty("column.include.list", getColumnIncludeList(catalog));
+
+    return properties;
   }
 
   public static String getTableIncludelist(final ConfiguredAirbyteCatalog catalog) {
