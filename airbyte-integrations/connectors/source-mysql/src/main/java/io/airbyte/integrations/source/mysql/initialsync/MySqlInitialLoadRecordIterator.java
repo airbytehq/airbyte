@@ -76,19 +76,20 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   protected JsonNode computeNext() {
     if (shouldBuildNextSubquery()) {
       try {
-        LOGGER.info("Subquery number : {}", numSubqueries);
-        final Stream<JsonNode> stream = database.unsafeQuery(
-            connection -> getPkPreparedStatement(connection), sourceOperations::rowToJson);
-
-        // Previous stream (and connection) must be manually closed in this iterator.
-        if (currentIterator != null) {
-          currentIterator.close();
-        }
         // We will only issue one query for a composite key load. If we have already processed all the data associated with this
         // query, we should indicate that we are done processing for the given stream.
         if (isCompositeKeyLoad && numSubqueries >= 1) {
           return endOfData();
         }
+        // Previous stream (and connection) must be manually closed in this iterator.
+        if (currentIterator != null) {
+          currentIterator.close();
+        }
+
+        LOGGER.info("Subquery number : {}", numSubqueries);
+        final Stream<JsonNode> stream = database.unsafeQuery(
+            this::getPkPreparedStatement, sourceOperations::rowToJson);
+
         currentIterator = AutoCloseableIterators.fromStream(stream, pair);
         numSubqueries++;
         // If the current subquery has no records associated with it, the entire stream has been read.
