@@ -3,11 +3,8 @@
 #
 
 
-from unittest.mock import patch
-
 import pytest
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_linkedin_ads.source import (

@@ -193,7 +193,6 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
 
     parent_stream = Accounts
     parent_values_map = {"account_id": "id"}
-    # define default additional request params
 
     def filter_records_newer_than_state(
         self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
