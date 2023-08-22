@@ -25,6 +25,7 @@ public class MongoDbDebeziumConstants {
     public static final String SOURCE_SECONDS = SourceInfo.TIMESTAMP;
 
     public static final String SOURCE_TIMESTAMP_MS = "ts_ms";
+
   }
 
   /**

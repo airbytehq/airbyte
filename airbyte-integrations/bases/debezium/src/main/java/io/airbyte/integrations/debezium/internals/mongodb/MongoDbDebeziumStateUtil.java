@@ -5,10 +5,7 @@
 package io.airbyte.integrations.debezium.internals.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.client.ChangeStreamIterable;
-import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.airbyte.commons.json.Jsons;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.HashMap;
