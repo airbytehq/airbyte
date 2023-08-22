@@ -363,15 +363,6 @@ class Conversions(LinkedInAdsStreamSlicing):
     endpoint = "conversions"
     search_param = "account"
 
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        return f"{stream_slice.get('account_id')}/{self.endpoint}"
-
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
@@ -387,9 +378,17 @@ class Conversions(LinkedInAdsStreamSlicing):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["q"] = self.search_param
-        params["accounts"] = f"urn:li:sponsoredAccount:{stream_slice.get('account_id')}"
+        params["account"] = f"urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')}"
 
         return urlencode(params, safe="():,%")
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = (
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
+            if not current_stream_state
+            else current_stream_state
+        )
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
 class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):

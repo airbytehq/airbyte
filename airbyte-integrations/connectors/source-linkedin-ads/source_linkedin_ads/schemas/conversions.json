@@ -31,7 +31,7 @@
       "type": ["null", "string"]
     },
     "type": {
-      "type": ["null", "boolean"]
+      "type": ["null", "string"]
     },
     "latestFirstPartyCallbackAt": {
       "type": ["null", "integer"]
