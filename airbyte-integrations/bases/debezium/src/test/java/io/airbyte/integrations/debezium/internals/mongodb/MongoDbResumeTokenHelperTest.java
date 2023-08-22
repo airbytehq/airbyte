@@ -50,7 +50,7 @@ class MongoDbResumeTokenHelperTest {
     final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
     final JsonNode changeEvent = Jsons.deserialize(changeEventJson);
 
-    final BsonTimestamp timestamp = MongoDbResumeTokenHelper.extractTimestamp(changeEvent);
+    final BsonTimestamp timestamp = MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent);
     assertNotNull(timestamp);
     assertEquals(expectedTimestamp, timestamp);
   }
@@ -58,13 +58,13 @@ class MongoDbResumeTokenHelperTest {
   @Test
   void testTimestampExtractionSourceNotPresent() {
     final JsonNode changeEvent = Jsons.deserialize("{}");
-    assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestamp(changeEvent));
+    assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent));
   }
 
   @Test
   void testTimestampExtractionTimestampNotPresent() {
     final JsonNode changeEvent = Jsons.deserialize("{\"source\":{}}");
-    assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestamp(changeEvent));
+    assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent));
   }
 
 }

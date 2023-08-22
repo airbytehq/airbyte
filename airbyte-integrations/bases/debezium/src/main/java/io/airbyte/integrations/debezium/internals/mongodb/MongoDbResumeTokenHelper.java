@@ -48,10 +48,21 @@ public class MongoDbResumeTokenHelper {
    * @return The extracted timestamp
    * @throws IllegalStateException if the timestamp could not be extracted from the change event.
    */
-  public static BsonTimestamp extractTimestamp(final JsonNode event) {
-    return Optional.ofNullable(event.get(MongoDbDebeziumConstants.ChangeEvent.SOURCE))
-        .flatMap(MongoDbResumeTokenHelper::createTimestampFromSource)
-        .orElseThrow(() -> new IllegalStateException("Could not find timestamp"));
+  public static BsonTimestamp extractTimestampFromEvent(final JsonNode event) {
+    return extractTimestampFromSource(event.get(MongoDbDebeziumConstants.ChangeEvent.SOURCE));
+  }
+
+  /**
+   * Extracts the timestamp from a Debezium MongoDB change event source object.
+   *
+   * @param source The Debezium MongoDB change event source object as JSON.
+   * @return The extracted timestamp
+   * @throws IllegalStateException if the timestamp could not be extracted from the change event.
+   */
+  public static BsonTimestamp extractTimestampFromSource(final JsonNode source) {
+    return Optional.ofNullable(source)
+            .flatMap(MongoDbResumeTokenHelper::createTimestampFromSource)
+            .orElseThrow(() -> new IllegalStateException("Could not find timestamp"));
   }
 
   private static Optional<BsonTimestamp> createTimestampFromSource(final JsonNode source) {
