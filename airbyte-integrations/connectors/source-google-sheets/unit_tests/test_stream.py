@@ -65,7 +65,7 @@ def test_discover_404_error(mocker, invalid_config):
     with pytest.raises(AirbyteTracedException) as e:
         source.discover(logger=mocker.MagicMock(), config=invalid_config)
     expected_message = ("The requested Google Sheets spreadsheet with id invalid_spreadsheet_id does not exist."
-                        " Please ensure the Spreadsheet Link you have set is valid and Spreadsheet exists. If the issue persists, contact support. Requested entity was not found.")
+                        " Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support. Requested entity was not found.")
     assert e.value.args[0] == expected_message
 
 

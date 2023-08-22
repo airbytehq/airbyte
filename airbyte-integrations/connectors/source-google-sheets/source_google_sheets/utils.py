@@ -57,7 +57,7 @@ def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
     if code == status_codes.NOT_FOUND:
         return (
             f"The requested Google Sheets spreadsheet with id {spreadsheet_id} does not exist. "
-            f"Please ensure the Spreadsheet Link you have set is valid and Spreadsheet exists. If the issue persists, contact support"
+            f"Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support"
         )
 
     if code == status_codes.TOO_MANY_REQUESTS:
