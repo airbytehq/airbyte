@@ -1809,9 +1809,7 @@ public abstract class DestinationAcceptanceTest {
               testCase.get("id").asText(),
               // Randomise namespace to avoid collisions between tests.
               testCase.get("namespace").asText() + randomSuffix,
-              testCase.get("normalized").asText() + randomSuffix
-               )
-          );
+              testCase.get("normalized").asText() + randomSuffix));
     }
 
   }
