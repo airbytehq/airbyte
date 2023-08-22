@@ -8,6 +8,7 @@ This page contains the setup guide and reference information for the Salesloft S
 - Start date
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 - Salesloft API Key (see [API Key Authentication](https://developers.salesloft.com/api.html#!/Topic/apikey))
@@ -20,12 +21,15 @@ This page contains the setup guide and reference information for the Salesloft S
 Create a [Salesloft Account](https://salesloft.com).
 
 <!-- env:oss -->
+
 **Airbyte Open Source additional setup steps**
 
 Log into [Salesloft](https://salesloft.com) and then generate an [API Key](https://developers.salesloft.com/api.html#!/Topic/apikey).
+
 <!-- /env:oss -->
 
 <!-- env:cloud -->
+
 ### Step 2: Set up the Salesloft connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -41,6 +45,7 @@ Log into [Salesloft](https://salesloft.com) and then generate an [API Key](https
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Authenticate with **API Key**.
@@ -50,38 +55,44 @@ Log into [Salesloft](https://salesloft.com) and then generate an [API Key](https
 
 The Salesloft Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
 This connector outputs the following streams:
 
-* [CadenceMemberships](https://developers.salesloft.com/api.html#!/Cadence_Memberships/get_v2_cadence_memberships_json)
-* [Cadences](https://developers.salesloft.com/api.html#!/Cadences/get_v2_cadences_json)
-* [People](https://developers.salesloft.com/api.html#!/People/get_v2_people_json)
-* [Users](https://developers.salesloft.com/api.html#!/Users/get_v2_users_json)
-* [Emails](https://developers.salesloft.com/api.html#!/Emails/get_v2_activities_emails_json)
-* [Account Stages](https://developers.salesloft.com/api.html#!/Account_Stages/get_v2_account_stages_json)
-* [Account Tiers](https://developers.salesloft.com/api.html#!/Account_Tiers/get_v2_account_tiers_json)
-* [Accounts](https://developers.salesloft.com/api.html#!/Accounts/get_v2_accounts_json)
-* [Actions](https://developers.salesloft.com/api.html#!/Actions/get_v2_actions_json)
-* [Calls](https://developers.salesloft.com/api.html#!/Calls/get_v2_activities_calls_json)
-* [Emails Templates](https://developers.salesloft.com/api.html#!/Email_Templates/get_v2_email_templates_json)
-* [Emails Template Attachements](https://developers.salesloft.com/api.html#!/Email_Template_Attachments/get_v2_email_template_attachments_json)
-* [Imports](https://developers.salesloft.com/api.html#!/Imports/get_v2_imports_json)
-* [Notes](https://developers.salesloft.com/api.html#!/Notes/get_v2_notes_json)
-* [Person Stages](https://developers.salesloft.com/api.html#!/Person_Stages/get_v2_person_stages_json)
-* [Phone Number Assignments](https://developers.salesloft.com/api.html#!/Phone_Number_Assignments/get_v2_phone_number_assignments_json)
-* [Steps](https://developers.salesloft.com/api.html#!/Steps/get_v2_steps_json)
-* [Team Templates](https://developers.salesloft.com/api.html#!/Team_Templates/get_v2_team_templates_json)
-* [Team Template Attachements](https://developers.salesloft.com/api.html#!/Team_Template_Attachments/get_v2_team_template_attachments_json)
-* [CRM Activities](https://developers.salesloft.com/api.html#!/CRM_Activities/get_v2_crm_activities_json)
-* [CRM Users](https://developers.salesloft.com/api.html#!/Crm_Users/get_v2_crm_users_json)
-* [Groups](https://developers.salesloft.com/api.html#!/Groups/get_v2_groups_json)
-* [Successes](https://developers.salesloft.com/api.html#!/Successes/get_v2_successes_json)
+- [CadenceMemberships](https://developers.salesloft.com/api.html#!/Cadence_Memberships/get_v2_cadence_memberships_json)
+- [Cadences](https://developers.salesloft.com/api.html#!/Cadences/get_v2_cadences_json)
+- [People](https://developers.salesloft.com/api.html#!/People/get_v2_people_json)
+- [Users](https://developers.salesloft.com/api.html#!/Users/get_v2_users_json)
+- [Emails](https://developers.salesloft.com/api.html#!/Emails/get_v2_activities_emails_json)
+- [Account Stages](https://developers.salesloft.com/api.html#!/Account_Stages/get_v2_account_stages_json)
+- [Account Tiers](https://developers.salesloft.com/api.html#!/Account_Tiers/get_v2_account_tiers_json)
+- [Accounts](https://developers.salesloft.com/api.html#!/Accounts/get_v2_accounts_json)
+- [Actions](https://developers.salesloft.com/api.html#!/Actions/get_v2_actions_json)
+- [Calls](https://developers.salesloft.com/api.html#!/Calls/get_v2_activities_calls_json)
+- [Emails Templates](https://developers.salesloft.com/api.html#!/Email_Templates/get_v2_email_templates_json)
+- [Emails Template Attachements](https://developers.salesloft.com/api.html#!/Email_Template_Attachments/get_v2_email_template_attachments_json)
+- [Imports](https://developers.salesloft.com/api.html#!/Imports/get_v2_imports_json)
+- [Notes](https://developers.salesloft.com/api.html#!/Notes/get_v2_notes_json)
+- [Person Stages](https://developers.salesloft.com/api.html#!/Person_Stages/get_v2_person_stages_json)
+- [Phone Number Assignments](https://developers.salesloft.com/api.html#!/Phone_Number_Assignments/get_v2_phone_number_assignments_json)
+- [Steps](https://developers.salesloft.com/api.html#!/Steps/get_v2_steps_json)
+- [Team Templates](https://developers.salesloft.com/api.html#!/Team_Templates/get_v2_team_templates_json)
+- [Team Template Attachements](https://developers.salesloft.com/api.html#!/Team_Template_Attachments/get_v2_team_template_attachments_json)
+- [CRM Activities](https://developers.salesloft.com/api.html#!/CRM_Activities/get_v2_crm_activities_json)
+- [CRM Users](https://developers.salesloft.com/api.html#!/Crm_Users/get_v2_crm_users_json)
+- [Groups](https://developers.salesloft.com/api.html#!/Groups/get_v2_groups_json)
+- [Successes](https://developers.salesloft.com/api.html#!/Successes/get_v2_successes_json)
+- [Call Data Records](https://developers.salesloft.com/api.html#!/Call_Data_Records/get_v2_call_data_records_json)
+- [Call Dispositions](https://developers.salesloft.com/api.html#!/Call_Dispositions/get_v2_call_dispositions_json)
+- [Call Sentiments](https://developers.salesloft.com/api.html#!/Call_Sentiments/get_v2_call_sentiments_json)
+- [Custom Fields](https://developers.salesloft.com/api.html#!/Custom_Fields/get_v2_custom_fields_json)
+- [Meetings](https://developers.salesloft.com/api.html#!/Meetings/get_v2_meetings_json)
+- [Searches](https://developers.salesloft.com/api.html#!/Searches/post_v2_searches_json)
 
 ## Performance considerations
 
@@ -90,7 +101,9 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 1.2.0   | 2023-06-20 | [27505](https://github.com/airbytehq/airbyte/pull/27505) | Added new streams (Call Data Records, Call Dispositions, ... )    |
+| 1.1.1   | 2023-06-17 | [27484](https://github.com/airbytehq/airbyte/pull/27484) | Bump version on py files updates                                  |
 | 1.1.0   | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Added `latest_active_date` field to the `Cadences` stream schema. |
 | 1.0.0   | 2023-03-08 | [23937](https://github.com/airbytehq/airbyte/pull/23937) | Certify to Beta                                                   |
 | 0.1.6   | 2023-03-07 | [22893](https://github.com/airbytehq/airbyte/pull/22893) | Specified date formatting in specification                        |

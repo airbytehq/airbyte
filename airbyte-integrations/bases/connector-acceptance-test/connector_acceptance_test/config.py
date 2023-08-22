@@ -174,6 +174,9 @@ class IncrementalConfig(BaseConfig):
         description="Determines whether to skip more granular testing for incremental syncs", default=False
     )
 
+    class Config:
+        smart_union = True
+
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
@@ -200,9 +203,6 @@ class Config(BaseConfig):
         high = "high"
         low = "low"
 
-    cache_discovered_catalog: bool = Field(
-        default=True, description="Enable or disable caching of discovered catalog for reuse in multiple tests."
-    )
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")

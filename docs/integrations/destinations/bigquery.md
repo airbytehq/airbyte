@@ -73,7 +73,7 @@ The BigQuery destination connector supports the following [sync modes](https://d
 
 - Full Refresh Sync
 - Incremental - Append Sync
-- Incremental - Deduped History
+- Incremental - Append + Deduped
 
 ## Output schema
 
@@ -135,6 +135,31 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.9.1   | 2023-08-21 | [28687](https://github.com/airbytehq/airbyte/pull/28687) | Under the hood: Add dependency on Java CDK v0.0.1.                                                                                                                          |
+| 1.9.0   | 2023-08-17 | [\#29560](https://github.com/airbytehq/airbyte/pull/29560) | Destinations v2: throw an error on disallowed column name prefixes                                                       |
+| 1.8.1   | 2023-08-17 | [\#29522](https://github.com/airbytehq/airbyte/pull/29522) | Migration BugFix - ensure raw dataset created                                                                            |
+| 1.8.0   | 2023-08-17 | [\#29498](https://github.com/airbytehq/airbyte/pull/29498) | Fix checkpointing logic in GCS staging mode                                                                              |
+| 1.7.8   | 2023-08-15 | [\#29461](https://github.com/airbytehq/airbyte/pull/29461) | Migration BugFix - ensure migration happens before table creation for GCS staging.                                       |
+| 1.7.7   | 2023-08-11 | [\#29381](https://github.com/airbytehq/airbyte/pull/29381) | Destinations v2: Add support for streams with no columns                                                                 |
+| 1.7.6   | 2023-08-04 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Add v1 -> v2 migration Logic                                                                            |
+| 1.7.5   | 2023-08-04 | [\#29106](https://github.com/airbytehq/airbyte/pull/29106) | Destinations v2: handle unusual CDC deletion edge case                                                                   |
+| 1.7.4   | 2023-08-04 | [\#29089](https://github.com/airbytehq/airbyte/pull/29089) | Destinations v2: improve special character handling in column names                                                      |
+| 1.7.3   | 2023-08-03 | [\#28890](https://github.com/airbytehq/airbyte/pull/28890) | Internal code updates; improved testing                                                                                  |
+| 1.7.2   | 2023-08-02 | [\#28976](https://github.com/airbytehq/airbyte/pull/28976) | Fix composite PK handling in v1 mode                                                                                     |
+| 1.7.1   | 2023-08-02 | [\#28959](https://github.com/airbytehq/airbyte/pull/28959) | Destinations v2: Fix CDC syncs in non-dedup mode                                                                         |
+| 1.7.0   | 2023-08-01 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Open up early access program opt-in                                                                     |
+| 1.6.0   | 2023-07-26 | [\#28723](https://github.com/airbytehq/airbyte/pull/28723) | Destinations v2: Change raw table dataset and naming convention                                                          |
+| 1.5.8   | 2023-07-25 | [\#28721](https://github.com/airbytehq/airbyte/pull/28721) | Destinations v2: Handle cursor change across syncs                                                                       |
+| 1.5.7   | 2023-07-24 | [\#28625](https://github.com/airbytehq/airbyte/pull/28625) | Destinations v2: Limit Clustering Columns to 4                                                                           |
+| 1.5.6   | 2023-07-21 | [\#28580](https://github.com/airbytehq/airbyte/pull/28580) | Destinations v2: Create dataset in user-specified location                                                               |
+| 1.5.5   | 2023-07-20 | [\#28490](https://github.com/airbytehq/airbyte/pull/28490) | Destinations v2: Fix schema change detection in OVERWRITE mode when existing table is empty; other code refactoring      |
+| 1.5.4   | 2023-07-17 | [\#28382](https://github.com/airbytehq/airbyte/pull/28382) | Destinations v2: Schema Change Detection                                                                                 |
+| 1.5.3   | 2023-07-14 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                     |
+| 1.5.2   | 2023-07-05 | [\#27936](https://github.com/airbytehq/airbyte/pull/27936) | Internal scaffolding change for future development                                                                       |
+| 1.5.1   | 2023-06-30 | [\#27891](https://github.com/airbytehq/airbyte/pull/27891) | Revert bugged update                                                                                                     |
+| 1.5.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                                     |
+| 1.4.6   | 2023-06-28 | [\#27268](https://github.com/airbytehq/airbyte/pull/27268) | Internal scaffolding change for future development                                                                       |
+| 1.4.5   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                                        |
 | 1.4.4   | 2023-05-25 | [\#26585](https://github.com/airbytehq/airbyte/pull/26585) | Small tweak in logs for clarity                                                                                          |
 | 1.4.3   | 2023-05-17 | [\#26213](https://github.com/airbytehq/airbyte/pull/26213) | Fix bug in parsing file buffer config count                                                                              |
 | 1.4.2   | 2023-05-10 | [\#25925](https://github.com/airbytehq/airbyte/pull/25925) | Testing update. Normalization tests are now done in the destination container.                                           |

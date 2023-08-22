@@ -62,7 +62,7 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
         }
         return json_payload
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState, *args, **kwargs) -> Iterable[StreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         locations_records = self.parent_stream.read_records(sync_mode=SyncMode.full_refresh)
         location_ids = [location[self.parent_key] for location in locations_records]
 
@@ -78,10 +78,10 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
         for location in separated_locations:
             stream_slice = {"location_ids": location}
             cursor_field = self.cursor_field.eval(self.config)
-            if cursor_field and cursor_field in stream_state:
+            if self._cursor:
                 # The Square API throws an error if when a datetime is greater than the current time
                 current_datetime = datetime.now(timezone.utc)
-                cursor_datetime = self.parse_date(stream_state[cursor_field])
+                cursor_datetime = self.parse_date(self._cursor)
                 slice_datetime = (
                     current_datetime.strftime(self.datetime_format)
                     if cursor_datetime > current_datetime

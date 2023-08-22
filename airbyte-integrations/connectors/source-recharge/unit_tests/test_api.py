@@ -191,29 +191,30 @@ class TestFullRefreshStreams:
         return {stream_name: result}
 
     @pytest.mark.parametrize(
-        "stream_cls, rec_limit, expected",
+        "stream_cls, cursor_response, expected",
         [
-            (Collections, 1, {"page": 2}),
-            (Metafields, 2, {"page": 2}),
-            (Products, 1, {"page": 2}),
-            (Shop, 1, {"page": 2}),
+            (Collections, "some next cursor", {"cursor": "some next cursor"}),
+            (Metafields, "some next cursor", {"cursor": "some next cursor"}),
+            (Products, "some next cursor", {"cursor": "some next cursor"}),
+            (Shop, "some next cursor", {"cursor": "some next cursor"}),
         ],
     )
-    def test_next_page_token(self, config, stream_cls, rec_limit, requests_mock, expected):
+    def test_next_page_token(self, config, stream_cls, cursor_response, requests_mock, expected):
         stream = stream_cls(config, authenticator=None)
-        stream.limit = rec_limit
+        stream.limit = 2
         url = f"{stream.url_base}{stream.path()}"
-        requests_mock.get(url, json=self.generate_records(stream.name, rec_limit))
+        response = {"next_cursor": cursor_response, stream.name: self.generate_records(stream.name, 2)}
+        requests_mock.get(url, json=response)
         response = requests.get(url)
         assert stream.next_page_token(response) == expected
 
     @pytest.mark.parametrize(
         "stream_cls, next_page_token, stream_state, stream_slice, expected",
         [
-            (Collections, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
-            (Metafields, {"page": 2}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "owner_resource": None, "page": 2}),
-            (Products, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
-            (Shop, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Collections, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
+            (Metafields, {"cursor": "12353"}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "owner_resource": None, "cursor": "12353"}),
+            (Products, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
+            (Shop, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z",}),
         ],
     )
     def test_request_params(self, config, stream_cls, next_page_token, stream_state, stream_slice, expected):
@@ -287,38 +288,39 @@ class TestIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, rec_limit, expected",
+        "stream_cls, cursor_response, expected",
         [
-            (Addresses, 1, {"page": 2}),
-            (Charges, 2, {"page": 2}),
-            (Customers, 1, {"page": 2}),
-            (Discounts, 1, {"page": 2}),
-            (Onetimes, 1, {"page": 2}),
-            (Orders, 1, {"page": 2}),
-            (Subscriptions, 1, {"page": 2}),
+            (Addresses, "some next cursor", {"cursor": "some next cursor"}),
+            (Charges, "some next cursor", {"cursor": "some next cursor"}),
+            (Customers, "some next cursor", {"cursor": "some next cursor"}),
+            (Discounts, "some next cursor", {"cursor": "some next cursor"}),
+            (Onetimes, "some next cursor", {"cursor": "some next cursor"}),
+            (Orders, "some next cursor", {"cursor": "some next cursor"}),
+            (Subscriptions, "some next cursor", {"cursor": "some next cursor"}),
         ],
     )
-    def test_next_page_token(self, config, stream_cls, rec_limit, requests_mock, expected):
+    def test_next_page_token(self, config, stream_cls, cursor_response, requests_mock, expected):
         stream = stream_cls(config, authenticator=None)
-        stream.limit = rec_limit
+        stream.limit = 2
         url = f"{stream.url_base}{stream.path()}"
-        requests_mock.get(url, json=self.generate_records(stream.name, rec_limit))
+        response = {"next_cursor": cursor_response, stream.name: self.generate_records(stream.name, 2)}
+        requests_mock.get(url, json=response)
         response = requests.get(url)
         assert stream.next_page_token(response) == expected
 
     @pytest.mark.parametrize(
         "stream_cls, next_page_token, stream_state, stream_slice, expected",
         [
-            (Addresses, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
-            (Charges, {"page": 2}, {"updated_at": "2030-01-01"}, {},
-             {"limit": 250, "page": 2, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
-            (Customers, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
-            (Discounts, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
-            (Onetimes, {"page": 2}, {"updated_at": "2030-01-01"}, {},
-             {"limit": 250, "page": 2, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
-            (Orders, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Addresses, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
+            (Charges, {"cursor": "123"}, {"updated_at": "2030-01-01"}, {},
+             {"limit": 250, "cursor": "123"}),
+            (Customers, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
+            (Discounts, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
+            (Onetimes, {"cursor": "123"}, {"updated_at": "2030-01-01"}, {},
+             {"limit": 250, "cursor": "123"}),
+            (Orders, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
             (Subscriptions, None, {}, {},
-             {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+             {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
         ],
     )
     def test_request_params(self, config, stream_cls, next_page_token, stream_state, stream_slice, expected):

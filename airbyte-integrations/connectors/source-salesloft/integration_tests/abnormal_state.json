@@ -89,5 +89,26 @@
       "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
       "stream_descriptor": { "name": "email_templates" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "call_data_records" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "meetings" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "searches" }
+    }
   }
 ]

@@ -1,3 +1,17 @@
+<!--
+Thanks for your contribution! 
+Before you submit the pull request, 
+I'd like to kindly remind you to take a moment and read through our guidelines
+to ensure that your contribution aligns with the type of contributions our project accepts.
+All the information you need can be found here:
+   https://docs.airbyte.com/contributing-to-airbyte/
+
+We truly appreciate your interest in contributing to Airbyte,
+and we're excited to see what you have to offer! 
+
+If you have any questions or need any assistance, feel free to reach out in #contributions Slack channel.
+-->
+
 ## What
 *Describe what the change is solving*
 *It helps to add screenshots if it affects the frontend.*

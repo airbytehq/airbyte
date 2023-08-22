@@ -12,6 +12,9 @@
     "owner": {
       "type": ["null", "object"],
       "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
         "username": {
           "type": ["null", "string"]
         }

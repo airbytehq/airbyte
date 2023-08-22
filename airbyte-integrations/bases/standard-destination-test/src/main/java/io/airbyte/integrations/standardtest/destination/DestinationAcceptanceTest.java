@@ -100,6 +100,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
+  private static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
+
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
 
@@ -210,7 +212,9 @@ public abstract class DestinationAcceptanceTest {
     if (config.get("schema") == null) {
       return null;
     }
-    return config.get("schema").asText();
+    final String schema = config.get("schema").asText();
+    TEST_SCHEMAS.add(schema);
+    return schema;
   }
 
   /**
@@ -295,14 +299,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Override to return true if a destination implements size limits on record size (then destination
-   * should redefine getMaxRecordValueLimit() too)
-   */
-  protected boolean implementsRecordSizeLimitChecks() {
-    return false;
-  }
-
-  /**
    * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String, JsonNode)}. Except this
    * method should pull records from the table that contains the normalized records and convert them
    * back into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override
@@ -327,9 +323,10 @@ public abstract class DestinationAcceptanceTest {
    * postgres database. This function will be called before EACH test.
    *
    * @param testEnv - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void setup(TestDestinationEnv testEnv) throws Exception;
+  protected abstract void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
 
   /**
    * Function that performs any clean up of external resources required for the test. e.g. delete a
@@ -337,9 +334,10 @@ public abstract class DestinationAcceptanceTest {
    * destination so that there is no contamination across tests.
    *
    * @param testEnv - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
+  protected abstract void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
 
   /**
    * @deprecated This method is moved to the AdvancedTestDataComparator. Please move your destination
@@ -362,7 +360,7 @@ public abstract class DestinationAcceptanceTest {
     testEnv = new TestDestinationEnv(localRoot);
     mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
 
-    setup(testEnv);
+    setup(testEnv, TEST_SCHEMAS);
 
     processFactory = new DockerProcessFactory(
         workspaceRoot,
@@ -374,7 +372,7 @@ public abstract class DestinationAcceptanceTest {
 
   @AfterEach
   void tearDownInternal() throws Exception {
-    tearDown(testEnv);
+    tearDown(testEnv, TEST_SCHEMAS);
   }
 
   /**
@@ -838,66 +836,6 @@ public abstract class DestinationAcceptanceTest {
     assertSameMessages(expectedMessages, actualMessages, true);
   }
 
-  /**
-   * This test is running a sync using the exchange rate catalog and messages. However it also
-   * generates and adds two extra messages with big records (near the destination limit as defined by
-   * getMaxValueLengthLimit()
-   * <p>
-   * The first big message should be small enough to fit into the destination while the second message
-   * would be too big and fails to replicate.
-   */
-  @Test
-  void testSyncVeryBigRecords() throws Exception {
-    if (!implementsRecordSizeLimitChecks()) {
-      return;
-    }
-
-    final AirbyteCatalog catalog =
-        Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
-            AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
-        catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
-        .collect(Collectors.toList());
-    // Add a big message that barely fits into the limits of the destination
-    messages.add(new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("id", 3)
-                // remove enough characters from max limit to fit the other columns and json characters
-                .put("currency", generateBigString(-150))
-                .put("date", "2020-10-10T00:00:00Z")
-                .put("HKD", 10.5)
-                .put("NZD", 1.14)
-                .build()))));
-    // Add a big message that does not fit into the limits of the destination
-    final AirbyteMessage bigMessage = new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("id", 3)
-                .put("currency", generateBigString(getGenerateBigStringAddExtraCharacters()))
-                .put("date", "2020-10-10T00:00:00Z")
-                .put("HKD", 10.5)
-                .put("NZD", 1.14)
-                .build())));
-    final JsonNode config = getConfig();
-    final String defaultSchema = getDefaultSchema(config);
-    final List<AirbyteMessage> allMessages = new ArrayList<>();
-    allMessages.add(bigMessage);
-    allMessages.addAll(messages);
-    runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
-  }
-
   private String generateBigString(final int addExtraCharacters) {
     final int length = getMaxRecordValueLimit() + addExtraCharacters;
     return RANDOM
@@ -1049,6 +987,7 @@ public abstract class DestinationAcceptanceTest {
     // A randomized namespace is required otherwise you can generate a "false success" with data from a
     // previous run.
     final String namespace = Strings.addRandomSuffix("airbyte_source_namespace", "_", 8);
+    TEST_SCHEMAS.add(namespace);
 
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -1081,11 +1020,13 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    final var namespace1 = "sourcenamespace";
+    final var namespace1 = Strings.addRandomSuffix("sourcenamespace", "_", 8);
+    TEST_SCHEMAS.add(namespace1);
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
 
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
-    final var namespace2 = "diff_source_namespace";
+    final var namespace2 = Strings.addRandomSuffix("diff_sourcenamespace", "_", 8);
+    TEST_SCHEMAS.add(namespace2);
     final var mapper = MoreMappers.initMapper();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final var clonedStream = mapper.readValue(mapper.writeValueAsString(stream),
@@ -1141,12 +1082,13 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.NAMESPACE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
-        messages, namespace);
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
 
     final JsonNode config = getConfig();
     try {
       runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
+      // Add to the list of schemas to clean up.
+      TEST_SCHEMAS.add(namespace);
     } catch (final Exception e) {
       throw new IOException(String.format(
           "[Test Case %s] Destination failed to sync data to namespace %s, see \"namespace_test_cases.json for details\"",
@@ -1864,7 +1806,8 @@ public abstract class DestinationAcceptanceTest {
           .filter(testCase -> testCase.get("enabled").asBoolean())
           .map(testCase -> Arguments.of(
               testCase.get("id").asText(),
-              testCase.get("namespace").asText(),
+              // Randomise namespace to avoid collisions between tests.
+              Strings.addRandomSuffix(testCase.get("namespace").asText(), "", 5),
               testCase.get("normalized").asText()));
     }
 

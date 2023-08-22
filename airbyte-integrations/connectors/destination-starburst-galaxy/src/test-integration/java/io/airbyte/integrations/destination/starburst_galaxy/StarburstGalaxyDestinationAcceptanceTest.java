@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,7 +68,7 @@ public abstract class StarburstGalaxyDestinationAcceptanceTest extends Destinati
   private Database database;
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     dslContext = create(galaxyDestinationConfig.galaxyUsername(), galaxyDestinationConfig.galaxyPassword(), STARBURST_GALAXY_DRIVER_CLASS,
         getGalaxyConnectionString(galaxyDestinationConfig), SQLDialect.DEFAULT);
     database = new Database(dslContext);
@@ -106,7 +107,7 @@ public abstract class StarburstGalaxyDestinationAcceptanceTest extends Destinati
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
     // clean up database
     List<JsonNode> schemas = executeQuery(format("SHOW SCHEMAS LIKE '%s'", galaxyDestinationConfig.galaxyCatalogSchema().toLowerCase(ENGLISH)));
     schemas.stream().map(node -> node.get("Schema").asText())

@@ -1,6 +1,6 @@
 {
   "count": 10,
   "seed": 0,
-  "records_per_sync": 10,
-  "parallelism": 1
+  "parallelism": 1,
+  "always_updated": false
 }
