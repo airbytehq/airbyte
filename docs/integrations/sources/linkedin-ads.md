@@ -92,7 +92,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 <!-- /env:oss -->
 
 6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
-7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all associated accounts.
+7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all accounts accessible using your credentials.
 8. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled form LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
    2. Enter a **Report Name**. This will be used as the stream name during replication.
