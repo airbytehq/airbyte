@@ -4,23 +4,18 @@ This page contains the setup guide and reference information for the Amazon Ads 
 
 ## Prerequisites
 
-- An Amazon Ads account.
+- An Amazon account with access permissions for the Amazon Advertising services.
 
 ## Setup guide
 
 ### Step 1: Set up Amazon Ads
 
-Create an [Amazon user](https://www.amazon.com) with access to [Amazon Ads account](https://advertising.amazon.com).
-
 <!-- env:oss -->
 **For Airbyte Open Source:**
-To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
+To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). Please note that the onboarding process has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
 <!-- /env:oss -->
 
-### Step 2: Set up the Amazon Ads connector in Airbyte
-
-<!-- env:cloud -->
-**For Airbyte Cloud:**
+### Set up the Amazon Ads connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -34,10 +29,19 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
   - **For Airbyte Open Source**: Enter your Amazon Ads **Client ID**, **Client Secret** and **Refresh Token**.
 <!-- /env:oss -->
 
-5. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-6. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
-7. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-8. Click **Set up source** and wait for the tests to complete.
+1. Select the **Region** of the country you selected when registering your Amazon account. The options are **North America (NA)**, **Europe (EU)**, and **Far East (FE)**. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for a list of each region's associated Marketplaces.
+2. (Optional) For **Start Date**, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. This determines the starting date for reports generated from the API. Please do not set this value more than 60 days in the past. If left blank, today's date is used. The date is tied to the timezone of the processed profile.
+3. (Optional) For **Profile IDs**, you may enter one or more IDs of profiles associated with your account that you want to fetch data for. If left blank, data will be fetched from all profiles associated with the Amazon Ads account. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more information on profiles.
+4. (Optional) For **State Filter**, you may enter one or more "states" to filter the data for the Display, Product, and Brand Campaign streams. The options are:
+
+  **enabled**: Filters for campaigns that are currently active and running.
+  **paused**: Filters for campaigns that are set up but not currently running.
+  **archived**: Filters for campaigns that are no longer active and have been archived for record-keeping.
+  
+  If this field is left blank, no filters will be applied.
+5. (Optional) For **Lookback Window**, you may specify a window of time in days from the present to re-export data that may have been updated in the Amazon Ads API. By default, this window is set to 3 days to align with Amazon's [traffic validation process](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/faq#how-long-does-it-take-for-sponsored-ads-reporting-data-to-become-available), during which time small changes to impression and click data may occur.
+6. (Optional) For **Report Types**, you may optionally specify one or more report types you would like to query from the API. Depending on the type of sponsored ad, performance can be analyzed using different dimensions. Each type of sponsored ad supports different report types. For more information on this topic, see the [Amazon documentation](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types). Leaving this field blank will pull all available report types.
+7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -98,11 +102,11 @@ Information about expected report generation waiting time you may find [here](ht
 | `array`                  | `array`      |
 | `object`                 | `object`     |
 
-## CHANGELOG
+## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 3.1.0   | 2023-08-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |
+| 3.1.0   | 2023-08-08 | [29212](https://github.com/airbytehq/airbyte/pull/29212) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |
 | 3.0.0   | 2023-07-24 | [27868](https://github.com/airbytehq/airbyte/pull/27868) | Fix attribution report stream schemas                                                                           |
 | 2.3.1   | 2023-07-11 | [28155](https://github.com/airbytehq/airbyte/pull/28155) | Bugfix: validation error when record values are missing                                                         |
 | 2.3.0   | 2023-07-06 | [28002](https://github.com/airbytehq/airbyte/pull/28002) | Add sponsored_product_ad_group_suggested_keywords, sponsored_product_ad_group_bid_recommendations streams       |
