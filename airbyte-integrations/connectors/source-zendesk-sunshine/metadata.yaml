@@ -16,7 +16,7 @@ data:
   icon: zendesk-sunshine.svg
   license: MIT
   name: Zendesk Sunshine
-  releaseDate: TODO
+  releaseDate: 2021-07-08
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
