@@ -79,6 +79,7 @@ class MongoDbCdcConnectorMetadataInjectorTest {
         MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, expected.getInc());
 
     final MongoDbCdcConnectorMetadataInjector metadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
+
     assertEquals(databaseName, metadataInjector.namespace(Jsons.jsonNode(sourceData)));
   }
 

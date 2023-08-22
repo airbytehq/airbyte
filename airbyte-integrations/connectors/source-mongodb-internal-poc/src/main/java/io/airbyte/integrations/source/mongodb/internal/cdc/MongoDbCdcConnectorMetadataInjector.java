@@ -53,7 +53,6 @@ public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector 
     record.put(CDC_DEFAULT_CURSOR, getCdcDefaultCursor());
   }
 
-  @Override
   public String namespace(final JsonNode source) {
     return source.get(MongoDbDebeziumConstants.ChangeEvent.SOURCE_DB).asText();
   }
