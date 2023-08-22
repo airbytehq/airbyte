@@ -61,8 +61,8 @@ public class MongoDbResumeTokenHelper {
    */
   public static BsonTimestamp extractTimestampFromSource(final JsonNode source) {
     return Optional.ofNullable(source)
-            .flatMap(MongoDbResumeTokenHelper::createTimestampFromSource)
-            .orElseThrow(() -> new IllegalStateException("Could not find timestamp"));
+        .flatMap(MongoDbResumeTokenHelper::createTimestampFromSource)
+        .orElseThrow(() -> new IllegalStateException("Could not find timestamp"));
   }
 
   private static Optional<BsonTimestamp> createTimestampFromSource(final JsonNode source) {
