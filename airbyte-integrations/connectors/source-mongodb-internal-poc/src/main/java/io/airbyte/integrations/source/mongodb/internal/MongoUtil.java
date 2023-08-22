@@ -11,21 +11,30 @@ import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Aggregates;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 public class MongoUtil {
+
+  /**
+   * The maximum number of documents to sample when attempting to discover the unique keys/types for a
+   * collection. Inspired by the
+   * <a href="https://www.mongodb.com/docs/compass/current/sampling/#sampling-method">sampling method
+   * utilized by the MongoDB Compass client</a>.
+   */
+  private static final Integer DISCOVERY_SAMPLE_SIZE = 1000;
 
   /**
    * Set of collection prefixes that should be ignored when performing operations, such as discover to
@@ -79,42 +88,54 @@ public class MongoUtil {
    *         database.
    */
   public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName) {
-    final List<AirbyteStream> streams = new ArrayList<>();
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
-    authorizedCollections.parallelStream().forEach(collectionName -> {
-      final List<Field> fields = getFieldsInCollection(mongoClient.getDatabase(databaseName).getCollection(collectionName));
-      streams.add(CatalogHelpers.createAirbyteStream(collectionName, databaseName, fields));
-    });
-    return streams;
+    return authorizedCollections.parallelStream().map(collectionName -> {
+      /*
+       * Fetch the keys/types from the first N documents and the last N documents from the collection.
+       * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
+       */
+      final Set<Field> discoveredFields = new HashSet<>();
+      final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
+      discoveredFields.addAll(getFieldsInCollection(mongoCollection));
+      return createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields));
+    }).collect(Collectors.toList());
   }
 
-  private static List<Field> getFieldsInCollection(final MongoCollection collection) {
+  private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
+    return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
+  }
+
+  private static Set<Field> getFieldsInCollection(final MongoCollection collection) {
+    final Set<Field> discoveredFields = new HashSet<>();
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
         "as", "each",
         "in", Map.of("k", "$$each.k", "v", Map.of("$type", "$$each.v")));
 
     final Document mapFunction = new Document("$map", fieldsMap);
     final Document arrayToObjectAggregation = new Document("$arrayToObject", mapFunction);
-    final Document projection = new Document("$project", new Document("fields", arrayToObjectAggregation));
 
     final Map<String, Object> groupMap = new HashMap<>();
     groupMap.put("_id", null);
     groupMap.put("fields", Map.of("$addToSet", "$fields"));
 
-    final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-        projection,
-        new Document("$unwind", "$fields"),
-        new Document("$group", groupMap)));
+    final List<Bson> aggregateList = new ArrayList<>();
+    aggregateList.add(Aggregates.sample(DISCOVERY_SAMPLE_SIZE));
+    aggregateList.add(Aggregates.project(new Document("fields", arrayToObjectAggregation)));
+    aggregateList.add(Aggregates.unwind("$fields"));
+    aggregateList.add(new Document("$group", groupMap));
 
-    final MongoCursor<Document> cursor = output.cursor();
-    if (cursor.hasNext()) {
-      final Map<String, String> fields = ((List<Map<String, String>>) output.cursor().next().get("fields")).get(0);
-      return fields.entrySet().stream()
-          .map(e -> new Field(e.getKey(), convertToSchemaType(e.getValue())))
-          .collect(Collectors.toList());
-    } else {
-      return List.of();
+    final AggregateIterable<Document> output = collection.aggregate(aggregateList);
+
+    try (final MongoCursor<Document> cursor = output.cursor()) {
+      while (cursor.hasNext()) {
+        final Map<String, String> fields = ((List<Map<String, String>>) cursor.next().get("fields")).get(0);
+        discoveredFields.addAll(fields.entrySet().stream()
+            .map(e -> new MongoField(e.getKey(), convertToSchemaType(e.getValue())))
+            .collect(Collectors.toSet()));
+      }
     }
+
+    return discoveredFields;
   }
 
   private static JsonSchemaType convertToSchemaType(final String type) {

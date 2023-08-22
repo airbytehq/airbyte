@@ -263,7 +263,7 @@
           }
         },
         "threadId": {
-          "type": ["null", "string", "integer"]
+          "type": ["null", "string"]
         },
         "messageId": {
           "type": ["null", "string"]

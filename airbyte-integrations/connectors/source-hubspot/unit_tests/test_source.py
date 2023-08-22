@@ -85,7 +85,7 @@ def test_streams(requests_mock, config):
 
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 29
+    assert len(streams) == 30
 
 
 def test_check_credential_title_exception(config):
@@ -181,6 +181,7 @@ def test_stream_forbidden(requests_mock, config, caplog):
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
     assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
     records = [r for r in records if r.type == Type.RECORD]
     assert not records
 
@@ -221,6 +222,7 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
     assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
     records = [r for r in records if r.type == Type.RECORD]
     assert not records
 
