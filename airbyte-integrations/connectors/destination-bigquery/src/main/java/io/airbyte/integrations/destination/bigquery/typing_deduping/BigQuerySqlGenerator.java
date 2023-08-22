@@ -419,10 +419,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
                   "col_type", toDialectType(col.getValue()).name(),
                   "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+                  // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
+                  // and necessary because json_query
                   """
                       CASE
-                        WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
-                          AND (JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"'), wide_number_mode=>'round')) != 'null')
+                        WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
+                          AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
                           AND (${json_extract} IS NULL)
                           THEN ['Problem with `${raw_col_name}`']
                         ELSE []
