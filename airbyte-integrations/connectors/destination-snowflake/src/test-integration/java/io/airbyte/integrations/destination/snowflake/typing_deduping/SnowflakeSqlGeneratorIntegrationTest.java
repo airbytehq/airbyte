@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
@@ -383,13 +385,28 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
+    final var v2RecordMap = v2RawRecords.stream().collect(Collectors.toMap(
+        record -> record.get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText(),
+        Function.identity()
+    ));
     assertAll(
-        () -> assertEquals(4, v1RawRecords.size()),
-        () -> assertEquals(4, v2RawRecords.size()),
-        () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_AB_ID").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
-        () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_DATA"), v2RawRecords.get(0).get("_airbyte_data")),
-        () -> assertEquals(v1RawRecords.get(0).get("_AIRBYTE_EMITTED_AT").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
-        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at"))
+        () -> assertEquals(5, v1RawRecords.size()),
+        () -> assertEquals(5, v2RawRecords.size())
     );
+    v1RawRecords.forEach(v1Record -> {
+      final var v1id = v1Record.get(JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase()).asText();
+      assertAll(
+          () -> assertEquals(v1id, v2RecordMap.get(v1id).get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText()),
+          () -> assertEquals(v1Record.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT.toUpperCase()).asText(), v2RecordMap.get(v1id).get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT).asText()),
+          () -> assertNull(v2RecordMap.get(v1id).get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT))
+      );
+      JsonNode originalData = v1Record.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase());
+      JsonNode migratedData = v2RecordMap.get(v1id).get(JavaBaseConstants.COLUMN_NAME_DATA);
+      migratedData = migratedData.isTextual() ? Jsons.deserializeExact(migratedData.asText()) : migratedData;
+      originalData = originalData.isTextual() ? Jsons.deserializeExact(migratedData.asText()) : originalData;
+      // hacky thing because we only care about the data contents.
+      // diffRawTableRecords makes some assumptions about the structure of the blob.
+      DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
+    });
   }
 }

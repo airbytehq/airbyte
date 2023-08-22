@@ -23,6 +23,8 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -79,7 +81,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Stream.of("_ab_cdc_deleted_at")).toList();
   }
 
-  private static final RecordDiffer DIFFER = new RecordDiffer(
+  protected static final RecordDiffer DIFFER = new RecordDiffer(
       Pair.of("id1", AirbyteProtocolType.INTEGER),
       Pair.of("id2", AirbyteProtocolType.INTEGER),
       Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
@@ -828,13 +830,30 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
+    final var v2RecordMap = v2RawRecords.stream().collect(Collectors.toMap(
+        record -> record.get("_airbyte_raw_id").asText(),
+        Function.identity()
+    ));
     assertAll(
-        () -> assertEquals(4, v1RawRecords.size()),
-        () -> assertEquals(4, v2RawRecords.size()),
-        () -> assertEquals(v1RawRecords.get(0).get("_airbyte_ab_id").asText(), v2RawRecords.get(0).get("_airbyte_raw_id").asText()),
-        () -> assertEquals(Jsons.deserialize(v1RawRecords.get(0).get("_airbyte_data").asText()), v2RawRecords.get(0).get("_airbyte_data")),
-        () -> assertEquals(v1RawRecords.get(0).get("_airbyte_emitted_at").asText(), v2RawRecords.get(0).get("_airbyte_extracted_at").asText()),
-        () -> assertNull(v2RawRecords.get(0).get("_airbyte_loaded_at")));
+        () -> assertEquals(5, v1RawRecords.size()),
+        () -> assertEquals(5, v2RawRecords.size())
+    );
+    v1RawRecords.forEach(v1Record -> {
+      final var v1id = v1Record.get("_airbyte_ab_id").asText();
+      assertAll(
+        () -> assertEquals(v1id, v2RecordMap.get(v1id).get("_airbyte_raw_id").asText()),
+        () -> assertEquals(v1Record.get("_airbyte_emitted_at").asText(), v2RecordMap.get(v1id).get("_airbyte_extracted_at").asText()),
+        () -> assertNull(v2RecordMap.get(v1id).get("_airbyte_loaded_at"))
+      );
+      final JsonNode originalData = Jsons.deserialize(v1Record.get("_airbyte_data").asText());
+      JsonNode migratedData = v2RecordMap.get(v1id).get("_airbyte_data");
+      if (migratedData.isTextual()) {
+        migratedData = Jsons.deserializeExact(migratedData.asText());
+      }
+      // hacky thing because we only care about the data contents.
+      // diffRawTableRecords makes some assumptions about the structure of the blob.
+      DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
+    });
   }
 
   protected List<JsonNode> dumpV1RawTableRecords(StreamId streamId) throws Exception {
