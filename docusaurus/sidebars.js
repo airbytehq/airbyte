@@ -333,11 +333,6 @@ const deployAirbyte = {
     },
     {
       type: "doc",
-      label: "On Kubernetes using Kustomize",
-      id: "deploying-airbyte/on-kubernetes",
-    },
-    {
-      type: "doc",
       label: "On Kubernetes using Helm",
       id: "deploying-airbyte/on-kubernetes-via-helm",
     },
@@ -466,7 +461,7 @@ module.exports = {
     },
     {
       type: 'doc',
-      id: 'airbyte-pro',
+      id: 'airbyte-enterprise',
     },
     sectionHeader("Developer Guides"),
     {
