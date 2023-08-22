@@ -80,7 +80,7 @@ public class SnowflakeTestUtils {
     return '"' + SnowflakeSqlGenerator.escapeIdentifier(name) + '"';
   }
 
-  private static String timestampToString(final String quotedName) {
+  public static String timestampToString(final String quotedName) {
     return "TO_VARCHAR(" + quotedName + ", 'YYYY-MM-DD\"T\"HH24:MI:SS.FFTZH:TZM') as " + quotedName;
   }
 

@@ -1082,12 +1082,13 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.NAMESPACE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
-        messages, namespace);
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
 
     final JsonNode config = getConfig();
     try {
       runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
+      // Add to the list of schemas to clean up.
+      TEST_SCHEMAS.add(namespace);
     } catch (final Exception e) {
       throw new IOException(String.format(
           "[Test Case %s] Destination failed to sync data to namespace %s, see \"namespace_test_cases.json for details\"",
@@ -1801,12 +1802,14 @@ public abstract class DestinationAcceptanceTest {
         throws Exception {
       final JsonNode testCases =
           Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON));
+      final var randomSuffix = Strings.addRandomSuffix("", "_", 5);
       return MoreIterators.toList(testCases.elements()).stream()
           .filter(testCase -> testCase.get("enabled").asBoolean())
           .map(testCase -> Arguments.of(
               testCase.get("id").asText(),
-              testCase.get("namespace").asText(),
-              testCase.get("normalized").asText()));
+              // Randomise namespace to avoid collisions between tests.
+              testCase.get("namespace").asText() + randomSuffix,
+              testCase.get("normalized").asText() + randomSuffix));
     }
 
   }
