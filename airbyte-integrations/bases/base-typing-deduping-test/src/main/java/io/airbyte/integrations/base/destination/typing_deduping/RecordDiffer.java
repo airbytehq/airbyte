@@ -250,12 +250,12 @@ public class RecordDiffer {
     } else if (expectedValue instanceof final ArrayNode expectedArrayNode && actualValue instanceof final ArrayNode actualArrayNode) {
       // If both values are arrays, compare each of their elements. Order should be preserved
       return IntStream.range(0, expectedArrayNode.size())
-                      .allMatch(i -> areJsonNodesEquivalent(expectedArrayNode.get(i), actualArrayNode.get(i)));
+          .allMatch(i -> areJsonNodesEquivalent(expectedArrayNode.get(i), actualArrayNode.get(i)));
     } else if (expectedValue instanceof final ObjectNode expectedObjectNode && actualValue instanceof final ObjectNode actualObjectNode) {
       // If both values are objects compare their fields and values
       return expectedObjectNode.size() == actualObjectNode.size() && Stream.generate(expectedObjectNode.fieldNames()::next)
-                   .limit(expectedObjectNode.size())
-                   .allMatch(field -> areJsonNodesEquivalent(expectedObjectNode.get(field), actualObjectNode.get(field)));
+          .limit(expectedObjectNode.size())
+          .allMatch(field -> areJsonNodesEquivalent(expectedObjectNode.get(field), actualObjectNode.get(field)));
     } else {
       // Otherwise, we need to compare the actual values.
       // This is kind of sketchy, but seems to work fine for the data we have in our test cases.

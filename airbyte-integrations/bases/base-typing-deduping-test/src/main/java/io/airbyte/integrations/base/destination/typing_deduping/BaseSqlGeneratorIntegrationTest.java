@@ -832,19 +832,16 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
     final var v2RecordMap = v2RawRecords.stream().collect(Collectors.toMap(
         record -> record.get("_airbyte_raw_id").asText(),
-        Function.identity()
-    ));
+        Function.identity()));
     assertAll(
         () -> assertEquals(5, v1RawRecords.size()),
-        () -> assertEquals(5, v2RawRecords.size())
-    );
+        () -> assertEquals(5, v2RawRecords.size()));
     v1RawRecords.forEach(v1Record -> {
       final var v1id = v1Record.get("_airbyte_ab_id").asText();
       assertAll(
-        () -> assertEquals(v1id, v2RecordMap.get(v1id).get("_airbyte_raw_id").asText()),
-        () -> assertEquals(v1Record.get("_airbyte_emitted_at").asText(), v2RecordMap.get(v1id).get("_airbyte_extracted_at").asText()),
-        () -> assertNull(v2RecordMap.get(v1id).get("_airbyte_loaded_at"))
-      );
+          () -> assertEquals(v1id, v2RecordMap.get(v1id).get("_airbyte_raw_id").asText()),
+          () -> assertEquals(v1Record.get("_airbyte_emitted_at").asText(), v2RecordMap.get(v1id).get("_airbyte_extracted_at").asText()),
+          () -> assertNull(v2RecordMap.get(v1id).get("_airbyte_loaded_at")));
       final JsonNode originalData = Jsons.deserialize(v1Record.get("_airbyte_data").asText());
       JsonNode migratedData = v2RecordMap.get(v1id).get("_airbyte_data");
       if (migratedData.isTextual()) {
