@@ -209,8 +209,8 @@
       },
       "raw_data_dataset": {
         "type": "string",
-        "description": "(Early Access) The dataset to write raw tables into",
-        "title": "Destinations V2 Raw Table Dataset (Early Access)",
+        "description": "The dataset to write raw tables into",
+        "title": "Destinations V2 Raw Table Dataset",
         "order": 7
       }
     }
