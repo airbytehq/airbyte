@@ -116,7 +116,7 @@ The Facebook Marketing source connector supports the following sync modes:
 - [CustomConversions](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)
 - [CustomAudiences](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)
 :::caution CustomAudiences
-The `rule` field will not be synced because it caused the error message `Please reduce the amount of data...` for certain connections.
+The `rule` field may not be synced for all records because it caused the error message `Please reduce the amount of data...`.
 :::
 - [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 - [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
