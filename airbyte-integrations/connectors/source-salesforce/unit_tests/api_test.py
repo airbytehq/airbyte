@@ -282,16 +282,16 @@ def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stre
 
 
 @pytest.mark.parametrize(
-    "chunk_size, content_type, content, expected_result",
+    "chunk_size, content_type_header, content, expected_result",
     encoding_symbols_parameters(),
     ids=[f"charset: {x[1]}, chunk_size: {x[0]}" for x in encoding_symbols_parameters()],
 )
-def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type, content, expected_result):
+def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_header, content, expected_result):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", job_full_url_results, headers={"Content-Type": f"text/html; charset={content_type}"}, content=content)
+        m.register_uri("GET", job_full_url_results, headers=content_type_header, content=content)
         tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
         res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == expected_result

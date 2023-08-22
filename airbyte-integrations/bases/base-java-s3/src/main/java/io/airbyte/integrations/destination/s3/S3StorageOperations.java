@@ -156,7 +156,7 @@ public class S3StorageOperations extends BlobStorageOperations {
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String partId = getPartId(objectPath);
+    final String partId = UUID.randomUUID().toString();
     final String fileExtension = getExtension(recordsData.getFilename());
     final String fullObjectKey;
     if (StringUtils.isNotBlank(s3Config.getFileNamePattern())) {
@@ -228,17 +228,6 @@ public class S3StorageOperations extends BlobStorageOperations {
       return getExtension(filename.substring(0, filename.length() - 3)) + "." + GZ_FILE_EXTENSION;
     }
     return "." + result;
-  }
-
-  private String getPartId(final String objectPath) {
-    final String bucket = s3Config.getBucketName();
-    final ObjectListing objects = s3Client.listObjects(bucket, objectPath);
-    if (objects.isTruncated()) {
-      // bucket contains too many objects, use an uuid instead
-      return UUID.randomUUID().toString();
-    } else {
-      return Integer.toString(objects.getObjectSummaries().size());
-    }
   }
 
   @Override
