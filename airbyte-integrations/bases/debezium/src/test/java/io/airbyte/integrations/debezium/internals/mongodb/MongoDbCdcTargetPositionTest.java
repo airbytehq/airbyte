@@ -28,148 +28,148 @@ import org.junit.jupiter.api.Test;
 
 class MongoDbCdcTargetPositionTest {
 
-  private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
+    private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
-  @Test
-  void testCreateTargetPosition() {
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
+    @Test
+    void testCreateTargetPosition() {
+        final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+        final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+        final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+                mock(MongoChangeStreamCursor.class);
+        final MongoClient mongoClient = mock(MongoClient.class);
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+        when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+        when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+        when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
-    assertNotNull(targetPosition);
-    assertEquals(ResumeTokens.getTimestamp(resumeTokenDocument), targetPosition.getResumeTokenTimestamp());
-  }
+        final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+        assertNotNull(targetPosition);
+        assertEquals(ResumeTokens.getTimestamp(resumeTokenDocument), targetPosition.getResumeTokenTimestamp());
+    }
 
-  @Test
-  void testReachedTargetPosition() throws IOException {
-    final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
-    final ChangeEvent<String, String> changeEvent = mock(ChangeEvent.class);
+    @Test
+    void testReachedTargetPosition() throws IOException {
+        final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
+        final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+        final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+        final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+                mock(MongoChangeStreamCursor.class);
+        final MongoClient mongoClient = mock(MongoClient.class);
+        final ChangeEvent<String,String> changeEvent = mock(ChangeEvent.class);
 
-    when(changeEvent.value()).thenReturn(changeEventJson);
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+        when(changeEvent.value()).thenReturn(changeEventJson);
+        when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+        when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+        when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
-    assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
+        final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
+        final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+        assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
-    when(changeEvent.value()).thenReturn(changeEventJson.replaceAll("\"ts_ms\"\\: \\d+,", "\"ts_ms\": 1590221043000,"));
-    final ChangeEventWithMetadata changeEventWithMetadata2 = new ChangeEventWithMetadata(changeEvent);
-    assertFalse(targetPosition.reachedTargetPosition(changeEventWithMetadata2));
-  }
+        when(changeEvent.value()).thenReturn(changeEventJson.replaceAll("\"ts_ms\"\\: \\d+,", "\"ts_ms\": 1590221043000,"));
+        final ChangeEventWithMetadata changeEventWithMetadata2 = new ChangeEventWithMetadata(changeEvent);
+        assertFalse(targetPosition.reachedTargetPosition(changeEventWithMetadata2));
+    }
 
-  @Test
-  void testReachedTargetPositionSnapshotEvent() throws IOException {
-    final String changeEventJson = MoreResources.readResource("mongodb/change_event_snapshot.json");
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
-    final ChangeEvent<String, String> changeEvent = mock(ChangeEvent.class);
+    @Test
+    void testReachedTargetPositionSnapshotEvent() throws IOException {
+        final String changeEventJson = MoreResources.readResource("mongodb/change_event_snapshot.json");
+        final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+        final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+        final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+                mock(MongoChangeStreamCursor.class);
+        final MongoClient mongoClient = mock(MongoClient.class);
+        final ChangeEvent<String,String> changeEvent = mock(ChangeEvent.class);
 
-    when(changeEvent.value()).thenReturn(changeEventJson);
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+        when(changeEvent.value()).thenReturn(changeEventJson);
+        when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+        when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+        when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
-    assertFalse(targetPosition.reachedTargetPosition(changeEventWithMetadata));
-  }
+        final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
+        final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+        assertFalse(targetPosition.reachedTargetPosition(changeEventWithMetadata));
+    }
 
-  @Test
-  void testReachedTargetPositionSnapshotLastEvent() throws IOException {
-    final String changeEventJson = MoreResources.readResource("mongodb/change_event_snapshot_last.json");
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
-    final ChangeEvent<String, String> changeEvent = mock(ChangeEvent.class);
+    @Test
+    void testReachedTargetPositionSnapshotLastEvent() throws IOException {
+        final String changeEventJson = MoreResources.readResource("mongodb/change_event_snapshot_last.json");
+        final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+        final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+        final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+                mock(MongoChangeStreamCursor.class);
+        final MongoClient mongoClient = mock(MongoClient.class);
+        final ChangeEvent<String,String> changeEvent = mock(ChangeEvent.class);
 
-    when(changeEvent.value()).thenReturn(changeEventJson);
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+        when(changeEvent.value()).thenReturn(changeEventJson);
+        when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+        when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+        when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
-    assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
-  }
+        final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
+        final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+        assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
+    }
 
-  @Test
-  void testReachedTargetPositionFromHeartbeat() {
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
+    @Test
+    void testReachedTargetPositionFromHeartbeat() {
+        final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+        final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+        final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+                mock(MongoChangeStreamCursor.class);
+        final MongoClient mongoClient = mock(MongoClient.class);
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+        when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+        when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+        when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
-    final BsonTimestamp heartbeatTimestamp = new BsonTimestamp(
-        Long.valueOf(ResumeTokens.getTimestamp(resumeTokenDocument).getTime() + TimeUnit.HOURS.toSeconds(1)).intValue(),
-        0);
+        final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+        final BsonTimestamp heartbeatTimestamp = new BsonTimestamp(
+                Long.valueOf(ResumeTokens.getTimestamp(resumeTokenDocument).getTime() + TimeUnit.HOURS.toSeconds(1)).intValue(),
+                0);
 
-    assertTrue(targetPosition.reachedTargetPosition(heartbeatTimestamp));
-    assertFalse(targetPosition.reachedTargetPosition((BsonTimestamp) null));
-  }
+        assertTrue(targetPosition.reachedTargetPosition(heartbeatTimestamp));
+        assertFalse(targetPosition.reachedTargetPosition((BsonTimestamp)null));
+    }
 
-  @Test
-  void testIsHeartbeatSupported() {
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
+    @Test
+    void testIsHeartbeatSupported() {
+        final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+        final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+        final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+                mock(MongoChangeStreamCursor.class);
+        final MongoClient mongoClient = mock(MongoClient.class);
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+        when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+        when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+        when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+        final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
 
-    assertTrue(targetPosition.isHeartbeatSupported());
-  }
+        assertTrue(targetPosition.isHeartbeatSupported());
+    }
 
-  @Test
-  void testExtractPositionFromHeartbeatOffset() {
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final BsonTimestamp resumeTokenTimestamp = ResumeTokens.getTimestamp(resumeTokenDocument);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
+    @Test
+    void testExtractPositionFromHeartbeatOffset() {
+        final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+        final BsonTimestamp resumeTokenTimestamp = ResumeTokens.getTimestamp(resumeTokenDocument);
+        final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+        final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+                mock(MongoChangeStreamCursor.class);
+        final MongoClient mongoClient = mock(MongoClient.class);
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+        when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+        when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+        when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+        final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
 
-    final Map<String, ?> sourceOffset = Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS, resumeTokenTimestamp.getTime(),
-        MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, resumeTokenTimestamp.getInc(),
-        MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN, RESUME_TOKEN);
+        final Map<String, ?> sourceOffset = Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS, resumeTokenTimestamp.getTime(),
+                MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, resumeTokenTimestamp.getInc(),
+                MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN, RESUME_TOKEN);
 
-    final BsonTimestamp timestamp = targetPosition.extractPositionFromHeartbeatOffset(sourceOffset);
-    assertEquals(resumeTokenTimestamp, timestamp);
-  }
+        final BsonTimestamp timestamp = targetPosition.extractPositionFromHeartbeatOffset(sourceOffset);
+        assertEquals(resumeTokenTimestamp, timestamp);
+    }
 
 }
