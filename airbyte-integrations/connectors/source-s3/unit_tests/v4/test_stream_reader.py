@@ -146,6 +146,7 @@ def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_tok
     )
     list(reader.get_matching_files(["**"], None, logger))
     assert boto3_client_mock.return_value.list_objects_v2.call_count == 2
+    assert "ContinuationToken" in boto3_client_mock.return_value.list_objects_v2.call_args_list[1].kwargs
 
 
 def test_get_matching_files_exception():
