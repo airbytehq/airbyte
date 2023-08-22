@@ -7,7 +7,10 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Connecto
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
 
+from unittest import mock
+
 from .utils import command_check, url_strip_query
+from source_amazon_ads.schemas import Profile
 
 
 def setup_responses():
@@ -119,3 +122,30 @@ def test_source_streams(config):
         ]
     )
     assert not expected_stream_names - actual_stream_names
+
+def test_filter_profiles_exist():
+    source = SourceAmazonAds()
+    mock_config = {
+        "profiles": [222]
+    }
+    mock_obj = {
+        "profileId": 111,
+        "timezone": "gtm",
+        "accountInfo": {
+            "marketplaceStringId": "mkt_id",
+            "id": "111",
+            "type": "vendor"
+        }
+    }
+    mock_profile_1 = Profile.parse_obj(mock_obj)
+
+    mock_profiles = [
+        mock_profile_1,
+    ]
+    filtered_profiles = source._choose_profiles(mock_config, mock_profiles)
+    assert len(filtered_profiles) == 1
+    assert filtered_profiles[0].profileId == 111
+
+# profiles_in_config_but_doesnt_exist_in_response
+# marketplaceid 
+# marketplaceid + profile in config
