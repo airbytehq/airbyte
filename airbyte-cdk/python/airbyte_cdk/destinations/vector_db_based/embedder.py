@@ -56,7 +56,6 @@ class OpenAIEmbedder(Embedder):
         return OPEN_AI_VECTOR_SIZE
 
 
-
 COHERE_VECTOR_SIZE = 1024
 
 
