@@ -84,6 +84,8 @@ class DebeziumEventUtilsTest {
       return source.get("schema").asText();
     }
 
+    @Override
+    public String name(JsonNode source) { return source.get("table").asText(); }
   }
 
 }

@@ -49,6 +49,9 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Lo
     return source.get("schema").asText();
   }
 
+  @Override
+  public String name(JsonNode source) { return source.get("table").asText(); }
+
   private Long getCdcDefaultCursor() {
     return this.emittedAtConverted + this.recordCounter.getAndIncrement();
   }
