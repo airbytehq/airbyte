@@ -213,7 +213,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     }
     final String stringContents = node.isTextual() ? node.asText() : node.toString();
     // Use dollar quotes to avoid needing to escape anything
-    return StringUtils.wrap(stringContents, "$$");
+    return StringUtils.wrap(stringContents, "\\$\\$");
   }
 
   @Override
