@@ -155,7 +155,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     }
 
     @Override
-    protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+    protected void tearDown(TestDestinationEnv testEnv) throws Exception {
         final String deleteQuery = String.format(String.format(DELETE_DATABASE, SCHEMA_NAME));
         final String dropQuery = String.format(String.format(DROP_DATABASE, SCHEMA_NAME));
         try {
