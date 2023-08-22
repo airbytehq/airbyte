@@ -1,7 +1,10 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-yahoo-finance-price:dev
+connector_image: airbyte/source-serpstat:dev
 acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_serpstat/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -16,6 +19,8 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

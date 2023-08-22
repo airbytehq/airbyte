@@ -6,18 +6,18 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.2",
-    "requests-mock~=1.9.3",
     "pytest-mock~=3.6.1",
+    "connector-acceptance-test",
 ]
 
 setup(
-    name="source_yahoo_finance_price",
-    description="Source implementation for Yahoo Finance Price.",
+    name="source_serpstat",
+    description="Source implementation for Serpstat.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
