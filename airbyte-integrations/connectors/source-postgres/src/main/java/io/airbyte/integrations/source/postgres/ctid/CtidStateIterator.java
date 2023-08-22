@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.function.Function;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

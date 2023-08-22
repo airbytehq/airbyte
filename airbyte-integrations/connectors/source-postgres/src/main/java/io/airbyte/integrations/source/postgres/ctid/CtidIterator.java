@@ -19,7 +19,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.stream.Stream;
@@ -82,10 +81,7 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
   protected RowDataWithCtid computeNext() {
     try {
       if (subQueriesPlan.isEmpty() && currentIterator == null) {
-        final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
-        subQueriesPlan.addAll(ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0, 0) : Ctid.of(currentCtidStatus.getCtid()),
-            tableSize, blockSize, QUERY_TARGET_SIZE_GB));
-        lastKnownFileNode = currentCtidStatus != null ? currentCtidStatus.getRelationFilenode() : null;
+        initSubQueries();
       }
 
       if (currentIterator == null || !currentIterator.hasNext()) {
@@ -94,19 +90,7 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
           final Long latestFileNode = mayBeLatestFileNode.get();
           if (lastKnownFileNode != null) {
             if (!latestFileNode.equals(lastKnownFileNode)) {
-              LOGGER.warn(
-                  "The latest file node {} for stream {} is not equal to the last known file node {} known to Airbyte. Airbyte will sync this table from scratch again",
-                  latestFileNode,
-                  lastKnownFileNode,
-                  airbyteStream);
-              if (numberOfTimesReSynced > MAX_ALLOWED_RESYNCS) {
-                throw new RuntimeException("Airbyte has tried re-syncing stream " + airbyteStream + " more than " + MAX_ALLOWED_RESYNCS
-                    + " times but VACUUM is still happening in between the sync, Please reach out to the customer to understand their VACUUM frequency.");
-              }
-              subQueriesPlan.clear();
-              subQueriesPlan.addAll(ctidQueryPlan(Ctid.of(0, 0),
-                  tableSize, blockSize, QUERY_TARGET_SIZE_GB));
-              numberOfTimesReSynced++;
+              resetSubQueries(latestFileNode);
             } else {
               LOGGER.info("The latest file node {} for stream {} is equal to the last known file node {} known to Airbyte.",
                   latestFileNode,
@@ -125,13 +109,11 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
           return endOfData();
         }
 
-        final Stream<RowDataWithCtid> stream = database.unsafeQuery(
-            connection -> createCtidQueryStatement(connection, p.getLeft(), p.getRight()),
-            sourceOperations::recordWithCtid);
         if (currentIterator != null) {
           currentIterator.close();
         }
-        currentIterator = AutoCloseableIterators.fromStream(stream, airbyteStream);
+
+        currentIterator = AutoCloseableIterators.fromStream(getStream(p), airbyteStream);
       }
 
       if (currentIterator.hasNext()) {
@@ -143,6 +125,36 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private Stream<RowDataWithCtid> getStream(final Pair<Ctid, Ctid> p) throws SQLException {
+    return database.unsafeQuery(
+        connection -> createCtidQueryStatement(connection, p.getLeft(), p.getRight()),
+        sourceOperations::recordWithCtid);
+  }
+
+  private void initSubQueries() {
+    final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
+    subQueriesPlan.clear();
+    subQueriesPlan.addAll(ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0, 0) : Ctid.of(currentCtidStatus.getCtid()),
+        tableSize, blockSize, QUERY_TARGET_SIZE_GB));
+    lastKnownFileNode = currentCtidStatus != null ? currentCtidStatus.getRelationFilenode() : null;
+  }
+
+  private void resetSubQueries(final Long latestFileNode) {
+    LOGGER.warn(
+        "The latest file node {} for stream {} is not equal to the last known file node {} known to Airbyte. Airbyte will sync this table from scratch again",
+        latestFileNode,
+        lastKnownFileNode,
+        airbyteStream);
+    if (numberOfTimesReSynced > MAX_ALLOWED_RESYNCS) {
+      throw new RuntimeException("Airbyte has tried re-syncing stream " + airbyteStream + " more than " + MAX_ALLOWED_RESYNCS
+          + " times but VACUUM is still happening in between the sync, Please reach out to the customer to understand their VACUUM frequency.");
+    }
+    subQueriesPlan.clear();
+    subQueriesPlan.addAll(ctidQueryPlan(Ctid.of(0, 0),
+        tableSize, blockSize, QUERY_TARGET_SIZE_GB));
+    numberOfTimesReSynced++;
   }
 
   /**
