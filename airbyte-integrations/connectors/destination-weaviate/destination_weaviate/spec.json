@@ -19,12 +19,14 @@
       "url" : {
         "type" : "string",
         "description" : "The URL to the weaviate instance",
+        "title": "Instance URL",
         "examples" : [
           "http://localhost:8080",
           "https://your-instance.semi.network"
         ]
       },
       "username" : {
+        "title": "Username",
         "type" : "string",
         "description" : "Username used with OIDC authentication",
         "examples" : [
@@ -32,16 +34,19 @@
         ]
       },
       "password" : {
+        "title": "Password",
         "type" : "string",
         "description" : "Password used with OIDC authentication",
         "airbyte_secret" : true
       },
       "batch_size" : {
+        "title": "Batch Size",
         "type" : "integer",
         "description" : "Batch size for writing to Weaviate",
         "default" : 100
       },
       "vectors" : {
+        "title": "Vector fields",
         "type" : "string",
         "description" : "Comma separated list of strings of `stream_name.vector_column_name` to specify which field holds the vectors.",
         "examples" : [
