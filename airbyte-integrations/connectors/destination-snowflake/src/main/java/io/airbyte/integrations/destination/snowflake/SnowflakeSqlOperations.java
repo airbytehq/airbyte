@@ -39,11 +39,28 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+    try {
+      if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
+        if (use1s1t) {
+          // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
+          database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", schemaName));
+        } else {
+          database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
+        }
+        schemaSet.add(schemaName);
+      }
+    } catch (final Exception e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
+  }
+
+  @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     if (use1s1t) {
       return String.format(
           """
-              CREATE TABLE IF NOT EXISTS %s.%s (
+              CREATE TABLE IF NOT EXISTS "%s"."%s" (
                 "%s" VARCHAR PRIMARY KEY,
                 "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
                 "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
@@ -70,9 +87,31 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   @Override
   public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
     try (final Stream<JsonNode> results = database.unsafeQuery(SHOW_SCHEMAS)) {
-      return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
-    } catch (Exception e) {
+      if (use1s1t) {
+        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equals);
+      } else {
+        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
+      }
+    } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
+  }
+
+  @Override
+  public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+    if (use1s1t) {
+      return String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", schemaName, tableName);
+    } else {
+      return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
+    }
+  }
+
+  @Override
+  public String dropTableIfExistsQuery(final String schemaName, final String tableName) {
+    if (use1s1t) {
+      return String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";\n", schemaName, tableName);
+    } else {
+      return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
     }
   }
 
@@ -95,7 +134,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
       // Note that the column order is weird here - that's intentional, to avoid needing to change
       // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
       insertQuery = String.format(
-          "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+          "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
           schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     } else {
       insertQuery = String.format(
@@ -118,7 +157,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(Exception e) {
+  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(final Exception e) {
     if (e instanceof SnowflakeSQLException && e.getMessage().contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
       return Optional.of(new ConfigErrorException(
           "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",

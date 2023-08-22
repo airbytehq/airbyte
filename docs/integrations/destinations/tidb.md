@@ -6,13 +6,13 @@ This page guides you through the process of setting up the TiDB destination conn
 
 ## Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes |
-| :---------------------------- | :------------------- | :---- |
-| Full Refresh Sync             | Yes                  |       |
-| Incremental - Append Sync     | Yes                  |       |
-| Incremental - Deduped History | Yes                  |       |
-| Namespaces                    | Yes                  |       |
-| SSH Tunnel Connection         | Yes                  |       |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
+| SSH Tunnel Connection          | Yes                  |       |
 
 #### Output Schema
 
