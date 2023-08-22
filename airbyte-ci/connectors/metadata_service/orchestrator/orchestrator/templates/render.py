@@ -39,6 +39,15 @@ def test_badge_html(test_summary_url: str) -> str:
     return f'<a href="{report_url}" target="_blank">{icon_image}</a>'
 
 
+def internal_level_html(level_value: float) -> str:
+    level = level_value / 100
+
+    # remove trailing zeros
+    level = f"{level:.2f}".rstrip("0").rstrip(".")
+
+    return f"Level <b>{level}</b>"
+
+
 # Dataframe to HTML
 
 
