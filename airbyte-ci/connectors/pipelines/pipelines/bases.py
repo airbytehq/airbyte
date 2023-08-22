@@ -187,7 +187,7 @@ class Step(ABC):
     async def retry(self, step_result, *args, **kwargs) -> StepResult:
         self.retry_count += 1
         self.logger.warn(
-            f"Failed with error: {step_result.stderr}. Retry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
+            f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
         )
         await anyio.sleep(self.retry_delay.total_seconds())
         return await self.run(*args, **kwargs)
@@ -585,7 +585,7 @@ class ConnectorReport(Report):
             markdown_comment += f"☁️ [View runs for commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})\n\n"
 
         markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
-        markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/README.md) tool with the following command**\n"
+        markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool with the following command**\n"
         markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
         self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
 

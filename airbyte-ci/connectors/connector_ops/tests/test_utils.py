@@ -42,13 +42,13 @@ class TestConnector:
 
         if exists:
             assert isinstance(connector.metadata, dict)
-            assert isinstance(connector.release_stage, str)
+            assert isinstance(connector.support_level, str)
             assert isinstance(connector.acceptance_test_config, dict)
             assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.metadata['icon']}")
             assert len(connector.version.split(".")) == 3
         else:
             assert connector.metadata is None
-            assert connector.release_stage is None
+            assert connector.support_level is None
             assert connector.acceptance_test_config is None
             assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.name}.svg")
             with pytest.raises(FileNotFoundError):
@@ -98,6 +98,7 @@ def test_get_all_gradle_dependencies(with_test_dependencies):
     if with_test_dependencies:
         all_dependencies = utils.get_all_gradle_dependencies(build_file)
         expected_dependencies = [
+            Path("airbyte-cdk/java/airbyte-cdk"),
             Path("airbyte-db/db-lib"),
             Path("airbyte-json-validation"),
             Path("airbyte-config-oss/config-models-oss"),
@@ -120,6 +121,7 @@ def test_get_all_gradle_dependencies(with_test_dependencies):
     else:
         all_dependencies = utils.get_all_gradle_dependencies(build_file, with_test_dependencies=False)
         expected_dependencies = [
+            Path("airbyte-cdk/java/airbyte-cdk"),
             Path("airbyte-db/db-lib"),
             Path("airbyte-json-validation"),
             Path("airbyte-config-oss/config-models-oss"),

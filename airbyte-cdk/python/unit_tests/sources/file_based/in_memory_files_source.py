@@ -27,7 +27,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
 from avro import datafile
-from pydantic import AnyUrl, Field
+from pydantic import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -85,14 +85,15 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     def get_matching_files(
         self,
         globs: List[str],
+        prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        yield from AbstractFileBasedStreamReader.filter_files_by_globs([
+        yield from self.filter_files_by_globs_and_start_date([
             RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
             for f, data in self.files.items()
         ], globs)
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         if self.file_type == "csv":
             return self._make_csv_file_contents(file.uri)
         elif self.file_type == "jsonl":
@@ -138,22 +139,13 @@ class InMemorySpec(AbstractFileBasedSpec):
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
 
-    start_date: Optional[str] = Field(
-        title="Start Date",
-        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
-        examples=["2021-01-01T00:00:00Z"],
-        format="date-time",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        order=1,
-    )
-
 
 class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
     """
     A file reader that writes RemoteFiles to a temporary file and then reads them back.
     """
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         return io.BytesIO(self._create_file(file.uri))
 
     def _create_file(self, file_name: str) -> bytes:
@@ -174,7 +166,7 @@ class TemporaryAvroFilesStreamReader(InMemoryFilesStreamReader):
     A file reader that writes RemoteFiles to a temporary file and then reads them back.
     """
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         return io.BytesIO(self._make_file_contents(file.uri))
 
     def _make_file_contents(self, file_name: str) -> bytes:
