@@ -1,4 +1,4 @@
-# BigQuery Denormalized Migration Guide
+# BigQuery (denormalized typed struct) Migration Guide
 
 ## Upgrading to 2.0.0
 
