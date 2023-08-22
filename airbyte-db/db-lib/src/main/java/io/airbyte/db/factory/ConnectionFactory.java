@@ -10,6 +10,11 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * This class as been added in order to be able to save the connection in a test.
+ * It was found that the {@link javax.sql.DataSource} close method wasn't propagating the connection properly.
+ * It shouldn't be needed in our application code.
+ */
 public class ConnectionFactory {
 
   /**

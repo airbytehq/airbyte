@@ -126,8 +126,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   @Test
   public void testGetFileBufferDefault() {
     final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    assertEquals(destination.getNumberOfFileBuffers(config),
-            FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+    assertEquals(destination.getNumberOfFileBuffers(config), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   @Test
@@ -236,9 +235,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
       getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schema)));
     }
     getDatabase().query(ctx -> ctx.execute(String.format("drop user if exists %s;", USER_WITHOUT_CREDS)));
-    connection.setAutoCommit(false);
-    connection.commit();
-    connection.close();
+    RedshiftConnectionHandler.close(connection);
   }
 
   protected Database createDatabase() {

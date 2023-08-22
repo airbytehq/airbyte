@@ -219,9 +219,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         config -> {
           getDatabase().query(ctx -> ctx.fetch(String.format("DROP USER IF EXISTS %s;", USER_WITHOUT_CREDS)));
         });
-    connection.setAutoCommit(false);
-    connection.commit();
-    connection.close();
+    RedshiftConnectionHandler.close(connection);
   }
 
 }
