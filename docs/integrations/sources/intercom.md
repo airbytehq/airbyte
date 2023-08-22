@@ -1,49 +1,74 @@
 # Intercom
 
-This page guides you through the process of setting up the Intercom source connector.
+This page contains the setup guide and reference information for the Intercom source connector.
 
-## Set up the Intercom connector 
+## Prerequisites
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**. 
-3. On the Set up the source page, select **Intercom** from the Source type dropdown.
-4. Enter a name for your source.
-5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-6. For Airbyte Cloud, click **Authenticate your Intercom account** to sign in with Intercom and authorize your account. 
-   For Airbyte Open Source, enter your [Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token) to authenticate your account.
-7. Click **Set up source**.
+- Access to an Intercom account with the data you want to replicate
+
+## Setup guide
+
+<!-- env:oss -->
+
+### Obtain an Intercom access token (Airbyte Open Source)
+
+To authenticate the connector in **Airbyte Open Source**, you will need to obtain an access token. You can follow the setup steps below to create an Intercom app and generate the token. For more information on Intercom's authentication flow, refer to the [official documentation](https://developers.intercom.com/building-apps/docs/authentication-types).
+
+1. Log in to your Intercom account and navigate to the [Developer Hub](https://developers.intercom.com/).
+2. Click **Your apps** in the top-right corner, then click **New app**.
+3. Choose an **App name**, select your Workspace from the dropdown, and click **Create app**.
+4. To set the appropriate permissions, from the **Authentication** tab, click **Edit** in the top right corner and check the permissions you want to grant to the app. We recommend only granting **read** permissions (not **write**). Click **Save** when you are finished.
+5. Under the **Access token** header, you will be prompted to regenerate your access token. Follow the instructions to do so, and copy the new token.
+
+<!-- /env:oss -->
+
+### Set up the Intercom connector in Airbyte
+
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Intercom** from the list of available sources.
+4. Enter a **Source name** to help you identify this source.
+5. To authenticate:
+
+<!-- env:cloud -->
+- For **Airbyte Cloud**, click **Authenticate your Intercom account**. When the pop-up appears, select the appropriate workspace from the dropdown and click **Authorize access**.
+<!-- /env:cloud -->
+<!-- env:oss -->
+- For **Airbyte Open Source**, enter your access token to authenticate your account.
+<!-- /env:oss -->
+
+6. For **Start date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
+7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
 The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
- - Full Refresh
- - Incremental
+- Full Refresh
+- Incremental
 
-## Supported Streams
+## Supported streams
 
 The Intercom source connector supports the following streams:
 
-* [Admins](https://developers.intercom.com/intercom-api-reference/reference#list-admins) \(Full table\)
-* [Companies](https://developers.intercom.com/intercom-api-reference/reference#list-companies) \(Incremental\)
-  * [Company Segments](https://developers.intercom.com/intercom-api-reference/reference#list-attached-segments-1) \(Incremental\)
-* [Conversations](https://developers.intercom.com/intercom-api-reference/reference#list-conversations) \(Incremental\)
-  * [Conversation Parts](https://developers.intercom.com/intercom-api-reference/reference#get-a-single-conversation) \(Incremental\)
-* [Data Attributes](https://developers.intercom.com/intercom-api-reference/reference#data-attributes) \(Full table\)
-  * [Customer Attributes](https://developers.intercom.com/intercom-api-reference/reference#list-customer-data-attributes) \(Full table\)
-  * [Company Attributes](https://developers.intercom.com/intercom-api-reference/reference#list-company-data-attributes) \(Full table\)
-* [Contacts](https://developers.intercom.com/intercom-api-reference/reference#list-contacts) \(Incremental\)
-* [Segments](https://developers.intercom.com/intercom-api-reference/reference#list-segments) \(Incremental\)
-* [Tags](https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app) \(Full table\)
-* [Teams](https://developers.intercom.com/intercom-api-reference/reference#list-teams) \(Full table\)
-
+- [Admins](https://developers.intercom.com/intercom-api-reference/reference/listadmins) \(Full table\)
+- [Companies](https://developers.intercom.com/intercom-api-reference/reference/listallcompanies) \(Incremental\)
+  - [Company Segments](https://developers.intercom.com/intercom-api-reference/reference/listattachedsegmentsforcompanies) \(Incremental\)
+- [Conversations](https://developers.intercom.com/intercom-api-reference/reference/listconversations) \(Incremental\)
+  - [Conversation Parts](https://developers.intercom.com/intercom-api-reference/reference/retrieveconversation) \(Incremental\)
+- [Data Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
+  - [Customer Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
+  - [Company Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
+- [Contacts](https://developers.intercom.com/intercom-api-reference/reference/listcontacts) \(Incremental\)
+- [Segments](https://developers.intercom.com/intercom-api-reference/reference/listsegments) \(Incremental\)
+- [Tags](https://developers.intercom.com/intercom-api-reference/reference/listtags) \(Full table\)
+- [Teams](https://developers.intercom.com/intercom-api-reference/reference/listteams) \(Full table\)
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [requests limitation](https://developers.intercom.com/intercom-api-reference/reference#rate-limiting).
+The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/intercom-api-reference/reference/rate-limiting).
 
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
 
 ## Changelog
 
