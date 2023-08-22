@@ -104,15 +104,15 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
           LOGGER.warn("Airbyte could not query the latest file node for stream {}. Continuing sync as usual.", airbyteStream);
         }
 
-        final Pair<Ctid, Ctid> p = subQueriesPlan.poll();
-        if (p == null) {
-          return endOfData();
-        }
-
         if (currentIterator != null) {
           currentIterator.close();
         }
 
+        if (subQueriesPlan.isEmpty()) {
+          return endOfData();
+        }
+
+        final Pair<Ctid, Ctid> p = subQueriesPlan.remove();
         currentIterator = AutoCloseableIterators.fromStream(getStream(p), airbyteStream);
       }
 
