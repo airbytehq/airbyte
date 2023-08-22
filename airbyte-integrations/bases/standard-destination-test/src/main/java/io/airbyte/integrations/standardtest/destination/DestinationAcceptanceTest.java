@@ -334,10 +334,9 @@ public abstract class DestinationAcceptanceTest {
    * destination so that there is no contamination across tests.
    *
    * @param testEnv - information about the test environment.
-   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
+  protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
   /**
    * @deprecated This method is moved to the AdvancedTestDataComparator. Please move your destination
@@ -372,7 +371,7 @@ public abstract class DestinationAcceptanceTest {
 
   @AfterEach
   void tearDownInternal() throws Exception {
-    tearDown(testEnv, TEST_SCHEMAS);
+    tearDown(testEnv);
   }
 
   /**
