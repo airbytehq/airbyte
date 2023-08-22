@@ -337,7 +337,10 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Override
   protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
     final TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.rawTableId(BigQuerySqlGenerator.QUOTE)));
-    return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
+    return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result).stream().peek(record -> {
+      final JsonNode deserializedData = Jsons.deserializeExact(record.get("_airbyte_data").asText());
+      ((ObjectNode) record).set("_airbyte_data", deserializedData);
+    }).toList();
   }
 
   @Override
