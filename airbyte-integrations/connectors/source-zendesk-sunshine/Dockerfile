@@ -16,8 +16,6 @@ COPY --from=builder /install /usr/local
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
-# build a clean environment
-FROM base
 WORKDIR /airbyte/integration_code
 COPY main.py ./
 COPY source_zendesk_sunshine ./source_zendesk_sunshine
