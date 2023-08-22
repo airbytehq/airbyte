@@ -85,10 +85,11 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                    | Subject                           |
-|:--------|:-----------|:------------------------------------------------|:----------------------------------|
-| 0.1.4   | 2023-08-22 | https://github.com/airbytehq/airbyte/pull/29691 | Fixed https://github.com/airbytehq/airbyte/issues/27929 |
-| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/29468 | Enabled custom DBT transformation |
-| 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor           |
-| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                 |
-| 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage  |
+| Version | Date       | Pull Request                                                | Subject                                                                     |
+|:--------|:-----------|:------------------------------------------------------------|:----------------------------------------------------------------------------|
+| 0.1.4   | 2023-08-22 | [\#29691](https://github.com/airbytehq/airbyte/pull/29691)  | Fixed error of Parameter 2 length is 70437 bytes, which is greater than the maximum 64000 bytes [\#27929](https://github.com/airbytehq/airbyte/issues/27929)     |
+| 0.1.3   | 2023-08-17 | [\#29468](https://github.com/airbytehq/airbyte/pull/29468)  | Enabled custom DBT transformation                                           |
+| 0.1.2   | 2023-08-09 | [\#29174](https://github.com/airbytehq/airbyte/pull/29174)  | Small internal refactor                                                     |
+| 0.1.1   | 2023-03-03 | [\#21760](https://github.com/airbytehq/airbyte/pull/21760)  | Added SSL support                                                           |
+| 0.1.0   | 2022-12-13 | [\#20428](https://github.com/airbytehq/airbyte/pull/20428)  | New Destination Teradata Vantage                                            |
+
