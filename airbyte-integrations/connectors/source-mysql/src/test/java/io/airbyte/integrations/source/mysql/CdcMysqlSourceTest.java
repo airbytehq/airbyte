@@ -304,6 +304,47 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         "Expected 46 records to be replicated in the second sync.");
   }
 
+  /**
+   * This test verifies that multiple states are sent during the CDC process based on number of records.
+   * We can ensure that more than one `STATE` type of message is sent, but we are not able to assert
+   * the exact number of messages sent as depends on Debezium.
+   *
+   * @throws Exception Exception happening in the test.
+   */
+  @Test
+  protected void verifyCheckpointStatesByRecords() throws Exception {
+    // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
+    final int recordsToCreate = 20000;
+
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
+
+    // As first `read` operation is from snapshot, it would generate only one state message at the end
+    // of the process.
+    assertExpectedStateMessages(stateMessages);
+
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+                             .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                                 "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+    assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
+    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
+    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+  }
+
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
     assertExpectedStateMessages(stateMessages);
   }
