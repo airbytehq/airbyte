@@ -3,6 +3,12 @@
   "authUrlTemplate": "https://gitlab.com/oauth/authorize?client_id={{{ client_id }}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{{ state }}}&scope=read_api",
   "accessTokenUrlTemplate": "https://gitlab.com/oauth/token",
   "accessTokenBody": "client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}&grant_type=authorization_code&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}",
-  "accessTokenHeaders": {"content-type": "application/x-www-form-urlencoded"},
-  "accessTokenResponseMap": {"refresh_token": "/refresh_token"}
+  "accessTokenHeaders": {
+    "content-type": "application/x-www-form-urlencoded"
+  },
+  "accessTokenResponseMap": {
+    "access_token": "/access_token",
+    "refresh_token": "/refresh_token",
+    "token_expiry_date": "{{#now_plus}}{{ expires_in }}{{/now_plus}}"
+  }
 }

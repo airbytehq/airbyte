@@ -2,6 +2,9 @@
 {
   "properties": {
     "credentials": {
+      "discriminator": {
+        "propertyName": "auth_type"
+      },
       "oneOf": [
         {
           "x-oauth2-provider": "gitlab",
@@ -13,6 +16,7 @@
             },
             "auth_type": {
               "const": "oauth2.0",
+              "default": "oauth2.0",
               "type": "string"
             },
             "client_id": {
@@ -56,6 +60,7 @@
             },
             "auth_type": {
               "const": "access_token",
+              "default": "access_token",
               "type": "string"
             }
           },
