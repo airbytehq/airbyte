@@ -9,14 +9,13 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import org.codehaus.plexus.util.StringUtils;
-
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.codehaus.plexus.util.StringUtils;
 
 public class DebeziumPropertiesManager {
 
