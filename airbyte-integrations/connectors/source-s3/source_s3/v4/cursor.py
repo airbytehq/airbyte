@@ -5,9 +5,12 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, MutableMapping
 
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
+
+logger = logging.Logger("source-S3")
 
 
 class Cursor(DefaultFileBasedCursor):
@@ -15,6 +18,11 @@ class Cursor(DefaultFileBasedCursor):
     _LEGACY_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     _V4_MIGRATION_BUFFER = timedelta(hours=1)
     _V3_MIN_SYNC_DATE_FIELD = "v3_min_sync_date"
+
+    def __init__(self, stream_config: FileBasedStreamConfig, **_: Any):
+        super().__init__(stream_config)
+        self._running_migration = False
+        self._v3_migration_start_datetime = None
 
     def set_initial_state(self, value: StreamState) -> None:
         if self._is_legacy_state(value):
@@ -62,15 +70,17 @@ class Cursor(DefaultFileBasedCursor):
             return False
         try:
             # Verify datetime format in history
-            item = list(value.get("history", {}).keys())[0]
-            datetime.strptime(item, Cursor._DATE_FORMAT)
+            history = value.get("history", {}).keys()
+            if history:
+                item = list(value.get("history", {}).keys())[0]
+                datetime.strptime(item, Cursor._DATE_FORMAT)
 
             # verify the format of the last_modified cursor
             last_modified_at_cursor = value.get(DefaultFileBasedCursor.CURSOR_FIELD)
             if not last_modified_at_cursor:
                 return False
             datetime.strptime(last_modified_at_cursor, Cursor._LEGACY_DATE_TIME_FORMAT)
-        except (IndexError, ValueError):
+        except ValueError:
             return False
         return True
 
@@ -94,14 +104,19 @@ class Cursor(DefaultFileBasedCursor):
         }
         """
         converted_history = {}
+        legacy_cursor = legacy_state[DefaultFileBasedCursor.CURSOR_FIELD]
+        cursor_datetime = datetime.strptime(legacy_cursor, Cursor._LEGACY_DATE_TIME_FORMAT)
+        logger.info(f"Converting v3 -> v4 state. v3_cursor={legacy_cursor} v3_history={legacy_state.get('history')}")
 
-        cursor_datetime = datetime.strptime(legacy_state[DefaultFileBasedCursor.CURSOR_FIELD], Cursor._LEGACY_DATE_TIME_FORMAT)
         for date_str, filenames in legacy_state.get("history", {}).items():
             datetime_obj = Cursor._get_adjusted_date_timestamp(cursor_datetime, datetime.strptime(date_str, Cursor._DATE_FORMAT))
 
             for filename in filenames:
                 if filename in converted_history:
-                    if datetime_obj > datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT):
+                    if datetime_obj > datetime.strptime(
+                        converted_history[filename],
+                        DefaultFileBasedCursor.DATE_TIME_FORMAT,
+                    ):
                         converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
                     else:
                         # If the file was already synced with a later timestamp, ignore
@@ -112,10 +127,17 @@ class Cursor(DefaultFileBasedCursor):
         if converted_history:
             filename, _ = max(converted_history.items(), key=lambda x: (x[1], x[0]))
             cursor = f"{cursor_datetime}_{filename}"
-            v3_migration_start_datetime = cursor_datetime - Cursor._V4_MIGRATION_BUFFER
         else:
-            # If there is no history, _is_legacy_state should return False, so we should never get here
-            raise ValueError("No history found in state message. Please contact support.")
+            # Having a cursor with empty history is not expected, but we handle it.
+            logger.warning(f"Cursor found without a history object; this is not expected. cursor_value={legacy_cursor}")
+            # Note: we convert to the v4 cursor granularity, but since no items are in the history we simply use the
+            # timestamp as the cursor value instead of the concatenation of timestamp_filename, which is the v4
+            # cursor format.
+            # This is okay because the v4 cursor is kept for posterity but is not actually used in the v4 code. If we
+            # start to use the cursor we may need to revisit this logic.
+            cursor = cursor_datetime
+            converted_history = {}
+        v3_migration_start_datetime = cursor_datetime - Cursor._V4_MIGRATION_BUFFER
         return {
             "history": converted_history,
             DefaultFileBasedCursor.CURSOR_FIELD: cursor,

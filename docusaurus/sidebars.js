@@ -333,11 +333,6 @@ const deployAirbyte = {
     },
     {
       type: "doc",
-      label: "On Kubernetes using Kustomize",
-      id: "deploying-airbyte/on-kubernetes",
-    },
-    {
-      type: "doc",
       label: "On Kubernetes using Helm",
       id: "deploying-airbyte/on-kubernetes-via-helm",
     },
@@ -466,7 +461,7 @@ module.exports = {
     },
     {
       type: 'doc',
-      id: 'airbyte-pro',
+      id: 'airbyte-enterprise',
     },
     sectionHeader("Developer Guides"),
     {
@@ -523,6 +518,7 @@ module.exports = {
       },
       items: [
         "release_notes/upgrading_to_destinations_v2",
+        "release_notes/july_2023",
         "release_notes/june_2023",
         "release_notes/may_2023",
         "release_notes/april_2023",
