@@ -32,6 +32,11 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
+  public boolean isCdcCheckpointEnabled() {
+    return true;
+  }
+
+  @Override
   public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MYSQL_CDC_OFFSET, offset);
