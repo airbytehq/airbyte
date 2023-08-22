@@ -74,13 +74,7 @@ class SourceLinkedinAds(AbstractSource):
         self._validate_ad_analytics_reports(config)
         config["authenticator"] = self.get_authenticator(config)
         stream = Accounts(config)
-        # need to load the first item only
-        stream.records_limit = 1
-        try:
-            next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
-            return True, None
-        except Exception as e:
-            return False, e
+        return stream.check_availability(logger)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
