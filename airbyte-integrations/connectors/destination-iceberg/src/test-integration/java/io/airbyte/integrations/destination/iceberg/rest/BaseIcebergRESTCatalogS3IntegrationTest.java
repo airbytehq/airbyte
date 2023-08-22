@@ -9,6 +9,7 @@ import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.RESTServerWithMinioCompose;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import java.util.HashSet;
 import org.junit.jupiter.api.AfterAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
   private static RESTServerWithMinioCompose composeContainer;
   private static JsonNode config;
 
-  static void startCompose(DataFileFormat fileFormat) {
+  static void startCompose(final DataFileFormat fileFormat) {
     composeContainer = new RESTServerWithMinioCompose();
     composeContainer.start();
     config = composeContainer.getComposeConfig(fileFormat);
@@ -38,7 +39,7 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {}
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {}
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {}
@@ -59,10 +60,10 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-      String streamName,
-      String namespace,
-      JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
   }
