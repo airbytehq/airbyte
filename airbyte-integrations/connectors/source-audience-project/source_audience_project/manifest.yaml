@@ -1,49 +1,87 @@
 version: "0.29.0"
 
 definitions:
+  page_size: 50
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: []
+      field_path: [ "data" ]
 
   requester:
     type: HttpRequester
-    url_base: "https://example.com"
+    url_base: "https://campaign-api.audiencereport.com/"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
       header: "Authorization"
       api_token: "Bearer {{ config['credentials']['access_token'] }}"
+      #oauth_authenticator:
+      #  type: OAuth
+      #  token_refresh_endpoint: https://oauth.audiencereport.com/oauth/access_token
+      #  client_id: "{{ config['credentials']['client_id'] }}"
+      #  client_secret: "{{ config['credentials']['client_secret'] }}"
+      #bearer_authenticator:
+      #  type: ApiKeyAuthenticator
+      #  header: "Authorization"
+      #  api_token: " {{ config['credentials']['access_token'] }}}"
 
   retriever:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
+
     paginator:
-      type: NoPagination
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "maxResult"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+        stop_condition: "{{ headers.link.next.results != 'true' }}"
+
     requester:
       $ref: "#/definitions/requester"
+
+  paginator:
+    type: DefaultPaginator
+    page_size: "#/definitions/page_size"
+    limit_option:
+      inject_into: "request_parameter"
+      field_name: "start"
+    page_token_option:
+      type: RequestOption
+      inject_into: "request_parameter"
+      field_name: "maxResults"
 
   base_stream:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
 
-  customers_stream:
-    $ref: "#/definitions/base_stream"
-    name: "customers"
-    primary_key: "id"
+  campaigns_stream:
     $parameters:
-      path: "/example"
+      $ref: "#/definitions/base_stream"
+      name: "campaigns"
+      primary_key: "id"
+      # path: "views?gridId={{ config['grid_id'] }}"
+      type: CustomParseResponse
+      class_name: source_audience_project.components.Campaigns
+      path: "campaigns"
+
 
 streams:
-  - "#/definitions/customers_stream"
+  - "#/definitions/campaigns_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
+    - "campaigns"
 
 spec:
   type: Spec
