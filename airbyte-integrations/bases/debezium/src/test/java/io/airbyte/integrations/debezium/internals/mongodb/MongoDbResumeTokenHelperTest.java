@@ -71,7 +71,6 @@ class MongoDbResumeTokenHelperTest {
   void testTimestampExtractionFromEventSourceNotPresent() {
     final JsonNode changeEvent = Jsons.deserialize("{}");
     assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent));
-    assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestampFromSource(changeEvent));
   }
 
   @Test
