@@ -45,6 +45,7 @@ from source_github.streams import (
     Users,
     WorkflowJobs,
     WorkflowRuns,
+    ContributorComunityActivities
 )
 from source_github.utils import read_full_refresh
 
