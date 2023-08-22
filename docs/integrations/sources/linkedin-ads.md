@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the LinkedIn Ad
 
 ## Prerequisites
 
-- The LinkedIn Ads account with permission to access data from accounts you want to sync.
+- A LinkedIn Ads account with permission to access data from accounts you want to sync.
 
 ## Setup guide
 
