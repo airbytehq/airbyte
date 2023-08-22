@@ -10,10 +10,14 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
+from airbyte_cdk.v2.concurrency.stream_group import ConcurrentStreamGroup
+from airbyte_cdk.v2.concurrency.concurrent_utils import consume_async_iterable
+from airbyte_cdk.v2.concurrency.stream_group import StreamAndPartition
 
 STRIPE_ERROR_CODES: List = [
     # stream requires additional permissions
@@ -72,6 +76,12 @@ class StripeStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        print(f"read_records: {self.name}")
+        import traceback
+        print("traceback:")
+        traceback.print_exc()
+        print("^traceback")
+        exit()
         try:
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except requests.exceptions.HTTPError as e:
@@ -347,9 +357,21 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
     def get_parent_stream_instance(self):
         return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
 
+    async def generate_partitions(self, stream_state, concurrency_stream_group: ConcurrentStreamGroup) -> Iterable[PartitionDescriptor]:
+        print(f"generate_partitions for {self.name} with {concurrency_stream_group}")
+        parent_partitions = await self.get_parent_stream_instance().generate_partitions(stream_state, concurrency_stream_group)
+        print(f"parent_partitions: {parent_partitions}")
+        for parent_partition in parent_partitions:
+            parent_stream_and_partition = StreamAndPartition(stream=self.get_parent_stream_instance(), partition_descriptor=parent_partition)
+            partition_output = list(consume_async_iterable(concurrency_stream_group.read_partition(parent_stream_and_partition)))
+            print(f"partition_output: {partition_output}")
+        exit()
+        pass
+
     def stream_slices(
             self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        raise ValueError(f"stream_slices should not be called!")
         parent_stream = self.get_parent_stream_instance()
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:

@@ -50,10 +50,10 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
         # TODO
         return self._streams
 
-    async def _read_partition(self, partition_and_stream: StreamAndPartition[PartitionType]) -> AsyncIterable[AirbyteMessage]:
+    async def read_partition(self, partition_and_stream: StreamAndPartition[PartitionType]) -> AsyncIterable[AirbyteMessage]:
         partition_descriptor = partition_and_stream.partition_descriptor
         stream = partition_and_stream.stream
-        stream_state_manager = stream.state_manager
+        #stream_state_manager = stream.state_manager_class()
         # TODO parsing and error handling
         # TODO this likely needs to be an async for because request() should probably return an async iterable
         # print(f"partition_descriptor: {partition_descriptor}")
@@ -85,14 +85,14 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
 
                 # FIXME: This feels off. The requester should only produce record messages
                 # If there are other message types to be produced, they should be passed using the message repository
-                if message.type == MessageType.RECORD:
-                    if state_message := stream_state_manager.observe(message.record.data):
-                        pass
+                #if message.type == MessageType.RECORD:
+                    #if state_message := stream_state_manager.observe(message.record.data):
+                    #    pass
                         # In what scenario do we need up update the state mid-partition?
                         # imo this adds complexity
                         # yield self._to_state_message(state_message, stream)
 
-        yield self._to_state_message(stream_state_manager.notify_partition_complete(partition_descriptor), stream)
+        #yield self._to_state_message(stream_state_manager.notify_partition_complete(partition_descriptor), stream)
 
     @staticmethod
     def _to_state_message(state_message, stream):
@@ -111,7 +111,7 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
             async with semaphore:
                 # print(f'acquired semaphore: {semaphore._value}')
                 try:
-                    async for x in self._read_partition(partition_and_stream):
+                    async for x in self.read_partition(partition_and_stream):
                         await queue.put(x)  # Instead of yielding, put the result in the queue
                 except Exception as e:
                     await queue.put(e)  # If there was an error, put the error in the queue
@@ -142,15 +142,23 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
     def read_all(
         self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, source_state: Mapping[HashableStreamDescriptor, State]
     ) -> Iterable[AirbyteMessage]:
-        partition_descriptors = self.get_partition_descriptors(catalog=catalog, source_state=source_state)
+        #partition_descriptors = list(self.get_partition_descriptors(catalog=catalog, source_state=source_state))
+        loop = asyncio.get_event_loop()
+        partition_descriptors = list(consume_async_iterable(self.get_partition_descriptors(catalog=catalog, source_state=source_state)))
+        print(f"partition_descriptors: {partition_descriptors}")
+        exit()
         yield from consume_async_iterable(self._read_partitions_async(partition_descriptors))
 
-    def get_partition_descriptors(
+    async def get_partition_descriptors(
         self, catalog: ConfiguredAirbyteCatalog, source_state: Mapping[HashableStreamDescriptor, State]
-    ) -> Iterable[StreamAndPartition[PartitionType]]:
+    ) -> AsyncIterable[StreamAndPartition[PartitionType]]:
         # TODO allow getting the last partition from each stream's partitions so we can enable fast first-syncs
         # TODO allow round-robin getting one stream from each partition to enable "balanced" syncs
+        print(f"all streams: {self._streams}")
         for stream in self._streams:
             stream_state = None  # source_state.get(stream.get_stream_descriptor(), {})
-            for partition in stream.generate_partitions(stream_state=stream_state):
+            print(f"getting partitions for {stream}")
+            partitions = await stream.generate_partitions(stream_state=stream_state, concurrency_stream_group=self)
+            for partition in partitions:
+            #for partition in consume_async_iterable(stream.generate_partitions(stream_state=stream_state, concurrency_stream_group=self)):
                 yield StreamAndPartition(stream=stream, partition_descriptor=partition)

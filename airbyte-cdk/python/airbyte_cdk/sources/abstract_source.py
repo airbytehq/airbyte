@@ -105,22 +105,24 @@ class AbstractSource(Source, ABC):
         # get the streams once in case the connector needs to make any queries to generate them
         streams_to_sync = set([stream.stream.name for stream in catalog.streams])
         stream_instances = {s.name: s for s in self.streams(config) if s.name in streams_to_sync}
-        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
-        for stream in stream_instances.values():
-            # FIXME: Need to make this configurable...
-            stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
-            stream.state_manager = LegacyStateManager(stream, stream_state)
-
-        for s in stream_instances.values():
-            if s.stream_slices != Stream.stream_slices:
-                logger.warning(f"stream_slices is deprecated for {s.name}. Please use generate_partitions instead.")
-
+        print(f"streams_to_sync: {streams_to_sync}")
+        print(f"stream_instances: {stream_instances}")
         concurrency_factor = self.get_concurrency_factor()
         stream_group = ConcurrentStreamGroup(
             self.get_requester_constructor(stream_instances),
             ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
             streams=stream_instances.values(),
         )
+        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
+        for stream in stream_instances.values():
+            # FIXME: Need to make this configurable...
+            stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
+            stream.state_manager = LegacyStateManager(stream, stream_state, concurrency_stream_group=stream_group)
+
+        for s in stream_instances.values():
+            if s.stream_slices != Stream.stream_slices:
+                logger.warning(f"stream_slices is deprecated for {s.name}. Please use generate_partitions instead.")
+
         record_count = 0
         t0 = datetime.now()
         for record in stream_group.read_all({}, None, None):
@@ -310,6 +312,7 @@ class AbstractSource(Source, ABC):
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
+        # FIXME
         slices = stream_instance.generate_partitions()
         logger.debug(
             f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}

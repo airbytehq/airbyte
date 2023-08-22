@@ -210,7 +210,7 @@ class Stream(ABC):
           If the stream has no primary keys, return None.
         """
 
-    def generate_partitions(self, stream_state) -> Iterable[PartitionDescriptor]:
+    async def generate_partitions(self, stream_state, concurrency_stream_group) -> Iterable[PartitionDescriptor]:
         # FIXME: pass parameters to stream_slices
         return [PartitionDescriptor(metadata=stream_slice) for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh)]
 
