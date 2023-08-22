@@ -134,7 +134,12 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
         currentIterator = AutoCloseableIterators.fromStream(stream, airbyteStream);
       }
 
-      return currentIterator.next();
+      if (currentIterator.hasNext()) {
+        return currentIterator.next();
+      }
+
+      assert subQueriesPlan.isEmpty();
+      return endOfData();
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
