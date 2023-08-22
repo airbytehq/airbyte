@@ -214,6 +214,63 @@ allprojects {
     version = rootProject.ext.version
 }
 
+def getCDKTargetVersion() {
+    def props = new Properties()
+    file("airbyte-cdk/java/airbyte-cdk/src/main/resources/version.properties").withInputStream { props.load(it) }
+    return props.getProperty('version')
+}
+def getLatestFileModifiedTimeFromFiles(files) {
+    if (files.isEmpty()) {
+        return null
+    }
+    return files.findAll { it.isFile() }
+        .collect { it.lastModified() }
+        .max()
+}
+def checkCDKJarExists(requiredSnapshotVersion) {
+    if (requiredSnapshotVersion == null) {
+        // Connector does not require CDK snapshot.
+        return
+    }
+    final boolean checkFileChanges = true
+    final cdkTargetVersion = getCDKTargetVersion()
+    if (requiredSnapshotVersion != cdkTargetVersion) {
+        if (!cdkTargetVersion.contains("-SNAPSHOT")) {
+            throw new GradleException(
+                "CDK JAR version is not publishing snapshot but connector requires version ${requiredSnapshotVersion}.\n" +
+                "Please check that the version in the CDK properties file matches the connector build.gradle."
+            )
+        }
+        throw new GradleException(
+            "CDK JAR version ${cdkTargetVersion} does not match connector's required version ${requiredSnapshotVersion}.\n" +
+            "Please check that the version in the CDK properties file matches the connector build.gradle."
+        )
+    }
+
+    def cdkJar = file("${System.properties['user.home']}/.m2/repository/io/airbyte/airbyte-cdk/${cdkTargetVersion}/airbyte-cdk-${cdkTargetVersion}.jar")
+    if (!cdkJar.exists()) {
+        println("WARNING: CDK JAR does not exist at ${cdkJar.path}.\nPlease run './gradlew :airbyte-cdk:java:airbyte-cdk:build'.")
+    }
+    if (checkFileChanges) {
+        def latestJavaFileTimestamp = getLatestFileModifiedTimeFromFiles(file("${rootDir}/airbyte-cdk/java/airbyte-cdk/src").listFiles().findAll { it.isFile() })
+        if (cdkJar.lastModified() < latestJavaFileTimestamp) {
+            throw new GradleException("CDK JAR is out of date. Please run './gradlew :airbyte-cdk:java:airbyte-cdk:build'.")
+        }
+    }
+}
+def getCDKSnapshotRequirement(dependenciesList) {
+    def cdkSnapshotRequirement = dependenciesList.find {
+        it.requested instanceof ModuleComponentSelector &&
+        it.requested.group == 'io.airbyte' && 
+        it.requested.module == 'airbyte-cdk' && 
+        it.requested.version.endsWith('-SNAPSHOT')
+    }
+    if (cdkSnapshotRequirement == null) {
+        return null
+    } else {
+        return cdkSnapshotRequirement.requested.version
+    }
+}
 // Java projects common configurations
 subprojects { subproj ->
 
@@ -289,6 +346,23 @@ subprojects { subproj ->
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 
+    if (subproj.name.startsWith("source-") || subproj.name.startsWith("destination-")) {
+        // This is a Java connector project.
+
+        // Evaluate CDK project before evaluating the connector.
+        evaluationDependsOn(':airbyte-cdk:java:airbyte-cdk')
+
+        if (!gradle.startParameter.taskNames.any { it.contains(':airbyte-cdk:') } &&
+            gradle.startParameter.taskNames.any { it.contains(':source-') || it.contains(':destination-') }) {
+            // We are building a connector. Warn if the CDK JAR is missing or out of date.
+            final String cdkRelativePath = 'airbyte-cdk/java/airbyte-cdk'
+            afterEvaluate {
+                def cdkVersionNeeded = getCDKSnapshotRequirement(configurations.compileClasspath.incoming.resolutionResult.allDependencies)
+                checkCDKJarExists(cdkVersionNeeded)
+            }
+        }
+    }
+
     repositories {
         mavenCentral()
         maven {
@@ -297,6 +371,7 @@ subprojects { subproj ->
         maven {
             url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
         }
+        mavenLocal()
     }
 
     pmd {
