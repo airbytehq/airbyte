@@ -154,7 +154,9 @@
           {
             "title": "BigLake: Use GCP BigLake",
             "required": [
-              "catalog_type"
+              "catalog_type",
+              "gcp_location",
+              "gcp_project_id"
             ],
             "properties": {
               "catalog_type": {
@@ -166,7 +168,7 @@
                 ],
                 "order": 0
               },
-              "location": {
+              "gcp_location": {
                 "title": "GCS Bucket Location",
                 "type": "string",
                 "description": "The location where you want to create the BigLake Metastore instance.",
@@ -175,7 +177,7 @@
                 ],
                 "order": 1
               },
-              "project_id": {
+              "gcp_project_id": {
                 "title": "GCP Project ID",
                 "type": "string",
                 "description": "The project ID of the Google Cloud Platform project to use for requests. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
@@ -363,7 +365,6 @@
             "description": "Google Cloud Storage",
             "required": [
               "storage_type",
-              "gcs_project_id",
               "gcs_warehouse_uri"
             ],
             "properties": {
@@ -384,6 +385,15 @@
                   "gs://my-bucket/path/to/warehouse"
                 ],
                 "order": 1
+              },
+              "gcp_project_id": {
+                "title": "GCP Project ID",
+                "type": "string",
+                "description": "The project ID of the Google Cloud Platform project to use for requests. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
+                "examples": [
+                  "my-project"
+                ],
+                "order": 2
               }
             },
             "order": 1

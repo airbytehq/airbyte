@@ -16,10 +16,12 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.gcp.biglake.BigLakeCatalog;
 import org.jetbrains.annotations.NotNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author Leibniz on 2022/11/1.
+ * @author Thomas van Latum on 2023/06/13.
  */
+@Slf4j
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = false)
@@ -48,8 +50,7 @@ public class BigLakeCatalogConfig extends IcebergCatalogConfig {
     BigLakeCatalog catalog = new BigLakeCatalog();
     Map<String, String> properties = new HashMap<>(this.storageConfig.catalogInitializeProperties());
     properties.put("gcp_project", this.biglake_project_id);
-    properties.put("warehouse", this.storageConfig.getWarehouseUri());
-    properties.putAll(this.storageConfig.catalogInitializeProperties());
+    log.info("BigLake config for catalog: {}", properties);
     catalog.initialize(CATALOG_NAME, properties);
     return catalog;
   }

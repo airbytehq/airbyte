@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.iceberg.CatalogProperties;
 import com.google.common.collect.ImmutableMap;
 
-
 /**
  * @author Thomas van Latum on 2023/06/13.
  */
@@ -30,7 +29,7 @@ import com.google.common.collect.ImmutableMap;
 @Builder
 @AllArgsConstructor
 public class GCSConfig implements StorageConfig {
-  
+
   private static final String SCHEMA_SUFFIX = "://";
   /**
    * Lock
@@ -38,8 +37,8 @@ public class GCSConfig implements StorageConfig {
   private final Object lock = new Object();
 
   /**
-    * Properties from Destination Config
-    */
+   * Properties from Destination Config
+   */
   private final String warehouseUri;
   private final String bucketLocation;
   private final String projectId;
@@ -48,12 +47,12 @@ public class GCSConfig implements StorageConfig {
 
   public static GCSConfig fromDestinationConfig(@Nonnull final JsonNode config) {
     GCSConfigBuilder builder = new GCSConfigBuilder().bucketLocation(getProperty(config, GCP_LOCATION_CONFIG_KEY));
-    
+
     String warehouseUri = getProperty(config, GCS_WAREHOUSE_URI_CONFIG_KEY);
     if (isBlank(warehouseUri)) {
       throw new IllegalArgumentException("Warehouse URI cannot be blank");
     }
-    if (!warehouseUri.startsWith("gs://")){
+    if (!warehouseUri.startsWith("gs://")) {
       throw new IllegalArgumentException("Warehouse URI must start with gs://");
     }
     builder.warehouseUri(warehouseUri);
@@ -63,17 +62,13 @@ public class GCSConfig implements StorageConfig {
       throw new IllegalArgumentException("Project ID cannot be blank");
     }
 
-    return builder.build().setProperty();
+    return builder.build();
   }
 
-  private GCSConfig setProperty() {
-    System.setProperty("gcs.location", bucketLocation);
-    return this;
-  }
   private static String getProperty(@Nonnull final JsonNode config, @Nonnull final String key) {
     final JsonNode node = config.get(key);
     if (node == null) {
-    return null;
+      return null;
     }
     return node.asText();
   }
@@ -90,7 +85,7 @@ public class GCSConfig implements StorageConfig {
   private Storage resetGCSClient() {
     synchronized (lock) {
       if (gcsClient != null) {
-        //Investigate if this is necessary
+        // Investigate if this is necessary
       }
       gcsClient = createGCSClient();
       return gcsClient;
@@ -107,7 +102,7 @@ public class GCSConfig implements StorageConfig {
     String prefix = this.warehouseUri.replaceAll("^s3[an]?://.+?/(.+?)/?$", "$1/");
     String tempObjectName = prefix + "_airbyte_connection_test_" +
         UUID.randomUUID().toString().replaceAll("-", "");
-    String bucket = this.warehouseUri.replaceAll("^s3[an]?://(.+?)/.+$", "$1");
+    String bucket = this.warehouseUri.replaceAll("^gs://(.+?)/.+$", "$1");
 
     log.error(prefix);
     log.info(tempObjectName);
@@ -116,29 +111,21 @@ public class GCSConfig implements StorageConfig {
 
   }
 
-
   @Override
   public Map<String, String> sparkConfigMap(String catalogName) {
     Map<String, String> sparkConfig = new HashMap<>();
     sparkConfig.put("spark.sql.catalog." + catalogName + ".warehouse", this.warehouseUri);
     sparkConfig.put("spark.sql.catalog." + catalogName + ".gcp_location", this.bucketLocation);
+    sparkConfig.put("spark.hadoop.fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
     return sparkConfig;
   }
 
   @Override
   public Map<String, String> catalogInitializeProperties() {
-    return ImmutableMap.of();
+    Map<String, String> properties = new HashMap<>();
+    properties.put("io-impl", "org.apache.iceberg.gcp.gcs.GCSFileIO");
+    properties.put("warehouse", this.warehouseUri);
+    return properties;
   }
-
-  // @Override
-  // public Map<String, String> catalogInitializeProperties() {
-  //   Map<String, String> properties = new HashMap<>();
-  //   // properties.put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.aws.s3.S3FileIO");
-  //   // properties.put("s3.endpoint", this.endpointWithSchema);
-  //   // properties.put("s3.access-key-id", this.accessKeyId);
-  //   // properties.put("s3.secret-access-key", this.secretKey);
-  //   // properties.put("s3.path-style-access", String.valueOf(this.pathStyleAccess));
-  //   return properties;
-  // }
 
 }

@@ -26,6 +26,7 @@ import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
 import com.google.common.collect.ImmutableMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.iceberg.spark.SparkCatalog;
+import org.apache.iceberg.gcp.gcs.GCSFileIO;
 
 
 @Slf4j
@@ -68,5 +69,13 @@ class BigLakeCatalogConfigTest {
 
   }
 
+  @Test
+  public void gcsConfigForCatalogInitializeTest() {
+    Map<String, String> properties = config.getStorageConfig().catalogInitializeProperties();
+    log.info("GCS Config for BigLake Initialize: {}", properties);
+
+    assertThat(properties.get("io-impl")).isEqualTo(GCSFileIO.class.getName());
+
   }
 
+}

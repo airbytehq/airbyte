@@ -34,7 +34,9 @@ dependencies {
     implementation "software.amazon.awssdk:aws-core:2.20.18"
     
     implementation files('libs/biglake_biglake-catalog-iceberg1.2.0-0.1.0-with-dependencies.jar')
-    implementation "com.google.cloud:google-cloud-storage"
+    implementation "org.apache.iceberg:iceberg-gcp:1.3.0"
+    implementation "com.google.cloud:google-cloud-storage:2.26.1"
+    implementation "com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.17"
     
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
