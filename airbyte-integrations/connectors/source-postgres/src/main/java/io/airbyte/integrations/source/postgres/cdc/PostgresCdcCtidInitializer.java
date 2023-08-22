@@ -22,6 +22,7 @@ import io.airbyte.integrations.source.postgres.ctid.CtidGlobalStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
@@ -110,7 +111,7 @@ public class PostgresCdcCtidInitializer {
           : stateManager.getCdcStateManager().getCdcState();
       final CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
           savedOffsetAfterReplicationSlotLSN);
-      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = new ArrayList<>();
+      final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterator = new ArrayList<>();
       final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = new ArrayList<>();
       if (!ctidStreams.streamsForCtidSync().isEmpty()) {
         streamsUnderVacuum.addAll(streamsUnderVacuum(database,
@@ -123,10 +124,10 @@ public class PostgresCdcCtidInitializer {
                     .toList();
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
         LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
-        final ResultWithFailed<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
+        final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
             quoteString);
-        final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodes.result(), stateToBeUsed, catalog);
+        final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodeHandler, stateToBeUsed, catalog);
         final CtidPostgresSourceOperations ctidPostgresSourceOperations = new CtidPostgresSourceOperations(
             Optional.of(new CdcMetadataInjector(
                 emittedAt.toString(), io.airbyte.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
@@ -138,12 +139,12 @@ public class PostgresCdcCtidInitializer {
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database,
             ctidPostgresSourceOperations,
             quoteString,
-            fileNodes.result(),
+            fileNodeHandler,
             tableBlockSizes,
             ctidStateManager,
             namespacePair -> Jsons.emptyObject());
 
-        ctidIterator.addAll(ctidHandler.getIncrementalIterators(
+        initialSyncCtidIterator.addAll(ctidHandler.getInitialSyncCtidIterator(
             new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
       } else {
         LOGGER.info("No streams will be synced via ctid");
@@ -161,7 +162,7 @@ public class PostgresCdcCtidInitializer {
           emittedAt,
           false);
 
-      if (ctidIterator.isEmpty()) {
+      if (initialSyncCtidIterator.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
 
@@ -169,12 +170,12 @@ public class PostgresCdcCtidInitializer {
         // This starts processing the WAL as soon as initial sync is complete, this is a bit different from the current cdc syncs.
         // We finish the current CDC once the initial snapshot is complete and the next sync starts processing the WAL
         return Stream
-            .of(ctidIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
+            .of(initialSyncCtidIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
       } else {
         LOGGER.warn("Streams are under vacuuming, not going to process WAL");
-        return ctidIterator;
+        return initialSyncCtidIterator;
       }
 
     } catch (final SQLException e) {

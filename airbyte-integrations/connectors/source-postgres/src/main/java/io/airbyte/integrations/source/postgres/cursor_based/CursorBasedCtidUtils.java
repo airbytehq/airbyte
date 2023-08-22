@@ -97,7 +97,7 @@ public class CursorBasedCtidUtils {
    * @param categorisedStreams categorised streams
    * @param streamPair stream to reclassify
    */
-  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<CursorBasedStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<CursorBasedStreams> categorisedStreams, final AirbyteStreamNameNamespacePair streamPair) {
     final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
         .ctidStreams()
         .streamsForCtidSync().stream().filter(c -> Objects.equals(
@@ -124,7 +124,7 @@ public class CursorBasedCtidUtils {
     });
   }
 
-  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<CursorBasedStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<CursorBasedStreams> categorisedStreams, final List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
 }

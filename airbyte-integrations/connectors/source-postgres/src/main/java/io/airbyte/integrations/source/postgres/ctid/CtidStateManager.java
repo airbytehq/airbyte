@@ -24,10 +24,10 @@ public abstract class CtidStateManager {
 
   public static boolean validateRelationFileNode(final CtidStatus ctidstatus,
       final AirbyteStreamNameNamespacePair pair,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+      final FileNodeHandler fileNodeHandler) {
 
-    if (fileNodes.containsKey(pair)) {
-      final Long fileNode = fileNodes.get(pair);
+    if (fileNodeHandler.hasFileNode(pair)) {
+      final Long fileNode = fileNodeHandler.getFileNode(pair);
       return Objects.equals(ctidstatus.getRelationFilenode(), fileNode);
     }
     return true;

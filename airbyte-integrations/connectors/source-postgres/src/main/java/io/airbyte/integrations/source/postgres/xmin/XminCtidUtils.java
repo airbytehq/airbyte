@@ -104,7 +104,7 @@ public class XminCtidUtils {
 
   }
 
-  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<XminStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<XminStreams> categorisedStreams, final AirbyteStreamNameNamespacePair streamPair) {
     final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
         .ctidStreams()
         .streamsForCtidSync().stream().filter(c -> Objects.equals(
@@ -130,7 +130,7 @@ public class XminCtidUtils {
       categorisedStreams.ctidStreams().statesFromCtidSync().remove(m);
     });
   }
-  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<XminStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<XminStreams> categorisedStreams, final List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
 }

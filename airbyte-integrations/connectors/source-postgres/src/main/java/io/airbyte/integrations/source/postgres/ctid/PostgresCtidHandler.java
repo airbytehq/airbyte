@@ -4,10 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -17,32 +14,24 @@ import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.RowDataWithCtid;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
-import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +44,7 @@ public class PostgresCtidHandler {
   private final CtidPostgresSourceOperations sourceOperations;
   private final String quoteString;
   private final CtidStateManager ctidStateManager;
-  private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
+  private final FileNodeHandler fileNodeHandler;
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
@@ -64,7 +53,7 @@ public class PostgresCtidHandler {
                              final JdbcDatabase database,
                              final CtidPostgresSourceOperations sourceOperations,
                              final String quoteString,
-                             final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
+                             final FileNodeHandler fileNodeHandler,
                              final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes,
                              final CtidStateManager ctidStateManager,
                              final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
@@ -72,13 +61,13 @@ public class PostgresCtidHandler {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
-    this.fileNodes = fileNodes;
+    this.fileNodeHandler = fileNodeHandler;
     this.tableBlockSizes = tableBlockSizes;
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+  public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
                                                                              final Instant emmitedAt) {
@@ -127,7 +116,7 @@ public class PostgresCtidHandler {
                                                                 final long blockSize) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return new CtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize, fileNodes);
+    return new CtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize, fileNodeHandler);
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
@@ -169,14 +158,6 @@ public class PostgresCtidHandler {
     final JsonNode incrementalState =
         (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
             : currentCtidStatus.getIncrementalState();
-    /**
-     * We use a function and not the direct value cause the fileNodes Map can be updated by {@link CtidIterator} if it identifies a VACUUM in the middle of the sync.
-     */
-    final Function<AirbyteStreamNameNamespacePair, Long> latestFileNode = (p) -> {
-      final Long fileNode = fileNodes.get(p);
-      assert fileNode != null;
-      return fileNode;
-    };
     final Duration syncCheckpointDuration =
         config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
             : CtidStateIterator.SYNC_CHECKPOINT_DURATION;
@@ -184,7 +165,7 @@ public class PostgresCtidHandler {
         : CtidStateIterator.SYNC_CHECKPOINT_RECORDS;
 
     return AutoCloseableIterators.transformIterator(
-        r -> new CtidStateIterator(r, pair, latestFileNode, ctidStateManager, incrementalState,
+        r -> new CtidStateIterator(r, pair, fileNodeHandler, ctidStateManager, incrementalState,
             syncCheckpointDuration, syncCheckpointRecords),
         recordIterator, pair);
   }

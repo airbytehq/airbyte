@@ -1,6 +1,5 @@
 package io.airbyte.integrations.source.postgres.ctid;
 
-import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.fileNodeForStreams;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -9,6 +8,7 @@ import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.RowDataWithCtid;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
@@ -41,7 +41,7 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
   private final List<String> columnNames;
   private final CtidStateManager ctidStateManager;
   private final JdbcDatabase database;
-  private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
+  private final FileNodeHandler fileNodeHandler;
   private final String quoteString;
   private final String schemaName;
   private final CtidPostgresSourceOperations sourceOperations;
@@ -62,13 +62,13 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
       final String tableName,
       final long tableSize,
       final long blockSize,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+      final FileNodeHandler fileNodeHandler) {
     this.airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     this.blockSize = blockSize;
     this.columnNames = columnNames;
     this.ctidStateManager = ctidStateManager;
     this.database = database;
-    this.fileNodes = fileNodes;
+    this.fileNodeHandler = fileNodeHandler;
     this.quoteString = quoteString;
     this.schemaName = schemaName;
     this.sourceOperations = sourceOperations;
@@ -89,14 +89,14 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
       }
 
       if (currentIterator == null || !currentIterator.hasNext()) {
-        final Optional<Long> latestFileNode = fileNodeForStreams(database, airbyteStream, quoteString);
-        if (latestFileNode.isPresent()) {
-          final Long fileNode = latestFileNode.get();
+        final Optional<Long> mayBeLatestFileNode = PostgresQueryUtils.fileNodeForIndividualStream(database, airbyteStream, quoteString);
+        if (mayBeLatestFileNode.isPresent()) {
+          final Long latestFileNode = mayBeLatestFileNode.get();
           if (lastKnownFileNode != null) {
-            if (!fileNode.equals(lastKnownFileNode)) {
+            if (!latestFileNode.equals(lastKnownFileNode)) {
               LOGGER.warn(
                   "The latest file node {} for stream {} is not equal to the last known file node {} known to Airbyte. Airbyte will sync this table from scratch again",
-                  fileNode,
+                  latestFileNode,
                   lastKnownFileNode,
                   airbyteStream);
               if (numberOfTimesReSynced > MAX_ALLOWED_RESYNCS) {
@@ -106,16 +106,16 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
               subQueriesPlan.clear();
               subQueriesPlan.addAll(ctidQueryPlan(Ctid.of(0, 0),
                   tableSize, blockSize, QUERY_TARGET_SIZE_GB));
-              fileNodes.put(airbyteStream, fileNode);
               numberOfTimesReSynced++;
             } else {
               LOGGER.info("The latest file node {} for stream {} is equal to the last known file node {} known to Airbyte.",
-                  fileNode,
+                  latestFileNode,
                   lastKnownFileNode,
                   airbyteStream);
             }
           }
-          lastKnownFileNode = fileNode;
+          lastKnownFileNode = latestFileNode;
+          fileNodeHandler.updateFileNode(airbyteStream, latestFileNode);
         } else {
           LOGGER.warn("Airbyte could not query the latest file node for stream {}. Continuing sync as usual.", airbyteStream);
         }
