@@ -17,6 +17,7 @@ definitions:
     request_body_json:
       SERVICE: "{{ parameters.endpoint }}.get"
       LIMIT: 100
+      Content-Type: "application/json"
   retriever:
     type: SimpleRetriever
     record_selector:
