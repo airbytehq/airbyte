@@ -1,54 +1,97 @@
 {
     "properties": {
-      "transactions": {
-        "items": null,
-        "properties": {
-          "purchase_details": {
-            "fuel": null,
-            "properties": {
-              "fuel": {
+        "transactions": {
+            "items": {
                 "properties": {
-                  "type": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "unit": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "unit_cost_decimal": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "volume_decimal": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  }
-                },
-                "type": [
-                  "null",
-                  "object"
-                ]
-              }
-            },
-            "type": [
-              "object",
-              "null"
-            ]
-          }
-        },
-        "type": [
-          "null",
-          "array"
-        ]
-      }
+                    "purchase_details": {
+                        "fuel": null,
+                        "lodging": null,
+                        "receipt": null,
+                        "reference": null,
+                        "properties": {
+                            "flight": {
+                                "properties": {
+                                    "departure_at": {
+                                        "type": [
+                                            "null",
+                                            "integer"
+                                        ]
+                                    },
+                                    "passenger_name": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "refundable": {
+                                        "type": [
+                                            "null",
+                                            "boolean"
+                                        ]
+                                    },
+                                    "segments": {
+                                        "type": [
+                                            "null",
+                                            "array"
+                                        ]
+                                    },
+                                    "travel_agency": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    }
+                                },
+                                "travel_agency": null
+                            },
+                            "fuel": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ],
+                                "properties": {
+                                    "unit": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "unit_cost_decimal": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "volume_decimal": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    }
+                                }
+                            },
+                            "lodging": {
+                                "type": [
+                                    "null",
+                                    "object"
+                                ]
+                            },
+                            "receipt": {
+                                "type": [
+                                    "null",
+                                    "array"
+                                ]
+                            },
+                            "reference": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-  }
+}

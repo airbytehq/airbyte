@@ -1,20 +1,18 @@
 {
     "properties": {
-      "payment_method_details": {
-        "properties": {
-          "au_becs_debit": {
-            "additional_properties": null,
-            "additionalProperties": true
-          },
-          "bacs_debit": {
-            "additional_properties": null,
-            "additionalProperties": true
-          },
-          "sepa_debit": {
-            "additional_properties": null,
-            "additionalProperties": true
-          }
+        "payment_method_details": {
+            "properties": {
+                "au_becs_debit":{
+                    "additional_properties": null
+                },
+                "bacs_debit":{
+                    "additional_properties": null
+                },
+                "sepa_debit":{
+                    "additional_properties": null
+                }
+            }
         }
-      }
     }
-  }
+}
+

@@ -1,141 +1,103 @@
 {
     "properties": {
-      "amount_details": {
-        "properties": {
-          "atm_fee": {
-            "type": [
-              "null",
-              "integer"
-            ]
-          }
-        },
-        "type": [
-          "null",
-          "object"
-        ]
-      },
-      "purchase_details": {
-        "fuel": null,
-        "lodging": null,
-        "receipt": null,
-        "reference": null,
-        "properties": {
-          "reference": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "flight": {
-            "travel_agency": null,
+        "amount_details": {
             "properties": {
-              "travel_agency": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              }
-            },
-            "type": [
-              "object",
-              "null"
-            ]
-          },
-          "fuel": {
-            "properties": {
-              "type": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "unit": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "unit_cost_decimal": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "volume_decimal": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              }
-            },
-            "type": [
-              "null",
-              "object"
-            ]
-          },
-          "lodging": {
-            "properties": {
-              "check_in_at": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
-              },
-              "nights": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
-              }
-            },
-            "type": [
-              "null",
-              "object"
-            ]
-          },
-          "receipt": {
-            "items": {
-              "properties": {
-                "description": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
-                },
-                "quantity": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
-                },
-                "total": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
-                },
-                "unit_cost": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                "atm_fee": {
+                    "type": ["null", "integer"]
                 }
-              },
-              "type": [
+            },
+            "type": [
                 "null",
                 "object"
-              ]
-            },
-            "type": [
-              "null",
-              "array"
             ]
-          }
         },
-        "type": [
-          "null",
-          "object"
-        ]
-      }
+        "purchase_details": {
+            "fuel": null,
+            "lodging": null,
+            "receipt": null,
+            "reference": null,
+            "properties": {
+                "flight": {
+                    "properties": {
+                        "departure_at": {
+                            "type": [
+                                "null",
+                                "integer"
+                            ]
+                        },
+                        "passenger_name": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "refundable": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ]
+                        },
+                        "segments": {
+                            "type": [
+                                "null",
+                                "array"
+                            ]
+                        },
+                        "travel_agency": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    },
+                    "travel_agency": null
+                },
+                "fuel": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "properties": {
+                        "unit": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "unit_cost_decimal": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "volume_decimal": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "lodging": {
+                    "type": [
+                        "null",
+                        "object"
+                    ]
+                },
+                "receipt": {
+                    "type": [
+                        "null",
+                        "array"
+                    ]
+                },
+                "reference": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        }
     }
-  }
+}
+

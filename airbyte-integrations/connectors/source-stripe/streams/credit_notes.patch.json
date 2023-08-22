@@ -1,26 +1,22 @@
 {
     "properties": {
-      "lines": {
-        "has_more": null,
-        "url": null,
-        "properties": {
-          "has_more": {
-            "type": [
-              "null",
-              "boolean"
-            ]
-          },
-          "url": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        },
-        "type": [
-          "object",
-          "null"
-        ]
-      }
+        "lines": {
+            "properties": {
+                "has_more": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "url": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "has_more": null,
+            "url": null
+        }
     }
-  }
+}
