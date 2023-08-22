@@ -24,48 +24,47 @@ import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.junit.jupiter.api.Test;
 
-
 class MongoDbResumeTokenHelperTest {
 
-    @Test
-    void testRetrievingResumeToken() {
-        final String resumeToken = "8264BEB9F3000000012B0229296E04";
-        final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
-        final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
-        final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-                mock(MongoChangeStreamCursor.class);
-        final MongoClient mongoClient = mock(MongoClient.class);
+  @Test
+  void testRetrievingResumeToken() {
+    final String resumeToken = "8264BEB9F3000000012B0229296E04";
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
+    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
 
-        when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-        when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-        when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-        final BsonDocument actualResumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
-        assertEquals(resumeTokenDocument, actualResumeToken);
-    }
+    final BsonDocument actualResumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
+    assertEquals(resumeTokenDocument, actualResumeToken);
+  }
 
-    @Test
-    void testTimestampExtraction() throws IOException {
-        final int timestampSec = Long.valueOf(TimeUnit.MILLISECONDS.toSeconds(1692651270000L)).intValue();
-        final BsonTimestamp expectedTimestamp = new BsonTimestamp(timestampSec, 2);
-        final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
-        final JsonNode changeEvent = Jsons.deserialize(changeEventJson);
+  @Test
+  void testTimestampExtraction() throws IOException {
+    final int timestampSec = Long.valueOf(TimeUnit.MILLISECONDS.toSeconds(1692651270000L)).intValue();
+    final BsonTimestamp expectedTimestamp = new BsonTimestamp(timestampSec, 2);
+    final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
+    final JsonNode changeEvent = Jsons.deserialize(changeEventJson);
 
-        final BsonTimestamp timestamp = MongoDbResumeTokenHelper.extractTimestamp(changeEvent);
-        assertNotNull(timestamp);
-        assertEquals(expectedTimestamp, timestamp);
-    }
+    final BsonTimestamp timestamp = MongoDbResumeTokenHelper.extractTimestamp(changeEvent);
+    assertNotNull(timestamp);
+    assertEquals(expectedTimestamp, timestamp);
+  }
 
-    @Test
-    void testTimestampExtractionSourceNotPresent() {
-        final JsonNode changeEvent = Jsons.deserialize("{}");
-        assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestamp(changeEvent));
-    }
+  @Test
+  void testTimestampExtractionSourceNotPresent() {
+    final JsonNode changeEvent = Jsons.deserialize("{}");
+    assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestamp(changeEvent));
+  }
 
-    @Test
-    void testTimestampExtractionTimestampNotPresent() {
-        final JsonNode changeEvent = Jsons.deserialize("{\"source\":{}}");
-        assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestamp(changeEvent));
-    }
+  @Test
+  void testTimestampExtractionTimestampNotPresent() {
+    final JsonNode changeEvent = Jsons.deserialize("{\"source\":{}}");
+    assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestamp(changeEvent));
+  }
 
 }
