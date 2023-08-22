@@ -37,7 +37,7 @@ public class MongoDbDebeziumStateUtil {
    * @return The initial Debezium offset state storage document as a {@link JsonNode}.
    */
   public JsonNode constructInitialDebeziumState(final MongoClient mongoClient, final String database, final String replicaSet) {
-    final BsonDocument resumeToken = getResumeToken(mongoClient);
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
     final String resumeTokenData = ((BsonString) ResumeTokens.getData(resumeToken)).getValue();
     final BsonTimestamp timestamp = ResumeTokens.getTimestamp(resumeToken);
 
@@ -54,24 +54,6 @@ public class MongoDbDebeziumStateUtil {
     final JsonNode state = Jsons.jsonNode(Map.of(key, value));
     LOGGER.info("Initial Debezium state constructed: {}", state);
     return state;
-  }
-
-  /**
-   * Retrieves the most recent resume token from MongoDB server.
-   *
-   * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
-   * @return The most recent resume token value.
-   */
-  private BsonDocument getResumeToken(final MongoClient mongoClient) {
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(BsonDocument.class);
-    try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
-      /*
-       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
-       * the call to getResumeToken() will return null!
-       */
-      eventStreamCursor.tryNext();
-      return eventStreamCursor.getResumeToken();
-    }
   }
 
 }
