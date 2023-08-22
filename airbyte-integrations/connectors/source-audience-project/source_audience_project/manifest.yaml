@@ -1,0 +1,128 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  requester:
+    type: HttpRequester
+    url_base: "https://example.com"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "Authorization"
+      api_token: "Bearer {{ config['credentials']['access_token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  customers_stream:
+    $ref: "#/definitions/base_stream"
+    name: "customers"
+    primary_key: "id"
+    $parameters:
+      path: "/example"
+
+streams:
+  - "#/definitions/customers_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "customers"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/audience-project
+  connection_specification:
+    title: Audience Project Spec
+    type: object
+    required:
+      - credentials
+      - start_date
+    additionalProperties: true
+    properties:
+      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+      credentials:
+        title: Authentication Method
+        description: >-
+          Credentials for making authenticated requests requires either
+          client_id/client_secret or access_token.
+        order: 0
+        type: object
+        oneOf:
+          - title: Access token
+            type: object
+            properties:
+              type:
+                title: Access token is required for authentication requests.
+                const: access_token
+                type: string
+              access_token:
+                type: string
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+            required:
+              - type
+              - access_token
+          - title: OAuth
+            type: object
+            properties:
+              type:
+                title: OAuth configuration for setting up the authentication request, with credentials to establesh secure connection.
+                const: OAuth
+                type: string
+              client_id:
+                type: string
+                description: >-
+                  Add client_id for authentication.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: >-
+                  Add client_secret for authentication.
+                airbyte_secret: true
+            required:
+              - type
+              - client_id
+              - client_secret
+      start_date:
+        type: string
+        order: 1
+        description: >-
+          Date in the format YYYY-MM-DD eg. 2017-01-25. Any data before this date will not be replicated.
+        pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+      end_date:
+        type: string
+        order: 2
+        description: >-
+          Date in the format YYYY-MM-DD. If not specified default date is yesterday. Any data after this date will not be replicated.
+        pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+      campaign_status:
+        type: string
+        order: 3
+        description: >-
+          Returns campaigns with a given status.
+          Provided as a comma separated string without spaces.
+          Allowed values: deleted, active, archived, dirty.
+          Default value: active, dirty, archived.
+      date_flag:
+        type: boolean
+        order: 4
+        description: >-
+          Fetch data based on date range. By default it's False.
+      
