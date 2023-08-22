@@ -53,7 +53,7 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
     async def read_partition(self, partition_and_stream: StreamAndPartition[PartitionType]) -> AsyncIterable[AirbyteMessage]:
         partition_descriptor = partition_and_stream.partition_descriptor
         stream = partition_and_stream.stream
-        #stream_state_manager = stream.state_manager_class()
+        # stream_state_manager = stream.state_manager_class()
         # TODO parsing and error handling
         # TODO this likely needs to be an async for because request() should probably return an async iterable
         # print(f"partition_descriptor: {partition_descriptor}")
@@ -85,14 +85,14 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
 
                 # FIXME: This feels off. The requester should only produce record messages
                 # If there are other message types to be produced, they should be passed using the message repository
-                #if message.type == MessageType.RECORD:
-                    #if state_message := stream_state_manager.observe(message.record.data):
-                    #    pass
-                        # In what scenario do we need up update the state mid-partition?
-                        # imo this adds complexity
-                        # yield self._to_state_message(state_message, stream)
+                # if message.type == MessageType.RECORD:
+                # if state_message := stream_state_manager.observe(message.record.data):
+                #    pass
+                # In what scenario do we need up update the state mid-partition?
+                # imo this adds complexity
+                # yield self._to_state_message(state_message, stream)
 
-        #yield self._to_state_message(stream_state_manager.notify_partition_complete(partition_descriptor), stream)
+        # yield self._to_state_message(stream_state_manager.notify_partition_complete(partition_descriptor), stream)
 
     @staticmethod
     def _to_state_message(state_message, stream):
@@ -142,7 +142,7 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
     def read_all(
         self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, source_state: Mapping[HashableStreamDescriptor, State]
     ) -> Iterable[AirbyteMessage]:
-        #partition_descriptors = list(self.get_partition_descriptors(catalog=catalog, source_state=source_state))
+        # partition_descriptors = list(self.get_partition_descriptors(catalog=catalog, source_state=source_state))
         loop = asyncio.get_event_loop()
         partition_descriptors = list(consume_async_iterable(self.get_partition_descriptors(catalog=catalog, source_state=source_state)))
         print(f"partition_descriptors: {partition_descriptors}")
@@ -160,5 +160,5 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
             print(f"getting partitions for {stream}")
             partitions = await stream.generate_partitions(stream_state=stream_state, concurrency_stream_group=self)
             for partition in partitions:
-            #for partition in consume_async_iterable(stream.generate_partitions(stream_state=stream_state, concurrency_stream_group=self)):
+                # for partition in consume_async_iterable(stream.generate_partitions(stream_state=stream_state, concurrency_stream_group=self)):
                 yield StreamAndPartition(stream=stream, partition_descriptor=partition)

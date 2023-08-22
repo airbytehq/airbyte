@@ -10,14 +10,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
-from airbyte_cdk.v2.concurrency.stream_group import ConcurrentStreamGroup
 from airbyte_cdk.v2.concurrency.concurrent_utils import consume_async_iterable
-from airbyte_cdk.v2.concurrency.stream_group import StreamAndPartition
+from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
+from airbyte_cdk.v2.concurrency.stream_group import ConcurrentStreamGroup, StreamAndPartition
+from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
 
 STRIPE_ERROR_CODES: List = [
     # stream requires additional permissions
@@ -78,6 +77,7 @@ class StripeStream(HttpStream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         print(f"read_records: {self.name}")
         import traceback
+
         print("traceback:")
         traceback.print_exc()
         print("^traceback")
@@ -362,20 +362,23 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
         parent_partitions = await self.get_parent_stream_instance().generate_partitions(stream_state, concurrency_stream_group)
         print(f"parent_partitions: {parent_partitions}")
         for parent_partition in parent_partitions:
-            parent_stream_and_partition = StreamAndPartition(stream=self.get_parent_stream_instance(), partition_descriptor=parent_partition)
+            parent_stream_and_partition = StreamAndPartition(
+                stream=self.get_parent_stream_instance(), partition_descriptor=parent_partition
+            )
             partition_output = list(consume_async_iterable(concurrency_stream_group.read_partition(parent_stream_and_partition)))
             print(f"partition_output: {partition_output}")
         exit()
         pass
 
     def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         raise ValueError(f"stream_slices should not be called!")
         parent_stream = self.get_parent_stream_instance()
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:
             yield from parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
+
 
 class ApplicationFees(IncrementalStripeStream):
     """
@@ -397,7 +400,6 @@ class Invoices(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "invoices"
-
 
 
 class InvoiceItems(IncrementalStripeStream):
@@ -532,7 +534,6 @@ class PaymentMethods(StripeStream):
 
     def path(self, **kwargs):
         return "payment_methods"
-
 
 
 class CheckoutSessions(IncrementalStripeStream):
@@ -769,8 +770,6 @@ class FileLinks(IncrementalStripeStream):
 
     def path(self, **kwargs) -> str:
         return "file_links"
-
-
 
 
 class Transactions(IncrementalStripeStream):

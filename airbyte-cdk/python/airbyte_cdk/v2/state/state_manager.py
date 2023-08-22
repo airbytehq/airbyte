@@ -52,7 +52,7 @@ class DictState(State):
 class LegacyStateManager(StateManager[StateType, PartitionType]):
     def __init__(self, stream, stream_state, concurrency_stream_group):
         self._stream = stream
-        self._partitions = []#self._stream.generate_partitions(stream_state, concurrency_stream_group)
+        self._partitions = []  # self._stream.generate_partitions(stream_state, concurrency_stream_group)
         self._previous_state = stream_state
         self._latest_record = None
 
