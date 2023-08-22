@@ -9,6 +9,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.integrations.destination.teradata.util.JSONStruct;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,8 +52,8 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           LOGGER.info("jsonData: " + jsonData);
           LOGGER.info("emittedAt: " + emittedAt);
           pstmt.setString(1, uuid);
-          pstmt.setString(2, jsonData);
-          pstmt.setTimestamp(3, emittedAt);
+          pstmt.setObject (2, new JSONStruct("JSON",new Object[] {jsonData}));
+	  pstmt.setTimestamp(3, emittedAt);
           pstmt.addBatch();
 
         }
@@ -80,7 +81,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
     try {
       database.execute(String.format("CREATE DATABASE \"%s\" AS PERMANENT = 120e6, SPOOL = 120e6;", schemaName));
     } catch (final SQLException e) {
-      if (e.getMessage().contains("already exists")) {
+      if (e.getMessage() != null && e.getMessage().contains("already exists")) {	    
         LOGGER.warn("Database " + schemaName + " already exists.");
       } else {
         AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating schema ");
@@ -96,7 +97,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
     try {
       database.execute(createTableQuery(database, schemaName, tableName));
     } catch (final SQLException e) {
-      if (e.getMessage().contains("already exists")) {
+      if (e.getMessage() != null && e.getMessage().contains("already exists")) {
         LOGGER.warn("Table " + schemaName + "." + tableName + " already exists.");
       } else {
         AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating table ");
@@ -127,23 +128,11 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
 
   @Override
   public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    try {
       return String.format("DELETE %s.%s ALL;\n", schemaName, tableName);
-    } catch (final Exception e) {
-      AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
-          "Connector failed while truncating table " + schemaName + "." + tableName);
-    }
-    return "";
   }
 
   private String dropTableIfExistsQueryInternal(final String schemaName, final String tableName) {
-    try {
       return String.format("DROP TABLE  %s.%s;\n", schemaName, tableName);
-    } catch (final Exception e) {
-      AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
-          "Connector failed while dropping table " + schemaName + "." + tableName);
-    }
-    return "";
   }
 
   @Override
