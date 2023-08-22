@@ -54,8 +54,8 @@ public class BigQueryV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefin
   @Override
   protected NamespacedTableName convertToV1RawName(StreamConfig streamConfig) {
     return new NamespacedTableName(
-        this.nameTransformer.getRawTableName(streamConfig.id().originalName()),
-        this.nameTransformer.getNamespace(streamConfig.id().originalNamespace())
+        this.nameTransformer.getNamespace(streamConfig.id().originalNamespace()),
+        this.nameTransformer.getRawTableName(streamConfig.id().originalName())
     );
   }
 }

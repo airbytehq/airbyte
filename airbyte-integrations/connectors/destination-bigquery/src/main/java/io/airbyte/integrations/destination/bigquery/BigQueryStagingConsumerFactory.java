@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
@@ -154,11 +154,15 @@ public class BigQueryStagingConsumerFactory {
                                           final TyperDeduper typerDeduper) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        typerDeduper.prepareTables();
+      }
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
-            writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
+                    writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName()
+        );
         // In Destinations V2, we will always use the 'airbyte' schema/namespace for raw tables
-        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? AIRBYTE_NAMESPACE_SCHEMA : writeConfig.datasetId();
+        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? DEFAULT_AIRBYTE_INTERNAL_NAMESPACE : writeConfig.datasetId();
         // Regardless, ensure the schema the customer wants to write to exists
         bigQueryGcsOperations.createSchemaIfNotExists(writeConfig.datasetId(), writeConfig.datasetLocation());
         // Schema used for raw and airbyte internal tables
@@ -174,7 +178,6 @@ public class BigQueryStagingConsumerFactory {
           bigQueryGcsOperations.truncateTableIfExists(rawDatasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
         }
       }
-      typerDeduper.prepareTables();
       LOGGER.info("Preparing tables in destination completed.");
     };
   }
