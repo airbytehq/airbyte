@@ -275,10 +275,9 @@ class CsvParser(FileTypeParser):
                     except ValueError:
                         warnings.append(_format_warning(key, value, prop_type))
 
+                result[key] = cast_value
             else:
                 warnings.append(_format_warning(key, value, prop_type))
-
-            result[key] = cast_value
 
         if warnings:
             logger.warning(
