@@ -71,7 +71,7 @@
       "account_ids": {
         "title": "Account IDs",
         "type": "array",
-        "description": "Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all associated accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn docs</a> to locate these IDs.",
+        "description": "Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all accounts accessible by the authenticated user. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn docs</a> to locate these IDs.",
         "items": {
           "type": "integer"
         },
