@@ -61,10 +61,10 @@ def create_customer(headers, customer):
 def create_bank_account(headers, customer, bank_account_data):
     customer_id = customer["id"]
     customer_name = customer["name"]
-    bank_account_data["bank_account"]["account_holder_name"] = customer_name
+    bank_account_data["source"]["account_holder_name"] = customer_name
     print(f"bank_account:\n{bank_account_data}")
-    # url = f"https://api.stripe.com/v1/customers/{customer_id}/sources"
-    url = f"https://api.stripe.com/v1/tokens"
+    url = f"https://api.stripe.com/v1/customers/{customer_id}/sources"
+    #url = f"https://api.stripe.com/v1/tokens"
     return fetch(url, headers, bank_account_data)
 
 
@@ -93,7 +93,7 @@ def generate_records(path_to_config, path_to_data):
     with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
         for record in records:
             customer_data = record
-            bank_account_data = {"bank_account": customer_data.pop("bank_account")}
+            bank_account_data = customer_data.pop("bank_account")
             print(f"customer_data: {customer_data}")
             print(f"bank_account_data: {bank_account_data}")
             f = executor.submit(create_customer_and_bank_account, headers, customer_data, bank_account_data)
