@@ -66,6 +66,9 @@ public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefin
                     """
             )
         ));
+        LOGGER.info("Completed Data column Migration for stream {}", streamConfig.id().rawName());
+      } else {
+        LOGGER.info("No Data column Migration Required for stream {}", streamConfig.id().rawName());
       }
     }
   }
