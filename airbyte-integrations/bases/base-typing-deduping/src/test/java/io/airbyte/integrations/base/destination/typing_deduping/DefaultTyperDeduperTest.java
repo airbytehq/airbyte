@@ -7,6 +7,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.ignoreStubs;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -36,7 +37,7 @@ public class DefaultTyperDeduperTest {
     destinationHandler = mock(DestinationHandler.class);
     migrator = new NoOpDestinationV1V2Migrator<>();
 
-    ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
+    final ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
         new StreamConfig(
             new StreamId("overwrite_ns", "overwrite_stream", null, null, "overwrite_ns", "overwrite_stream"),
             null,
@@ -186,6 +187,19 @@ public class DefaultTyperDeduperTest {
   void nonexistentStream() {
     assertThrows(IllegalArgumentException.class,
         () -> typerDeduper.typeAndDedupe("nonexistent_ns", "nonexistent_stream"));
+    verifyNoInteractions(ignoreStubs(destinationHandler));
+  }
+
+  @Test
+  void failedSetup() throws Exception {
+    doThrow(new RuntimeException("foo")).when(destinationHandler).execute(any());
+
+    assertThrows(RuntimeException.class, () -> typerDeduper.prepareTables());
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
+    typerDeduper.commitFinalTables();
+
     verifyNoInteractions(ignoreStubs(destinationHandler));
   }
 
