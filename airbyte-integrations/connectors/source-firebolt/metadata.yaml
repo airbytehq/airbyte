@@ -21,4 +21,9 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Add new data type columns."
+        upgradeDeadline: "2023-08-23"
 metadataSpecVersion: "1.0"
