@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -39,6 +40,7 @@
     },
     "paymentMethodInfo": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "paymentInterface": {
           "type": ["null", "string"]
@@ -53,6 +55,7 @@
     },
     "paymentStatus": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "interfaceCode": {
           "type": ["null", "string"]
@@ -69,6 +72,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "id": {
             "type": ["null", "string"]
