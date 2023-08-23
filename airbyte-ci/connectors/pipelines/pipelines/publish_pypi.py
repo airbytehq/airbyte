@@ -33,7 +33,7 @@ class PublishPyPIConnector(Step):
 
             pypi_stdout = await (
                 self.context.dagger_client.container()
-                .from_("python:3.9-slim")
+                .from_("python:3.10-slim")
                 .with_exec(["apt-get", "update"])
                 .with_exec(["apt-get", "install", "-y", "twine"])
                 .with_directory("connector", (await self.context.get_connector_dir(exclude=["dist"])))
