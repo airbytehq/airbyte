@@ -11,12 +11,13 @@ from typing import Any, List, Optional
 import pinecone
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import AirbyteLogMessage, AirbyteMessage, DestinationSyncMode, Level, Type
-from destination_langchain.config import DocArrayHnswSearchIndexingModel, PineconeIndexingModel
+from destination_langchain.config import ChromaLocalIndexingModel, DocArrayHnswSearchIndexingModel, PineconeIndexingModel
 from destination_langchain.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from destination_langchain.embedder import Embedder
 from destination_langchain.measure_time import measure_time
 from destination_langchain.utils import format_exception
 from langchain.document_loaders.base import Document
+from langchain.vectorstores import Chroma
 from langchain.vectorstores.docarray import DocArrayHnswSearch
 
 
@@ -30,7 +31,7 @@ class Indexer(ABC):
         pass
 
     def post_sync(self) -> List[AirbyteMessage]:
-        pass
+        return []
 
     @abstractmethod
     def index(self, document_chunks: List[Document], delete_ids: List[str]):
@@ -68,16 +69,33 @@ class PineconeIndexer(Indexer):
         self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
+        index_description = pinecone.describe_index(self.config.index)
+        self._pod_type = index_description.pod_type
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self.pinecone_index.delete(filter={METADATA_STREAM_FIELD: stream.stream.name})
+                self._delete_vectors({METADATA_STREAM_FIELD: stream.stream.name})
 
     def post_sync(self):
         return [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.WARN, message=self.embed_fn._get_stats()))]
 
+    def _delete_vectors(self, filter):
+        if self._pod_type == "starter":
+            # Starter pod types have a maximum of 1000000 rows
+            top_k = 10000
+            self._delete_by_metadata(filter, top_k)
+        else:
+            self.pinecone_index.delete(filter=filter)
+
+    def _delete_by_metadata(self, filter, top_k):
+        zero_vector = [0.0] * self.embedder.embedding_dimensions
+        query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k)
+        vector_ids = [doc.id for doc in query_result.matches]
+        if len(vector_ids) > 0:
+            self.pinecone_index.delete(ids=vector_ids)
+
     def index(self, document_chunks, delete_ids):
         if len(delete_ids) > 0:
-            self.pinecone_index.delete(filter={METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
+            self._delete_vectors({METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
         embedding_vectors = self.embed_fn([chunk.page_content for chunk in document_chunks])
         pinecone_docs = []
         for i in range(len(document_chunks)):
@@ -94,7 +112,10 @@ class PineconeIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         try:
-            pinecone.describe_index(self.config.index)
+            description = pinecone.describe_index(self.config.index)
+            actual_dimension = int(description.dimension)
+            if actual_dimension != self.embedder.embedding_dimensions:
+                return f"Your embedding configuration will produce vectors with dimension {self.embedder.embedding_dimensions:d}, but your index is configured with dimension {actual_dimension:d}. Make sure embedding and indexing configurations match."
         except Exception as e:
             return format_exception(e)
         return None
@@ -137,6 +158,48 @@ class DocArrayHnswSearchIndexer(Indexer):
     def check(self) -> Optional[str]:
         try:
             self._init_vectorstore()
+        except Exception as e:
+            return format_exception(e)
+        return None
+
+
+class ChromaLocalIndexer(Indexer):
+    config: ChromaLocalIndexingModel
+
+    def __init__(self, config: ChromaLocalIndexingModel, embedder: Embedder):
+        super().__init__(config, embedder)
+
+    def _init_vectorstore(self):
+        self.vectorstore = Chroma(
+            collection_name=self.config.collection_name,
+            embedding_function=self.embedder.langchain_embeddings,
+            persist_directory=self.config.destination_path,
+        )
+
+    def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
+        self._init_vectorstore()
+        for stream in catalog.streams:
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                self.vectorstore._collection.delete(where={METADATA_STREAM_FIELD: {"$eq": stream.stream.name}})
+
+    def index(self, document_chunks, delete_ids):
+        for delete_in in delete_ids:
+            self.vectorstore._collection.delete(where={METADATA_RECORD_ID_FIELD: {"$eq": delete_in}})
+        for chunk in document_chunks:
+            self._normalize_metadata(chunk)
+        self.vectorstore.add_documents(document_chunks)
+
+    def _normalize_metadata(self, document: Document):
+        for key, value in document.metadata.items():
+            # check bool separately because isinstance(True, int) == True
+            if not isinstance(value, (str, float, int)) or isinstance(value, bool):
+                document.metadata[key] = str(value)
+
+    def check(self) -> Optional[str]:
+        try:
+            self._init_vectorstore()
+            # try reading collections to make sure it works
+            self.vectorstore._client.list_collections()
         except Exception as e:
             return format_exception(e)
         return None

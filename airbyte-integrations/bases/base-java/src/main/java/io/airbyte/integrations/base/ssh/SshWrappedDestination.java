@@ -11,6 +11,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -79,7 +80,7 @@ public class SshWrappedDestination implements Destination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final SshTunnel tunnel = (endPointKey != null) ? SshTunnel.getInstance(config, endPointKey) : SshTunnel.getInstance(config, hostKey, portKey);
+    final SshTunnel tunnel = getTunnelInstance(config);
 
     final AirbyteMessageConsumer delegateConsumer;
     try {
@@ -90,6 +91,29 @@ public class SshWrappedDestination implements Destination {
       throw e;
     }
     return AirbyteMessageConsumer.appendOnClose(delegateConsumer, tunnel::close);
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    final SshTunnel tunnel = getTunnelInstance(config);
+    final SerializedAirbyteMessageConsumer delegateConsumer;
+    try {
+      delegateConsumer = delegate.getSerializedMessageConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector);
+    } catch (final Exception e) {
+      LOGGER.error("Exception occurred while getting the delegate consumer, closing SSH tunnel", e);
+      tunnel.close();
+      throw e;
+    }
+    return SerializedAirbyteMessageConsumer.appendOnClose(delegateConsumer, tunnel::close);
+  }
+
+  protected SshTunnel getTunnelInstance(final JsonNode config) throws Exception {
+    return (endPointKey != null)
+        ? SshTunnel.getInstance(config, endPointKey)
+        : SshTunnel.getInstance(config, hostKey, portKey);
   }
 
 }

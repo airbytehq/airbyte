@@ -17,7 +17,7 @@ definitions:
     description: Enum to define the sync mode of state.
     type: string
     enum:
-      - cursorBased
+      - cursor_based
       - xmin
       - ctid
   CursorBasedStatus:

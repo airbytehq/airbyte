@@ -7,12 +7,15 @@ from dataclasses import dataclass, field
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.file_based.availability_strategy.abstract_file_based_availability_strategy import (
+    AbstractFileBasedAvailabilityStrategy,
+)
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_MAX_HISTORY_SIZE, default_parsers
+from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 
 
@@ -32,9 +35,9 @@ class TestScenario:
             expected_spec: Optional[Mapping[str, Any]],
             expected_check_status: Optional[str],
             expected_catalog: Optional[Mapping[str, Any]],
-            expected_logs: Optional[Mapping[str, Mapping[str, Any]]],
+            expected_logs: Optional[Mapping[str, List[Mapping[str, Any]]]],
             expected_records: List[Mapping[str, Any]],
-            availability_strategy: Optional[AvailabilityStrategy],
+            availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
             validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
             parsers: Mapping[str, FileTypeParser],
@@ -44,7 +47,7 @@ class TestScenario:
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
             incremental_scenario_config: Optional[IncrementalScenarioConfig],
             file_write_options: Mapping[str, Any],
-            max_history_size: int,
+            cursor_cls: Optional[Type[AbstractFileBasedCursor]],
     ):
         self.name = name
         self.config = config
@@ -56,7 +59,6 @@ class TestScenario:
         self.expected_check_error = expected_check_error
         self.expected_discover_error = expected_discover_error
         self.expected_read_error = expected_read_error
-        self.expected_logs = expected_logs
         self.source = InMemoryFilesSource(
             files,
             file_type,
@@ -67,7 +69,7 @@ class TestScenario:
             stream_reader,
             self.configured_catalog(SyncMode.incremental if incremental_scenario_config else SyncMode.full_refresh),
             file_write_options,
-            max_history_size,
+            cursor_cls,
         )
         self.incremental_scenario_config = incremental_scenario_config
         self.validate()
@@ -113,7 +115,7 @@ class TestScenarioBuilder:
         self._expected_catalog: Mapping[str, Any] = {}
         self._expected_logs: Optional[Mapping[str, Any]] = None
         self._expected_records: List[Mapping[str, Any]] = []
-        self._availability_strategy: Optional[AvailabilityStrategy] = None
+        self._availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None
         self._discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy()
         self._validation_policies: Optional[Mapping[str, AbstractSchemaValidationPolicy]] = None
         self._parsers = default_parsers
@@ -123,7 +125,7 @@ class TestScenarioBuilder:
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
         self._file_write_options: Mapping[str, Any] = {}
-        self._max_history_size = DEFAULT_MAX_HISTORY_SIZE
+        self._cursor_cls: Optional[Type[AbstractFileBasedCursor]] = None
 
     def set_name(self, name: str) -> "TestScenarioBuilder":
         self._name = name
@@ -165,7 +167,7 @@ class TestScenarioBuilder:
         self._parsers = parsers
         return self
 
-    def set_availability_strategy(self, availability_strategy: AvailabilityStrategy) -> "TestScenarioBuilder":
+    def set_availability_strategy(self, availability_strategy: AbstractFileBasedAvailabilityStrategy) -> "TestScenarioBuilder":
         self._availability_strategy = availability_strategy
         return self
 
@@ -181,8 +183,8 @@ class TestScenarioBuilder:
         self._stream_reader = stream_reader
         return self
 
-    def set_max_history_size(self, max_history_size: int) -> "TestScenarioBuilder":
-        self._max_history_size = max_history_size
+    def set_cursor_cls(self, cursor_cls: AbstractFileBasedCursor) -> "TestScenarioBuilder":
+        self._cursor_cls = cursor_cls
         return self
 
     def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder":
@@ -231,5 +233,5 @@ class TestScenarioBuilder:
             self._expected_read_error,
             self._incremental_scenario_config,
             self._file_write_options,
-            self._max_history_size,
+            self._cursor_cls,
         )

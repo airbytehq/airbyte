@@ -4,22 +4,17 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.ParsedCatalog;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class CatalogParserTest {
@@ -39,28 +34,10 @@ class CatalogParserTest {
       String namespace = invocation.getArgument(0);
       String name = invocation.getArgument(1);
       String rawNamespace = invocation.getArgument(1);
-      return new StreamId(namespace, name, rawNamespace, namespace + "_" + name, namespace, name);
+      return new StreamId(namespace, name, rawNamespace, namespace + "_abab_" + name, namespace, name);
     });
 
     parser = new CatalogParser(sqlGenerator);
-  }
-
-  /**
-   * Both these streams want the same raw table name ("a_b_c"). Verify that they don't actually use
-   * the same raw table.
-   */
-  @Disabled("This feature is not yet supported; see https://github.com/airbytehq/airbyte/issues/27798")
-  @Test
-  public void rawNameCollision() {
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        stream("a", "b_c"),
-        stream("a_b", "c")));
-
-    final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
-
-    assertNotEquals(
-        parsedCatalog.streams().get(0).id().rawName(),
-        parsedCatalog.streams().get(1).id().rawName());
   }
 
   /**
@@ -76,7 +53,8 @@ class CatalogParserTest {
 
       // emulate quoting logic that causes a name collision
       String quotedName = originalName.replaceAll("bar", "");
-      return new StreamId(originalNamespace, quotedName, originalRawNamespace, originalNamespace + "_" + quotedName, originalNamespace, originalName);
+      return new StreamId(originalNamespace, quotedName, originalRawNamespace, originalNamespace + "_abab_" + quotedName, originalNamespace,
+          originalName);
     });
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         stream("a", "foobarfoo"),

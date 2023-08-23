@@ -111,7 +111,7 @@ def test_chunk_date_range_without_end_date():
     start_date_str = "2022-01-24"
     conversion_window = 0
     slices = list(chunk_date_range(
-        start_date=start_date_str, conversion_window=conversion_window, end_date=None, days_of_data_storage=None, range_days=1
+        start_date=start_date_str, conversion_window=conversion_window, end_date=None, days_of_data_storage=None, range_days=1, time_zone="UTC"
     ))
     expected_response = [
         {"start_date": "2022-01-24", "end_date": "2022-01-24"},
@@ -120,6 +120,7 @@ def test_chunk_date_range_without_end_date():
         {"start_date": "2022-01-27", "end_date": "2022-01-27"},
         {"start_date": "2022-01-28", "end_date": "2022-01-28"},
         {"start_date": "2022-01-29", "end_date": "2022-01-29"},
+        {"start_date": "2022-01-30", "end_date": "2022-01-30"},
     ]
     assert expected_response == slices
 
@@ -128,7 +129,7 @@ def test_chunk_date_range():
     start_date = "2021-03-04"
     end_date = "2021-05-04"
     conversion_window = 14
-    slices = list(chunk_date_range(start_date, conversion_window, end_date, range_days=10))
+    slices = list(chunk_date_range(start_date, conversion_window, end_date, range_days=10, time_zone="UTC"))
     assert [
         {"start_date": "2021-02-18", "end_date": "2021-02-27"},
         {"start_date": "2021-02-28", "end_date": "2021-03-09"},

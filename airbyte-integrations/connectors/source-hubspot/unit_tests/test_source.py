@@ -63,6 +63,16 @@ def test_check_connection_exception(config):
     assert error_msg
 
 
+def test_check_connection_bad_request_exception(requests_mock, config_invalid_client_id):
+    responses = [
+        {"json": {"message": "invalid client_id"}, "status_code": 400},
+    ]
+    requests_mock.register_uri("POST", "/oauth/v1/token", responses)
+    ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_client_id)
+    assert not ok
+    assert error_msg
+
+
 def test_check_connection_invalid_start_date_exception(config_invalid_date):
     with pytest.raises(InvalidStartDateConfigError):
         ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_date)
@@ -75,7 +85,7 @@ def test_streams(requests_mock, config):
 
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 28
+    assert len(streams) == 30
 
 
 def test_check_credential_title_exception(config):
@@ -171,6 +181,7 @@ def test_stream_forbidden(requests_mock, config, caplog):
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
     assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
     records = [r for r in records if r.type == Type.RECORD]
     assert not records
 
@@ -211,6 +222,7 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
     assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
     records = [r for r in records if r.type == Type.RECORD]
     assert not records
 

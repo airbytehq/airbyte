@@ -13,17 +13,18 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 **For Airbyte Open Source** users we recommend Private App authentication.
 
-More information on HubSpot authentication methods can be found 
+More information on HubSpot authentication methods can be found
 [here](https://developers.hubspot.com/docs/api/intro-to-auth).
 
 ### Step 1: Set up the authentication method
 
 #### Private App setup (Recommended for Airbyte Open Source)
 
-If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the 
+If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the
 [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
 
 <!-- env:oss -->
+
 #### OAuth setup for Airbyte Open Source (Not recommended)
 
 If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
@@ -36,7 +37,7 @@ If you are using Oauth to authenticate on Airbyte Open Source, please refer to [
 
 ### Step 2: Configure the scopes for your streams
 
-Next, you need to configure the appropriate scopes for the following streams. Please refer to 
+Next, you need to configure the appropriate scopes for the following streams. Please refer to
 [Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
 
 | Stream                      | Required Scope                                                                                               |
@@ -73,20 +74,24 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 4. From the **Authentication** dropdown, select your chosen authentication method:
 
 <!-- env:cloud -->
+
 #### For Airbyte Cloud users:
+
 - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
 - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 <!-- /env:cloud -->
-   
+
 <!-- env:oss -->
+
 #### For Airbyte Open Source users:
+
 - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 
 <!-- /env:oss -->
 
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-`yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -153,6 +158,7 @@ Then, go to the replication settings of your connection and click **refresh sour
 ### Notes on the `engagements` stream
 
 1. Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties are set for that object in the `engagements_metadata` table in the destination:
+
 - A `call` engagement has a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
 - An `email` engagement has a corresponding `engagements_metadata` object with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`.
 - A `meeting` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
@@ -160,9 +166,10 @@ Then, go to the replication settings of your connection and click **refresh sour
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
 2. The `engagements` stream uses two different APIs based on the length of time since the last sync and the number of records which Airbyte hasn't yet synced.
+
 - **EngagementsRecent** if the following two criteria are met:
-    - The last sync was performed within the last 30 days
-    - Fewer than 10,000 records are being synced
+  - The last sync was performed within the last 30 days
+  - Fewer than 10,000 records are being synced
 - **EngagementsAll** if either of these criteria are not met.
 
 Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. We therefore recommend scheduling frequent syncs.
@@ -196,7 +203,17 @@ Now that you have set up the Hubspot source connector, check out the following H
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
-|:--------| :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.4.1   | 2023-08-22 | [29715](https://github.com/airbytehq/airbyte/pull/29715) | Fix python package configuration  stream                                                                                                                                               |
+| 1.4.0   | 2023-08-11 | [29249](https://github.com/airbytehq/airbyte/pull/29249) | Add `OwnersArchived` stream                                                                                                                                               |
+| 1.3.3   | 2023-08-10 | [29248](https://github.com/airbytehq/airbyte/pull/29248) | Specify `threadId` in `engagements` stream to type string                                                                                                                                               |
+| 1.3.2   | 2023-08-10 | [29326](https://github.com/airbytehq/airbyte/pull/29326) | Add primary keys to streams `ContactLists` and `PropertyHistory` |
+| 1.3.1   | 2023-08-08 | [29211](https://github.com/airbytehq/airbyte/pull/29211) | Handle 400 and 403 errors without interruption of the sync                                |
+| 1.3.0   | 2023-08-01 | [28909](https://github.com/airbytehq/airbyte/pull/28909) | Add handling of source connection errors                                                                                                                                               |
+| 1.2.0   | 2023-07-27 | [27091](https://github.com/airbytehq/airbyte/pull/27091) | Add new stream `ContactsMergedAudit`                                                                                                                                               |
+| 1.1.2   | 2023-07-27 | [28558](https://github.com/airbytehq/airbyte/pull/28558) | Improve error messages during connector setup                                                                                                                                      |
+| 1.1.1   | 2023-07-25 | [28705](https://github.com/airbytehq/airbyte/pull/28705) | Fix retry handler for token expired error                                                                                                                                          |
+| 1.1.0   | 2023-07-18 | [28349](https://github.com/airbytehq/airbyte/pull/28349) | Add unexpected fields in schemas of streams `email_events`, `email_subscriptions`, `engagements`, `campaigns`                                                                      |
 | 1.0.1   | 2023-06-23 | [27658](https://github.com/airbytehq/airbyte/pull/27658) | Use fully qualified name to retrieve custom objects                                                                                                                                |
 | 1.0.0   | 2023-06-08 | [27161](https://github.com/airbytehq/airbyte/pull/27161) | Fixed increment sync for engagements stream, 'Recent' API is used for recent syncs of last recent 30 days and less than 10k records, otherwise full sync if performed by 'All' API |
 | 0.9.0   | 2023-06-26 | [27726](https://github.com/airbytehq/airbyte/pull/27726) | License Update: Elv2                                                                                                                                                               |
