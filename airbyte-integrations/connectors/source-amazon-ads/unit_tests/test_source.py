@@ -163,7 +163,7 @@ def test_filter_profiles_exist():
     filtered_profiles = source._choose_profiles({"profiles": [111]}, mock_profiles)
     assert len(filtered_profiles) == 1
     assert filtered_profiles[0].profileId == 111
-    
+
     filtered_profiles = source._choose_profiles({"profiles": [111, 333]}, mock_profiles)
     assert len(filtered_profiles) == 2
 
@@ -176,7 +176,7 @@ def test_filter_profiles_exist():
     filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_1"]}, mock_profiles)
     assert len(filtered_profiles) == 1
     assert filtered_profiles[0].accountInfo.marketplaceStringId == "mkt_id_1"
-    
+
     filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_1", "mkt_id_3"]}, mock_profiles)
     assert len(filtered_profiles) == 2
 
