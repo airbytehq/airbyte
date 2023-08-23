@@ -1,0 +1,3167 @@
+version: 0.46.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+streams:
+  - type: DeclarativeStream
+    name: customers
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          address:
+            properties:
+              city:
+                type: string
+              country:
+                type: string
+              line1:
+                type: string
+              line2:
+                type: string
+              postal_code:
+                type: string
+              state:
+                type: string
+            type:
+              - object
+              - "null"
+          balance:
+            type: number
+          created:
+            type: number
+          currency:
+            type:
+              - "null"
+              - string
+          default_currency:
+            type:
+              - "null"
+              - string
+          default_source:
+            type:
+              - "null"
+              - string
+          delinquent:
+            type: boolean
+          description:
+            type:
+              - "null"
+              - string
+          email:
+            type: string
+          id:
+            type: string
+          invoice_prefix:
+            type: string
+          invoice_settings:
+            properties:
+              default_payment_method:
+                type:
+                  - "null"
+                  - string
+            type: object
+          livemode:
+            type: boolean
+          metadata:
+            properties:
+              coupon:
+                type: string
+              eligibleForTrial:
+                type: string
+              env:
+                type: string
+              workspace_id:
+                type: string
+            type: object
+          name:
+            type:
+              - "null"
+              - string
+          next_invoice_sequence:
+            type: number
+          now:
+            type: string
+          object:
+            type: string
+          phone:
+            type:
+              - "null"
+              - string
+          preferred_locales:
+            items:
+              type: string
+            type: array
+          shipping:
+            properties:
+              address:
+                properties:
+                  city:
+                    type: string
+                  country:
+                    type: string
+                  line1:
+                    type: string
+                  line2:
+                    type: string
+                  postal_code:
+                    type: string
+                  state:
+                    type: string
+                type: object
+              name:
+                type: string
+              phone:
+                type: string
+            type:
+              - object
+              - "null"
+          sources:
+            properties:
+              data:
+                items:
+                  properties:
+                    account_holder_name:
+                      type: string
+                    account_holder_type:
+                      type: string
+                    ach_credit_transfer:
+                      properties:
+                        account_number:
+                          type: string
+                        bank_name:
+                          type: string
+                        fingerprint:
+                          type: string
+                        routing_number:
+                          type: string
+                        swift_code:
+                          type: string
+                      type: object
+                    bank_name:
+                      type: string
+                    client_secret:
+                      type: string
+                    country:
+                      type: string
+                    created:
+                      type: number
+                    currency:
+                      type: string
+                    customer:
+                      type: string
+                    fingerprint:
+                      type: string
+                    flow:
+                      type: string
+                    id:
+                      type: string
+                    last4:
+                      type: string
+                    livemode:
+                      type: boolean
+                    metadata:
+                      type: object
+                    object:
+                      type: string
+                    owner:
+                      properties:
+                        email:
+                          type: string
+                      type: object
+                    receiver:
+                      properties:
+                        address:
+                          type: string
+                        amount_charged:
+                          type: number
+                        amount_received:
+                          type: number
+                        amount_returned:
+                          type: number
+                        refund_attributes_method:
+                          type: string
+                        refund_attributes_status:
+                          type: string
+                      type: object
+                    routing_number:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                    usage:
+                      type: string
+                  type: object
+                type: array
+              has_more:
+                type: boolean
+              object:
+                type: string
+              total_count:
+                type: number
+              url:
+                type: string
+            type: object
+          subscriptions:
+            properties:
+              data:
+                type: array
+              has_more:
+                type: boolean
+              object:
+                type: string
+              total_count:
+                type: number
+              url:
+                type: string
+            type: object
+          tax_exempt:
+            type: string
+          tax_ids:
+            properties:
+              data:
+                type: array
+              has_more:
+                type: boolean
+              object:
+                type: string
+              total_count:
+                type: number
+              url:
+                type: string
+            type: object
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: /v1/customers
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: invoices
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          account_country:
+            type: string
+          account_name:
+            type: string
+          amount_due:
+            type: number
+          amount_paid:
+            type: number
+          amount_remaining:
+            type: number
+          amount_shipping:
+            type: number
+          attempt_count:
+            type: number
+          attempted:
+            type: boolean
+          auto_advance:
+            type: boolean
+          automatic_tax:
+            properties:
+              enabled:
+                type: boolean
+            type: object
+          billing_reason:
+            type: string
+          charge:
+            type:
+              - "null"
+              - string
+          collection_method:
+            type: string
+          created:
+            type: number
+          currency:
+            type: string
+          customer:
+            type: string
+          customer_address:
+            properties:
+              city:
+                type: string
+              country:
+                type: string
+              line1:
+                type: string
+              line2:
+                type: string
+              postal_code:
+                type: string
+              state:
+                type: string
+            type:
+              - object
+              - "null"
+          customer_email:
+            type: string
+          customer_name:
+            type: string
+          customer_phone:
+            type:
+              - "null"
+              - string
+          customer_shipping:
+            properties:
+              address:
+                properties:
+                  city:
+                    type: string
+                  country:
+                    type: string
+                  line1:
+                    type: string
+                  line2:
+                    type: string
+                  postal_code:
+                    type: string
+                  state:
+                    type: string
+                type: object
+              name:
+                type: string
+              phone:
+                type: string
+            type:
+              - object
+              - "null"
+          customer_tax_exempt:
+            type: string
+          customer_tax_ids:
+            type: array
+          default_tax_rates:
+            type: array
+          discounts:
+            type: array
+          ending_balance:
+            type: number
+          hosted_invoice_url:
+            type: string
+          id:
+            type: string
+          invoice_pdf:
+            type: string
+          lines:
+            properties:
+              data:
+                items:
+                  properties:
+                    amount:
+                      type: number
+                    amount_excluding_tax:
+                      type: number
+                    currency:
+                      type: string
+                    description:
+                      type: string
+                    discount_amounts:
+                      type: array
+                    discountable:
+                      type: boolean
+                    discounts:
+                      type: array
+                    id:
+                      type: string
+                    livemode:
+                      type: boolean
+                    metadata:
+                      properties:
+                        eligibleForTrial:
+                          type: string
+                      type: object
+                    object:
+                      type: string
+                    period:
+                      properties:
+                        end:
+                          type: number
+                        start:
+                          type: number
+                      type: object
+                    plan:
+                      properties:
+                        active:
+                          type: boolean
+                        aggregate_usage:
+                          type:
+                            - "null"
+                            - string
+                        amount:
+                          type:
+                            - "null"
+                            - number
+                        amount_decimal:
+                          type:
+                            - "null"
+                            - string
+                        billing_scheme:
+                          type: string
+                        created:
+                          type: number
+                        currency:
+                          type: string
+                        id:
+                          type: string
+                        interval:
+                          type: string
+                        interval_count:
+                          type: number
+                        livemode:
+                          type: boolean
+                        metadata:
+                          type: object
+                        nickname:
+                          type: string
+                        object:
+                          type: string
+                        product:
+                          type: string
+                        tiers:
+                          items:
+                            properties:
+                              unit_amount:
+                                type:
+                                  - "null"
+                                  - number
+                              unit_amount_decimal:
+                                type: string
+                              up_to:
+                                type:
+                                  - "null"
+                                  - number
+                            type: object
+                          type:
+                            - array
+                            - "null"
+                        tiers_mode:
+                          type:
+                            - "null"
+                            - string
+                        usage_type:
+                          type: string
+                      type: object
+                    price:
+                      properties:
+                        active:
+                          type: boolean
+                        billing_scheme:
+                          type: string
+                        created:
+                          type: number
+                        currency:
+                          type: string
+                        id:
+                          type: string
+                        livemode:
+                          type: boolean
+                        metadata:
+                          type: object
+                        nickname:
+                          type: string
+                        object:
+                          type: string
+                        product:
+                          type: string
+                        recurring:
+                          properties:
+                            aggregate_usage:
+                              type:
+                                - "null"
+                                - string
+                            interval:
+                              type: string
+                            interval_count:
+                              type: number
+                            usage_type:
+                              type: string
+                          type: object
+                        tax_behavior:
+                          type: string
+                        tiers_mode:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          type: string
+                        unit_amount:
+                          type:
+                            - "null"
+                            - number
+                        unit_amount_decimal:
+                          type:
+                            - "null"
+                            - string
+                      type: object
+                    proration:
+                      type: boolean
+                    proration_details:
+                      properties: {}
+                      type: object
+                    quantity:
+                      type: number
+                    subscription:
+                      type: string
+                    subscription_item:
+                      type: string
+                    tax_amounts:
+                      type: array
+                    tax_rates:
+                      type: array
+                    type:
+                      type: string
+                    unit_amount_excluding_tax:
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                type: array
+              has_more:
+                type: boolean
+              object:
+                type: string
+              total_count:
+                type: number
+              url:
+                type: string
+            type: object
+          livemode:
+            type: boolean
+          metadata:
+            type: object
+          number:
+            type: string
+          object:
+            type: string
+          paid:
+            type: boolean
+          paid_out_of_band:
+            type: boolean
+          payment_intent:
+            type:
+              - "null"
+              - string
+          payment_settings:
+            properties: {}
+            type: object
+          period_end:
+            type: number
+          period_start:
+            type: number
+          post_payment_credit_notes_amount:
+            type: number
+          pre_payment_credit_notes_amount:
+            type: number
+          starting_balance:
+            type: number
+          status:
+            type: string
+          status_transitions:
+            properties:
+              finalized_at:
+                type: number
+              paid_at:
+                type:
+                  - "null"
+                  - number
+            type: object
+          subscription:
+            type: string
+          subtotal:
+            type: number
+          subtotal_excluding_tax:
+            type: number
+          total:
+            type: number
+          total_discount_amounts:
+            type: array
+          total_excluding_tax:
+            type: number
+          total_tax_amounts:
+            type: array
+          webhooks_delivered_at:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: /v1/invoices
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: invoice_line_items
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          amount_excluding_tax:
+            type: number
+          currency:
+            type: string
+          description:
+            type: string
+          discount_amounts:
+            type: array
+          discountable:
+            type: boolean
+          discounts:
+            type: array
+          id:
+            type: string
+          livemode:
+            type: boolean
+          metadata:
+            type: object
+          object:
+            type: string
+          period:
+            properties:
+              end:
+                type: number
+              start:
+                type: number
+            type: object
+          plan:
+            properties:
+              active:
+                type: boolean
+              aggregate_usage:
+                type:
+                  - "null"
+                  - string
+              amount:
+                type:
+                  - "null"
+                  - number
+              amount_decimal:
+                type:
+                  - "null"
+                  - string
+              billing_scheme:
+                type: string
+              created:
+                type: number
+              currency:
+                type: string
+              id:
+                type: string
+              interval:
+                type: string
+              interval_count:
+                type: number
+              livemode:
+                type: boolean
+              metadata:
+                type: object
+              nickname:
+                type: string
+              object:
+                type: string
+              product:
+                type: string
+              tiers:
+                items:
+                  properties:
+                    unit_amount:
+                      type:
+                        - "null"
+                        - number
+                    unit_amount_decimal:
+                      type: string
+                    up_to:
+                      type:
+                        - "null"
+                        - number
+                  type: object
+                type:
+                  - array
+                  - "null"
+              tiers_mode:
+                type:
+                  - "null"
+                  - string
+              usage_type:
+                type: string
+            type: object
+          price:
+            properties:
+              active:
+                type: boolean
+              billing_scheme:
+                type: string
+              created:
+                type: number
+              currency:
+                type: string
+              id:
+                type: string
+              livemode:
+                type: boolean
+              metadata:
+                type: object
+              nickname:
+                type: string
+              object:
+                type: string
+              product:
+                type: string
+              recurring:
+                properties:
+                  aggregate_usage:
+                    type:
+                      - "null"
+                      - string
+                  interval:
+                    type: string
+                  interval_count:
+                    type: number
+                  usage_type:
+                    type: string
+                type: object
+              tax_behavior:
+                type: string
+              tiers_mode:
+                type:
+                  - "null"
+                  - string
+              type:
+                type: string
+              unit_amount:
+                type:
+                  - "null"
+                  - number
+              unit_amount_decimal:
+                type:
+                  - "null"
+                  - string
+            type: object
+          proration:
+            type: boolean
+          proration_details:
+            properties: {}
+            type: object
+          quantity:
+            type: number
+          subscription:
+            type: string
+          subscription_item:
+            type: string
+          tax_amounts:
+            type: array
+          tax_rates:
+            type: array
+          type:
+            type: string
+          unit_amount_excluding_tax:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: /v1/invoices/{{ stream_partition['parent_id'] }}/lines
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: invoices
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      account_country:
+                        type: string
+                      account_name:
+                        type: string
+                      amount_due:
+                        type: number
+                      amount_paid:
+                        type: number
+                      amount_remaining:
+                        type: number
+                      amount_shipping:
+                        type: number
+                      attempt_count:
+                        type: number
+                      attempted:
+                        type: boolean
+                      auto_advance:
+                        type: boolean
+                      automatic_tax:
+                        properties:
+                          enabled:
+                            type: boolean
+                        type: object
+                      billing_reason:
+                        type: string
+                      charge:
+                        type:
+                          - "null"
+                          - string
+                      collection_method:
+                        type: string
+                      created:
+                        type: number
+                      currency:
+                        type: string
+                      customer:
+                        type: string
+                      customer_address:
+                        properties:
+                          city:
+                            type: string
+                          country:
+                            type: string
+                          line1:
+                            type: string
+                          line2:
+                            type: string
+                          postal_code:
+                            type: string
+                          state:
+                            type: string
+                        type:
+                          - object
+                          - "null"
+                      customer_email:
+                        type: string
+                      customer_name:
+                        type: string
+                      customer_phone:
+                        type:
+                          - "null"
+                          - string
+                      customer_shipping:
+                        properties:
+                          address:
+                            properties:
+                              city:
+                                type: string
+                              country:
+                                type: string
+                              line1:
+                                type: string
+                              line2:
+                                type: string
+                              postal_code:
+                                type: string
+                              state:
+                                type: string
+                            type: object
+                          name:
+                            type: string
+                          phone:
+                            type: string
+                        type:
+                          - object
+                          - "null"
+                      customer_tax_exempt:
+                        type: string
+                      customer_tax_ids:
+                        type: array
+                      default_tax_rates:
+                        type: array
+                      discounts:
+                        type: array
+                      ending_balance:
+                        type: number
+                      hosted_invoice_url:
+                        type: string
+                      id:
+                        type: string
+                      invoice_pdf:
+                        type: string
+                      lines:
+                        properties:
+                          data:
+                            items:
+                              properties:
+                                amount:
+                                  type: number
+                                amount_excluding_tax:
+                                  type: number
+                                currency:
+                                  type: string
+                                description:
+                                  type: string
+                                discount_amounts:
+                                  type: array
+                                discountable:
+                                  type: boolean
+                                discounts:
+                                  type: array
+                                id:
+                                  type: string
+                                livemode:
+                                  type: boolean
+                                metadata:
+                                  properties:
+                                    eligibleForTrial:
+                                      type: string
+                                  type: object
+                                object:
+                                  type: string
+                                period:
+                                  properties:
+                                    end:
+                                      type: number
+                                    start:
+                                      type: number
+                                  type: object
+                                plan:
+                                  properties:
+                                    active:
+                                      type: boolean
+                                    aggregate_usage:
+                                      type:
+                                        - "null"
+                                        - string
+                                    amount:
+                                      type:
+                                        - "null"
+                                        - number
+                                    amount_decimal:
+                                      type:
+                                        - "null"
+                                        - string
+                                    billing_scheme:
+                                      type: string
+                                    created:
+                                      type: number
+                                    currency:
+                                      type: string
+                                    id:
+                                      type: string
+                                    interval:
+                                      type: string
+                                    interval_count:
+                                      type: number
+                                    livemode:
+                                      type: boolean
+                                    metadata:
+                                      type: object
+                                    nickname:
+                                      type: string
+                                    object:
+                                      type: string
+                                    product:
+                                      type: string
+                                    tiers:
+                                      items:
+                                        properties:
+                                          unit_amount:
+                                            type:
+                                              - "null"
+                                              - number
+                                          unit_amount_decimal:
+                                            type: string
+                                          up_to:
+                                            type:
+                                              - "null"
+                                              - number
+                                        type: object
+                                      type:
+                                        - array
+                                        - "null"
+                                    tiers_mode:
+                                      type:
+                                        - "null"
+                                        - string
+                                    usage_type:
+                                      type: string
+                                  type: object
+                                price:
+                                  properties:
+                                    active:
+                                      type: boolean
+                                    billing_scheme:
+                                      type: string
+                                    created:
+                                      type: number
+                                    currency:
+                                      type: string
+                                    id:
+                                      type: string
+                                    livemode:
+                                      type: boolean
+                                    metadata:
+                                      type: object
+                                    nickname:
+                                      type: string
+                                    object:
+                                      type: string
+                                    product:
+                                      type: string
+                                    recurring:
+                                      properties:
+                                        aggregate_usage:
+                                          type:
+                                            - "null"
+                                            - string
+                                        interval:
+                                          type: string
+                                        interval_count:
+                                          type: number
+                                        usage_type:
+                                          type: string
+                                      type: object
+                                    tax_behavior:
+                                      type: string
+                                    tiers_mode:
+                                      type:
+                                        - "null"
+                                        - string
+                                    type:
+                                      type: string
+                                    unit_amount:
+                                      type:
+                                        - "null"
+                                        - number
+                                    unit_amount_decimal:
+                                      type:
+                                        - "null"
+                                        - string
+                                  type: object
+                                proration:
+                                  type: boolean
+                                proration_details:
+                                  properties: {}
+                                  type: object
+                                quantity:
+                                  type: number
+                                subscription:
+                                  type: string
+                                subscription_item:
+                                  type: string
+                                tax_amounts:
+                                  type: array
+                                tax_rates:
+                                  type: array
+                                type:
+                                  type: string
+                                unit_amount_excluding_tax:
+                                  type:
+                                    - "null"
+                                    - string
+                              type: object
+                            type: array
+                          has_more:
+                            type: boolean
+                          object:
+                            type: string
+                          total_count:
+                            type: number
+                          url:
+                            type: string
+                        type: object
+                      livemode:
+                        type: boolean
+                      metadata:
+                        type: object
+                      number:
+                        type: string
+                      object:
+                        type: string
+                      paid:
+                        type: boolean
+                      paid_out_of_band:
+                        type: boolean
+                      payment_intent:
+                        type:
+                          - "null"
+                          - string
+                      payment_settings:
+                        properties: {}
+                        type: object
+                      period_end:
+                        type: number
+                      period_start:
+                        type: number
+                      post_payment_credit_notes_amount:
+                        type: number
+                      pre_payment_credit_notes_amount:
+                        type: number
+                      starting_balance:
+                        type: number
+                      status:
+                        type: string
+                      status_transitions:
+                        properties:
+                          finalized_at:
+                            type: number
+                          paid_at:
+                            type:
+                              - "null"
+                              - number
+                        type: object
+                      subscription:
+                        type: string
+                      subtotal:
+                        type: number
+                      subtotal_excluding_tax:
+                        type: number
+                      total:
+                        type: number
+                      total_discount_amounts:
+                        type: array
+                      total_excluding_tax:
+                        type: number
+                      total_tax_amounts:
+                        type: array
+                      webhooks_delivered_at:
+                        type: number
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.stripe.com
+                    path: /v1/invoices
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['client_secret'] }}"
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: starting_after
+                    page_size_option:
+                      type: RequestOption
+                      field_name: limit
+                      inject_into: request_parameter
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 100
+                      cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+                      stop_condition: "{{ not response.has_more }}"
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: created
+                  datetime_format: "%s"
+                  start_time_option:
+                    type: RequestOption
+                    field_name: created[gte]
+                    inject_into: request_parameter
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: "{{ config['start_date'] }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                  end_datetime:
+                    type: MinMaxDatetime
+                    datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: accounts
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          business_profile:
+            properties:
+              name:
+                type:
+                  - "null"
+                  - string
+            type: object
+          capabilities:
+            properties:
+              acss_debit_payments:
+                type: string
+              affirm_payments:
+                type: string
+              afterpay_clearpay_payments:
+                type: string
+              bancontact_payments:
+                type: string
+              card_payments:
+                type: string
+              cartes_bancaires_payments:
+                type: string
+              cashapp_payments:
+                type: string
+              eps_payments:
+                type: string
+              giropay_payments:
+                type: string
+              ideal_payments:
+                type: string
+              klarna_payments:
+                type: string
+              link_payments:
+                type: string
+              p24_payments:
+                type: string
+              sepa_debit_payments:
+                type: string
+              sofort_payments:
+                type: string
+              transfers:
+                type: string
+              us_bank_account_ach_payments:
+                type: string
+            type: object
+          charges_enabled:
+            type: boolean
+          controller:
+            properties:
+              type:
+                type: string
+            type: object
+          country:
+            type: string
+          created:
+            type: number
+          default_currency:
+            type: string
+          details_submitted:
+            type: boolean
+          email:
+            type:
+              - "null"
+              - string
+          external_accounts:
+            properties:
+              data:
+                type: array
+              has_more:
+                type: boolean
+              object:
+                type: string
+              total_count:
+                type: number
+              url:
+                type: string
+            type: object
+          future_requirements:
+            properties:
+              alternatives:
+                type: array
+              currently_due:
+                type: array
+              errors:
+                type: array
+              eventually_due:
+                type: array
+              past_due:
+                type: array
+              pending_verification:
+                type: array
+            type: object
+          id:
+            type: string
+          metadata:
+            type: object
+          now:
+            type: string
+          object:
+            type: string
+          payouts_enabled:
+            type: boolean
+          requirements:
+            properties:
+              alternatives:
+                type: array
+              currently_due:
+                items:
+                  type: string
+                type: array
+              disabled_reason:
+                type:
+                  - "null"
+                  - string
+              errors:
+                type: array
+              eventually_due:
+                items:
+                  type: string
+                type: array
+              past_due:
+                items:
+                  type: string
+                type: array
+              pending_verification:
+                type: array
+            type: object
+          settings:
+            properties:
+              bacs_debit_payments:
+                type: object
+              branding:
+                properties: {}
+                type: object
+              card_issuing:
+                properties:
+                  tos_acceptance:
+                    properties: {}
+                    type: object
+                type: object
+              card_payments:
+                properties:
+                  decline_on:
+                    properties:
+                      avs_failure:
+                        type: boolean
+                      cvc_failure:
+                        type: boolean
+                    type: object
+                  statement_descriptor_prefix:
+                    type:
+                      - "null"
+                      - string
+                type: object
+              dashboard:
+                properties:
+                  display_name:
+                    type:
+                      - "null"
+                      - string
+                  timezone:
+                    type: string
+                type: object
+              payments:
+                properties:
+                  statement_descriptor:
+                    type:
+                      - "null"
+                      - string
+                type: object
+              payouts:
+                properties:
+                  debit_negative_balances:
+                    type: boolean
+                  schedule:
+                    properties:
+                      delay_days:
+                        type: number
+                      interval:
+                        type: string
+                    type: object
+                type: object
+              sepa_debit_payments:
+                type: object
+            type: object
+          tos_acceptance:
+            properties: {}
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: /v1/accounts
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: application_fees
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: /v1/application_fees
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: authorizations
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+          has_more:
+            type: boolean
+          now:
+            type: string
+          object:
+            type: string
+          url:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: /v1/issuing/authorizations
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: balance_transactions
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          available_on:
+            type: number
+          created:
+            type: number
+          currency:
+            type: string
+          description:
+            type:
+              - "null"
+              - string
+          fee:
+            type: number
+          fee_details:
+            items:
+              properties:
+                amount:
+                  type: number
+                currency:
+                  type: string
+                description:
+                  type: string
+                type:
+                  type: string
+              type: object
+            type: array
+          id:
+            type: string
+          net:
+            type: number
+          now:
+            type: string
+          object:
+            type: string
+          reporting_category:
+            type: string
+          source:
+            type:
+              - "null"
+              - string
+          status:
+            type: string
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/balance_transactions
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: cards
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+          has_more:
+            type: boolean
+          now:
+            type: string
+          object:
+            type: string
+          url:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/issuing/cards
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: cardholders
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billing:
+            properties:
+              address:
+                properties:
+                  city:
+                    type: string
+                  country:
+                    type: string
+                  line1:
+                    type: string
+                  postal_code:
+                    type: string
+                  state:
+                    type: string
+                type: object
+            type: object
+          created:
+            type: number
+          email:
+            type: string
+          id:
+            type: string
+          livemode:
+            type: boolean
+          metadata:
+            type: object
+          name:
+            type: string
+          now:
+            type: string
+          object:
+            type: string
+          phone_number:
+            type: string
+          preferred_locales:
+            type: array
+          requirements:
+            properties:
+              past_due:
+                type: array
+            type: object
+          spending_controls:
+            properties:
+              allowed_categories:
+                type: array
+              blocked_categories:
+                type: array
+              spending_limits:
+                type: array
+            type: object
+          status:
+            type: string
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/issuing/cardholders
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: charges
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          amount_captured:
+            type: number
+          amount_refunded:
+            type: number
+          amount_updates:
+            type: array
+          balance_transaction:
+            type:
+              - "null"
+              - string
+          billing_details:
+            properties:
+              address:
+                properties:
+                  country:
+                    type:
+                      - "null"
+                      - string
+                  postal_code:
+                    type:
+                      - "null"
+                      - string
+                type: object
+              email:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+            type: object
+          calculated_statement_descriptor:
+            type:
+              - "null"
+              - string
+          captured:
+            type: boolean
+          created:
+            type: number
+          currency:
+            type: string
+          customer:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          dispute:
+            type:
+              - "null"
+              - string
+          disputed:
+            type: boolean
+          failure_code:
+            type:
+              - "null"
+              - string
+          failure_message:
+            type:
+              - "null"
+              - string
+          fraud_details:
+            properties:
+              user_report:
+                type: string
+            type: object
+          id:
+            type: string
+          invoice:
+            type:
+              - "null"
+              - string
+          livemode:
+            type: boolean
+          metadata:
+            type: object
+          now:
+            type: string
+          object:
+            type: string
+          outcome:
+            properties:
+              network_status:
+                type: string
+              reason:
+                type:
+                  - "null"
+                  - string
+              risk_level:
+                type: string
+              risk_score:
+                type: number
+              seller_message:
+                type: string
+              type:
+                type: string
+            type:
+              - object
+              - "null"
+          paid:
+            type: boolean
+          payment_intent:
+            type:
+              - "null"
+              - string
+          payment_method:
+            type: string
+          payment_method_details:
+            properties:
+              card:
+                properties:
+                  brand:
+                    type: string
+                  checks:
+                    properties:
+                      address_postal_code_check:
+                        type:
+                          - "null"
+                          - string
+                      cvc_check:
+                        type:
+                          - "null"
+                          - string
+                    type: object
+                  country:
+                    type: string
+                  exp_month:
+                    type: number
+                  exp_year:
+                    type: number
+                  fingerprint:
+                    type: string
+                  funding:
+                    type: string
+                  last4:
+                    type: string
+                  network:
+                    type: string
+                  network_token:
+                    properties:
+                      used:
+                        type: boolean
+                    type: object
+                type: object
+              type:
+                type: string
+            type: object
+          receipt_number:
+            type:
+              - "null"
+              - string
+          receipt_url:
+            type:
+              - "null"
+              - string
+          refunded:
+            type: boolean
+          refunds:
+            properties:
+              data:
+                items:
+                  properties:
+                    amount:
+                      type: number
+                    balance_transaction:
+                      type: string
+                    charge:
+                      type: string
+                    created:
+                      type: number
+                    currency:
+                      type: string
+                    id:
+                      type: string
+                    metadata:
+                      type: object
+                    object:
+                      type: string
+                    payment_intent:
+                      type: string
+                    reason:
+                      type: string
+                    receipt_number:
+                      type:
+                        - "null"
+                        - string
+                    status:
+                      type: string
+                  type: object
+                type: array
+              has_more:
+                type: boolean
+              object:
+                type: string
+              total_count:
+                type: number
+              url:
+                type: string
+            type: object
+          source:
+            properties:
+              brand:
+                type: string
+              card:
+                properties:
+                  address_zip_check:
+                    type:
+                      - "null"
+                      - string
+                  brand:
+                    type: string
+                  country:
+                    type: string
+                  cvc_check:
+                    type:
+                      - "null"
+                      - string
+                  exp_month:
+                    type: number
+                  exp_year:
+                    type: number
+                  fingerprint:
+                    type: string
+                  funding:
+                    type: string
+                  last4:
+                    type: string
+                  three_d_secure:
+                    type: string
+                type: object
+              client_secret:
+                type: string
+              country:
+                type: string
+              created:
+                type: number
+              customer:
+                type:
+                  - "null"
+                  - string
+              cvc_check:
+                type:
+                  - "null"
+                  - string
+              exp_month:
+                type: number
+              exp_year:
+                type: number
+              fingerprint:
+                type: string
+              flow:
+                type: string
+              funding:
+                type: string
+              id:
+                type: string
+              last4:
+                type: string
+              livemode:
+                type: boolean
+              metadata:
+                type: object
+              name:
+                type:
+                  - "null"
+                  - string
+              object:
+                type: string
+              owner:
+                properties:
+                  address:
+                    properties:
+                      postal_code:
+                        type: string
+                    type:
+                      - object
+                      - "null"
+                type: object
+              status:
+                type: string
+              type:
+                type: string
+              usage:
+                type: string
+            type:
+              - object
+              - "null"
+          statement_descriptor:
+            type:
+              - "null"
+              - string
+          status:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/charges
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: coupons
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount_off:
+            type:
+              - "null"
+              - number
+          created:
+            type: number
+          currency:
+            type:
+              - "null"
+              - string
+          duration:
+            type: string
+          duration_in_months:
+            type:
+              - "null"
+              - number
+          id:
+            type: string
+          livemode:
+            type: boolean
+          metadata:
+            type: object
+          name:
+            type: string
+          now:
+            type: string
+          object:
+            type: string
+          percent_off:
+            type:
+              - "null"
+              - number
+          times_redeemed:
+            type: number
+          valid:
+            type: boolean
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/coupons
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: files
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created:
+            type: number
+          expires_at:
+            type:
+              - "null"
+              - number
+          filename:
+            type: string
+          id:
+            type: string
+          links:
+            properties:
+              data:
+                items:
+                  properties:
+                    created:
+                      type: number
+                    expired:
+                      type: boolean
+                    file:
+                      type: string
+                    id:
+                      type: string
+                    livemode:
+                      type: boolean
+                    metadata:
+                      type: object
+                    object:
+                      type: string
+                    url:
+                      type: string
+                  type: object
+                type: array
+              has_more:
+                type: boolean
+              object:
+                type: string
+              url:
+                type: string
+            type: object
+          now:
+            type: string
+          object:
+            type: string
+          purpose:
+            type: string
+          size:
+            type: number
+          type:
+            type: string
+          url:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/files
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: products
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          active:
+            type: boolean
+          attributes:
+            type: array
+          created:
+            type: number
+          default_price:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          id:
+            type: string
+          images:
+            items:
+              type: string
+            type: array
+          livemode:
+            type: boolean
+          metadata:
+            type: object
+          name:
+            type: string
+          now:
+            type: string
+          object:
+            type: string
+          tax_code:
+            type: string
+          type:
+            type: string
+          updated:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/products
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: file_links
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created:
+            type: number
+          expired:
+            type: boolean
+          file:
+            type: string
+          id:
+            type: string
+          livemode:
+            type: boolean
+          metadata:
+            type: object
+          now:
+            type: string
+          object:
+            type: string
+          url:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/file_links
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: top_ups
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          balance_transaction:
+            type:
+              - "null"
+              - string
+          created:
+            type: number
+          currency:
+            type: string
+          description:
+            type: string
+          destination_balance:
+            type:
+              - "null"
+              - string
+          expected_availability_date:
+            type: number
+          failure_code:
+            type:
+              - "null"
+              - string
+          failure_message:
+            type:
+              - "null"
+              - string
+          id:
+            type: string
+          livemode:
+            type: boolean
+          metadata:
+            type: object
+          now:
+            type: string
+          object:
+            type: string
+          source:
+            properties:
+              ach_credit_transfer:
+                properties:
+                  account_number:
+                    type: string
+                  bank_name:
+                    type: string
+                  fingerprint:
+                    type: string
+                  purpose:
+                    type: string
+                  routing_number:
+                    type: string
+                  swift_code:
+                    type: string
+                type: object
+              ach_debit:
+                properties:
+                  bank_name:
+                    type: string
+                  country:
+                    type: string
+                  fingerprint:
+                    type: string
+                  last4:
+                    type: string
+                  routing_number:
+                    type: string
+                  type:
+                    type: string
+                type: object
+              client_secret:
+                type: string
+              code_verification:
+                properties:
+                  attempts_remaining:
+                    type: number
+                  status:
+                    type: string
+                type: object
+              created:
+                type: number
+              currency:
+                type: string
+              flow:
+                type: string
+              id:
+                type: string
+              livemode:
+                type: boolean
+              metadata:
+                type: object
+              object:
+                type: string
+              owner:
+                properties:
+                  address:
+                    properties:
+                      country:
+                        type: string
+                    type:
+                      - object
+                      - "null"
+                  email:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                type: object
+              receiver:
+                properties:
+                  address:
+                    type: string
+                  amount_charged:
+                    type: number
+                  amount_received:
+                    type: number
+                  amount_returned:
+                    type: number
+                  refund_attributes_method:
+                    type: string
+                  refund_attributes_status:
+                    type: string
+                type: object
+              status:
+                type: string
+              type:
+                type: string
+              usage:
+                type: string
+            type: object
+          statement_descriptor:
+            type:
+              - "null"
+              - string
+          status:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/topups
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: transactions
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/issuing/transactions
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: credit_notes
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.stripe.com
+        path: v1/credit_notes
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['client_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: starting_after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_records[-1]['id'] if last_records else None }}"
+          stop_condition: "{{ not response.has_more }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - now
+            value: '{{ now_utc().strftime("%Y-%m-%dT%H:%M:%S.%fZ")}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: created[gte]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - start_date
+      - client_secret
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 0
+      client_secret:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+  documentation_url: https://example.org
+  type: Spec
+metadata:
+  autoImportSchema:
+    customers: true
+    invoices: true
+    invoice_line_items: true
+    accounts: false
+    application_fees: true
+    authorizations: true
+    balance_transactions: true
+    cards: true
+    cardholders: true
+    charges: true
+    coupons: true
+    files: true
+    products: true
+    file_links: true
+    top_ups: true
+    transactions: true
+    credit_notes: true

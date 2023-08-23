@@ -1,8 +1,8 @@
 [
   {
-    "description": "A fake customer",
-    "email": "alexandre@airbyte.io",
-    "name": "Alexandre Girard5",
+    "description": "A fake customer with a bank account",
+    "email": "rich@airbyte.io",
+    "name": "Richie Rich__{TAG}__{ITERATION}",
     "balance": "900001",
     "bank_account": {
       "object": "bank_account",
@@ -12,5 +12,11 @@
       "routing_number": "110000000",
       "account_number": "000123456789"
     }
+  },
+  {
+    "description": "A fake customer",
+    "email": "fake@airbyte.io",
+    "name": "Fake Name__{TAG}__{ITERATION}",
+    "balance": "100"
   }
 ]

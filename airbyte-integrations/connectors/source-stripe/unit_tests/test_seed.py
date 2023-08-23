@@ -5,7 +5,14 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import pytest
-from source_stripe.seed.seed import Customer, HttpRequest, StripeAPI
+from source_stripe.seed.seed import (
+    BankAccount,
+    Customer,
+    HttpRequest,
+    StripeAPI,
+    create_customer_and_bank_account,
+    is_customer_already_created,
+)
 
 _MOCK_RESPONSE = {"key": "value"}
 _BEARER_TOKEN = "secret"
@@ -158,3 +165,168 @@ class StripeApiTestCase(TestCase):
 
         self._requester.submit.assert_called_with(expected_request)
         assert response == [{"id": "123"}]
+
+
+def test_is_customer_already_created_returns_false_if_no_customers():
+    stripe_api = Mock()
+    stripe_api.search_customer.return_value = []
+
+    customer_name = "A CUSTOMER"
+
+    customer_is_already_created = is_customer_already_created(customer_name, stripe_api)
+    assert not customer_is_already_created
+
+
+def test_is_customer_already_created_returns_true_if_there_is_at_least_one_customer():
+    stripe_api = Mock()
+    customer_name = "A CUSTOMER"
+
+    stripe_api.search_customer.return_value = [{"id": "1", "name": customer_name}]
+
+    customer_is_already_created = is_customer_already_created(customer_name, stripe_api)
+    assert customer_is_already_created
+
+
+def test_create_customer_and_bank_account_fails_if_customer_already_has_an_id():
+    stripe_api = Mock()
+
+    customer = Customer(
+        name="A CUSTOMER",
+        id="12345",
+        description="A fake customer",
+        email="fake@airbyte.io",
+        balance="12345",
+        bank_account=BankAccount(
+            country="US",
+            currency="usd",
+            account_holder_type="individual",
+            routing_number="123445",
+            account_number="67890",
+        ),
+    )
+
+    stripe_api.create_customer.return_value = customer.dict(exclude_none=True)
+
+    with pytest.raises(ValueError):
+        create_customer_and_bank_account(customer, stripe_api)
+
+
+def test_create_customer_and_bank_account_fails_if_bank_account_already_has_an_id():
+    stripe_api = Mock()
+
+    customer = Customer(
+        name="A CUSTOMER",
+        description="A fake customer",
+        email="fake@airbyte.io",
+        balance="12345",
+        bank_account=BankAccount(
+            id="12345",
+            country="US",
+            currency="usd",
+            account_holder_type="individual",
+            routing_number="123445",
+            account_number="67890",
+        ),
+    )
+
+    stripe_api.create_customer.return_value = customer.dict(exclude_none=True)
+
+    with pytest.raises(ValueError):
+        create_customer_and_bank_account(customer, stripe_api)
+
+
+def test_create_customer_and_bank_account():
+    stripe_api = Mock()
+
+    customer = Customer(
+        name="A CUSTOMER",
+        description="A fake customer",
+        email="fake@airbyte.io",
+        balance="12345",
+        bank_account=BankAccount(
+            country="US",
+            currency="usd",
+            account_holder_type="individual",
+            routing_number="123445",
+            account_number="67890",
+        ),
+    )
+
+    create_customer_response = customer.dict(exclude_none=True)
+    create_customer_response["id"] = "121345"
+    create_bank_account_response = customer.bank_account.dict(exclude_none=True)
+    create_bank_account_response["id"] = "6789"
+
+    stripe_api.create_customer.return_value = create_customer_response
+    stripe_api.create_bank_account.return_value = create_bank_account_response
+
+    expected_customer = Customer(
+        id=create_customer_response["id"],
+        name="A CUSTOMER",
+        description="A fake customer",
+        email="fake@airbyte.io",
+        balance="12345",
+        bank_account=BankAccount(
+            id=create_bank_account_response["id"],
+            country="US",
+            currency="usd",
+            account_holder_type="individual",
+            routing_number="123445",
+            account_number="67890",
+        ),
+    )
+    returned_customer = create_customer_and_bank_account(customer, stripe_api)
+
+    assert returned_customer == expected_customer
+
+
+def test_create_customer_and_bank_account_fails_if_no_customer_id_is_returned():
+    stripe_api = Mock()
+
+    customer = Customer(
+        name="A CUSTOMER",
+        description="A fake customer",
+        email="fake@airbyte.io",
+        balance="12345",
+        bank_account=BankAccount(
+            country="US",
+            currency="usd",
+            account_holder_type="individual",
+            routing_number="123445",
+            account_number="67890",
+        ),
+    )
+
+    create_customer_response = customer.dict(exclude_none=True)
+    stripe_api.create_customer.return_value = create_customer_response
+
+    with pytest.raises(RuntimeError):
+        create_customer_and_bank_account(customer, stripe_api)
+
+
+def test_create_customer_and_bank_acount_fails_if_no_bank_account_id_is_returned():
+    stripe_api = Mock()
+
+    customer = Customer(
+        name="A CUSTOMER",
+        description="A fake customer",
+        email="fake@airbyte.io",
+        balance="12345",
+        bank_account=BankAccount(
+            country="US",
+            currency="usd",
+            account_holder_type="individual",
+            routing_number="123445",
+            account_number="67890",
+        ),
+    )
+
+    create_customer_response = customer.dict(exclude_none=True)
+    create_customer_response["id"] = "121345"
+    create_bank_account_response = customer.bank_account.dict(exclude_none=True)
+
+    stripe_api.create_customer.return_value = create_customer_response
+    stripe_api.create_bank_account.return_value = create_bank_account_response
+
+    with pytest.raises(RuntimeError):
+        create_customer_and_bank_account(customer, stripe_api)

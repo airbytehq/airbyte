@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import concurrent
+import concurrent.futures
 import json
 from typing import Any, Dict, Optional
 
@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 class BankAccount(BaseModel):
     object: str = "bank_account"
+    id: Optional[str]
     country: str = Field()
     currency: str = Field()
     account_holder_type: str = Field()
@@ -65,7 +66,7 @@ class StripeAPI:
     def prepare_create_customer(self, customer: Customer):
         url = "https://api.stripe.com/v1/customers"
         customer_data = customer.dict(exclude_none=True)
-        customer_data.pop("bank_account")
+        customer_data.pop("bank_account", {})
         return HttpRequest(method="POST", url=url, headers=self._authentication_header, body=customer_data)
 
     def search_customer(self, customer_name):
@@ -121,7 +122,16 @@ def recursive_url_encode(data, parent_key=None):
     return items
 
 
+def is_customer_already_created(customer_name: str, stripe_api: StripeAPI):
+    customer = stripe_api.search_customer(customer_name)
+    return len(customer) > 0
+
+
 def create_customer_and_bank_account(customer: Customer, stripe_api: StripeAPI):
+    if customer.id is not None:
+        raise ValueError(f"Cannot create customer {customer} because it already has an ID")
+    if customer.bank_account and customer.bank_account.id is not None:
+        raise ValueError(f"Cannot create bank account for {customer} because it already has an ID")
     customer_output = stripe_api.create_customer(customer)
     if "id" in customer_output:
         customer.id = customer_output["id"]
@@ -129,16 +139,27 @@ def create_customer_and_bank_account(customer: Customer, stripe_api: StripeAPI):
         raise RuntimeError(f"Failed to created customer {customer}. Response: {customer_output}")
     print(f"created customer: {customer}")
     if customer.bank_account:
-        bank_account = stripe_api.create_bank_account(customer)
-        print(f"created bank account {bank_account}")
-    else:
-        bank_account = None
-    return customer, bank_account
+        bank_account_output = stripe_api.create_bank_account(customer)
+        if "id" in bank_account_output:
+            customer.bank_account.id = bank_account_output["id"]
+        else:
+            raise RuntimeError(f"Failed to created bank account for customer {customer}. Response: {bank_account_output}")
+        print(f"created bank account {bank_account_output}")
+    return customer
 
 
 def _load_config(path_to_config):
     with open(path_to_config, "r") as f:
         return json.loads(f.read())
+
+
+def populate_customer(customer: Customer, stripe_api: StripeAPI):
+    customer_exists = is_customer_already_created(customer.name, stripe_api)
+    if customer_exists:
+        print(f"Customer {customer.name} already exists. Skipping...")
+        return None
+    else:
+        return create_customer_and_bank_account(customer, stripe_api)
 
 
 @_main.command()
@@ -155,21 +176,12 @@ def generate_records(path_to_config, path_to_data):
         for record in records:
             customer_data = record
             customer = Customer.parse_obj(customer_data)
-            customer_exists = is_customer_already_created(customer.name, stripe_api)
-            if customer_exists:
-                print(f"Customer {customer.name} already exists. Skipping...")
-            else:
-                f = executor.submit(create_customer_and_bank_account, customer, stripe_api)
-                futures.append(f)
-    concurrent.futures.wait(futures)
+            f = executor.submit(populate_customer, customer, stripe_api)
+            futures.append(f)
+        concurrent.futures.wait(futures)
 
     for f in futures:
         print(f"f: {f.result()}")
-
-
-def is_customer_already_created(customer_name: str, stripe_api: StripeAPI):
-    customer = stripe_api.search_customer(customer_name)
-    return len(customer) > 0
 
 
 if __name__ == "__main__":
