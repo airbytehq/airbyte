@@ -14,7 +14,6 @@ definitions:
   legacy_api_requester:
     type: HttpRequester
     url_base: https://a.klaviyo.com/api/v1/
-    path: "{{ parameters.path }}"
     http_method: GET
     request_headers: {}
     authenticator:
@@ -29,7 +28,6 @@ definitions:
   revised_api_requester:
     type: HttpRequester
     url_base: https://a.klaviyo.com/api/
-    path: "{{ parameters.path }}"
     http_method: GET
     request_headers:
       revision: "{{ parameters.revision }}"
@@ -51,8 +49,6 @@ definitions:
 
   base_stream:
     type: DeclarativeStream
-    primary_key:
-      - '{{ parameters.primary_key }}'
     schema_loader:
       $ref: "#/definitions/schema_loader"
 
@@ -109,24 +105,26 @@ definitions:
 
   campaigns_stream:
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
         $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/legacy_api_requester"
+        path: "campaigns"
         request_parameters: {}
     $parameters:
       name: "campaigns"
-      path: "campaigns"
-      primary_key: "id"
 
   events_stream:
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/legacy_api_requester"
+        path: "metrics/timeline"
         request_parameters:
           sort: asc
           count: '100'
@@ -151,13 +149,12 @@ definitions:
       $ref: "#/definitions/legacy_api_incremental_sync"
     $parameters:
       name: "events"
-      path: "metrics/timeline"
-      primary_key: "id"
       cursor_field: timestamp
       cursor_datetime_formats: '%s'
 
   globalexclusions_stream:
     $ref: "#/definitions/base_stream"
+    primary_key: "email"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
@@ -176,53 +173,54 @@ definitions:
           page_size: 500
       requester:
         $ref: "#/definitions/legacy_api_requester"
+        path: "people/exclusions"
         request_parameters:
           sort: desc
     incremental_sync:
       $ref: "#/definitions/legacy_api_incremental_sync"
     $parameters:
       name: "global_exclusions"
-      path: "people/exclusions"
-      primary_key: "email"
       cursor_field: timestamp
       cursor_datetime_formats: '%s'
 
   lists_stream:
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
         $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/legacy_api_requester"
+        path: "lists"
         request_parameters: {}
     $parameters:
       name: "lists"
-      path: "lists"
-      primary_key: "id"
 
   metrics_stream:
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
         $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/legacy_api_requester"
+        path: "metrics"
         request_parameters: {}
     $parameters:
       name: "metrics"
-      path: "metrics"
-      primary_key: "id"
 
   flows_stream:
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
         $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/legacy_api_requester"
+        path: "flows"
         request_parameters:
           sort: desc
         request_headers: {}
@@ -246,19 +244,19 @@ definitions:
         - '%Y-%m-%d %H:%M:%S'
     $parameters:
       name: "flows"
-      path: "flows"
-      primary_key: "id"
       cursor_field: created
       cursor_datetime_formats: '%Y-%m-%d %H:%M:%S'
 
   profiles_stream:
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
         $ref: "#/definitions/cursor_paginator"
       requester:
         $ref: "#/definitions/revised_api_requester"
+        path: "profiles/"
         request_parameters:
           sort: updated
           filter: greater-than(updated,{{ stream_interval.start_time }})
@@ -274,26 +272,24 @@ definitions:
               {{ format_datetime(record['attributes']['updated'], '%Y-%m-%dT%H:%M:%S.%f+00:00') }}
     $parameters:
       name: "profiles"
-      path: "profiles/"
-      primary_key: "id"
       revision: '2023-02-22'
       cursor_field: updated
       cursor_datetime_formats: '%Y-%m-%dT%H:%M:%S.%f%z'
 
   email_templates_stream:
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/base_retriever"
       paginator:
         $ref: "#/definitions/page_increment_paginator"
       requester:
         $ref: "#/definitions/legacy_api_requester"
+        path: "email-templates"
         request_parameters: {}
         request_headers: {}
     $parameters:
       name: "email_templates"
-      path: "email-templates"
-      primary_key: "id"
 
 # Streams
 streams:

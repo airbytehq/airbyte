@@ -17,7 +17,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseDate: "02-08-2023"
+  releaseDate: 2021-05-19
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
