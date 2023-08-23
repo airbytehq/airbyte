@@ -4,7 +4,7 @@
 
 <!-- env:oss -->
 :::info
-To use the Amazon Ads source connector with **Airbyte Open Source**, you will first need to complete Amazon's onboarding process and obtain the credentials to authenticate the connection. Please refer to [our full Amazon Ads documentation](https://docs.airbyte.com/integrations/sources/amazon-ads/#setup-guide) for more information.
+To use the Amazon Ads source connector with **Airbyte Open Source**, you will first need to complete Amazon's onboarding process and obtain the credentials to authenticate the connection. Please refer to [our full Amazon Ads documentation](https://docs.airbyte.com/integrations/sources/amazon-ads/#setup-guide) for more information on completing the onboarding process and obtaining the necessary credentials.
 :::
 <!-- /env:oss -->
 
