@@ -1,5 +1,5 @@
 {
-  "customers": {
-    "CUSTOMER_TYPE": "strings"
+  "todo-stream-name": {
+    "todo-field-name": "value"
   }
 }

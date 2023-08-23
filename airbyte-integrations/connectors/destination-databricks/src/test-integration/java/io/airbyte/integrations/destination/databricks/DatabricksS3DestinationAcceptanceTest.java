@@ -64,7 +64,7 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
     // clean up s3
     final List<KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
@@ -83,7 +83,7 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
     }
     s3Client.shutdown();
 
-    super.tearDown(testEnv, TEST_SCHEMAS);
+    super.tearDown(testEnv);
   }
 
 }

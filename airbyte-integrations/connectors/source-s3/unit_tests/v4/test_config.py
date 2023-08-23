@@ -18,7 +18,7 @@ logger = logging.Logger("")
         pytest.param({"bucket": "test", "streams": []}, None, id="required-fields"),
         pytest.param({"bucket": "test", "streams": [], "aws_access_key_id": "access_key", "aws_secret_access_key": "secret_access_key"}, None, id="config-created-with-aws-info"),
         pytest.param({"bucket": "test", "streams": [], "endpoint": "http://test.com"}, None, id="config-created-with-endpoint"),
-        pytest.param({"bucket": "test", "streams": [], "aws_access_key_id": "access_key", "aws_secret_access_key": "secret_access_key", "endpoint": "http://test.com"}, ValidationError, id="cannot-have-endpoint-and-aws-info"),
+        pytest.param({"bucket": "test", "streams": [], "aws_access_key_id": "access_key", "aws_secret_access_key": "secret_access_key", "endpoint": "http://test.com"}, None, id="config-created-with-endpoint-and-aws-info"),
         pytest.param({"streams": []}, ValidationError, id="missing-bucket"),
     ]
 )

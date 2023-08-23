@@ -19,6 +19,8 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition> {
@@ -30,13 +32,19 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new StreamId(namespace, name, rawNamespaceOverride, StreamId.concatenateRawTableName(namespace, name), namespace, name);
+    return new StreamId(
+        escapeIdentifier(namespace),
+        escapeIdentifier(name),
+        escapeIdentifier(rawNamespaceOverride),
+        escapeIdentifier(StreamId.concatenateRawTableName(namespace, name)),
+        namespace,
+        name);
   }
 
   @Override
   public ColumnId buildColumnId(final String name) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new ColumnId(name, name, name);
+    return new ColumnId(escapeIdentifier(name), name, name);
   }
 
   public String toDialectType(final AirbyteType type) {
@@ -77,19 +85,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String createTable(final StreamConfig stream, final String suffix) {
+  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
         .collect(joining("\n"));
-    // TODO indexes and stuff
+    final String forceCreateTable = force ? "OR REPLACE" : "";
+
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
         "final_table_id", stream.id().finalTableId(QUOTE, suffix),
+        "force_create_table", forceCreateTable,
         "column_declarations", columnDeclarations)).replace(
         """
         CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
-        CREATE TABLE ${final_table_id} (
+        CREATE ${force_create_table} TABLE ${final_table_id} (
           "_airbyte_raw_id" TEXT NOT NULL,
           "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
           "_airbyte_meta" VARIANT NOT NULL
@@ -100,9 +110,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable) throws TableNotMigratedException {
-    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS)) {
-      throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
-    }
 
     // Check that the columns match, with special handling for the metadata columns.
     final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
@@ -139,7 +146,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
+      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
@@ -176,7 +183,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       // 12:34:56.7+08:00
       // 12:34:56.7890123-0800
       // 12:34:56-08
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
           """
           CASE
             WHEN NOT ("_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
@@ -187,7 +194,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     } else {
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
-        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
           // Handle offsets in +/-HHMM and +/-HH formats
           // The four cases, in order, match:
           // 2023-01-01T12:34:56-0800
@@ -209,12 +216,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 END
                 """);
         // try_cast doesn't support variant/array/object, so handle them specially
-        case "VARIANT" -> "\"_airbyte_data\":\"" + column.originalName() + "\"";
+        case "VARIANT" -> "\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"";
         // We need to validate that the struct is actually a struct.
         // Note that struct columns are actually nullable in two ways. For a column `foo`:
         // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
         // JSON null).
-        case "OBJECT" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+        case "OBJECT" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
             """
             CASE
               WHEN TYPEOF("_airbyte_data":"${column_name}") != 'OBJECT'
@@ -223,7 +230,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             END
             """);
         // Much like the object case, arrays need special handling.
-        case "ARRAY" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+        case "ARRAY" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
             """
             CASE
               WHEN TYPEOF("_airbyte_data":"${column_name}") != 'ARRAY'
@@ -231,7 +238,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               ELSE "_airbyte_data":"${column_name}"
             END
             """);
-        default -> "TRY_CAST(\"_airbyte_data\":\"" + column.originalName() + "\"::text as " + dialectType + ")";
+        default -> "TRY_CAST(\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"::text as " + dialectType + ")";
       };
     }
   }
@@ -240,18 +247,24 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   String validatePrimaryKeys(final StreamId id,
                              final List<ColumnId> primaryKeys,
                              final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+    if (primaryKeys.stream().anyMatch(c -> c.originalName().contains("`"))) {
+      // TODO why is snowflake throwing a bizarre error when we try to use a column with a backtick in it?
+      // E.g. even this trivial procedure fails: (it should return the string `'foo`bar')
+      // execute immediate 'BEGIN RETURN \'foo`bar\'; END;'
+      return "";
+    }
+
     final String pkNullChecks = primaryKeys.stream().map(
         pk -> {
           final String jsonExtract = extractAndCast(pk, streamColumns.get(pk));
           return "AND " + jsonExtract + " IS NULL";
         }).collect(joining("\n"));
 
-    return new StringSubstitutor(Map.of(
+    final String script = new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "pk_null_checks", pkNullChecks)).replace(
             // Wrap this inside a script block so that we can use the scripting language
         """
-        EXECUTE IMMEDIATE $$
         BEGIN
         LET missing_pk_count INTEGER := (
           SELECT COUNT(1)
@@ -266,8 +279,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         END IF;
         RETURN 'SUCCESS';
         END;
-        $$;
         """);
+    return "EXECUTE IMMEDIATE '" + escapeSingleQuotedString(script) + "';";
   }
 
   @VisibleForTesting
@@ -277,7 +290,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .collect(joining("\n"));
     final String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
-            "raw_col_name", col.getKey().originalName(),
+            "raw_col_name", escapeIdentifier(col.getKey().originalName()),
+            "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
             "col_type", toDialectType(col.getValue()),
             "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
             // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
@@ -285,7 +299,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 CASE
                   WHEN (TYPEOF("_airbyte_data":"${raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
                     AND (${json_extract} IS NULL)
-                    THEN ['Problem with `${raw_col_name}`']
+                    THEN ['Problem with `${printable_col_name}`']
                   ELSE []
                 END"""))
         .reduce(
@@ -342,20 +356,23 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   String dedupFinalTable(final StreamId id,
                          final String finalSuffix,
                          final List<ColumnId> primaryKey,
-                         final ColumnId cursor) {
+                         final Optional<ColumnId> cursor) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+    final String cursorOrderClause = cursor
+        .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
+        .orElse("");
 
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
-        "cursor_name", cursor.name(QUOTE))
-    ).replace(
+        "cursor_order_clause", cursorOrderClause
+    )).replace(
         """
         DELETE FROM ${final_table_id}
         WHERE "_airbyte_raw_id" IN (
           SELECT "_airbyte_raw_id" FROM (
             SELECT "_airbyte_raw_id", row_number() OVER (
-              PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC NULLS LAST, "_airbyte_extracted_at" DESC
+              PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} "_airbyte_extracted_at" DESC
             ) as row_number FROM ${final_table_id}
           )
           WHERE row_number != 1
@@ -443,7 +460,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String softReset(final StreamConfig stream) {
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
@@ -459,6 +476,56 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
-    return "";
+    // In the SQL below, the v2 values are quoted to preserve their case while the v1 values are
+    // intentionally _not_ quoted. This is to preserve the implicit upper-casing behavior in v1.
+    return new StringSubstitutor(Map.of(
+        "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
+        "raw_table_name", streamId.rawTableId(QUOTE),
+        "raw_id", JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+        "extracted_at", JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        "loaded_at", JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        "data", JavaBaseConstants.COLUMN_NAME_DATA,
+        "v1_raw_id", JavaBaseConstants.COLUMN_NAME_AB_ID,
+        "emitted_at", JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+        "v1_raw_table", String.join(".", namespace, tableName)
+    ))
+        .replace(
+            """
+                CREATE SCHEMA IF NOT EXISTS ${raw_namespace};
+
+                CREATE OR REPLACE TABLE ${raw_table_name} (
+                  "${raw_id}" VARCHAR PRIMARY KEY,
+                  "${extracted_at}" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+                  "${loaded_at}" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+                  "${data}" VARIANT
+                )
+                data_retention_time_in_days = 0
+                AS (
+                  SELECT
+                    ${v1_raw_id} AS "${raw_id}",
+                    ${emitted_at} AS "${extracted_at}",
+                    CAST(NULL AS TIMESTAMP WITH TIME ZONE) AS "${loaded_at}",
+                    PARSE_JSON(${data}) AS "${data}"
+                  FROM ${v1_raw_table}
+                )
+                ;
+                """
+        );
+  }
+
+  public static String escapeIdentifier(final String identifier) {
+    // Note that we don't need to escape backslashes here!
+    // The only special character in an identifier is the double-quote, which needs to be doubled.
+    return identifier.replace("\"", "\"\"");
+  }
+
+  public static String escapeSingleQuotedString(final String str) {
+    return str
+        .replace("\\", "\\\\")
+        .replace("'", "\\'");
+  }
+
+  public static String escapeDollarString(final String str) {
+    return str.replace("$$", "\\$\\$");
   }
 }

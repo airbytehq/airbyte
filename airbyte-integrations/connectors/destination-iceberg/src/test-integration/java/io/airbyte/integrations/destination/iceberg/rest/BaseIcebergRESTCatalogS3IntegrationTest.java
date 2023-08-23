@@ -25,7 +25,7 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
   private static RESTServerWithMinioCompose composeContainer;
   private static JsonNode config;
 
-  static void startCompose(DataFileFormat fileFormat) {
+  static void startCompose(final DataFileFormat fileFormat) {
     composeContainer = new RESTServerWithMinioCompose();
     composeContainer.start();
     config = composeContainer.getComposeConfig(fileFormat);
@@ -39,10 +39,10 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {}
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @Override
   protected String getImageName() {
@@ -60,10 +60,10 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-      String streamName,
-      String namespace,
-      JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
   }
