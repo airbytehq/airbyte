@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import jsonschema
@@ -14,7 +14,12 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from source_google_search_console.exceptions import InvalidSiteURLValidationError
+from source_google_search_console.exceptions import (
+    InvalidSiteURLValidationError,
+    UnauthorizedOauthError,
+    UnauthorizedServiceAccountError,
+    UnidentifiedError,
+)
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
@@ -99,31 +104,45 @@ class SourceGoogleSearchConsole(AbstractSource):
                 next(sites_gen)
             return True, None
 
-        except (InvalidSiteURLValidationError, jsonschema.ValidationError) as e:
+        except (InvalidSiteURLValidationError, UnauthorizedOauthError, UnauthorizedServiceAccountError, jsonschema.ValidationError) as e:
             return False, repr(e)
-        except Exception as error:
+        except (Exception, UnidentifiedError) as error:
             return (
                 False,
-                f"Unable to connect to Google Search Console API with the provided credentials - {repr(error)}",
+                f"Unable to check connectivity to Google Search Console API - {repr(error)}",
             )
 
-    @staticmethod
-    def validate_site_urls(site_urls, auth):
+    def validate_site_urls(self, site_urls: List[str], auth: Union[ServiceAccountAuthenticator, Oauth2Authenticator]):
         if isinstance(auth, ServiceAccountAuthenticator):
             request = auth(requests.Request(method="GET", url="https://www.googleapis.com/webmasters/v3/sites"))
             with requests.Session() as s:
                 response = s.send(s.prepare_request(request))
+                # the exceptions for `service account` are handled in `service_account_authenticator.py`
         else:
-            response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth.get_auth_header())
-        response_data = response.json()
-
+            # catch the error while refreshing the access token
+            auth_header = self.get_client_auth_header(auth)
+            if "error" in auth_header:
+                if auth_header.get("code", 0) in [400, 401]:
+                    raise UnauthorizedOauthError
+            # validate site urls with provided authenticator
+            response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth_header)
+        # validate the status of the response, if it was successfull
         if response.status_code != 200:
-            raise Exception(f"Unable to connect to Google Search Console API - {response_data}")
+            raise UnidentifiedError(response.json())
 
-        remote_site_urls = {s["siteUrl"] for s in response_data["siteEntry"]}
+        remote_site_urls = {s["siteUrl"] for s in response.json()["siteEntry"]}
         invalid_site_url = set(site_urls) - remote_site_urls
         if invalid_site_url:
-            raise InvalidSiteURLValidationError(f'The following URLs are not permitted: {", ".join(invalid_site_url)}')
+            raise InvalidSiteURLValidationError(invalid_site_url)
+
+    def get_client_auth_header(self, auth: Oauth2Authenticator) -> Mapping[str, Any]:
+        try:
+            return auth.get_auth_header()
+        except requests.exceptions.HTTPError as e:
+            return {
+                "code": e.response.status_code,
+                "error": e.response.json(),
+            }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
