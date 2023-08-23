@@ -27,6 +27,10 @@ const config = {
         redirects: [
           // /docs/oldDoc -> /docs/newDoc
           {
+            from: "/airbyte-pro",
+            to: "/airbyte-enterprise"
+          },
+          {
             from: "/upgrading-airbyte",
             to: "/operator-guides/upgrading-airbyte",
           },
