@@ -115,18 +115,22 @@ class SourceMixpanel(AbstractSource):
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = self.get_authenticator(config)
-        streams = []
-        for stream in [
+        # TODO: Explore if we can check all streams are accessible by reading from them without affecting time taken by discover call a lot
+        # Reference PR https://github.com/airbytehq/airbyte/pull/27252
+        streams = [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
+        ]
+
+        # streams with dynamically generated schema
+        for stream in [
             CohortMembers(authenticator=auth, **config),
             Engage(authenticator=auth, **config),
             Export(authenticator=auth, **config),
         ]:
             try:
-                next(read_full_refresh(stream), None)
                 stream.get_json_schema()
             except requests.HTTPError as e:
                 if e.response.status_code != 402:
