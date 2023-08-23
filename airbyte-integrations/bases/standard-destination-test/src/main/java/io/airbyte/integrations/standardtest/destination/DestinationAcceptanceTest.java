@@ -24,7 +24,6 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.configoss.JobGetSpecConfig;
 import io.airbyte.configoss.OperatorDbt;
@@ -983,9 +982,8 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    // A randomized namespace is required otherwise you can generate a "false success" with data from a
-    // previous run.
-    final String namespace = Strings.addRandomSuffix("airbyte_source_namespace", "_", 8);
+    // A unique namespace is required to avoid test isolation problems.
+    final String namespace = TestingNamespaces.generate("source_namespace");
     TEST_SCHEMAS.add(namespace);
 
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
@@ -1019,12 +1017,12 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    final var namespace1 = Strings.addRandomSuffix("sourcenamespace", "_", 8);
+    final var namespace1 = TestingNamespaces.generate("source_namespace");
     TEST_SCHEMAS.add(namespace1);
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
 
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
-    final var namespace2 = Strings.addRandomSuffix("diff_sourcenamespace", "_", 8);
+    final var namespace2 = TestingNamespaces.generate("diff_source_namespace");
     TEST_SCHEMAS.add(namespace2);
     final var mapper = MoreMappers.initMapper();
     for (final AirbyteStream stream : catalog.getStreams()) {
@@ -1803,14 +1801,11 @@ public abstract class DestinationAcceptanceTest {
           Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON));
       return MoreIterators.toList(testCases.elements()).stream()
           .filter(testCase -> testCase.get("enabled").asBoolean())
-          .map(testCase -> {
-            final String randomSuffix = Strings.addRandomSuffix("", "_", 5);
-            return Arguments.of(
-                testCase.get("id").asText(),
-                // Randomise namespace to avoid collisions between tests.
-                testCase.get("namespace").asText() + randomSuffix,
-                testCase.get("normalized").asText() + randomSuffix);
-          });
+          .map(testCase -> Arguments.of(
+              testCase.get("id").asText(),
+              // Add uniqueness to namespace to avoid collisions between tests.
+              TestingNamespaces.generate(testCase.get("namespace").asText()),
+              TestingNamespaces.generate(testCase.get("normalized").asText())));
     }
 
   }
