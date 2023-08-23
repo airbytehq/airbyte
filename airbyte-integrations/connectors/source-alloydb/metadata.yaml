@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
-  dockerImageTag: 3.1.3
+  dockerImageTag: 3.1.5
   dockerRepository: airbyte/source-alloydb
   githubIssueLabel: source-alloydb
   icon: alloydb.svg
