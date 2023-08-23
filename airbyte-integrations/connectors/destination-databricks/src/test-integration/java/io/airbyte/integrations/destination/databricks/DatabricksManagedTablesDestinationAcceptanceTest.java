@@ -87,7 +87,7 @@ public class DatabricksManagedTablesDestinationAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
     DatabricksUtilTest.cleanUpData(databricksConfig);
   }
 

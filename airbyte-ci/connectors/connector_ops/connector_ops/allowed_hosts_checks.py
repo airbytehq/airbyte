@@ -8,15 +8,13 @@ from typing import List
 
 from connector_ops import utils
 
-RELEASE_STAGES_TO_CHECK = ["generally_available", "beta"]
-
 
 def get_connectors_missing_allowed_hosts() -> List[utils.Connector]:
     connectors_missing_allowed_hosts: List[utils.Connector] = []
     changed_connectors = utils.get_changed_connectors(destination=False, third_party=False)
 
     for connector in changed_connectors:
-        if connector.release_stage in RELEASE_STAGES_TO_CHECK:
+        if connector.requires_allowed_hosts_check:
             missing = not connector_has_allowed_hosts(connector)
             if missing:
                 connectors_missing_allowed_hosts.append(connector)
@@ -31,7 +29,7 @@ def connector_has_allowed_hosts(connector: utils.Connector) -> bool:
 def check_allowed_hosts():
     connectors_missing_allowed_hosts = get_connectors_missing_allowed_hosts()
     if connectors_missing_allowed_hosts:
-        logging.error(f"The following {RELEASE_STAGES_TO_CHECK} connectors must include allowedHosts: {connectors_missing_allowed_hosts}")
+        logging.error(f"The following connectors must include allowedHosts: {connectors_missing_allowed_hosts}")
         sys.exit(1)
     else:
         sys.exit(0)

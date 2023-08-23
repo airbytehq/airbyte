@@ -6,6 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import partial
+from math import ceil
 from queue import Queue
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -40,6 +41,8 @@ class FBMarketingStream(Stream, ABC):
     enable_deleted = True
     # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
     entity_prefix = None
+    # In case of Error 'Too much data was requested in batch' some fields should be removed from request
+    fields_exceptions = []
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -50,7 +53,7 @@ class FBMarketingStream(Stream, ABC):
         self._api = api
         self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
-        self.max_batch_size = max_batch_size if max_batch_size is not None else 50
+        self.max_batch_size = self._initial_max_batch_size = max_batch_size if max_batch_size is not None else 50
 
     @cached_property
     def fields(self) -> List[str]:
@@ -72,15 +75,30 @@ class FBMarketingStream(Stream, ABC):
             requests_q.put(r)
 
         def success(response: FacebookResponse):
+            self.max_batch_size = self._initial_max_batch_size
             records.append(response.json())
+
+        def reduce_batch_size(request: FacebookRequest):
+            if self.max_batch_size == 1 and set(self.fields_exceptions) & set(request._fields):
+                logger.warning(
+                    f"Removing fields from object {self.name} with id={request._node_id} : {set(self.fields_exceptions) & set(request._fields)}"
+                )
+                request._fields = [x for x in request._fields if x not in self.fields_exceptions]
+            elif self.max_batch_size == 1:
+                raise RuntimeError("Batch request failed with only 1 request in it")
+            self.max_batch_size = ceil(self.max_batch_size / 2)
+            logger.warning(f"Caught retryable error: Too much data was requested in batch. Reducing batch size to {self.max_batch_size}")
 
         def failure(response: FacebookResponse, request: Optional[FacebookRequest] = None):
             # although it is Optional in the signature for compatibility, we need it always
             assert request, "Missing a request object"
             resp_body = response.json()
-            if not isinstance(resp_body, dict) or resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE:
-                # response body is not a json object or the error code is different
+            if not isinstance(resp_body, dict):
                 raise RuntimeError(f"Batch request failed with response: {resp_body}")
+            elif resp_body.get("error", {}).get("message") == "Please reduce the amount of data you're asking for, then retry your request":
+                reduce_batch_size(request)
+            elif resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE:
+                raise RuntimeError(f"Batch request failed with response: {resp_body}; unknown error code")
             requests_q.put(request)
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
