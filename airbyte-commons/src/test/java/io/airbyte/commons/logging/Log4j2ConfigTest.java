@@ -123,5 +123,4 @@ class Log4j2ConfigTest {
 
     assertFalse(Files.exists(root.resolve(LOG_FILENAME)));
   }
-
 }

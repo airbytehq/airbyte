@@ -38,7 +38,8 @@ public class CursorManagerTest {
 
   @Test
   void testCreateCursorInfoCatalogAndStateSameCursorField() {
-    final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
+    final CursorManager<DbStreamState> cursorManager =
+        createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
         getState(CURSOR_FIELD1, CURSOR, CURSOR_RECORD_COUNT),
@@ -46,12 +47,16 @@ public class CursorManagerTest {
         DbStreamState::getCursor,
         DbStreamState::getCursorField,
         CURSOR_RECORD_COUNT_FUNCTION);
-    assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, CURSOR_RECORD_COUNT, CURSOR_FIELD1, CURSOR, CURSOR_RECORD_COUNT), actual);
+    assertEquals(
+        new CursorInfo(
+            CURSOR_FIELD1, CURSOR, CURSOR_RECORD_COUNT, CURSOR_FIELD1, CURSOR, CURSOR_RECORD_COUNT),
+        actual);
   }
 
   @Test
   void testCreateCursorInfoCatalogAndStateSameCursorFieldButNoCursor() {
-    final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, null, NAME_NAMESPACE_PAIR1);
+    final CursorManager<DbStreamState> cursorManager =
+        createCursorManager(CURSOR_FIELD1, null, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
         getState(CURSOR_FIELD1, null),
@@ -64,7 +69,8 @@ public class CursorManagerTest {
 
   @Test
   void testCreateCursorInfoCatalogAndStateChangeInCursorFieldName() {
-    final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
+    final CursorManager<DbStreamState> cursorManager =
+        createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
         getState(CURSOR_FIELD1, CURSOR),
@@ -77,7 +83,8 @@ public class CursorManagerTest {
 
   @Test
   void testCreateCursorInfoCatalogAndNoState() {
-    final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
+    final CursorManager<DbStreamState> cursorManager =
+        createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
         Optional.empty(),
@@ -90,7 +97,8 @@ public class CursorManagerTest {
 
   @Test
   void testCreateCursorInfoStateAndNoCatalog() {
-    final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
+    final CursorManager<DbStreamState> cursorManager =
+        createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
         getState(CURSOR_FIELD1, CURSOR),
@@ -104,7 +112,8 @@ public class CursorManagerTest {
   // this is what full refresh looks like.
   @Test
   void testCreateCursorInfoNoCatalogAndNoState() {
-    final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
+    final CursorManager<DbStreamState> cursorManager =
+        createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
         Optional.empty(),
@@ -117,7 +126,8 @@ public class CursorManagerTest {
 
   @Test
   void testCreateCursorInfoStateAndCatalogButNoCursorField() {
-    final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
+    final CursorManager<DbStreamState> cursorManager =
+        createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
         getState(CURSOR_FIELD1, CURSOR),
@@ -130,7 +140,8 @@ public class CursorManagerTest {
 
   @Test
   void testGetters() {
-    final CursorManager cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
+    final CursorManager cursorManager =
+        createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actualCursorInfo = new CursorInfo(CURSOR_FIELD1, CURSOR, null, null);
 
     assertEquals(Optional.of(actualCursorInfo), cursorManager.getCursorInfo(NAME_NAMESPACE_PAIR1));
@@ -142,9 +153,10 @@ public class CursorManagerTest {
     assertEquals(Optional.empty(), cursorManager.getCursor(NAME_NAMESPACE_PAIR2));
   }
 
-  private CursorManager<DbStreamState> createCursorManager(final String cursorField,
-                                                           final String cursor,
-                                                           final AirbyteStreamNameNamespacePair nameNamespacePair) {
+  private CursorManager<DbStreamState> createCursorManager(
+      final String cursorField,
+      final String cursor,
+      final AirbyteStreamNameNamespacePair nameNamespacePair) {
     final DbStreamState dbStreamState = getState(cursorField, cursor).get();
     return new CursorManager<>(
         getCatalog(cursorField).orElse(null),
@@ -155,5 +167,4 @@ public class CursorManagerTest {
         s -> nameNamespacePair,
         false);
   }
-
 }

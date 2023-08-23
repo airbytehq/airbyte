@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
@@ -56,37 +60,42 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
   }
 
   @Override
-  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesFromIncrementalSync(
+      final List<AirbyteStateMessage> stateMessages) {
     super.assertExpectedStateMessages(stateMessages);
   }
 
   @Override
-  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
+  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(
+      final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
     if (syncNumber == 1) {
       assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(stateMessages);
     } else if (syncNumber == 2) {
-      // Sync number 2 uses the state from sync number 1 but before we trigger the sync 2 we purge the binary logs and as a result the validation of
+      // Sync number 2 uses the state from sync number 1 but before we trigger the sync 2 we purge
+      // the binary logs and as a result the validation of
       // logs present on the server fails, and we trigger a sync from scratch
       assertEquals(47, stateMessages.size());
       assertStateTypes(stateMessages, 44);
     } else {
       throw new RuntimeException("Unknown sync number");
     }
-
   }
 
   @Override
-  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(
+      final List<AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
     assertStateTypes(stateAfterFirstBatch, 24);
   }
 
   @Override
-  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesForNoData(
+      final List<AirbyteStateMessage> stateMessages) {
     assertEquals(2, stateMessages.size());
   }
 
-  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectPkState) {
+  private void assertStateTypes(
+      final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectPkState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -102,7 +111,9 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
       if (i <= indexTillWhichExpectPkState) {
         assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
-        assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.getStreamState().get(STATE_TYPE_KEY).asText());
+        assertEquals(
+            PRIMARY_KEY_STATE_TYPE,
+            streamState.getStreamState().get(STATE_TYPE_KEY).asText());
       } else {
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       }
@@ -110,28 +121,37 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
   }
 
   @Override
-  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
+  protected void assertStateMessagesForNewTableSnapshotTest(
+      final List<AirbyteStateMessage> stateMessages,
       final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size());
     for (int i = 0; i <= 4; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessage.getType());
-      assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+      assertEquals(
+          stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
           stateMessage.getGlobal().getSharedState());
-      final Set<StreamDescriptor> streamsInSnapshotState = stateMessage.getGlobal().getStreamStates()
-          .stream()
-          .map(AirbyteStreamState::getStreamDescriptor)
-          .collect(Collectors.toSet());
+      final Set<StreamDescriptor> streamsInSnapshotState =
+          stateMessage.getGlobal().getStreamStates().stream()
+              .map(AirbyteStreamState::getStreamDescriptor)
+              .collect(Collectors.toSet());
       assertEquals(2, streamsInSnapshotState.size());
-      assertTrue(
-          streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor()
+          .withName(MODELS_STREAM_NAME + "_random")
+          .withNamespace(randomTableSchema())));
+      assertTrue(streamsInSnapshotState.contains(
+          new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
 
       stateMessage.getGlobal().getStreamStates().forEach(s -> {
         final JsonNode streamState = s.getStreamState();
-        if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema()))) {
+        if (s.getStreamDescriptor()
+            .equals(new StreamDescriptor()
+                .withName(MODELS_STREAM_NAME + "_random")
+                .withNamespace(randomTableSchema()))) {
           assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.get(STATE_TYPE_KEY).asText());
-        } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA))) {
+        } else if (s.getStreamDescriptor()
+            .equals(
+                new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA))) {
           assertFalse(streamState.has(STATE_TYPE_KEY));
         } else {
           throw new RuntimeException("Unknown stream");
@@ -141,34 +161,41 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
     final AirbyteStateMessage secondLastSateMessage = stateMessages.get(5);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, secondLastSateMessage.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+    assertEquals(
+        stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
         secondLastSateMessage.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSnapshotState = secondLastSateMessage.getGlobal().getStreamStates()
-        .stream()
-        .map(AirbyteStreamState::getStreamDescriptor)
-        .collect(Collectors.toSet());
+    final Set<StreamDescriptor> streamsInSnapshotState =
+        secondLastSateMessage.getGlobal().getStreamStates().stream()
+            .map(AirbyteStreamState::getStreamDescriptor)
+            .collect(Collectors.toSet());
     assertEquals(2, streamsInSnapshotState.size());
-    assertTrue(
-        streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor()
+        .withName(MODELS_STREAM_NAME + "_random")
+        .withNamespace(randomTableSchema())));
+    assertTrue(streamsInSnapshotState.contains(
+        new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     secondLastSateMessage.getGlobal().getStreamStates().forEach(s -> {
       final JsonNode streamState = s.getStreamState();
       assertFalse(streamState.has(STATE_TYPE_KEY));
     });
 
     final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
-    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+    assertEquals(
+        AirbyteStateMessage.AirbyteStateType.GLOBAL,
+        stateMessageEmittedAfterSecondSyncCompletion.getType());
+    assertNotEquals(
+        stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
         stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
-        .stream()
-        .map(AirbyteStreamState::getStreamDescriptor)
-        .collect(Collectors.toSet());
+    final Set<StreamDescriptor> streamsInSyncCompletionState =
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates().stream()
+            .map(AirbyteStreamState::getStreamDescriptor)
+            .collect(Collectors.toSet());
     assertEquals(2, streamsInSnapshotState.size());
-    assertTrue(
-        streamsInSyncCompletionState.contains(
-            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor()
+        .withName(MODELS_STREAM_NAME + "_random")
+        .withNamespace(randomTableSchema())));
+    assertTrue(streamsInSyncCompletionState.contains(
+        new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
@@ -176,11 +203,12 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
   public void testCompositeIndexInitialLoad() throws Exception {
     // Simulate adding a composite index by modifying the catalog.
     final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
-    final List<List<String>> primaryKeys = configuredCatalog.getStreams().get(0).getStream().getSourceDefinedPrimaryKey();
+    final List<List<String>> primaryKeys =
+        configuredCatalog.getStreams().get(0).getStream().getSourceDefinedPrimaryKey();
     primaryKeys.add(List.of("make_id"));
 
-    final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
-        .read(getConfig(), configuredCatalog, null);
+    final AutoCloseableIterator<AirbyteMessage> read1 =
+        getSource().read(getConfig(), configuredCatalog, null);
 
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
 
@@ -191,11 +219,12 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
     // Re-run the sync with state associated with record w/ id = 15 (second to last record).
     // We expect to read 2 records, since in the case of a composite PK we issue a >= query.
-    // We also expect 3 state records. One associated with the pk state, one to signify end of initial load, and
+    // We also expect 3 state records. One associated with the pk state, one to signify end of
+    // initial load, and
     // the last one indicating the cdc position we have synced until.
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(4)));
-    final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
-        .read(getConfig(), configuredCatalog, state);
+    final AutoCloseableIterator<AirbyteMessage> read2 =
+        getSource().read(getConfig(), configuredCatalog, state);
 
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
@@ -219,12 +248,16 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
-        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
+    createTable(
+        MODELS_SCHEMA,
+        MODELS_STREAM_NAME + "_2",
+        columnClause(
+            ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"),
+            Optional.of(COL_ID)));
 
     for (final JsonNode recordJson : MODEL_RECORDS_2) {
-      writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID,
-          COL_MAKE_ID, COL_MODEL);
+      writeRecords(
+          recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID, COL_MAKE_ID, COL_MODEL);
     }
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
@@ -234,8 +267,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
                 Field.of(COL_ID, JsonSchemaType.INTEGER),
                 Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
                 Field.of(COL_MODEL, JsonSchemaType.STRING))
-            .withSupportedSyncModes(
-                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
 
@@ -243,8 +275,8 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
     streams.add(airbyteStream);
     configuredCatalog.withStreams(streams);
 
-    final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
-        .read(getConfig(), configuredCatalog, null);
+    final AutoCloseableIterator<AirbyteMessage> read1 =
+        getSource().read(getConfig(), configuredCatalog, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
 
     final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
@@ -273,14 +305,17 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
-        assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.getStreamState().get(STATE_TYPE_KEY).asText());
+        assertEquals(
+            PRIMARY_KEY_STATE_TYPE,
+            streamState.getStreamState().get(STATE_TYPE_KEY).asText());
       } else if (i == 5) {
         // 5th state message is the final state message emitted for the stream
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       } else if (i <= 10) {
-        // 6th to 10th is the primary_key state message for the 2nd stream but final state message for 1st stream
+        // 6th to 10th is the primary_key state message for the 2nd stream but final state message
+        // for 1st stream
         assertEquals(2, global.getStreamStates().size());
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
@@ -288,11 +323,13 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
             assertTrue(c.getStreamState().has(STATE_TYPE_KEY));
-            assertEquals(PRIMARY_KEY_STATE_TYPE, c.getStreamState().get(STATE_TYPE_KEY).asText());
+            assertEquals(
+                PRIMARY_KEY_STATE_TYPE, c.getStreamState().get(STATE_TYPE_KEY).asText());
           }
         });
       } else {
-        // last 2 state messages don't contain primary_key info cause primary_key sync should be complete
+        // last 2 state messages don't contain primary_key info cause primary_key sync should be
+        // complete
         assertEquals(2, global.getStreamStates().size());
         global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has(STATE_TYPE_KEY)));
       }
@@ -300,18 +337,24 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
     final Set<String> names = new HashSet<>(STREAM_NAMES);
     names.add(MODELS_STREAM_NAME + "_2");
-    assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
+    assertExpectedRecords(
+        Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
             .collect(Collectors.toSet()),
         recordMessages1,
         names,
         names,
         MODELS_SCHEMA);
 
-    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA), firstStreamInState);
+    assertEquals(
+        new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA),
+        firstStreamInState);
 
     // Triggering a sync with a primary_key state for 1 stream and complete state for other stream
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
-        .read(getConfig(), configuredCatalog, Jsons.jsonNode(Collections.singletonList(stateMessages1.get(6))));
+        .read(
+            getConfig(),
+            configuredCatalog,
+            Jsons.jsonNode(Collections.singletonList(stateMessages1.get(6))));
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
@@ -327,23 +370,27 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
       if (i <= 3) {
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
-          // First 4 state messages are primary_key state for the stream that didn't complete primary_key sync the first time
+          // First 4 state messages are primary_key state for the stream that didn't complete
+          // primary_key sync the first time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
             assertTrue(c.getStreamState().has(STATE_TYPE_KEY));
-            assertEquals(PRIMARY_KEY_STATE_TYPE, c.getStreamState().get(STATE_TYPE_KEY).asText());
+            assertEquals(
+                PRIMARY_KEY_STATE_TYPE, c.getStreamState().get(STATE_TYPE_KEY).asText());
           }
         });
       } else {
-        // last 2 state messages don't contain primary_key info cause primary_key sync should be complete
+        // last 2 state messages don't contain primary_key info cause primary_key sync should be
+        // complete
         global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has(STATE_TYPE_KEY)));
       }
     }
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
     assertEquals(5, recordMessages2.size());
-    assertExpectedRecords(new HashSet<>(MODEL_RECORDS_2.subList(1, MODEL_RECORDS_2.size())),
+    assertExpectedRecords(
+        new HashSet<>(MODEL_RECORDS_2.subList(1, MODEL_RECORDS_2.size())),
         recordMessages2,
         names,
         names,

@@ -56,19 +56,20 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -93,10 +94,9 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
         db.getUsername(),
         db.getPassword(),
         db.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()),
+        String.format(
+            "jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            db.getHost(), db.getFirstMappedPort(), db.getDatabaseName()),
         SQLDialect.DEFAULT);
 
     setLocalInFileToTrue();
@@ -111,14 +111,15 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
     db.close();
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return new Database(dslContext).query(
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .stream()
-            .map(this::getJsonFromRecord)
-            .collect(Collectors.toList()));
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
+    return new Database(dslContext).query(ctx -> ctx
+        .fetch(String.format(
+            "SELECT * FROM %s.%s ORDER BY %s ASC;",
+            schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+        .stream()
+        .map(this::getJsonFromRecord)
+        .collect(Collectors.toList()));
   }
 
   private void setLocalInFileToTrue() {
@@ -130,7 +131,8 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   private void grantCorrectPermissions() {
-    executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery(
+        "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
   }
 
   private void executeQuery(final String query) {
@@ -138,14 +140,11 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
         "root",
         "test",
         db.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()),
+        String.format(
+            "jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            db.getHost(), db.getFirstMappedPort(), db.getDatabaseName()),
         SQLDialect.DEFAULT)) {
-      new Database(dslContext).query(
-          ctx -> ctx
-              .execute(query));
+      new Database(dslContext).query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
@@ -153,12 +152,13 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   @Test
   public void testUserHasNoPermissionToDataBase() {
-    executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
-    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
+    executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '"
+        + PASSWORD_WITHOUT_PERMISSION + "';\n");
+    final JsonNode config =
+        ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
   }
-
 }

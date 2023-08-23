@@ -19,9 +19,8 @@ import org.junit.jupiter.api.Test;
 
 class DefaultDestStateLifecycleManagerTest {
 
-  private static final AirbyteMessage UNSET_TYPE_MESSAGE = new AirbyteMessage()
-      .withType(Type.STATE)
-      .withState(new AirbyteStateMessage());
+  private static final AirbyteMessage UNSET_TYPE_MESSAGE =
+      new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage());
   private static final AirbyteMessage LEGACY_MESSAGE = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
@@ -32,7 +31,8 @@ class DefaultDestStateLifecycleManagerTest {
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("users"))));
+          .withStream(new AirbyteStreamState()
+              .withStreamDescriptor(new StreamDescriptor().withName("users"))));
 
   private DestStateLifecycleManager mgr1;
   private DestStateLifecycleManager singleStateMgr;
@@ -47,28 +47,32 @@ class DefaultDestStateLifecycleManagerTest {
 
   @Test
   void testFailsOnIncompatibleStates() {
-    final DefaultDestStateLifecycleManager manager1 = new DefaultDestStateLifecycleManager(singleStateMgr, streamMgr);
+    final DefaultDestStateLifecycleManager manager1 =
+        new DefaultDestStateLifecycleManager(singleStateMgr, streamMgr);
     manager1.addState(UNSET_TYPE_MESSAGE);
     manager1.addState(UNSET_TYPE_MESSAGE);
     manager1.addState(LEGACY_MESSAGE);
     assertThrows(IllegalArgumentException.class, () -> manager1.addState(GLOBAL_MESSAGE));
     assertThrows(IllegalArgumentException.class, () -> manager1.addState(STREAM_MESSAGE));
 
-    final DefaultDestStateLifecycleManager manager2 = new DefaultDestStateLifecycleManager(singleStateMgr, streamMgr);
+    final DefaultDestStateLifecycleManager manager2 =
+        new DefaultDestStateLifecycleManager(singleStateMgr, streamMgr);
     manager2.addState(LEGACY_MESSAGE);
     manager2.addState(LEGACY_MESSAGE);
     manager2.addState(UNSET_TYPE_MESSAGE);
     assertThrows(IllegalArgumentException.class, () -> manager2.addState(GLOBAL_MESSAGE));
     assertThrows(IllegalArgumentException.class, () -> manager2.addState(STREAM_MESSAGE));
 
-    final DefaultDestStateLifecycleManager manager3 = new DefaultDestStateLifecycleManager(singleStateMgr, streamMgr);
+    final DefaultDestStateLifecycleManager manager3 =
+        new DefaultDestStateLifecycleManager(singleStateMgr, streamMgr);
     manager3.addState(GLOBAL_MESSAGE);
     manager3.addState(GLOBAL_MESSAGE);
     assertThrows(IllegalArgumentException.class, () -> manager3.addState(UNSET_TYPE_MESSAGE));
     assertThrows(IllegalArgumentException.class, () -> manager3.addState(LEGACY_MESSAGE));
     assertThrows(IllegalArgumentException.class, () -> manager3.addState(STREAM_MESSAGE));
 
-    final DefaultDestStateLifecycleManager manager4 = new DefaultDestStateLifecycleManager(singleStateMgr, streamMgr);
+    final DefaultDestStateLifecycleManager manager4 =
+        new DefaultDestStateLifecycleManager(singleStateMgr, streamMgr);
     manager4.addState(STREAM_MESSAGE);
     manager4.addState(STREAM_MESSAGE);
     assertThrows(IllegalArgumentException.class, () -> manager4.addState(UNSET_TYPE_MESSAGE));
@@ -120,5 +124,4 @@ class DefaultDestStateLifecycleManagerTest {
     verify(streamMgr).listFlushed();
     verify(streamMgr).listCommitted();
   }
-
 }

@@ -30,10 +30,8 @@ public class KinesisStreamConfig {
 
   @Override
   public String toString() {
-    return "KinesisStreamConfig{" +
-        "streamName='" + streamName + '\'' +
-        ", destinationSyncMode=" + destinationSyncMode +
-        '}';
+    return "KinesisStreamConfig{" + "streamName='"
+        + streamName + '\'' + ", destinationSyncMode="
+        + destinationSyncMode + '}';
   }
-
 }

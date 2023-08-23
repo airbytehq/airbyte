@@ -17,10 +17,7 @@ public class BlobDecoratorTest {
     final Map<String, String> metadata = new HashMap<>();
     metadata.put("amz-foo", "oldValue");
 
-    BlobDecorator.insertMetadata(
-        metadata,
-        Map.of("foo", "amz-foo"),
-        "foo", "newValue");
+    BlobDecorator.insertMetadata(metadata, Map.of("foo", "amz-foo"), "foo", "newValue");
 
     assertEquals(Map.of("amz-foo", "newValue"), metadata);
   }
@@ -30,10 +27,7 @@ public class BlobDecoratorTest {
     final Map<String, String> metadata = new HashMap<>();
     metadata.put("amz-foo", "oldValue");
 
-    BlobDecorator.insertMetadata(
-        metadata,
-        Map.of("bar", "amz-bar"),
-        "bar", "newValue");
+    BlobDecorator.insertMetadata(metadata, Map.of("bar", "amz-bar"), "bar", "newValue");
 
     assertEquals(
         Map.of(
@@ -47,12 +41,8 @@ public class BlobDecoratorTest {
     final Map<String, String> metadata = new HashMap<>();
     metadata.put("amz-foo", "oldValue");
 
-    BlobDecorator.insertMetadata(
-        metadata,
-        Map.of("foo", "amz-foo"),
-        "bar", "newValue");
+    BlobDecorator.insertMetadata(metadata, Map.of("foo", "amz-foo"), "bar", "newValue");
 
     assertEquals(Map.of("amz-foo", "oldValue"), metadata);
   }
-
 }

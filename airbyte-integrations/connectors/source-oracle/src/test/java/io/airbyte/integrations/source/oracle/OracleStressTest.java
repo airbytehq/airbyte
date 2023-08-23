@@ -45,8 +45,7 @@ class OracleStressTest extends JdbcStressTest {
     COL_ID_TYPE = "NUMBER(38,0)";
     INSERT_STATEMENT = "INTO id_and_name (id, name) VALUES (%s,'picard-%s')";
 
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withEnv("RELAX_SECURITY", "1");
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g").withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
 
@@ -94,20 +93,25 @@ class OracleStressTest extends JdbcStressTest {
     static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
 
     public OracleTestSource() {
-      super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+      super(
+          DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-          .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:oracle:thin:@//%s:%s/xe",
-              config.get(JdbcUtils.HOST_KEY).asText(),
-              config.get(JdbcUtils.PORT_KEY).asText(),
-              config.get("sid").asText()));
+          .put(
+              JdbcUtils.JDBC_URL_KEY,
+              String.format(
+                  "jdbc:oracle:thin:@//%s:%s/xe",
+                  config.get(JdbcUtils.HOST_KEY).asText(),
+                  config.get(JdbcUtils.PORT_KEY).asText(),
+                  config.get("sid").asText()));
 
       if (config.has(JdbcUtils.PASSWORD_KEY)) {
-        configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+        configBuilder.put(
+            JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
       }
 
       return Jsons.jsonNode(configBuilder.build());
@@ -125,7 +129,5 @@ class OracleStressTest extends JdbcStressTest {
       new IntegrationRunner(source).run(args);
       LOGGER.info("completed source: {}", OracleTestSource.class);
     }
-
   }
-
 }

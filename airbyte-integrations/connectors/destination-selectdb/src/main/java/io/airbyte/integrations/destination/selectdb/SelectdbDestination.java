@@ -65,9 +65,10 @@ public class SelectdbDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException, SQLException {
     final Map<String, SelectdbWriteConfig> writeConfigs = new HashMap<>();
     try {
@@ -98,7 +99,8 @@ public class SelectdbDestination extends BaseConnector implements Destination {
                 JavaBaseConstants.COLUMN_NAME_AB_ID,
                 JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
                 JavaBaseConstants.COLUMN_NAME_DATA);
-        final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), false);
+        final FileWriter fileWriter =
+            new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), false);
         final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
         SelectdbCopyInto sci = new SelectdbCopyInto(
             tmpPath,
@@ -130,9 +132,9 @@ public class SelectdbDestination extends BaseConnector implements Destination {
     }
     final Path normalizePath = path.normalize();
     if (!normalizePath.startsWith("/local")) {
-      throw new IllegalArgumentException("Copy into destination temp file should be inside the /local directory");
+      throw new IllegalArgumentException(
+          "Copy into destination temp file should be inside the /local directory");
     }
     return path;
   }
-
 }

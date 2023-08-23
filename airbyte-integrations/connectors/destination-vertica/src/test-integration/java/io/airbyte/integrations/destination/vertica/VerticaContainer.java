@@ -14,7 +14,8 @@ import org.testcontainers.utility.DockerImageName;
 
 public class VerticaContainer extends JdbcDatabaseContainer<VerticaContainer> {
 
-  private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("vertica/vertica-ce");
+  private static final DockerImageName DEFAULT_IMAGE_NAME =
+      DockerImageName.parse("vertica/vertica-ce");
 
   private static final int VERTICA_PORT = 5433;
   // Container defaults
@@ -98,5 +99,4 @@ public class VerticaContainer extends JdbcDatabaseContainer<VerticaContainer> {
     this.startupTimeoutSeconds = startupTimeoutSeconds;
     return this;
   }
-
 }

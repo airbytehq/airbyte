@@ -31,12 +31,11 @@ public class HostPortResolver {
   }
 
   private static String getIpAddress(GenericContainer container) {
-    return Objects.requireNonNull(container.getContainerInfo()
-        .getNetworkSettings()
-        .getNetworks()
-        .entrySet().stream()
-        .findFirst()
-        .get().getValue().getIpAddress());
+    return Objects.requireNonNull(
+        container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream()
+            .findFirst()
+            .get()
+            .getValue()
+            .getIpAddress());
   }
-
 }

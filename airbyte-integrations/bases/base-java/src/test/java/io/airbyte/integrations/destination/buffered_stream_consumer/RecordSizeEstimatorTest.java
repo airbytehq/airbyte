@@ -25,9 +25,12 @@ class RecordSizeEstimatorTest {
     // the estimate performs a size sampling every 3 records
     final RecordSizeEstimator sizeEstimator = new RecordSizeEstimator(3);
     final String stream = "stream";
-    final AirbyteRecordMessage record0 = new AirbyteRecordMessage().withStream(stream).withData(DATA_0);
-    final AirbyteRecordMessage record1 = new AirbyteRecordMessage().withStream(stream).withData(DATA_1);
-    final AirbyteRecordMessage record2 = new AirbyteRecordMessage().withStream(stream).withData(DATA_2);
+    final AirbyteRecordMessage record0 =
+        new AirbyteRecordMessage().withStream(stream).withData(DATA_0);
+    final AirbyteRecordMessage record1 =
+        new AirbyteRecordMessage().withStream(stream).withData(DATA_1);
+    final AirbyteRecordMessage record2 =
+        new AirbyteRecordMessage().withStream(stream).withData(DATA_2);
 
     // sample record message 1
     final long firstEstimation = DATA_1_SIZE;
@@ -54,12 +57,14 @@ class RecordSizeEstimatorTest {
   @Test
   public void testDifferentEstimationPerStream() {
     final RecordSizeEstimator sizeEstimator = new RecordSizeEstimator();
-    final AirbyteRecordMessage record0 = new AirbyteRecordMessage().withStream("stream1").withData(DATA_0);
-    final AirbyteRecordMessage record1 = new AirbyteRecordMessage().withStream("stream2").withData(DATA_1);
-    final AirbyteRecordMessage record2 = new AirbyteRecordMessage().withStream("stream3").withData(DATA_2);
+    final AirbyteRecordMessage record0 =
+        new AirbyteRecordMessage().withStream("stream1").withData(DATA_0);
+    final AirbyteRecordMessage record1 =
+        new AirbyteRecordMessage().withStream("stream2").withData(DATA_1);
+    final AirbyteRecordMessage record2 =
+        new AirbyteRecordMessage().withStream("stream3").withData(DATA_2);
     assertEquals(DATA_0_SIZE, sizeEstimator.getEstimatedByteSize(record0));
     assertEquals(DATA_1_SIZE, sizeEstimator.getEstimatedByteSize(record1));
     assertEquals(DATA_2_SIZE, sizeEstimator.getEstimatedByteSize(record2));
   }
-
 }

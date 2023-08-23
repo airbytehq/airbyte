@@ -45,7 +45,8 @@ public class KafkaSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final AirbyteConnectionStatus check = check(config);
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
@@ -61,5 +62,4 @@ public class KafkaSource extends BaseConnector implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("Completed source: {}", KafkaSource.class);
   }
-
 }

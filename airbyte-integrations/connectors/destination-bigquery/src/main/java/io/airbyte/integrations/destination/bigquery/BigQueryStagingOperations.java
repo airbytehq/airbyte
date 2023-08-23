@@ -46,7 +46,9 @@ public interface BigQueryStagingOperations {
    */
   void createStageIfNotExists(final String datasetId, final String stream);
 
-  String uploadRecordsToStage(final String datasetId, final String stream, final SerializableBuffer writer) throws Exception;
+  String uploadRecordsToStage(
+      final String datasetId, final String stream, final SerializableBuffer writer)
+      throws Exception;
 
   /**
    * Copies data from staging area to the target table
@@ -58,11 +60,12 @@ public interface BigQueryStagingOperations {
    * @param stagedFiles collection of staged files
    * @throws Exception
    */
-  void copyIntoTableFromStage(final String datasetId,
-                              final String stream,
-                              final TableId tableId,
-                              final Schema schema,
-                              final List<String> stagedFiles)
+  void copyIntoTableFromStage(
+      final String datasetId,
+      final String stream,
+      final TableId tableId,
+      final Schema schema,
+      final List<String> stagedFiles)
       throws Exception;
 
   /**
@@ -78,5 +81,4 @@ public interface BigQueryStagingOperations {
   void dropStageIfExists(final String datasetId, final String stream);
 
   void truncateTableIfExists(final String datasetId, final TableId tableId, Schema schema);
-
 }

@@ -50,7 +50,8 @@ public class SftpSource extends BaseConnector implements Source {
     try {
       final SftpCommand command = new SftpCommand(client, config);
       client.connect();
-      String workingDirectory = config.has("folder_path") ? config.get("folder_path").asText() : "";
+      String workingDirectory =
+          config.has("folder_path") ? config.get("folder_path").asText() : "";
       if (StringUtils.isNotBlank(workingDirectory)) {
         command.tryChangeWorkingDirectory(workingDirectory);
       }
@@ -60,7 +61,8 @@ public class SftpSource extends BaseConnector implements Source {
       LOGGER.error("Exception attempting to connect to the server: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the server with provided configuration. \n" + e.getMessage());
+          .withMessage(
+              "Could not connect to the server with provided configuration. \n" + e.getMessage());
     } finally {
       client.disconnect();
     }
@@ -80,13 +82,13 @@ public class SftpSource extends BaseConnector implements Source {
     try {
       final SftpCommand command = new SftpCommand(client, config);
       client.connect();
-      String workingDirectory = config.has("folder_path") ? config.get("folder_path").asText() : "";
+      String workingDirectory =
+          config.has("folder_path") ? config.get("folder_path").asText() : "";
       if (StringUtils.isNotBlank(workingDirectory)) {
         command.tryChangeWorkingDirectory(workingDirectory);
       }
       Map<String, JsonNode> fileSchemas = command.getFilesSchemas();
-      List<AirbyteStream> streams = fileSchemas.keySet()
-          .stream()
+      List<AirbyteStream> streams = fileSchemas.keySet().stream()
           .map(fileName -> new AirbyteStream()
               .withName(fileName)
               .withJsonSchema(fileSchemas.get(fileName))
@@ -102,35 +104,37 @@ public class SftpSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(
+      JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
     final SftpClient client = new SftpClient(config);
     final SftpCommand command = new SftpCommand(client, config);
     client.connect();
-    String workingDirectory = config.has("folder_path") ? config.get("folder_path").asText() : "";
+    String workingDirectory =
+        config.has("folder_path") ? config.get("folder_path").asText() : "";
     if (StringUtils.isNotBlank(workingDirectory)) {
       command.tryChangeWorkingDirectory(workingDirectory);
     }
 
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
 
-    catalog.getStreams()
-        .stream()
-        .map(ConfiguredAirbyteStream::getStream)
-        .forEach(stream -> {
-          AutoCloseableIterator<JsonNode> fileData = getFileDataIterator(command, stream);
-          AutoCloseableIterator<AirbyteMessage> messageIterator = getMessageIterator(fileData, stream.getName());
-          iteratorList.add(messageIterator);
-        });
-    return AutoCloseableIterators
-        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace), () -> {
+    catalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).forEach(stream -> {
+      AutoCloseableIterator<JsonNode> fileData = getFileDataIterator(command, stream);
+      AutoCloseableIterator<AirbyteMessage> messageIterator =
+          getMessageIterator(fileData, stream.getName());
+      iteratorList.add(messageIterator);
+    });
+    return AutoCloseableIterators.appendOnClose(
+        AutoCloseableIterators.concatWithEagerClose(
+            iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace),
+        () -> {
           LOGGER.info("Closing server connection.");
           client.disconnect();
           LOGGER.info("Closed server connection.");
         });
   }
 
-  private AutoCloseableIterator<AirbyteMessage> getMessageIterator(final AutoCloseableIterator<JsonNode> recordIterator,
-                                                                   final String streamName) {
+  private AutoCloseableIterator<AirbyteMessage> getMessageIterator(
+      final AutoCloseableIterator<JsonNode> recordIterator, final String streamName) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -139,8 +143,8 @@ public class SftpSource extends BaseConnector implements Source {
             .withData(r)));
   }
 
-  private AutoCloseableIterator<JsonNode> getFileDataIterator(final SftpCommand command,
-                                                              final AirbyteStream stream) {
+  private AutoCloseableIterator<JsonNode> getFileDataIterator(
+      final SftpCommand command, final AirbyteStream stream) {
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         List<JsonNode> fileData = command.getFileData(stream.getName());
@@ -150,5 +154,4 @@ public class SftpSource extends BaseConnector implements Source {
       }
     });
   }
-
 }

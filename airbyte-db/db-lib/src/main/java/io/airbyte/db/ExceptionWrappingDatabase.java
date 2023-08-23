@@ -33,5 +33,4 @@ public class ExceptionWrappingDatabase {
       throw new IOException(e);
     }
   }
-
 }

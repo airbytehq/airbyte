@@ -13,5 +13,4 @@ public final class AzureBlobStorageDestinationConstants {
   public static final int DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE = 5;
 
   private AzureBlobStorageDestinationConstants() {}
-
 }

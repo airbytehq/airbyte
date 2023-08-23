@@ -24,7 +24,6 @@ class KinesisNameTransformerTest {
     var column = kinesisNameTransformer.streamName("namespace", "stream");
 
     assertThat(column).matches("namespace_stream");
-
   }
 
   @Test
@@ -33,7 +32,5 @@ class KinesisNameTransformerTest {
     var keyspace = kinesisNameTransformer.streamName("**namespace^h", "##stream");
 
     assertThat(keyspace).matches("__namespace_h___stream");
-
   }
-
 }

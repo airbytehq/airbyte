@@ -33,9 +33,12 @@ public class InMemoryRecordBufferingStrategyTest {
 
   @Test
   public void testBuffering() throws Exception {
-    final InMemoryRecordBufferingStrategy buffering = new InMemoryRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES);
-    final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair("stream1", "namespace");
-    final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair("stream2", null);
+    final InMemoryRecordBufferingStrategy buffering =
+        new InMemoryRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES);
+    final AirbyteStreamNameNamespacePair stream1 =
+        new AirbyteStreamNameNamespacePair("stream1", "namespace");
+    final AirbyteStreamNameNamespacePair stream2 =
+        new AirbyteStreamNameNamespacePair("stream2", null);
     final AirbyteMessage message1 = generateMessage(stream1);
     final AirbyteMessage message2 = generateMessage(stream2);
     final AirbyteMessage message3 = generateMessage(stream2);
@@ -57,14 +60,15 @@ public class InMemoryRecordBufferingStrategyTest {
 
     // force flush to terminate test
     buffering.flushAllBuffers();
-    verify(recordWriter, times(1)).accept(stream2, List.of(message3.getRecord(), message4.getRecord()));
+    verify(recordWriter, times(1))
+        .accept(stream2, List.of(message3.getRecord(), message4.getRecord()));
   }
 
   private static AirbyteMessage generateMessage(final AirbyteStreamNameNamespacePair stream) {
-    return new AirbyteMessage().withRecord(new AirbyteRecordMessage()
-        .withStream(stream.getName())
-        .withNamespace(stream.getNamespace())
-        .withData(MESSAGE_DATA));
+    return new AirbyteMessage()
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(stream.getName())
+            .withNamespace(stream.getNamespace())
+            .withData(MESSAGE_DATA));
   }
-
 }

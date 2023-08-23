@@ -22,14 +22,14 @@ class SpecFormatTest {
   void testOnAllExistingConfig() throws IOException, JsonValidationException {
     final DefinitionsProvider definitionsProvider = new LocalDefinitionsProvider();
 
-    final List<JsonNode> sourceSpecs = definitionsProvider.getSourceDefinitions()
-        .stream()
-        .map(standardSourceDefinition -> standardSourceDefinition.getSpec().getConnectionSpecification())
+    final List<JsonNode> sourceSpecs = definitionsProvider.getSourceDefinitions().stream()
+        .map(standardSourceDefinition ->
+            standardSourceDefinition.getSpec().getConnectionSpecification())
         .toList();
 
-    final List<JsonNode> destinationSpecs = definitionsProvider.getDestinationDefinitions()
-        .stream()
-        .map(standardDestinationDefinition -> standardDestinationDefinition.getSpec().getConnectionSpecification())
+    final List<JsonNode> destinationSpecs = definitionsProvider.getDestinationDefinitions().stream()
+        .map(standardDestinationDefinition ->
+            standardDestinationDefinition.getSpec().getConnectionSpecification())
         .toList();
 
     final List<JsonNode> allSpecs = new ArrayList<>();
@@ -54,8 +54,8 @@ class SpecFormatTest {
   }
 
   private static boolean isValidJsonSchema(final JsonNode schema) {
-    return schema.isObject() && ((schema.has("properties") && schema.get("properties").isObject())
-        || (schema.has("oneOf") && schema.get("oneOf").isArray()));
+    return schema.isObject()
+        && ((schema.has("properties") && schema.get("properties").isObject())
+            || (schema.has("oneOf") && schema.get("oneOf").isArray()));
   }
-
 }

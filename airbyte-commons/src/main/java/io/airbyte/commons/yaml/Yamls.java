@@ -30,8 +30,10 @@ public class Yamls {
   private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initYamlMapper(YAML_FACTORY);
 
-  private static final YAMLFactory YAML_FACTORY_WITHOUT_QUOTES = new YAMLFactory().enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
-  private static final ObjectMapper OBJECT_MAPPER_WITHOUT_QUOTES = MoreMappers.initYamlMapper(YAML_FACTORY_WITHOUT_QUOTES);
+  private static final YAMLFactory YAML_FACTORY_WITHOUT_QUOTES =
+      new YAMLFactory().enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
+  private static final ObjectMapper OBJECT_MAPPER_WITHOUT_QUOTES =
+      MoreMappers.initYamlMapper(YAML_FACTORY_WITHOUT_QUOTES);
 
   /**
    * Serialize object to YAML string. String values WILL be wrapped in double quotes.
@@ -107,7 +109,6 @@ public class Yamls {
           }
           return endOfData();
         }
-
       };
 
       return AutoCloseableIterators.fromIterator(iterator, parser::close, null);
@@ -135,8 +136,8 @@ public class Yamls {
     private final SequenceWriter sequenceWriter;
 
     public YamlConsumer(final Writer writer, final ObjectMapper objectMapper) {
-      this.sequenceWriter = Exceptions.toRuntime(() -> objectMapper.writer().writeValuesAsArray(writer));
-
+      this.sequenceWriter =
+          Exceptions.toRuntime(() -> objectMapper.writer().writeValuesAsArray(writer));
     }
 
     @Override
@@ -153,7 +154,5 @@ public class Yamls {
       // closing the SequenceWriter closes the Writer that it wraps.
       sequenceWriter.close();
     }
-
   }
-
 }

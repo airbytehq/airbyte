@@ -14,6 +14,7 @@ public final class Metadata {
    * General Metadata
    */
   static final String JOB_LABEL_KEY = "job_id";
+
   static final String ATTEMPT_LABEL_KEY = "attempt_id";
   static final String WORKER_POD_LABEL_KEY = "airbyte";
   static final String WORKER_POD_LABEL_VALUE = "job-pod";
@@ -23,6 +24,7 @@ public final class Metadata {
    * These are more readable forms of {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
    */
   public static final String JOB_TYPE_KEY = "job_type";
+
   public static final String SYNC_JOB = "sync";
   public static final String SPEC_JOB = "spec";
   public static final String CHECK_JOB = "check";
@@ -33,10 +35,10 @@ public final class Metadata {
    * with naming/labels to help operations.
    */
   public static final String SYNC_STEP_KEY = "sync_step";
+
   public static final String READ_STEP = "read";
   public static final String WRITE_STEP = "write";
   public static final String NORMALIZE_STEP = "normalize";
   public static final String CUSTOM_STEP = "custom";
   public static final String ORCHESTRATOR_STEP = "orchestrator";
-
 }

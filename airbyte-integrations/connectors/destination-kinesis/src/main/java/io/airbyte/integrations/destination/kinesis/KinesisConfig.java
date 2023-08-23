@@ -26,12 +26,13 @@ public class KinesisConfig {
 
   private final int bufferSize;
 
-  public KinesisConfig(URI endpoint,
-                       String region,
-                       int shardCount,
-                       String accessKey,
-                       String privateKey,
-                       int bufferSize) {
+  public KinesisConfig(
+      URI endpoint,
+      String region,
+      int shardCount,
+      String accessKey,
+      String privateKey,
+      int bufferSize) {
     this.endpoint = endpoint;
     this.region = region;
     this.shardCount = shardCount;
@@ -87,8 +88,10 @@ public class KinesisConfig {
       return false;
     }
     KinesisConfig that = (KinesisConfig) o;
-    return Objects.equals(endpoint, that.endpoint) && Objects.equals(region, that.region) &&
-        accessKey.equals(that.accessKey) && privateKey.equals(that.privateKey);
+    return Objects.equals(endpoint, that.endpoint)
+        && Objects.equals(region, that.region)
+        && accessKey.equals(that.accessKey)
+        && privateKey.equals(that.privateKey);
   }
 
   @Override
@@ -101,7 +104,5 @@ public class KinesisConfig {
     public UncheckedURISyntaxException(Throwable cause) {
       super(cause);
     }
-
   }
-
 }

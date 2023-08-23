@@ -39,8 +39,9 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
 
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
-  private static final String NORMALIZATION_VERSION = "dev"; // this is hacky. This test should extend or encapsulate
-                                                             // PostgresDestinationAcceptanceTest
+  private static final String NORMALIZATION_VERSION =
+      "dev"; // this is hacky. This test should extend or encapsulate
+  // PostgresDestinationAcceptanceTest
 
   @Override
   protected String getImageName() {
@@ -56,13 +57,15 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-            .put("mode", "verify-full")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", PASSWORD)
-            .build())
+        .put(
+            JdbcUtils.SSL_MODE_KEY,
+            ImmutableMap.builder()
+                .put("mode", "verify-full")
+                .put("ca_certificate", certs.getCaCertificate())
+                .put("client_certificate", certs.getClientCertificate())
+                .put("client_key", certs.getClientKey())
+                .put("client_key_password", PASSWORD)
+                .build())
         .build());
   }
 
@@ -80,13 +83,13 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
@@ -97,10 +100,12 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the StandardNameTransformer, see (issue #1785) so we don't
+    // Temporarily disabling the behavior of the StandardNameTransformer, see (issue #1785) so we
+    // don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
     // // Currently, Normalization always quote tables identifiers
@@ -122,28 +127,30 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     try (final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         db.getJdbcUrl(),
         SQLDialect.POSTGRES)) {
-      return new Database(dslContext)
-          .query(
-              ctx -> ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList()));
+      return new Database(dslContext).query(ctx -> ctx
+          .fetch(String.format(
+              "SELECT * FROM %s.%s ORDER BY %s ASC;",
+              schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .stream()
+          .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+          .map(Jsons::deserialize)
+          .collect(Collectors.toList()));
     }
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
-    db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-        .asCompatibleSubstituteFor("postgres"));
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
+    db = new PostgreSQLContainer<>(
+        DockerImageName.parse("postgres:bullseye").asCompatibleSubstituteFor("postgres"));
     db.start();
     certs = getCertificate(db);
   }
@@ -163,12 +170,11 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-            .put("mode", "prefer")
-            .build())
-        .put("tunnel_method", ImmutableMap.builder()
-            .put("tunnel_method", "NO_TUNNEL")
-            .build())
+        .put(
+            JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder().put("mode", "prefer").build())
+        .put(
+            "tunnel_method",
+            ImmutableMap.builder().put("tunnel_method", "NO_TUNNEL").build())
         .build());
 
     final var actual = runCheck(config);
@@ -185,12 +191,12 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-            .put("mode", "require")
-            .build())
-        .put("tunnel_method", ImmutableMap.builder()
-            .put("tunnel_method", "NO_TUNNEL")
-            .build())
+        .put(
+            JdbcUtils.SSL_MODE_KEY,
+            ImmutableMap.builder().put("mode", "require").build())
+        .put(
+            "tunnel_method",
+            ImmutableMap.builder().put("tunnel_method", "NO_TUNNEL").build())
         .build());
 
     final var actual = runCheck(config);
@@ -211,5 +217,4 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   protected String getDestinationDefinitionKey() {
     return "airbyte/destination-postgres";
   }
-
 }

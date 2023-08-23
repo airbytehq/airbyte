@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 public enum SnapshotMetadata {
-
   FIRST,
   FIRST_IN_DATA_COLLECTION,
   LAST_IN_DATA_COLLECTION,
@@ -21,6 +20,7 @@ public enum SnapshotMetadata {
   private static final Set<SnapshotMetadata> ENTRIES_OF_SNAPSHOT_EVENTS =
       ImmutableSet.of(TRUE, FIRST, FIRST_IN_DATA_COLLECTION, LAST_IN_DATA_COLLECTION);
   private static final Map<String, SnapshotMetadata> STRING_TO_ENUM;
+
   static {
     STRING_TO_ENUM = new HashMap<>(12);
     STRING_TO_ENUM.put("true", TRUE);
@@ -47,5 +47,4 @@ public enum SnapshotMetadata {
   public static boolean isSnapshotEventMetadata(final SnapshotMetadata snapshotMetadata) {
     return ENTRIES_OF_SNAPSHOT_EVENTS.contains(snapshotMetadata);
   }
-
 }

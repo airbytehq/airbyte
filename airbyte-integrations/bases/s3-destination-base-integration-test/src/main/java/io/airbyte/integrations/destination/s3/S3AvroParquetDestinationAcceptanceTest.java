@@ -46,14 +46,16 @@ public abstract class S3AvroParquetDestinationAcceptanceTest extends S3Destinati
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
 
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
 
-      Map<String, Set<Type>> actualSchemaTypes = retrieveDataTypesFromPersistedFiles(streamName, schema);
+      Map<String, Set<Type>> actualSchemaTypes =
+          retrieveDataTypesFromPersistedFiles(streamName, schema);
       Map<String, Set<Type>> expectedSchemaTypes = retrieveExpectedDataTypes(stream);
 
       assertEquals(expectedSchemaTypes, actualSchemaTypes);
@@ -61,18 +63,13 @@ public abstract class S3AvroParquetDestinationAcceptanceTest extends S3Destinati
   }
 
   private Map<String, Set<Type>> retrieveExpectedDataTypes(AirbyteStream stream) {
-    Iterable<String> iterableNames = () -> stream.getJsonSchema().get("properties").fieldNames();
+    Iterable<String> iterableNames =
+        () -> stream.getJsonSchema().get("properties").fieldNames();
     Map<String, JsonNode> nameToNode = StreamSupport.stream(iterableNames.spliterator(), false)
-        .collect(Collectors.toMap(
-            Function.identity(),
-            name -> getJsonNode(stream, name)));
+        .collect(Collectors.toMap(Function.identity(), name -> getJsonNode(stream, name)));
 
-    return nameToNode
-        .entrySet()
-        .stream()
-        .collect(Collectors.toMap(
-            Entry::getKey,
-            entry -> getExpectedSchemaType(entry.getValue())));
+    return nameToNode.entrySet().stream()
+        .collect(Collectors.toMap(Entry::getKey, entry -> getExpectedSchemaType(entry.getValue())));
   }
 
   private JsonNode getJsonNode(AirbyteStream stream, String name) {
@@ -84,12 +81,15 @@ public abstract class S3AvroParquetDestinationAcceptanceTest extends S3Destinati
   }
 
   private Set<Type> getExpectedSchemaType(JsonNode fieldDefinition) {
-    final JsonNode typeProperty = fieldDefinition.get("type") == null ? fieldDefinition.get("$ref") : fieldDefinition.get("type");
+    final JsonNode typeProperty = fieldDefinition.get("type") == null
+        ? fieldDefinition.get("$ref")
+        : fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
-    final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
+    final String airbyteTypePropertyText =
+        airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     return Arrays.stream(JsonSchemaType.values())
-        .filter(
-            value -> value.getJsonSchemaType().equals(typeProperty.asText()) && compareAirbyteTypes(airbyteTypePropertyText, value))
+        .filter(value -> value.getJsonSchemaType().equals(typeProperty.asText())
+            && compareAirbyteTypes(airbyteTypePropertyText, value))
         .map(JsonSchemaType::getAvroType)
         .collect(Collectors.toSet());
   }
@@ -105,41 +105,37 @@ public abstract class S3AvroParquetDestinationAcceptanceTest extends S3Destinati
     return Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
   }
 
-  private List<AirbyteMessage> readMessagesFromFile(final String messagesFilename) throws IOException {
-    return MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+  private List<AirbyteMessage> readMessagesFromFile(final String messagesFilename)
+      throws IOException {
+    return MoreResources.readResource(messagesFilename)
+        .lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
   }
 
-  protected abstract Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception;
+  protected abstract Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(
+      final String streamName, final String namespace) throws Exception;
 
   protected Map<String, Set<Type>> getTypes(Record record) {
 
-    List<Field> fieldList = record
-        .getSchema()
-        .getFields()
-        .stream()
+    List<Field> fieldList = record.getSchema().getFields().stream()
         .filter(field -> !field.name().startsWith("_airbyte"))
         .toList();
 
     if (fieldList.size() == 1) {
-      return fieldList
-          .stream()
-          .collect(
-              Collectors.toMap(
-                  Field::name,
-                  field -> field.schema().getTypes().stream().map(Schema::getType).filter(type -> !type.equals(Type.NULL))
-                      .collect(Collectors.toSet())));
+      return fieldList.stream()
+          .collect(Collectors.toMap(Field::name, field -> field.schema().getTypes().stream()
+              .map(Schema::getType)
+              .filter(type -> !type.equals(Type.NULL))
+              .collect(Collectors.toSet())));
     } else {
-      return fieldList
-          .stream()
-          .collect(
-              Collectors.toMap(
-                  Field::name,
-                  field -> field.schema().getTypes()
-                      .stream().filter(type -> !type.getType().equals(Type.NULL))
-                      .flatMap(type -> type.getElementType().getTypes().stream()).map(Schema::getType).filter(type -> !type.equals(Type.NULL))
-                      .collect(Collectors.toSet())));
+      return fieldList.stream()
+          .collect(Collectors.toMap(Field::name, field -> field.schema().getTypes().stream()
+              .filter(type -> !type.getType().equals(Type.NULL))
+              .flatMap(type -> type.getElementType().getTypes().stream())
+              .map(Schema::getType)
+              .filter(type -> !type.equals(Type.NULL))
+              .collect(Collectors.toSet())));
     }
   }
-
 }

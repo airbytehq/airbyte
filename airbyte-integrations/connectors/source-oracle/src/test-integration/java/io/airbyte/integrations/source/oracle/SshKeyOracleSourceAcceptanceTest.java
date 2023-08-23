@@ -12,5 +12,4 @@ public class SshKeyOracleSourceAcceptanceTest extends AbstractSshOracleSourceAcc
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
-
 }

@@ -12,5 +12,4 @@ public interface AirbyteMessageDeserializer<T> {
   T deserialize(final JsonNode json);
 
   Version getTargetVersion();
-
 }

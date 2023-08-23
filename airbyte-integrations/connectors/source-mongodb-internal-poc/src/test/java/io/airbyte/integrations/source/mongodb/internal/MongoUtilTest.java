@@ -34,16 +34,20 @@ public class MongoUtilTest {
     final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
     final MongoCursor<Document> cursor = mock(MongoCursor.class);
     final String databaseName = "database";
-    final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final Document authorizedCollectionsResponse =
+        Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoClient mongoClient = mock(MongoClient.class);
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
-    final List<Map<String, Object>> schemaDiscoveryJsonResponses =
-        Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
-    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(s -> new Document(s)).collect(Collectors.toList());
+    final List<Map<String, Object>> schemaDiscoveryJsonResponses = Jsons.deserialize(
+        MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream()
+        .map(s -> new Document(s))
+        .collect(Collectors.toList());
 
     when(cursor.hasNext()).thenReturn(true, true, false);
-    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
+    when(cursor.next())
+        .thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
     when(aggregateIterable.cursor()).thenReturn(cursor);
     when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
@@ -61,16 +65,21 @@ public class MongoUtilTest {
     final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
     final MongoCursor<Document> cursor = mock(MongoCursor.class);
     final String databaseName = "database";
-    final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final Document authorizedCollectionsResponse =
+        Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoClient mongoClient = mock(MongoClient.class);
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
-    final List<Map<String, Object>> schemaDiscoveryJsonResponses =
-        Jsons.deserialize(MoreResources.readResource("schema_discovery_response_different_datatypes.json"), new TypeReference<>() {});
-    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(s -> new Document(s)).collect(Collectors.toList());
+    final List<Map<String, Object>> schemaDiscoveryJsonResponses = Jsons.deserialize(
+        MoreResources.readResource("schema_discovery_response_different_datatypes.json"),
+        new TypeReference<>() {});
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream()
+        .map(s -> new Document(s))
+        .collect(Collectors.toList());
 
     when(cursor.hasNext()).thenReturn(true, true, false);
-    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
+    when(cursor.next())
+        .thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
     when(aggregateIterable.cursor()).thenReturn(cursor);
     when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
@@ -81,8 +90,14 @@ public class MongoUtilTest {
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get("properties").size());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
-        streams.get(0).getJsonSchema().get("properties").get("total").get("type").asText());
+    assertEquals(
+        JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+        streams
+            .get(0)
+            .getJsonSchema()
+            .get("properties")
+            .get("total")
+            .get("type")
+            .asText());
   }
-
 }

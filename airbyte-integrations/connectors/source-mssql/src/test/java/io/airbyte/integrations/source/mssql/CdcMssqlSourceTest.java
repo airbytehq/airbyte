@@ -81,7 +81,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @BeforeAll
   public static void createContainer() {
     if (container == null) {
-      container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense();
+      container =
+          new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense();
       container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
       container.start();
     }
@@ -121,18 +122,16 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         container.getUsername(),
         container.getPassword(),
         DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%d",
-            container.getHost(),
-            container.getFirstMappedPort()),
+        String.format(
+            "jdbc:sqlserver://%s:%d", container.getHost(), container.getFirstMappedPort()),
         Map.of("encrypt", "false"));
 
     testDataSource = DataSourceFactory.create(
         testUserName,
         TEST_USER_PASSWORD,
         DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%d",
-            container.getHost(),
-            container.getFirstMappedPort()),
+        String.format(
+            "jdbc:sqlserver://%s:%d", container.getHost(), container.getFirstMappedPort()),
         Map.of("encrypt", "false"));
 
     dslContext = DSLContextFactory.create(dataSource, null);
@@ -164,7 +163,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private void alterPermissionsOnSchema(final Boolean grant, final String schema) {
     final String grantOrRemove = grant ? "GRANT" : "REVOKE";
-    executeQuery(String.format("USE %s;\n" + "%s SELECT ON SCHEMA :: [%s] TO %s", dbName, grantOrRemove, schema, testUserName));
+    executeQuery(String.format(
+        "USE %s;\n" + "%s SELECT ON SCHEMA :: [%s] TO %s",
+        dbName, grantOrRemove, schema, testUserName));
   }
 
   private void grantCorrectPermissions() {
@@ -196,7 +197,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  public void createTable(final String schemaName, final String tableName, final String columnClause) {
+  public void createTable(
+      final String schemaName, final String tableName, final String columnClause) {
     switchCdcOnDatabase(true, dbName);
     super.createTable(schemaName, tableName, columnClause);
 
@@ -214,7 +216,10 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
                 + "\t@source_name   = N'%s', \n"
                 + "\t@role_name     = N'%s',\n"
                 + "\t@supports_net_changes = 0",
-            schemaName, tableName, CDC_ROLE_NAME)); // enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving CDC_ROLE_NAME select access
+            schemaName,
+            tableName,
+            CDC_ROLE_NAME)); // enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving
+        // CDC_ROLE_NAME select access
         failingToStart = false;
       } catch (final Exception e) {
         if (retryNum >= maxRetries) {
@@ -232,7 +237,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  public String columnClause(final Map<String, String> columnsWithDataType, final Optional<String> primaryKey) {
+  public String columnClause(
+      final Map<String, String> columnsWithDataType, final Optional<String> primaryKey) {
     final StringBuilder columnClause = new StringBuilder();
     int i = 0;
     for (final Map.Entry<String, String> column : columnsWithDataType.entrySet()) {
@@ -268,7 +274,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertDoesNotThrow(() -> source.assertCdcEnabledInDb(config, testJdbcDatabase));
     // then disable cdc and assert the check fails
     switchCdcOnDatabase(false, dbName);
-    assertThrows(RuntimeException.class, () -> source.assertCdcEnabledInDb(config, testJdbcDatabase));
+    assertThrows(
+        RuntimeException.class, () -> source.assertCdcEnabledInDb(config, testJdbcDatabase));
   }
 
   @Test
@@ -277,7 +284,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertDoesNotThrow(() -> source.assertCdcSchemaQueryable(config, testJdbcDatabase));
     // now revoke perms and assert that check fails
     alterPermissionsOnSchema(false, "cdc");
-    assertThrows(com.microsoft.sqlserver.jdbc.SQLServerException.class, () -> source.assertCdcSchemaQueryable(config, testJdbcDatabase));
+    assertThrows(
+        com.microsoft.sqlserver.jdbc.SQLServerException.class,
+        () -> source.assertCdcSchemaQueryable(config, testJdbcDatabase));
   }
 
   private void switchSqlServerAgentAndWait(final Boolean start) throws InterruptedException {
@@ -291,7 +300,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
     // assert expected failure if sql server agent stopped
     switchSqlServerAgentAndWait(false);
-    assertThrows(RuntimeException.class, () -> source.assertSqlServerAgentRunning(testJdbcDatabase));
+    assertThrows(
+        RuntimeException.class, () -> source.assertSqlServerAgentRunning(testJdbcDatabase));
     // assert success if sql server agent running
     switchSqlServerAgentAndWait(true);
     assertDoesNotThrow(() -> source.assertSqlServerAgentRunning(testJdbcDatabase));
@@ -303,7 +313,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
     // now disable snapshot isolation and assert that check fails
     switchSnapshotIsolation(false, dbName);
-    assertThrows(RuntimeException.class, () -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
+    assertThrows(
+        RuntimeException.class,
+        () -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
   }
 
   @Test
@@ -358,13 +370,26 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   // todo: check we fail as expected under certain conditions
   @Test
   void testGetTargetPosition() throws InterruptedException {
-    Thread.sleep(10 * 1000); // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
+    Thread.sleep(10
+        * 1000); // Sleeping because sometimes the db is not yet completely ready and the lsn is not
+    // found
     // check that getTargetPosition returns higher Lsn after inserting new row
-    final Lsn firstLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
-    executeQuery(String.format("USE %s; INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
-        dbName, MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, 910019, 1, "another car"));
+    final Lsn firstLsn =
+        MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
+    executeQuery(String.format(
+        "USE %s; INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
+        dbName,
+        MODELS_SCHEMA,
+        MODELS_STREAM_NAME,
+        COL_ID,
+        COL_MAKE_ID,
+        COL_MODEL,
+        910019,
+        1,
+        "another car"));
     Thread.sleep(15 * 1000); // 15 seconds to wait for Agent capture job to log cdc change
-    final Lsn secondLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
+    final Lsn secondLsn =
+        MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
     assertTrue(secondLsn.compareTo(firstLsn) > 0);
   }
 
@@ -385,10 +410,12 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
       throw new RuntimeException(e);
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
-        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
+        DataSourceFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DRIVER_CLASS,
-            String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+            String.format(
+                "jdbc:sqlserver://%s:%s;databaseName=%s;",
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 dbName),
@@ -433,7 +460,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_EVENT_SERIAL_NO, stringType);
-
   }
 
   @Override
@@ -460,8 +486,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
-    assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_CDC_OFFSET));
-    assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_DB_HISTORY));
+    assertNotNull(
+        stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_CDC_OFFSET));
+    assertNotNull(
+        stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_DB_HISTORY));
   }
-
 }

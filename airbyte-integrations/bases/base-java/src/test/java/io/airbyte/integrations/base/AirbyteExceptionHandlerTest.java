@@ -48,7 +48,6 @@ public class AirbyteExceptionHandlerTest {
         doThrow(new RuntimeException("error")).when(runner).run(new String[] {"write"});
         runner.run(new String[] {"write"});
       }
-
     };
     thread.setUncaughtExceptionHandler(airbyteExceptionHandler);
     thread.start();
@@ -61,13 +60,16 @@ public class AirbyteExceptionHandlerTest {
     LoggerFactory.getLogger(AirbyteExceptionHandlerTest.class).debug(traceMsgJson.toString());
     Assertions.assertEquals("TRACE", traceMsgJson.get("type").asText());
     Assertions.assertEquals("ERROR", traceMsgJson.get("trace").get("type").asText());
-    Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMsgJson.get("trace").get("error").get("message").asText());
-    Assertions.assertEquals("system_error", traceMsgJson.get("trace").get("error").get("failure_type").asText());
+    Assertions.assertEquals(
+        AirbyteExceptionHandler.logMessage,
+        traceMsgJson.get("trace").get("error").get("message").asText());
+    Assertions.assertEquals(
+        "system_error",
+        traceMsgJson.get("trace").get("error").get("failure_type").asText());
   }
 
   @After
   public void revertOut() {
     System.setOut(originalOut);
   }
-
 }

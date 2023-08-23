@@ -59,7 +59,8 @@ class MongoDbSourceTest {
   @Test
   void testCheckOperation() throws IOException {
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-    final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final Document response =
+        Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
@@ -75,7 +76,8 @@ class MongoDbSourceTest {
   @Test
   void testCheckOperationNoAuthorizedCollections() throws IOException {
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-    final Document response = Document.parse(MoreResources.readResource("no_authorized_collections_response.json"));
+    final Document response =
+        Document.parse(MoreResources.readResource("no_authorized_collections_response.json"));
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
@@ -86,13 +88,16 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertEquals("Target MongoDB database does not contain any authorized collections.", airbyteConnectionStatus.getMessage());
+    assertEquals(
+        "Target MongoDB database does not contain any authorized collections.",
+        airbyteConnectionStatus.getMessage());
   }
 
   @Test
   void testCheckOperationInvalidClusterType() throws IOException {
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-    final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final Document response =
+        Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(clusterDescription.getType()).thenReturn(ClusterType.STANDALONE);
@@ -103,7 +108,9 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertEquals("Target MongoDB instance is not a replica set cluster.", airbyteConnectionStatus.getMessage());
+    assertEquals(
+        "Target MongoDB instance is not a replica set cluster.",
+        airbyteConnectionStatus.getMessage());
   }
 
   @Test
@@ -120,16 +127,20 @@ class MongoDbSourceTest {
   @Test
   void testDiscoverOperation() throws IOException {
     final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
-    final List<Map<String, Object>> schemaDiscoveryJsonResponses =
-        Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
-    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(s -> new Document(s)).collect(Collectors.toList());
-    final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final List<Map<String, Object>> schemaDiscoveryJsonResponses = Jsons.deserialize(
+        MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream()
+        .map(s -> new Document(s))
+        .collect(Collectors.toList());
+    final Document authorizedCollectionsResponse =
+        Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final MongoCursor<Document> cursor = mock(MongoCursor.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(cursor.hasNext()).thenReturn(true, true, false);
-    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
+    when(cursor.next())
+        .thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
     when(aggregateIterable.cursor()).thenReturn(cursor);
     when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
@@ -145,31 +156,69 @@ class MongoDbSourceTest {
     assertTrue(stream.isPresent());
     assertEquals(DB_NAME, stream.get().getNamespace());
     assertEquals("testCollection", stream.get().getName());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+    assertEquals(
+        JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("_id").get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+    assertEquals(
+        JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("name").get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get("last_updated").get("type").asText());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+    assertEquals(
+        JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream
+            .get()
+            .getJsonSchema()
+            .get("properties")
+            .get("last_updated")
+            .get("type")
+            .asText());
+    assertEquals(
+        JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("total").get("type").asText());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+    assertEquals(
+        JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("price").get("type").asText());
-    assertEquals(JsonSchemaType.ARRAY.getJsonSchemaTypeMap().get("type"),
+    assertEquals(
+        JsonSchemaType.ARRAY.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("items").get("type").asText());
-    assertEquals(JsonSchemaType.OBJECT.getJsonSchemaTypeMap().get("type"),
+    assertEquals(
+        JsonSchemaType.OBJECT.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("owners").get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+    assertEquals(
+        JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("other").get("type").asText());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_LSN).get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
+    assertEquals(
+        JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+        stream
+            .get()
+            .getJsonSchema()
+            .get("properties")
+            .get(DebeziumEventUtils.CDC_LSN)
+            .get("type")
+            .asText());
+    assertEquals(
+        JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream
+            .get()
+            .getJsonSchema()
+            .get("properties")
+            .get(DebeziumEventUtils.CDC_DELETED_AT)
+            .get("type")
+            .asText());
+    assertEquals(
+        JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream
+            .get()
+            .getJsonSchema()
+            .get("properties")
+            .get(DebeziumEventUtils.CDC_UPDATED_AT)
+            .get("type")
+            .asText());
     assertEquals(true, stream.get().getSourceDefinedCursor());
-    assertEquals(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
-    assertEquals(List.of(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD)), stream.get().getSourceDefinedPrimaryKey());
+    assertEquals(
+        List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
+    assertEquals(
+        List.of(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD)),
+        stream.get().getSourceDefinedPrimaryKey());
     assertEquals(MongoCatalogHelper.SUPPORTED_SYNC_MODES, stream.get().getSupportedSyncModes());
   }
 
@@ -197,11 +246,14 @@ class MongoDbSourceTest {
         "[{\"type\":\"STREAM\",\"stream\":{\"stream_descriptor\":{\"name\":\"test.acceptance_test1\"},\"stream_state\":{\"id\":\"64c0029d95ad260d69ef28a2\"}}}]");
     final var actual = source.convertState(state1);
     assertTrue(actual.containsKey("test.acceptance_test1"), "missing test.acceptance_test1");
-    assertEquals("64c0029d95ad260d69ef28a2", actual.get("test.acceptance_test1").id(), "id value does not match");
-
+    assertEquals(
+        "64c0029d95ad260d69ef28a2",
+        actual.get("test.acceptance_test1").id(),
+        "id value does not match");
   }
 
-  private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {
+  private static JsonNode createConfiguration(
+      final Optional<String> username, final Optional<String> password) {
     final Map<String, Object> config = new HashMap<>();
     final Map<String, Object> baseConfig = Map.of(
         MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
@@ -214,5 +266,4 @@ class MongoDbSourceTest {
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(config));
   }
-
 }

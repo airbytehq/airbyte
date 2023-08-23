@@ -20,11 +20,13 @@ public class DebeziumRecordIteratorTest {
 
   @Test
   public void getHeartbeatPositionTest() {
-    final DebeziumRecordIterator<Long> debeziumRecordIterator = new DebeziumRecordIterator<>(mock(LinkedBlockingQueue.class),
+    final DebeziumRecordIterator<Long> debeziumRecordIterator = new DebeziumRecordIterator<>(
+        mock(LinkedBlockingQueue.class),
         new CdcTargetPosition<>() {
 
           @Override
-          public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
+          public boolean reachedTargetPosition(
+              final ChangeEventWithMetadata changeEventWithMetadata) {
             return false;
           }
 
@@ -32,14 +34,14 @@ public class DebeziumRecordIteratorTest {
           public Long extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
             return (long) sourceOffset.get("lsn");
           }
-
         },
         () -> false,
         mock(DebeziumShutdownProcedure.class),
         Duration.ZERO);
     final Long lsn = debeziumRecordIterator.getHeartbeatPosition(new ChangeEvent<String, String>() {
 
-      private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
+      private final SourceRecord sourceRecord =
+          new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
 
       @Override
       public String key() {
@@ -59,10 +61,8 @@ public class DebeziumRecordIteratorTest {
       public SourceRecord sourceRecord() {
         return sourceRecord;
       }
-
     });
 
     assertEquals(lsn, 358824993496L);
   }
-
 }

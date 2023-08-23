@@ -11,5 +11,4 @@ import org.jooq.DSLContext;
 public interface ContextQueryFunction<T> {
 
   T query(DSLContext context) throws SQLException;
-
 }

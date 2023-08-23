@@ -24,14 +24,17 @@ public class RedshiftDestinationTest {
     standardInsertConfigStub.put("method", "Standard");
     final var uploadingMethodStub = mapper.createObjectNode();
     uploadingMethodStub.set("uploading_method", standardInsertConfigStub);
-    assertEquals(DestinationType.STANDARD, RedshiftDestination.determineUploadMode(uploadingMethodStub));
+    assertEquals(
+        DestinationType.STANDARD, RedshiftDestination.determineUploadMode(uploadingMethodStub));
   }
 
   @Test
   @DisplayName("When given standard backward compatibility test")
   public void useStandardInsertBackwardCompatibility() {
     final var standardInsertConfigStub = mapper.createObjectNode();
-    assertEquals(DestinationType.STANDARD, RedshiftDestination.determineUploadMode(standardInsertConfigStub));
+    assertEquals(
+        DestinationType.STANDARD,
+        RedshiftDestination.determineUploadMode(standardInsertConfigStub));
   }
 
   @Test
@@ -45,7 +48,8 @@ public class RedshiftDestinationTest {
     s3StagingStub.put("secret_access_key", "test key");
     s3StagingStub.put("method", "S3 Staging");
     uploadingMethodStub.set("uploading_method", s3StagingStub);
-    assertEquals(DestinationType.COPY_S3, RedshiftDestination.determineUploadMode(uploadingMethodStub));
+    assertEquals(
+        DestinationType.COPY_S3, RedshiftDestination.determineUploadMode(uploadingMethodStub));
   }
 
   @Test
@@ -58,5 +62,4 @@ public class RedshiftDestinationTest {
     s3StagingStub.put("secret_access_key", "test key");
     assertEquals(DestinationType.COPY_S3, RedshiftDestination.determineUploadMode(s3StagingStub));
   }
-
 }

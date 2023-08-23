@@ -24,5 +24,4 @@ public class S3AvroDestinationAcceptanceTest extends S3BaseAvroDestinationAccept
   protected JsonNode getBaseConfigJson() {
     return S3DestinationTestUtils.getBaseConfigJsonFilePath();
   }
-
 }

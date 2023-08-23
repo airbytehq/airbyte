@@ -48,7 +48,8 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
       properties.setProperty(JdbcUtils.HOST_KEY, config.get(JdbcUtils.HOST_KEY).asText());
       final var accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
           config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
-          credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
+          credentials.get("client_secret").asText(),
+              credentials.get("refresh_token").asText());
       properties.put("authenticator", "oauth");
       properties.put("token", accessToken);
     } catch (final IOException e) {
@@ -74,8 +75,7 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
   }
 
   JsonNode getStaticConfig() {
-    final JsonNode node = Jsons
-        .deserialize(IOs.readFile(Path.of("secrets/config_auth.json")));
+    final JsonNode node = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_auth.json")));
     ((ObjectNode) node).put("schema", SCHEMA_NAME);
     return node;
   }
@@ -84,5 +84,4 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
   public void testBackwardCompatibilityAfterAddingOAuth() throws Exception {
     // this test case is not valid for OAuth method
   }
-
 }

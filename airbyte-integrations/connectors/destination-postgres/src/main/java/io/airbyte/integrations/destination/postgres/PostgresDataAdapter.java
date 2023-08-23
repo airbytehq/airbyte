@@ -10,11 +10,9 @@ import io.airbyte.integrations.destination.jdbc.DataAdapter;
 public class PostgresDataAdapter extends DataAdapter {
 
   public PostgresDataAdapter() {
-    super(jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("\u0000"),
-        jsonNode -> {
-          final String textValue = jsonNode.textValue().replaceAll("\\u0000", "");
-          return Jsons.jsonNode(textValue);
-        });
+    super(jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("\u0000"), jsonNode -> {
+      final String textValue = jsonNode.textValue().replaceAll("\\u0000", "");
+      return Jsons.jsonNode(textValue);
+    });
   }
-
 }

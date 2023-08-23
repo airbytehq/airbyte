@@ -34,11 +34,9 @@ public class RedisStreamConfig {
 
   @Override
   public String toString() {
-    return "RedisStreamConfig{" +
-        "key='" + key + '\'' +
-        ", tmpKey='" + tmpKey + '\'' +
-        ", destinationSyncMode=" + destinationSyncMode +
-        '}';
+    return "RedisStreamConfig{" + "key='"
+        + key + '\'' + ", tmpKey='"
+        + tmpKey + '\'' + ", destinationSyncMode="
+        + destinationSyncMode + '}';
   }
-
 }

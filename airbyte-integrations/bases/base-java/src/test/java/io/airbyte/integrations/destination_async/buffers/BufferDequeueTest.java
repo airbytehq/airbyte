@@ -25,8 +25,7 @@ public class BufferDequeueTest {
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
   private static final PartialAirbyteMessage RECORD_MSG_20_BYTES = new PartialAirbyteMessage()
       .withType(Type.RECORD)
-      .withRecord(new PartialAirbyteRecordMessage()
-          .withStream(STREAM_NAME));
+      .withRecord(new PartialAirbyteRecordMessage().withStream(STREAM_NAME));
 
   @Nested
   class Take {
@@ -42,7 +41,8 @@ public class BufferDequeueTest {
       enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
       enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
 
-      // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records
+      // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull
+      // records
       // than over-pull).
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, 50)) {
         assertEquals(2, take.getData().size());
@@ -85,7 +85,6 @@ public class BufferDequeueTest {
         throw new RuntimeException(e);
       }
     }
-
   }
 
   @Test
@@ -131,5 +130,4 @@ public class BufferDequeueTest {
 
     assertTrue(dequeue.getTimeOfLastRecord(ghostStream).isEmpty());
   }
-
 }

@@ -74,9 +74,7 @@ class CassandraCqlProvider implements Closeable {
   }
 
   public void dropTableIfExists(String keyspace, String tableName) {
-    var query = SchemaBuilder.dropTable(keyspace, tableName)
-        .ifExists()
-        .build();
+    var query = SchemaBuilder.dropTable(keyspace, tableName).ifExists().build();
     cqlSession.execute(query);
   }
 
@@ -98,7 +96,8 @@ class CassandraCqlProvider implements Closeable {
     var query = QueryBuilder.selectFrom(keyspace, tableName)
         .columns(columnId, columnData, columnTimestamp)
         .build();
-    return cqlSession.execute(query)
+    return cqlSession
+        .execute(query)
         .map(result -> new CassandraRecord(
             result.get(columnId, UUID.class),
             result.get(columnData, String.class),
@@ -108,36 +107,41 @@ class CassandraCqlProvider implements Closeable {
 
   public List<Tuple<String, List<String>>> retrieveMetadata() {
     return cqlSession.getMetadata().getKeyspaces().values().stream()
-        .map(keyspace -> Tuple.of(keyspace.getName().toString(), keyspace.getTables().values()
-            .stream()
-            .map(table -> table.getName().toString())
-            .collect(Collectors.toList())))
+        .map(keyspace -> Tuple.of(
+            keyspace.getName().toString(),
+            keyspace.getTables().values().stream()
+                .map(table -> table.getName().toString())
+                .collect(Collectors.toList())))
         .collect(Collectors.toList());
   }
 
   public void copy(String keyspace, String sourceTable, String destinationTable) {
-    var select = String.format("SELECT * FROM %s.%s WHERE token(%s) > ? AND token(%s) <= ?",
+    var select = String.format(
+        "SELECT * FROM %s.%s WHERE token(%s) > ? AND token(%s) <= ?",
         keyspace, sourceTable, columnId, columnId);
 
     var selectStatement = cqlSession.prepare(select);
 
-    var insert = String.format("INSERT INTO %s.%s (%s, %s, %s) VALUES (?, ?, ?)",
+    var insert = String.format(
+        "INSERT INTO %s.%s (%s, %s, %s) VALUES (?, ?, ?)",
         keyspace, destinationTable, columnId, columnData, columnTimestamp);
 
     var insertStatement = cqlSession.prepare(insert);
 
     // perform full table scan in parallel using token ranges
     // optimal for copying large amounts of data
-    cqlSession.getMetadata().getTokenMap()
+    cqlSession
+        .getMetadata()
+        .getTokenMap()
         .map(TokenMap::getTokenRanges)
         .orElseThrow(IllegalStateException::new)
         .stream()
         .flatMap(range -> range.unwrap().stream())
         .map(range -> selectStatement.bind(range.getStart(), range.getEnd()))
         // explore datastax 4.x async api as an alternative for async processing
-        .map(selectBoundStatement -> executorService.submit(() -> asyncInsert(selectBoundStatement, insertStatement)))
+        .map(selectBoundStatement ->
+            executorService.submit(() -> asyncInsert(selectBoundStatement, insertStatement)))
         .forEach(this::awaitThread);
-
   }
 
   private void asyncInsert(BoundStatement select, PreparedStatement insert) {
@@ -146,7 +150,8 @@ class CassandraCqlProvider implements Closeable {
             r.get(columnId, UUID.class),
             r.get(columnData, String.class),
             r.get(columnTimestamp, Instant.class)))
-        .map(r -> insert.bind(r.getId(), r.getData(), r.getTimestamp())).toList();
+        .map(r -> insert.bind(r.getId(), r.getData(), r.getTimestamp()))
+        .toList();
 
     boundStatements.forEach(boundStatement -> {
       var resultSetCompletionStage = cqlSession.executeAsync(boundStatement);
@@ -176,5 +181,4 @@ class CassandraCqlProvider implements Closeable {
     // close cassandra session for the given config
     SessionManager.closeSession(cassandraConfig);
   }
-
 }

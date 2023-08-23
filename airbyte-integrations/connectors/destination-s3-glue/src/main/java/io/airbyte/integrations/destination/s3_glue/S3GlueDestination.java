@@ -44,13 +44,19 @@ public class S3GlueDestination extends BaseS3Destination {
     }
     final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
     MetastoreOperations metastoreOperations = null;
-    // If there are multiple syncs started at the same time a stataic test table name causes a resource
+    // If there are multiple syncs started at the same time a stataic test table name causes a
+    // resource
     // collision and a failure to sync.
     String tableSuffix = RandomStringUtils.randomAlphabetic(9);
     String tableName = "test_table_" + tableSuffix;
     try {
       metastoreOperations = new GlueOperations(glueConfig.getAWSGlueInstance());
-      metastoreOperations.upsertTable(glueConfig.getDatabase(), tableName, "s3://", Jsons.emptyObject(), glueConfig.getSerializationLibrary());
+      metastoreOperations.upsertTable(
+          glueConfig.getDatabase(),
+          tableName,
+          "s3://",
+          Jsons.emptyObject(),
+          glueConfig.getSerializationLibrary());
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
@@ -69,27 +75,29 @@ public class S3GlueDestination extends BaseS3Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
+    final S3DestinationConfig s3Config =
+        configFactory.getS3DestinationConfig(config, storageProvider());
     final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
     final NamingConventionTransformer nameTransformer = new S3NameTransformer();
-    return new S3GlueConsumerFactory().create(
-        outputRecordCollector,
-        new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
-        // TODO (itaseski) add Glue name transformer
-        new GlueOperations(glueConfig.getAWSGlueInstance()),
-        nameTransformer,
-        SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
-        s3Config,
-        glueConfig,
-        configuredCatalog);
+    return new S3GlueConsumerFactory()
+        .create(
+            outputRecordCollector,
+            new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
+            // TODO (itaseski) add Glue name transformer
+            new GlueOperations(glueConfig.getAWSGlueInstance()),
+            nameTransformer,
+            SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
+            s3Config,
+            glueConfig,
+            configuredCatalog);
   }
 
   @Override
   public StorageProvider storageProvider() {
     return StorageProvider.AWS_S3;
   }
-
 }

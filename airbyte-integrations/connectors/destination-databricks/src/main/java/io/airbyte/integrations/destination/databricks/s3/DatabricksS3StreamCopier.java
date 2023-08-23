@@ -51,30 +51,46 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
   private final S3DestinationConfig s3Config;
   private final S3ParquetWriter parquetWriter;
 
-  public DatabricksS3StreamCopier(final String stagingFolder,
-                                  final String catalog,
-                                  final String schema,
-                                  final ConfiguredAirbyteStream configuredStream,
-                                  final AmazonS3 s3Client,
-                                  final JdbcDatabase database,
-                                  final DatabricksDestinationConfig databricksConfig,
-                                  final StandardNameTransformer nameTransformer,
-                                  final SqlOperations sqlOperations,
-                                  final S3WriterFactory writerFactory,
-                                  final Timestamp uploadTime)
+  public DatabricksS3StreamCopier(
+      final String stagingFolder,
+      final String catalog,
+      final String schema,
+      final ConfiguredAirbyteStream configuredStream,
+      final AmazonS3 s3Client,
+      final JdbcDatabase database,
+      final DatabricksDestinationConfig databricksConfig,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final S3WriterFactory writerFactory,
+      final Timestamp uploadTime)
       throws Exception {
-    super(stagingFolder, catalog, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
+    super(
+        stagingFolder,
+        catalog,
+        schema,
+        configuredStream,
+        database,
+        databricksConfig,
+        nameTransformer,
+        sqlOperations);
     this.s3Client = s3Client;
     this.s3Config = databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
-    final S3DestinationConfig stagingS3Config = getStagingS3DestinationConfig(s3Config, stagingFolder);
-    this.parquetWriter = (S3ParquetWriter) writerFactory.create(stagingS3Config, s3Client, configuredStream, uploadTime);
+    final S3DestinationConfig stagingS3Config =
+        getStagingS3DestinationConfig(s3Config, stagingFolder);
+    this.parquetWriter = (S3ParquetWriter)
+        writerFactory.create(stagingS3Config, s3Client, configuredStream, uploadTime);
 
     LOGGER.info("[Stream {}] Parquet schema: {}", streamName, parquetWriter.getSchema());
 
     parquetWriter.initialize();
 
-    LOGGER.info("[Stream {}] Tmp table {} location: {}", streamName, tmpTableName, getTmpTableLocation());
-    LOGGER.info("[Stream {}] Data table {} location: {}", streamName, destTableName, getDestTableLocation());
+    LOGGER.info(
+        "[Stream {}] Tmp table {} location: {}", streamName, tmpTableName, getTmpTableLocation());
+    LOGGER.info(
+        "[Stream {}] Data table {} location: {}",
+        streamName,
+        destTableName,
+        getDestTableLocation());
   }
 
   @Override
@@ -83,7 +99,8 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String fileName) throws Exception {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String fileName)
+      throws Exception {
     parquetWriter.write(id, recordMessage);
   }
 
@@ -94,29 +111,30 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
 
   @Override
   protected String getTmpTableLocation() {
-    return String.format("s3://%s/%s",
-        s3Config.getBucketName(), parquetWriter.getOutputPrefix());
+    return String.format("s3://%s/%s", s3Config.getBucketName(), parquetWriter.getOutputPrefix());
   }
 
   @Override
   protected String getDestTableLocation() {
-    return String.format("s3://%s/%s/%s/%s",
+    return String.format(
+        "s3://%s/%s/%s/%s",
         s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.schema(), streamName);
   }
 
   @Override
   protected String getCreateTempTableStatement() {
-    return String.format("CREATE TABLE %s.%s.%s USING parquet LOCATION '%s';", catalogName, schemaName, tmpTableName, getTmpTableLocation());
+    return String.format(
+        "CREATE TABLE %s.%s.%s USING parquet LOCATION '%s';",
+        catalogName, schemaName, tmpTableName, getTmpTableLocation());
   }
 
   @Override
   public String generateMergeStatement(final String destTableName) {
     final String copyData = String.format(
-        "COPY INTO %s.%s.%s " +
-            "FROM '%s' " +
-            "FILEFORMAT = PARQUET " +
-            "PATTERN = '%s' " +
-            "COPY_OPTIONS ('mergeSchema' = '%s')",
+        "COPY INTO %s.%s.%s " + "FROM '%s' "
+            + "FILEFORMAT = PARQUET "
+            + "PATTERN = '%s' "
+            + "COPY_OPTIONS ('mergeSchema' = '%s')",
         catalogName,
         schemaName,
         destTableName,
@@ -129,7 +147,8 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
 
   @Override
   protected void deleteStagingFile() {
-    LOGGER.info("[Stream {}] Deleting staging file: {}", streamName, parquetWriter.getOutputFilePath());
+    LOGGER.info(
+        "[Stream {}] Deleting staging file: {}", streamName, parquetWriter.getOutputFilePath());
     s3Client.deleteObject(s3Config.getBucketName(), parquetWriter.getOutputFilePath());
   }
 
@@ -147,12 +166,12 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
    * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method
    * creates an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
    */
-  static S3DestinationConfig getStagingS3DestinationConfig(final S3DestinationConfig config, final String stagingFolder) {
+  static S3DestinationConfig getStagingS3DestinationConfig(
+      final S3DestinationConfig config, final String stagingFolder) {
     return S3DestinationConfig.create(config)
         .withBucketPath(String.join("/", config.getBucketPath(), stagingFolder))
         .withFormatConfig(new S3ParquetFormatConfig(MAPPER.createObjectNode()))
         .withFileNamePattern(Optional.ofNullable(config.getFileNamePattern()).orElse(EMPTY))
         .get();
   }
-
 }

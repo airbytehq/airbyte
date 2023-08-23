@@ -54,5 +54,4 @@ public interface NamingConventionTransformer {
   String convertStreamName(final String input);
 
   String applyDefaultCase(final String input);
-
 }

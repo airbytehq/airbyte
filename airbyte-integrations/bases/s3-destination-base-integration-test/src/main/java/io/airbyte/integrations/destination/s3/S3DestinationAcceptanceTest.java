@@ -95,26 +95,24 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   /**
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
-  protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
+  protected List<S3ObjectSummary> getAllSyncedObjects(
+      final String streamName, final String namespace) {
     final String namespaceStr = nameTransformer.getNamespace(namespace);
     final String streamNameStr = nameTransformer.getIdentifier(streamName);
     final String outputPrefix = s3StorageOperations.getBucketObjectPath(
-        namespaceStr,
-        streamNameStr,
-        DateTime.now(DateTimeZone.UTC),
-        config.getPathFormat());
+        namespaceStr, streamNameStr, DateTime.now(DateTimeZone.UTC), config.getPathFormat());
     // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
     final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
-    final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), parentFolder)
-        .getObjectSummaries()
-        .stream()
-        .filter(o -> o.getKey().contains(streamNameStr + "/"))
-        .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
-        .collect(Collectors.toList());
+    final List<S3ObjectSummary> objectSummaries =
+        s3Client.listObjects(config.getBucketName(), parentFolder).getObjectSummaries().stream()
+            .filter(o -> o.getKey().contains(streamNameStr + "/"))
+            .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
+            .collect(Collectors.toList());
     LOGGER.info(
         "All objects: {}",
-        objectSummaries.stream().map(o -> String.format("%s/%s", o.getBucketName(), o.getKey())).collect(Collectors.toList()));
+        objectSummaries.stream()
+            .map(o -> String.format("%s/%s", o.getBucketName(), o.getKey()))
+            .collect(Collectors.toList()));
     return objectSummaries;
   }
 
@@ -132,8 +130,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
     final JsonNode configJson = Jsons.clone(baseConfigJson);
     final String testBucketPath = String.format(
         "%s_test_%s",
-        outputFormat.name().toLowerCase(Locale.ROOT),
-        RandomStringUtils.randomAlphanumeric(5));
+        outputFormat.name().toLowerCase(Locale.ROOT), RandomStringUtils.randomAlphanumeric(5));
     ((ObjectNode) configJson)
         .put("s3_bucket_path", testBucketPath)
         .set("format", getFormatConfig());
@@ -152,18 +149,17 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     final List<KeyVersion> keysToDelete = new LinkedList<>();
-    final List<S3ObjectSummary> objects = s3Client
-        .listObjects(config.getBucketName(), config.getBucketPath())
-        .getObjectSummaries();
+    final List<S3ObjectSummary> objects =
+        s3Client.listObjects(config.getBucketName(), config.getBucketPath()).getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", config.getBucketName(),
-          config.getBucketPath());
-      final DeleteObjectsResult result = s3Client
-          .deleteObjects(new DeleteObjectsRequest(config.getBucketName()).withKeys(keysToDelete));
+      LOGGER.info(
+          "Tearing down test bucket path: {}/{}", config.getBucketName(), config.getBucketPath());
+      final DeleteObjectsResult result = s3Client.deleteObjects(
+          new DeleteObjectsRequest(config.getBucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
   }
@@ -191,5 +187,4 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   public StorageProvider storageProvider() {
     return StorageProvider.AWS_S3;
   }
-
 }

@@ -22,16 +22,17 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
+public abstract class AbstractCdcPostgresSourceSslAcceptanceTest
+    extends CdcPostgresSourceAcceptanceTest {
 
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-        .asCompatibleSubstituteFor("postgres"))
-            .withCommand("postgres -c wal_level=logical");
+    container = new PostgreSQLContainer<>(
+            DockerImageName.parse("postgres:bullseye").asCompatibleSubstituteFor("postgres"))
+        .withCommand("postgres -c wal_level=logical");
     container.start();
 
     certs = getCertificate(container);
@@ -58,7 +59,8 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -67,10 +69,13 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
 
       database.query(ctx -> {
         ctx.execute("CREATE TABLE id_and_name(id INTEGER primary key, name VARCHAR(200));");
-        ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.execute(
+            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         ctx.execute("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));");
-        ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-        ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
+        ctx.execute(
+            "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        ctx.execute(
+            "SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
         ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
         return null;
       });
@@ -78,5 +83,4 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
   }
 
   public abstract ImmutableMap getCertificateConfiguration();
-
 }

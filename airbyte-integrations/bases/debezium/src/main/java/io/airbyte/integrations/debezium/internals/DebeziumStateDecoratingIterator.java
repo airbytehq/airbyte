@@ -25,12 +25,14 @@ import org.slf4j.LoggerFactory;
  * checkpoints for CDC replications. That way, if the process fails in the middle of a long sync, it
  * will be able to recover for any acknowledged checkpoint in the next syncs.
  */
-public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<AirbyteMessage>
+    implements Iterator<AirbyteMessage> {
 
   public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
   public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
 
   private final Iterator<ChangeEventWithMetadata> changeEventIterator;
   private final CdcStateHandler cdcStateHandler;
@@ -55,6 +57,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    * <p/>
    */
   private final Duration syncCheckpointDuration;
+
   private final Long syncCheckpointRecords;
   private OffsetDateTime dateTimeLastSync;
   private Long recordsLastSync;
@@ -88,16 +91,17 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    * @param checkpointDuration Duration object with time between syncs
    * @param checkpointRecords Number of records between syncs
    */
-  public DebeziumStateDecoratingIterator(final Iterator<ChangeEventWithMetadata> changeEventIterator,
-                                         final CdcStateHandler cdcStateHandler,
-                                         final CdcTargetPosition<T> targetPosition,
-                                         final CdcMetadataInjector cdcMetadataInjector,
-                                         final Instant emittedAt,
-                                         final AirbyteFileOffsetBackingStore offsetManager,
-                                         final boolean trackSchemaHistory,
-                                         final AirbyteSchemaHistoryStorage schemaHistoryManager,
-                                         final Duration checkpointDuration,
-                                         final Long checkpointRecords) {
+  public DebeziumStateDecoratingIterator(
+      final Iterator<ChangeEventWithMetadata> changeEventIterator,
+      final CdcStateHandler cdcStateHandler,
+      final CdcTargetPosition<T> targetPosition,
+      final CdcMetadataInjector cdcMetadataInjector,
+      final Instant emittedAt,
+      final AirbyteFileOffsetBackingStore offsetManager,
+      final boolean trackSchemaHistory,
+      final AirbyteSchemaHistoryStorage schemaHistoryManager,
+      final Duration checkpointDuration,
+      final Long checkpointRecords) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
     this.targetPosition = targetPosition;
@@ -144,18 +148,23 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       final ChangeEventWithMetadata event = changeEventIterator.next();
 
       if (cdcStateHandler.isCdcCheckpointEnabled()) {
-        if (checkpointOffsetToSend.size() == 0 &&
-            (recordsLastSync >= syncCheckpointRecords ||
-                Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
-          // Using temporal variable to avoid reading teh offset twice, one in the condition and another in
+        if (checkpointOffsetToSend.size() == 0
+            && (recordsLastSync >= syncCheckpointRecords
+                || Duration.between(dateTimeLastSync, OffsetDateTime.now())
+                        .compareTo(syncCheckpointDuration)
+                    > 0)) {
+          // Using temporal variable to avoid reading teh offset twice, one in the condition and
+          // another in
           // the assignation
           try {
-            final HashMap<String, String> temporalOffset = (HashMap<String, String>) offsetManager.read();
+            final HashMap<String, String> temporalOffset =
+                (HashMap<String, String>) offsetManager.read();
             if (!targetPosition.isSameOffset(previousCheckpointOffset, temporalOffset)) {
               checkpointOffsetToSend.putAll(temporalOffset);
             }
           } catch (final ConnectException e) {
-            LOGGER.warn("Offset file is being written by Debezium. Skipping CDC checkpoint in this loop.");
+            LOGGER.warn(
+                "Offset file is being written by Debezium. Skipping CDC checkpoint in this loop.");
           }
         }
 
@@ -198,7 +207,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       throw new RuntimeException("Offset can not be null");
     }
 
-    return cdcStateHandler.saveState(offset, schemaHistoryManager != null ? schemaHistoryManager.read() : null);
+    return cdcStateHandler.saveState(
+        offset, schemaHistoryManager != null ? schemaHistoryManager.read() : null);
   }
-
 }

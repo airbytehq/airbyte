@@ -28,8 +28,9 @@ public class Sqls {
    * @return "'value1', 'value2', 'value3'"
    */
   public static <T extends Enum<T>> String toSqlInFragment(final Iterable<T> values) {
-    return StreamSupport.stream(values.spliterator(), false).map(Sqls::toSqlName).map(Names::singleQuote)
+    return StreamSupport.stream(values.spliterator(), false)
+        .map(Sqls::toSqlName)
+        .map(Names::singleQuote)
         .collect(Collectors.joining(",", "(", ")"));
   }
-
 }

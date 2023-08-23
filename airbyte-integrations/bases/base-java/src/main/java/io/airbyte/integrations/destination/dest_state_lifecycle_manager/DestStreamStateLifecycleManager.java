@@ -51,7 +51,8 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     final StreamDescriptor originalStreamId = message.getState().getStream().getStreamDescriptor();
     final StreamDescriptor actualStreamId;
     if (StringUtils.isNullOrEmpty(originalStreamId.getNamespace())) {
-      // If the state's namespace is null/empty, we need to be able to find it using the default namespace
+      // If the state's namespace is null/empty, we need to be able to find it using the default
+      // namespace
       // (because many destinations actually set records' namespace to the default namespace before
       // they make it into this class).
       // Clone the streamdescriptor so that we don't modify the original state message.
@@ -112,8 +113,10 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     // Many destinations actually modify the records' namespace immediately after reading them from
     // stdin,
     // but we should have a null-check here just in case.
-    final String actualNamespace = stream.getNamespace() == null ? defaultNamespace : stream.getNamespace();
-    final StreamDescriptor sd = new StreamDescriptor().withName(stream.getName()).withNamespace(actualNamespace);
+    final String actualNamespace =
+        stream.getNamespace() == null ? defaultNamespace : stream.getNamespace();
+    final StreamDescriptor sd =
+        new StreamDescriptor().withName(stream.getName()).withNamespace(actualNamespace);
     final AirbyteMessage lastPendingState = streamToLastPendingState.remove(sd);
     if (lastPendingState != null) {
       streamToLastCommittedState.put(sd, lastPendingState);
@@ -139,13 +142,11 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
    * @param streamToState - map of stream descriptor to its last state
    * @return queue with the states ordered per the sort mentioned above
    */
-  private static Queue<AirbyteMessage> listStatesInOrder(final Map<StreamDescriptor, AirbyteMessage> streamToState) {
-    return streamToState
-        .entrySet()
-        .stream()
+  private static Queue<AirbyteMessage> listStatesInOrder(
+      final Map<StreamDescriptor, AirbyteMessage> streamToState) {
+    return streamToState.entrySet().stream()
         // typically, we support by namespace and then stream name, so we retain that pattern here.
-        .sorted(Comparator
-            .<Entry<StreamDescriptor, AirbyteMessage>, String>comparing(
+        .sorted(Comparator.<Entry<StreamDescriptor, AirbyteMessage>, String>comparing(
                 entry -> entry.getKey().getNamespace(),
                 Comparator.nullsFirst(Comparator.naturalOrder())) // namespace is allowed to be null
             .thenComparing(entry -> entry.getKey().getName()))
@@ -160,11 +161,12 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
    *        phase. when this method returns this map will be empty.
    * @param nextPhase - map into which state messages from prevPhase will be added.
    */
-  private static void moveToNextPhase(final Map<StreamDescriptor, AirbyteMessage> prevPhase, final Map<StreamDescriptor, AirbyteMessage> nextPhase) {
+  private static void moveToNextPhase(
+      final Map<StreamDescriptor, AirbyteMessage> prevPhase,
+      final Map<StreamDescriptor, AirbyteMessage> nextPhase) {
     if (!prevPhase.isEmpty()) {
       nextPhase.putAll(prevPhase);
       prevPhase.clear();
     }
   }
-
 }

@@ -30,9 +30,10 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   protected final DestinationSyncMode syncMode;
   protected AppendBlobClient appendBlobClient;
 
-  protected BaseAzureBlobStorageWriter(final AzureBlobStorageDestinationConfig config,
-                                       final AppendBlobClient appendBlobClient,
-                                       final ConfiguredAirbyteStream configuredStream) {
+  protected BaseAzureBlobStorageWriter(
+      final AzureBlobStorageDestinationConfig config,
+      final AppendBlobClient appendBlobClient,
+      final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.appendBlobClient = appendBlobClient;
     this.stream = configuredStream.getStream();
@@ -72,5 +73,4 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   protected void closeWhenFail() throws IOException {
     // Do nothing by default
   }
-
 }

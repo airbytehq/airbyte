@@ -22,13 +22,10 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "STANDARD")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "STANDARD").build());
 
-    var sslMode = ImmutableMap.builder()
-        .put(JdbcUtils.MODE_KEY, "required")
-        .build();
+    var sslMode = ImmutableMap.builder().put(JdbcUtils.MODE_KEY, "required").build();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -45,7 +42,8 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s",
+        String.format(
+            "jdbc:mysql://%s:%s/%s",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asText(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -63,5 +61,4 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
       });
     }
   }
-
 }

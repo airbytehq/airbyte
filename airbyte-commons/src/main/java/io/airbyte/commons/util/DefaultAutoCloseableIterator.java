@@ -17,7 +17,8 @@ import java.util.Optional;
  *
  * @param <T> type
  */
-class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
+class DefaultAutoCloseableIterator<T> extends AbstractIterator<T>
+    implements AutoCloseableIterator<T> {
 
   private final AirbyteStreamNameNamespacePair airbyteStream;
   private final Iterator<T> iterator;
@@ -25,7 +26,10 @@ class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements Aut
 
   private boolean hasClosed;
 
-  public DefaultAutoCloseableIterator(final Iterator<T> iterator, final VoidCallable onClose, final AirbyteStreamNameNamespacePair airbyteStream) {
+  public DefaultAutoCloseableIterator(
+      final Iterator<T> iterator,
+      final VoidCallable onClose,
+      final AirbyteStreamNameNamespacePair airbyteStream) {
     Preconditions.checkNotNull(iterator);
     Preconditions.checkNotNull(onClose);
 
@@ -62,5 +66,4 @@ class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements Aut
   private void assertHasNotClosed() {
     Preconditions.checkState(!hasClosed);
   }
-
 }

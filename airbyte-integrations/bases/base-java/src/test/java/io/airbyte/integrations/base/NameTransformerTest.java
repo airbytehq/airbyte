@@ -20,7 +20,8 @@ class NameTransformerTest {
     assertEquals("__identifier_name", namingResolver.getIdentifier("__identifier_name"));
     assertEquals("IDENTIFIER_NAME", namingResolver.getIdentifier("IDENTIFIER_NAME"));
     assertEquals("123identifier_name", namingResolver.getIdentifier("123identifier_name"));
-    assertEquals("i0d0e0n0t0i0f0i0e0r0n0a0m0e", namingResolver.getIdentifier("i0d0e0n0t0i0f0i0e0r0n0a0m0e"));
+    assertEquals(
+        "i0d0e0n0t0i0f0i0e0r0n0a0m0e", namingResolver.getIdentifier("i0d0e0n0t0i0f0i0e0r0n0a0m0e"));
     assertEquals("_identifier_name", namingResolver.getIdentifier(",identifier+name"));
     assertEquals("identifier_name", namingResolver.getIdentifier("identifiêr name"));
     assertEquals("a_unicode_name__", namingResolver.getIdentifier("a_unicode_name_文"));
@@ -43,7 +44,8 @@ class NameTransformerTest {
     assertEquals("__identifier_name", namingResolver.getIdentifier("__identifier_name"));
     assertEquals("IDENTIFIER_NAME", namingResolver.getIdentifier("IDENTIFIER_NAME"));
     assertEquals("\"123identifier_name\"", namingResolver.getIdentifier("123identifier_name"));
-    assertEquals("i0d0e0n0t0i0f0i0e0r0n0a0m0e", namingResolver.getIdentifier("i0d0e0n0t0i0f0i0e0r0n0a0m0e"));
+    assertEquals(
+        "i0d0e0n0t0i0f0i0e0r0n0a0m0e", namingResolver.getIdentifier("i0d0e0n0t0i0f0i0e0r0n0a0m0e"));
     assertEquals("\",identifier+name\"", namingResolver.getIdentifier(",identifier+name"));
     assertEquals("\"identifiêr name\"", namingResolver.getIdentifier("identifiêr name"));
     assertEquals("\"a_unicode_name_文\"", namingResolver.getIdentifier("a_unicode_name_文"));
@@ -55,7 +57,7 @@ class NameTransformerTest {
     assertEquals("\"`identifier`\"", namingResolver.getIdentifier("`identifier`"));
 
     assertEquals("_airbyte_raw_identifier_name", namingResolver.getRawTableName("identifier_name"));
-    assertEquals("\"_airbyte_raw_identifiêr name\"", namingResolver.getRawTableName("identifiêr name"));
+    assertEquals(
+        "\"_airbyte_raw_identifiêr name\"", namingResolver.getRawTableName("identifiêr name"));
   }
-
 }

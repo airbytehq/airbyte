@@ -44,12 +44,13 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   protected final BigQueryRecordFormatter recordFormatter;
   protected final boolean use1s1t;
 
-  AbstractBigQueryUploader(final TableId table,
-                           final TableId tmpTable,
-                           final T writer,
-                           final WriteDisposition syncMode,
-                           final BigQuery bigQuery,
-                           final BigQueryRecordFormatter recordFormatter) {
+  AbstractBigQueryUploader(
+      final TableId table,
+      final TableId tmpTable,
+      final T writer,
+      final WriteDisposition syncMode,
+      final BigQuery bigQuery,
+      final BigQueryRecordFormatter recordFormatter) {
     this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
     this.table = table;
     this.tmpTable = tmpTable;
@@ -74,14 +75,16 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
           "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
-          writer.toString(),
-          airbyteMessage.getRecord()));
+          writer.toString(), airbyteMessage.getRecord()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
   }
 
-  public void close(final boolean hasFailed, final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) {
+  public void close(
+      final boolean hasFailed,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final AirbyteMessage lastStateMessage) {
     try {
       recordFormatter.printAndCleanFieldFails();
 
@@ -94,17 +97,23 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       this.postProcessAction(hasFailed);
       LOGGER.info("Closed connector: {}", this);
     } catch (final Exception e) {
-      LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
+      LOGGER.error(
+          String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
   }
 
-  protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
+  protected void uploadData(
+      final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage)
+      throws Exception {
     try {
       if (!use1s1t) {
         // This only needs to happen if we actually wrote to a tmp table.
-        LOGGER.info("Uploading data from the tmp table {} to the source table {}.", tmpTable.getTable(), table.getTable());
+        LOGGER.info(
+            "Uploading data from the tmp table {} to the source table {}.",
+            tmpTable.getTable(),
+            table.getTable());
         uploadDataToTableFromTmpTable();
         LOGGER.info("Data is successfully loaded to the source table {}!", table.getTable());
       }
@@ -125,7 +134,9 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     final Table rawTable = bigQuery.getTable(table);
     if (rawTable == null) {
       LOGGER.info("Creating raw table {}.", table);
-      bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema())).build());
+      bigQuery.create(TableInfo.newBuilder(
+              table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema()))
+          .build());
     } else {
       LOGGER.info("Found raw table {}.", rawTable.getTableId());
     }
@@ -143,7 +154,8 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   }
 
   protected void uploadDataToTableFromTmpTable() {
-    LOGGER.info("Replication finished with no explicit errors. Copying data from tmp tables to permanent");
+    LOGGER.info(
+        "Replication finished with no explicit errors. Copying data from tmp tables to permanent");
     if (syncMode.equals(JobInfo.WriteDisposition.WRITE_APPEND)) {
       partitionIfUnpartitioned(bigQuery, recordFormatter.getBigQuerySchema(), table);
     }
@@ -165,40 +177,51 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
    * @param destinationTableId identifier for a table
    */
   @Deprecated
-  public static void partitionIfUnpartitioned(final BigQuery bigQuery, final Schema schema, final TableId destinationTableId) {
+  public static void partitionIfUnpartitioned(
+      final BigQuery bigQuery, final Schema schema, final TableId destinationTableId) {
     try {
-      final QueryJobConfiguration queryConfig = QueryJobConfiguration
-          .newBuilder(
-              String.format("SELECT max(is_partitioning_column) as is_partitioned FROM `%s.%s.INFORMATION_SCHEMA.COLUMNS` WHERE TABLE_NAME = '%s';",
-                  bigQuery.getOptions().getProjectId(),
-                  destinationTableId.getDataset(),
-                  destinationTableId.getTable()))
+      final QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(String.format(
+              "SELECT max(is_partitioning_column) as is_partitioned FROM `%s.%s.INFORMATION_SCHEMA.COLUMNS` WHERE TABLE_NAME = '%s';",
+              bigQuery.getOptions().getProjectId(),
+              destinationTableId.getDataset(),
+              destinationTableId.getTable()))
           .setUseLegacySql(false)
           .build();
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigQuery, queryConfig);
       result.getLeft().getQueryResults().getValues().forEach(row -> {
-        if (!row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("NO")) {
+        if (!row.get("is_partitioned").isNull()
+            && row.get("is_partitioned").getStringValue().equals("NO")) {
           LOGGER.info("Partitioning existing destination table {}", destinationTableId);
-          final String tmpPartitionTable = Strings.addRandomSuffix("_airbyte_partitioned_table", "_", 5);
-          final TableId tmpPartitionTableId = TableId.of(destinationTableId.getDataset(), tmpPartitionTable);
+          final String tmpPartitionTable =
+              Strings.addRandomSuffix("_airbyte_partitioned_table", "_", 5);
+          final TableId tmpPartitionTableId =
+              TableId.of(destinationTableId.getDataset(), tmpPartitionTable);
           // make sure tmpPartitionTable does not already exist
           bigQuery.delete(tmpPartitionTableId);
-          // Use BigQuery SQL to copy because java api copy jobs does not support creating a table from a
+          // Use BigQuery SQL to copy because java api copy jobs does not support creating a table
+          // from a
           // select query, see:
           // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#create_a_partitioned_table_from_a_query_result
-          final QueryJobConfiguration partitionQuery = QueryJobConfiguration
-              .newBuilder(
-                  getCreatePartitionedTableFromSelectQuery(schema, bigQuery.getOptions().getProjectId(),
+          final QueryJobConfiguration partitionQuery = QueryJobConfiguration.newBuilder(
+                  getCreatePartitionedTableFromSelectQuery(
+                      schema,
+                      bigQuery.getOptions().getProjectId(),
                       destinationTableId,
                       tmpPartitionTable))
               .setUseLegacySql(false)
               .build();
           BigQueryUtils.executeQuery(bigQuery, partitionQuery);
-          // Copying data from a partitioned tmp table into an existing non-partitioned table does not make it
-          // partitioned... thus, we force re-create from scratch by completely deleting and creating new
+          // Copying data from a partitioned tmp table into an existing non-partitioned table does
+          // not make it
+          // partitioned... thus, we force re-create from scratch by completely deleting and
+          // creating new
           // table.
           bigQuery.delete(destinationTableId);
-          copyTable(bigQuery, tmpPartitionTableId, destinationTableId, JobInfo.WriteDisposition.WRITE_EMPTY);
+          copyTable(
+              bigQuery,
+              tmpPartitionTableId,
+              destinationTableId,
+              JobInfo.WriteDisposition.WRITE_EMPTY);
           bigQuery.delete(tmpPartitionTableId);
         }
       });
@@ -219,11 +242,13 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
    * @param destinationTableId destination table
    * @param syncMode mapping of Airbyte's sync mode to BigQuery's write mode
    */
-  public static void copyTable(final BigQuery bigQuery,
-                               final TableId sourceTableId,
-                               final TableId destinationTableId,
-                               final JobInfo.WriteDisposition syncMode) {
-    final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
+  public static void copyTable(
+      final BigQuery bigQuery,
+      final TableId sourceTableId,
+      final TableId destinationTableId,
+      final JobInfo.WriteDisposition syncMode) {
+    final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(
+            destinationTableId, sourceTableId)
         .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
         .setWriteDisposition(syncMode)
         .build();
@@ -232,37 +257,39 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     final ImmutablePair<Job, String> jobStringImmutablePair = BigQueryUtils.executeQuery(job);
     if (jobStringImmutablePair.getRight() != null) {
       LOGGER.error("Failed on copy tables with error:" + job.getStatus());
-      throw new RuntimeException("BigQuery was unable to copy table due to an error: \n" + job.getStatus().getError());
+      throw new RuntimeException("BigQuery was unable to copy table due to an error: \n"
+          + job.getStatus().getError());
     }
     LOGGER.info("successfully copied table: {} to table: {}", sourceTableId, destinationTableId);
   }
 
-  private static String getCreatePartitionedTableFromSelectQuery(final Schema schema,
-                                                                 final String projectId,
-                                                                 final TableId destinationTableId,
-                                                                 final String tmpPartitionTable) {
-    return String.format("create table `%s.%s.%s` (", projectId, destinationTableId.getDataset(), tmpPartitionTable)
+  private static String getCreatePartitionedTableFromSelectQuery(
+      final Schema schema,
+      final String projectId,
+      final TableId destinationTableId,
+      final String tmpPartitionTable) {
+    return String.format(
+            "create table `%s.%s.%s` (",
+            projectId, destinationTableId.getDataset(), tmpPartitionTable)
         + schema.getFields().stream()
             .map(field -> String.format("%s %s", field.getName(), field.getType()))
             .collect(Collectors.joining(", "))
         + ") partition by date("
         + JavaBaseConstants.COLUMN_NAME_EMITTED_AT
         + ") as select "
-        + schema.getFields().stream()
-            .map(Field::getName)
-            .collect(Collectors.joining(", "))
-        + String.format(" from `%s.%s.%s`", projectId, destinationTableId.getDataset(), destinationTableId.getTable());
+        + schema.getFields().stream().map(Field::getName).collect(Collectors.joining(", "))
+        + String.format(
+            " from `%s.%s.%s`",
+            projectId, destinationTableId.getDataset(), destinationTableId.getTable());
   }
 
   @Override
   public String toString() {
-    return "AbstractBigQueryUploader{" +
-        "table=" + table.getTable() +
-        ", tmpTable=" + tmpTable.getTable() +
-        ", syncMode=" + syncMode +
-        ", writer=" + writer.getClass() +
-        ", recordFormatter=" + recordFormatter.getClass() +
-        '}';
+    return "AbstractBigQueryUploader{" + "table="
+        + table.getTable() + ", tmpTable="
+        + tmpTable.getTable() + ", syncMode="
+        + syncMode + ", writer="
+        + writer.getClass() + ", recordFormatter="
+        + recordFormatter.getClass() + '}';
   }
-
 }

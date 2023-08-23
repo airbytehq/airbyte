@@ -69,11 +69,11 @@ public class KinesisDestination extends BaseConnector implements Destination {
    * @return KinesisMessageConsumer for consuming Airbyte messages and streaming them to Kinesis.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final KinesisStream kinesisStream = new KinesisStream(new KinesisConfig(config));
     return new KinesisMessageConsumer(configuredCatalog, kinesisStream, outputRecordCollector);
   }
-
 }

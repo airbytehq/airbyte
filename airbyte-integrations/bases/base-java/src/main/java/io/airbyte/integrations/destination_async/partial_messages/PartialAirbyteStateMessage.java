@@ -67,10 +67,6 @@ public class PartialAirbyteStateMessage {
 
   @Override
   public String toString() {
-    return "PartialAirbyteStateMessage{" +
-        "type=" + type +
-        ", stream=" + stream +
-        '}';
+    return "PartialAirbyteStateMessage{" + "type=" + type + ", stream=" + stream + '}';
   }
-
 }

@@ -4,17 +4,13 @@
 
 package io.airbyte.integrations.destination.redshift.operations;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,23 +23,28 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   public RedshiftSqlOperations() {}
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    return String.format("""
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
+    return String.format(
+        """
                          CREATE TABLE IF NOT EXISTS %s.%s (
                           %s VARCHAR PRIMARY KEY,
                           %s SUPER,
                           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
-                          """, schemaName, tableName,
+                          """,
+        schemaName,
+        tableName,
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
@@ -59,6 +60,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, JSON_PARSE(?), ?),\n";
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
+    SqlOperationsUtils.insertRawRecordsInSingleQuery(
+        insertQueryComponent, recordQueryComponent, database, records);
   }
 }

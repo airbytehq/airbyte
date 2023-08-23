@@ -43,20 +43,24 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
   private final String gcsFileLocation;
   private final String objectKey;
 
-  public GcsParquetWriter(final GcsDestinationConfig config,
-                          final AmazonS3 s3Client,
-                          final ConfiguredAirbyteStream configuredStream,
-                          final Timestamp uploadTimestamp,
-                          final Schema schema,
-                          final JsonAvroConverter converter)
+  public GcsParquetWriter(
+      final GcsDestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final Schema schema,
+      final JsonAvroConverter converter)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
-    final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
+    final String outputFilename =
+        BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     objectKey = String.join("/", outputPrefix, outputFilename);
-    LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
+    LOGGER.info(
+        "Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
-    gcsFileLocation = String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
+    gcsFileLocation =
+        String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
     final URI uri = new URI(gcsFileLocation);
     final Path path = new Path(uri);
 
@@ -64,7 +68,8 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
 
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     final Configuration hadoopConfig = getHadoopConfig(config);
-    this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
+    this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(
+            HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())
@@ -77,7 +82,8 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
   }
 
   public static Configuration getHadoopConfig(final GcsDestinationConfig config) {
-    final GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) config.getGcsCredentialConfig();
+    final GcsHmacKeyCredentialConfig hmacKeyCredential =
+        (GcsHmacKeyCredentialConfig) config.getGcsCredentialConfig();
     final Configuration hadoopConfig = new Configuration();
 
     // the default org.apache.hadoop.fs.s3a.S3AFileSystem does not work for GCS
@@ -130,5 +136,4 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
   public S3Format getFileFormat() {
     return S3Format.PARQUET;
   }
-
 }

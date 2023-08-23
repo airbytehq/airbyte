@@ -26,8 +26,8 @@ public class XminStateIteratorTest {
   private Iterator<AirbyteMessage> createExceptionIterator() {
     return new Iterator<>() {
 
-      final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2,
-          RECORD_MESSAGE_3);
+      final Iterator<AirbyteMessage> internalMessageIterator =
+          MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3);
 
       @Override
       public boolean hasNext() {
@@ -39,23 +39,22 @@ public class XminStateIteratorTest {
         if (internalMessageIterator.hasNext()) {
           return internalMessageIterator.next();
         } else {
-          // this line throws a RunTimeException wrapped around a SQLException to mimic the flow of when a
+          // this line throws a RunTimeException wrapped around a SQLException to mimic the flow of
+          // when a
           // SQLException is thrown and wrapped in
           // StreamingJdbcDatabase#tryAdvance
-          throw new RuntimeException(new SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"));
+          throw new RuntimeException(
+              new SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"));
         }
       }
-
     };
-  };
+  }
+  ;
 
   @Test
   void testSuccessfulSync() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
-    final XminStateIterator iterator = new XminStateIterator(
-        messageIterator,
-        PAIR1,
-        XMIN_STATUS1);
+    final XminStateIterator iterator = new XminStateIterator(messageIterator, PAIR1, XMIN_STATUS1);
 
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
@@ -66,10 +65,8 @@ public class XminStateIteratorTest {
   @Test
   void testSyncFail() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
-    final XminStateIterator iterator = new XminStateIterator(
-        createExceptionIterator(),
-        PAIR1,
-        XMIN_STATUS1);
+    final XminStateIterator iterator =
+        new XminStateIterator(createExceptionIterator(), PAIR1, XMIN_STATUS1);
 
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
@@ -81,5 +78,4 @@ public class XminStateIteratorTest {
     // endOfData()
     assertFalse(iterator.hasNext());
   }
-
 }

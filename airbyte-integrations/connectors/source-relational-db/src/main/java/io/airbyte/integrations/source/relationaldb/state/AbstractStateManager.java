@@ -46,25 +46,40 @@ public abstract class AbstractStateManager<T, S> implements StateManager<T, S> {
    *        {@link AirbyteStreamNameNamespacePair} that identifies each stream in the connector's
    *        state.
    */
-  public AbstractStateManager(final ConfiguredAirbyteCatalog catalog,
-                              final Supplier<Collection<S>> streamSupplier,
-                              final Function<S, String> cursorFunction,
-                              final Function<S, List<String>> cursorFieldFunction,
-                              final Function<S, Long> cursorRecordCountFunction,
-                              final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
-    this(catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, false);
+  public AbstractStateManager(
+      final ConfiguredAirbyteCatalog catalog,
+      final Supplier<Collection<S>> streamSupplier,
+      final Function<S, String> cursorFunction,
+      final Function<S, List<String>> cursorFieldFunction,
+      final Function<S, Long> cursorRecordCountFunction,
+      final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
+    this(
+        catalog,
+        streamSupplier,
+        cursorFunction,
+        cursorFieldFunction,
+        cursorRecordCountFunction,
+        namespacePairFunction,
+        false);
   }
 
-  public AbstractStateManager(final ConfiguredAirbyteCatalog catalog,
+  public AbstractStateManager(
+      final ConfiguredAirbyteCatalog catalog,
       final Supplier<Collection<S>> streamSupplier,
       final Function<S, String> cursorFunction,
       final Function<S, List<String>> cursorFieldFunction,
       final Function<S, Long> cursorRecordCountFunction,
       final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
       final boolean onlyIncludeIncrementalStreams) {
-    cursorManager = new CursorManager(catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, onlyIncludeIncrementalStreams);
+    cursorManager = new CursorManager(
+        catalog,
+        streamSupplier,
+        cursorFunction,
+        cursorFieldFunction,
+        cursorRecordCountFunction,
+        namespacePairFunction,
+        onlyIncludeIncrementalStreams);
   }
-
 
   @Override
   public Map<AirbyteStreamNameNamespacePair, CursorInfo> getPairToCursorInfoMap() {
@@ -73,5 +88,4 @@ public abstract class AbstractStateManager<T, S> implements StateManager<T, S> {
 
   @Override
   public abstract AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair);
-
 }

@@ -29,14 +29,20 @@ public class DatabricksDestinationResolverTest {
     final var stubLoadingMethod = mapper.createObjectNode();
     final var stubConfig = mapper.createObjectNode();
     stubConfig.set("data_source", stubLoadingMethod);
-    assertThrows(IllegalArgumentException.class, () -> DatabricksDestinationResolver.getTypeFromConfig(stubConfig));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> DatabricksDestinationResolver.getTypeFromConfig(stubConfig));
   }
 
   @ParameterizedTest
   @MethodSource("destinationTypeToConfig")
-  public void testS3ConfigType(final String configFileName, final DatabricksStorageType expectedDestinationType) throws Exception {
-    final JsonNode config = Jsons.deserialize(MoreResources.readResource(configFileName), JsonNode.class);
-    final DatabricksStorageType typeFromConfig = DatabricksDestinationResolver.getTypeFromConfig(config);
+  public void testS3ConfigType(
+      final String configFileName, final DatabricksStorageType expectedDestinationType)
+      throws Exception {
+    final JsonNode config =
+        Jsons.deserialize(MoreResources.readResource(configFileName), JsonNode.class);
+    final DatabricksStorageType typeFromConfig =
+        DatabricksDestinationResolver.getTypeFromConfig(config);
     assertEquals(expectedDestinationType, typeFromConfig);
   }
 
@@ -45,5 +51,4 @@ public class DatabricksDestinationResolverTest {
         arguments("config.json", DatabricksStorageType.S3_STORAGE),
         arguments("azure_config.json", DatabricksStorageType.AZURE_BLOB_STORAGE));
   }
-
 }

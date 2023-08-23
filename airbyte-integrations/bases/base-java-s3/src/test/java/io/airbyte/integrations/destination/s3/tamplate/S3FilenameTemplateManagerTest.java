@@ -23,25 +23,26 @@ import org.mockito.MockedStatic;
 
 class S3FilenameTemplateManagerTest {
 
-  private final S3FilenameTemplateManager s3FilenameTemplateManager = new S3FilenameTemplateManager();
+  private final S3FilenameTemplateManager s3FilenameTemplateManager =
+      new S3FilenameTemplateManager();
 
   @Test
   @DisplayName("Should replace the date placeholder with the current date in the format YYYY-MM-DD")
-  void testDatePlaceholder()
-      throws IOException {
+  void testDatePlaceholder() throws IOException {
     final String fileNamePattern = "test-{date}";
     final String fileExtension = "csv";
     final String partId = "1";
 
-    final String actual = s3FilenameTemplateManager
-        .applyPatternToFilename(S3FilenameTemplateParameterObject
-            .builder()
+    final String actual =
+        s3FilenameTemplateManager.applyPatternToFilename(S3FilenameTemplateParameterObject.builder()
             .objectPath("")
             .fileNamePattern(fileNamePattern)
             .fileExtension(fileExtension)
-            .partId(partId).build());
+            .partId(partId)
+            .build());
 
-    final DateFormat defaultDateFormat = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    final DateFormat defaultDateFormat =
+        new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     defaultDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
     long currentTimeInMillis = Instant.now().toEpochMilli();
@@ -51,9 +52,9 @@ class S3FilenameTemplateManagerTest {
   }
 
   @Test
-  @DisplayName("Should replace the timestamp placeholder with the current timestamp in milliseconds")
-  void testTimestampPlaceholder()
-      throws IOException {
+  @DisplayName(
+      "Should replace the timestamp placeholder with the current timestamp in milliseconds")
+  void testTimestampPlaceholder() throws IOException {
     final String fileNamePattern = "test-{timestamp}.csv";
 
     final Clock clock = Clock.fixed(Instant.ofEpochMilli(1657110148000L), ZoneId.of("UTC"));
@@ -61,8 +62,8 @@ class S3FilenameTemplateManagerTest {
 
     try (final MockedStatic<Instant> mocked = mockStatic(Instant.class)) {
       mocked.when(Instant::now).thenReturn(instant);
-      final String actual = s3FilenameTemplateManager
-          .applyPatternToFilename(S3FilenameTemplateParameterObject.builder()
+      final String actual = s3FilenameTemplateManager.applyPatternToFilename(
+          S3FilenameTemplateParameterObject.builder()
               .objectPath("")
               .fileNamePattern(fileNamePattern)
               .fileExtension("csv")
@@ -77,8 +78,8 @@ class S3FilenameTemplateManagerTest {
   @DisplayName("Should sanitize the string and adapt it to applicable S3 format")
   void testIfFilenameTemplateStringWasSanitized() throws IOException {
     final String fileNamePattern = "  te  st.csv  ";
-    final String actual = s3FilenameTemplateManager
-        .applyPatternToFilename(S3FilenameTemplateParameterObject.builder()
+    final String actual =
+        s3FilenameTemplateManager.applyPatternToFilename(S3FilenameTemplateParameterObject.builder()
             .objectPath("")
             .fileNamePattern(fileNamePattern)
             .fileExtension("csv")
@@ -87,5 +88,4 @@ class S3FilenameTemplateManagerTest {
 
     assertEquals("te__st.csv", actual);
   }
-
 }

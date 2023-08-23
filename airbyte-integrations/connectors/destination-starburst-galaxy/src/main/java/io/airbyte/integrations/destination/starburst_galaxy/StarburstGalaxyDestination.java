@@ -13,10 +13,12 @@ import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import java.io.Closeable;
 import java.sql.DriverManager;
 
-public class StarburstGalaxyDestination extends SwitchingDestination<StarburstGalaxyStagingStorageType> {
+public class StarburstGalaxyDestination
+    extends SwitchingDestination<StarburstGalaxyStagingStorageType> {
 
   public StarburstGalaxyDestination() {
-    super(StarburstGalaxyStagingStorageType.class,
+    super(
+        StarburstGalaxyStagingStorageType.class,
         StarburstGalaxyDestinationResolver::getStagingStorageType,
         ImmutableMap.of(S3, new StarburstGalaxyS3Destination()));
   }
@@ -26,5 +28,4 @@ public class StarburstGalaxyDestination extends SwitchingDestination<StarburstGa
     new IntegrationRunner(destination).run(args);
     ((Closeable) DriverManager.getDriver("jdbc:trino:")).close();
   }
-
 }

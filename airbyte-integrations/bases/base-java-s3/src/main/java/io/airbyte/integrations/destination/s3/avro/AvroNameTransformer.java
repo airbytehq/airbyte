@@ -46,5 +46,4 @@ public class AvroNameTransformer extends StandardNameTransformer {
     final String[] tokens = input.split("\\.");
     return String.join(".", Arrays.stream(tokens).map(this::getIdentifier).toList());
   }
-
 }

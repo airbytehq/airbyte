@@ -41,20 +41,20 @@ class RedisDestination extends BaseConnector implements Destination {
       redisCache.ping("Connection check");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
-      final String errorMessage = "Could not connect with provided configuration. Error: " + e.getMessage();
+      final String errorMessage =
+          "Could not connect with provided configuration. Error: " + e.getMessage();
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, errorMessage);
       return new AirbyteConnectionStatus()
           .withMessage(errorMessage)
           .withStatus(AirbyteConnectionStatus.Status.FAILED);
     }
-
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     return new RedisMessageConsumer(config, configuredCatalog, outputRecordCollector);
   }
-
 }

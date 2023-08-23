@@ -29,7 +29,8 @@ import org.slf4j.LoggerFactory;
 
 public class VerticaDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(VerticaDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(VerticaDestinationAcceptanceTest.class);
   private static VerticaContainer db;
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private JsonNode configJson;
@@ -42,7 +43,8 @@ public class VerticaDestinationAcceptanceTest extends JdbcDestinationAcceptanceT
 
   @Override
   protected JsonNode getConfig() {
-    // TODO: Generate the configuration JSON file to be used for running the destination during the test
+    // TODO: Generate the configuration JSON file to be used for running the destination during the
+    // test
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "140.236.88.151")
         .put(JdbcUtils.USERNAME_KEY, "airbyte")
@@ -55,7 +57,8 @@ public class VerticaDestinationAcceptanceTest extends JdbcDestinationAcceptanceT
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    // TODO return an invalid config which, when used to run the connector's check connection operation,
+    // TODO return an invalid config which, when used to run the connector's check connection
+    // operation,
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getContainerInfo().getNetworkSettings().getIpAddress())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -67,23 +70,22 @@ public class VerticaDestinationAcceptanceTest extends JdbcDestinationAcceptanceT
         .build());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     try (final DSLContext dslContext = DSLContextFactory.create(
         "airbyte",
         "airbyte123",
         db.getDriverClassName(),
-        String.format(DatabaseDriver.VERTICA.getUrlFormatString(),
-            "140.236.88.151",
-            5433,
-            "airbyte"),
+        String.format(
+            DatabaseDriver.VERTICA.getUrlFormatString(), "140.236.88.151", 5433, "airbyte"),
         SQLDialect.DEFAULT)) {
-      final List<JsonNode> recordsFromTable = new Database(dslContext).query(
-          ctx -> ctx
-              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .map(this::getJsonFromRecord)
-              .collect(Collectors.toList()));
+      final List<JsonNode> recordsFromTable = new Database(dslContext).query(ctx -> ctx
+          .fetch(String.format(
+              "SELECT * FROM %s.%s ORDER BY %s ASC;",
+              schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .stream()
+          .map(this::getJsonFromRecord)
+          .collect(Collectors.toList()));
       return recordsFromTable;
     }
   }
@@ -95,13 +97,10 @@ public class VerticaDestinationAcceptanceTest extends JdbcDestinationAcceptanceT
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema)
       throws IOException, SQLException {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
@@ -128,5 +127,4 @@ public class VerticaDestinationAcceptanceTest extends JdbcDestinationAcceptanceT
   protected void tearDown(TestDestinationEnv testEnv) {
     // TODO Implement this method to run any cleanup actions needed after every test case
   }
-
 }

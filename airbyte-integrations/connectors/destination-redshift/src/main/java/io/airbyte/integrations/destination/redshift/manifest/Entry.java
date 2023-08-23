@@ -17,5 +17,4 @@ public class Entry {
   public Entry(final String url) {
     this(url, true);
   }
-
 }

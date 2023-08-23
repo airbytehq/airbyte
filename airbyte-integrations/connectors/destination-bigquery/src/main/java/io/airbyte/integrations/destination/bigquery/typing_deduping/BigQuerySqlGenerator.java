@@ -45,7 +45,8 @@ import org.slf4j.LoggerFactory;
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   public static final String QUOTE = "`";
-  private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
+  private static final BigQuerySQLNameTransformer nameTransformer =
+      new BigQuerySQLNameTransformer();
 
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
@@ -61,7 +62,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
+  public StreamId buildStreamId(
+      final String namespace, final String name, final String rawNamespaceOverride) {
     return new StreamId(
         nameTransformer.getNamespace(namespace),
         nameTransformer.convertStreamName(name),
@@ -111,12 +113,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     } else if (airbyteType instanceof Struct) {
       // We need to validate that the struct is actually a struct.
       // Note that struct columns are actually nullable in two ways. For a column `foo`:
-      // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
+      // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL
+      // (_not_ a
       // JSON null).
       // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
-          """
+      return new StringSubstitutor(Map.of("column_name", column.originalName()))
+          .replace(
+              """
           CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
               OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${column_name}"')) != 'object'
@@ -126,8 +130,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
-          """
+      return new StringSubstitutor(Map.of("column_name", column.originalName()))
+          .replace(
+              """
           CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
               OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${column_name}"')) != 'array'
@@ -135,18 +140,21 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
           END
           """);
-    } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
+    } else if (airbyteType instanceof UnsupportedOneOf
+        || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
       // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
       // This is to avoid needing to convert the raw SQL type back into JSON.
       return "JSON_QUERY(`_airbyte_data`, '$.\"" + column.originalName() + "\"')";
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + column.originalName() + "\"') as " + dialectType.name() + ")";
+      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + column.originalName() + "\"') as "
+          + dialectType.name() + ")";
     }
   }
 
-  // TODO maybe make this a BiMap and elevate this method and its inverse (toDestinationSQLType?) to the SQLGenerator?
+  // TODO maybe make this a BiMap and elevate this method and its inverse (toDestinationSQLType?) to
+  // the SQLGenerator?
   public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
       case STRING -> StandardSQLTypeName.STRING;
@@ -166,15 +174,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   public String createTable(final StreamConfig stream, final String suffix) {
     final String columnDeclarations = columnsAndTypes(stream);
     final String clusterConfig = clusteringColumns(stream).stream()
-            .map(c -> StringUtils.wrap(c, QUOTE))
-            .collect(joining(", "));
+        .map(c -> StringUtils.wrap(c, QUOTE))
+        .collect(joining(", "));
 
     return new StringSubstitutor(Map.of(
-        "final_namespace", stream.id().finalNamespace(QUOTE),
-        "dataset_location", datasetLocation,
-        "final_table_id", stream.id().finalTableId(QUOTE, suffix),
-        "column_declarations", columnDeclarations,
-        "cluster_config", clusterConfig)).replace(
+            "final_namespace", stream.id().finalNamespace(QUOTE),
+            "dataset_location", datasetLocation,
+            "final_table_id", stream.id().finalTableId(QUOTE, suffix),
+            "column_declarations", columnDeclarations,
+            "cluster_config", clusterConfig))
+        .replace(
             """
             CREATE SCHEMA IF NOT EXISTS ${final_namespace}
             OPTIONS(location="${dataset_location}");
@@ -206,18 +215,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   private String columnsAndTypes(final StreamConfig stream) {
     return stream.columns().entrySet().stream()
-            .map(column ->
-                    String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()))
-            .collect(joining(",\n"));
+        .map(column -> String.join(
+            " ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()))
+        .collect(joining(",\n"));
   }
 
-
   @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream,
-                           final TableDefinition existingTable) throws TableNotMigratedException {
+  public boolean existingSchemaMatchesStreamConfig(
+      final StreamConfig stream, final TableDefinition existingTable)
+      throws TableNotMigratedException {
     final var alterTableReport = buildAlterTableReport(stream, existingTable);
     if (!alterTableReport.isDestinationV2Format()) {
-      throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
+      throw new TableNotMigratedException(String.format(
+          "Stream %s has not been migrated to the Destinations V2 format",
+          stream.id().finalName()));
     }
     boolean tableClusteringMatches = false;
     boolean tablePartitioningMatches = false;
@@ -225,73 +236,75 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       tableClusteringMatches = clusteringMatches(stream, standardExistingTable);
       tablePartitioningMatches = partitioningMatches(standardExistingTable);
     }
-    LOGGER.info("Alter Table Report {} {} {}; Clustering {}; Partitioning {}",
-            alterTableReport.columnsToAdd(),
-            alterTableReport.columnsToRemove(),
-            alterTableReport.columnsToChangeType(),
-            tableClusteringMatches,
-            tablePartitioningMatches);
+    LOGGER.info(
+        "Alter Table Report {} {} {}; Clustering {}; Partitioning {}",
+        alterTableReport.columnsToAdd(),
+        alterTableReport.columnsToRemove(),
+        alterTableReport.columnsToChangeType(),
+        tableClusteringMatches,
+        tablePartitioningMatches);
 
     return alterTableReport.isNoOp() && tableClusteringMatches && tablePartitioningMatches;
   }
 
   @VisibleForTesting
-  public boolean clusteringMatches(final StreamConfig stream, final StandardTableDefinition existingTable) {
+  public boolean clusteringMatches(
+      final StreamConfig stream, final StandardTableDefinition existingTable) {
     return existingTable.getClustering() != null
         && containsAllIgnoreCase(
-            new HashSet<>(existingTable.getClustering().getFields()),
-            clusteringColumns(stream));
+            new HashSet<>(existingTable.getClustering().getFields()), clusteringColumns(stream));
   }
 
   @VisibleForTesting
   public boolean partitioningMatches(final StandardTableDefinition existingTable) {
     return existingTable.getTimePartitioning() != null
-        && existingTable.getTimePartitioning()
-            .getField()
-            .equalsIgnoreCase("_airbyte_extracted_at")
+        && existingTable.getTimePartitioning().getField().equalsIgnoreCase("_airbyte_extracted_at")
         && TimePartitioning.Type.DAY.equals(existingTable.getTimePartitioning().getType());
   }
 
-  public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
+  public AlterTableReport buildAlterTableReport(
+      final StreamConfig stream, final TableDefinition existingTable) {
     final Map<String, StandardSQLTypeName> streamSchema = stream.columns().entrySet().stream()
-            .collect(Collectors.toMap(
-                    entry -> entry.getKey().name(),
-                    entry -> toDialectType(entry.getValue())
-            ));
+        .collect(Collectors.toMap(
+            entry -> entry.getKey().name(), entry -> toDialectType(entry.getValue())));
 
-    final Map<String, StandardSQLTypeName> existingSchema = existingTable.getSchema().getFields().stream()
+    final Map<String, StandardSQLTypeName> existingSchema =
+        existingTable.getSchema().getFields().stream()
             .collect(Collectors.toMap(
-                    field -> field.getName(),
-                    field -> field.getType().getStandardType()
-            ));
+                field -> field.getName(), field -> field.getType().getStandardType()));
 
     // Columns in the StreamConfig that don't exist in the TableDefinition
     final Set<String> columnsToAdd = streamSchema.keySet().stream()
-            .filter(name -> !containsIgnoreCase(existingSchema.keySet(), name))
-            .collect(Collectors.toSet());
+        .filter(name -> !containsIgnoreCase(existingSchema.keySet(), name))
+        .collect(Collectors.toSet());
 
     // Columns in the current schema that are no longer in the StreamConfig
     final Set<String> columnsToRemove = existingSchema.keySet().stream()
-            .filter(name -> !containsIgnoreCase(streamSchema.keySet(), name) && !containsIgnoreCase(FINAL_TABLE_AIRBYTE_COLUMNS, name))
-            .collect(Collectors.toSet());
+        .filter(name -> !containsIgnoreCase(streamSchema.keySet(), name)
+            && !containsIgnoreCase(FINAL_TABLE_AIRBYTE_COLUMNS, name))
+        .collect(Collectors.toSet());
 
     // Columns that are typed differently than the StreamConfig
     final Set<String> columnsToChangeType = streamSchema.keySet().stream()
-            // If it's not in the existing schema, it should already be in the columnsToAdd Set
-            .filter(name -> {
-              // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
-              return matchingKey(existingSchema.keySet(), name)
-                      // if it does exist, only include it in this set if the type (the value in each respective map)
-                      // is different between the stream and existing schemas
-                      .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
-                      // if there is no matching key, then don't include it because it is probably already in columnsToAdd
-                      .orElse(false);
-            })
-            .collect(Collectors.toSet());
+        // If it's not in the existing schema, it should already be in the columnsToAdd Set
+        .filter(name -> {
+          // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
+          return matchingKey(existingSchema.keySet(), name)
+              // if it does exist, only include it in this set if the type (the value in each
+              // respective map)
+              // is different between the stream and existing schemas
+              .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
+              // if there is no matching key, then don't include it because it is probably already
+              // in columnsToAdd
+              .orElse(false);
+        })
+        .collect(Collectors.toSet());
 
-    final boolean isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
+    final boolean isDestinationV2Format =
+        schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
 
-    return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChangeType, isDestinationV2Format);
+    return new AlterTableReport(
+        columnsToAdd, columnsToRemove, columnsToChangeType, isDestinationV2Format);
   }
 
   /**
@@ -300,9 +313,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
    * @return whether all the {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS} are present
    */
   @VisibleForTesting
-  public static boolean schemaContainAllFinalTableV2AirbyteColumns(final Collection<String> columnNames) {
+  public static boolean schemaContainAllFinalTableV2AirbyteColumns(
+      final Collection<String> columnNames) {
     return FINAL_TABLE_AIRBYTE_COLUMNS.stream()
-            .allMatch(column -> containsIgnoreCase(columnNames, column));
+        .allMatch(column -> containsIgnoreCase(columnNames, column));
   }
 
   @Override
@@ -311,12 +325,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String clearLoadedAt = clearLoadedAt(stream.id());
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
-    return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+    return String.join(
+        "\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
 
   private String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
-            .replace("""
+        .replace(
+            """
             UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
             """);
   }
@@ -325,7 +341,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   public String updateTable(final StreamConfig stream, final String finalSuffix) {
     return updateTable(stream, finalSuffix, true);
   }
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
+
+  private String updateTable(
+      final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
     String pkVarDeclaration = "";
     String validatePrimaryKeys = "";
     if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
@@ -339,19 +357,21 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
+      dedupFinalTable = dedupFinalTable(
+          stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
-        "pk_var_declaration", pkVarDeclaration,
-        "validate_primary_keys", validatePrimaryKeys,
-        "insert_new_records", insertNewRecords,
-        "dedup_final_table", dedupFinalTable,
-        "cdc_deletes", cdcDeletes,
-        "dedupe_raw_table", dedupRawTable,
-        "commit_raw_table", commitRawTable)).replace(
+            "pk_var_declaration", pkVarDeclaration,
+            "validate_primary_keys", validatePrimaryKeys,
+            "insert_new_records", insertNewRecords,
+            "dedup_final_table", dedupFinalTable,
+            "cdc_deletes", cdcDeletes,
+            "dedupe_raw_table", dedupRawTable,
+            "commit_raw_table", commitRawTable))
+        .replace(
             """
             ${pk_var_declaration}
 
@@ -374,18 +394,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String validatePrimaryKeys(final StreamId id,
-                             final List<ColumnId> primaryKeys,
-                             final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-    final String pkNullChecks = primaryKeys.stream().map(
-        pk -> {
+  String validatePrimaryKeys(
+      final StreamId id,
+      final List<ColumnId> primaryKeys,
+      final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+    final String pkNullChecks = primaryKeys.stream()
+        .map(pk -> {
           final String jsonExtract = extractAndCast(pk, streamColumns.get(pk));
           return "AND " + jsonExtract + " IS NULL";
-        }).collect(joining("\n"));
+        })
+        .collect(joining("\n"));
 
-    return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "pk_null_checks", pkNullChecks)).replace(
+    return new StringSubstitutor(
+            Map.of("raw_table_id", id.rawTableId(QUOTE), "pk_null_checks", pkNullChecks))
+        .replace(
             """
             SET missing_pk_count = (
               SELECT COUNT(1)
@@ -402,21 +424,28 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-    final String columnCasts = streamColumns.entrySet().stream().map(
-        col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
+  String insertNewRecords(
+      final StreamConfig stream,
+      final String finalSuffix,
+      final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+    final String columnCasts = streamColumns.entrySet().stream()
+        .map(col ->
+            extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
     final String columnErrors;
     if (streamColumns.isEmpty()) {
       // ARRAY_CONCAT doesn't like having an empty argument list, so handle that case separately
       columnErrors = "[]";
     } else {
-      columnErrors = "ARRAY_CONCAT(" + streamColumns.entrySet().stream().map(
-              col -> new StringSubstitutor(Map.of(
-                  "raw_col_name", col.getKey().originalName(),
-                  "col_type", toDialectType(col.getValue()).name(),
-                  "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
-                  """
+      columnErrors = "ARRAY_CONCAT("
+          + streamColumns.entrySet().stream()
+              .map(
+                  col -> new StringSubstitutor(Map.of(
+                          "raw_col_name", col.getKey().originalName(),
+                          "col_type", toDialectType(col.getValue()).name(),
+                          "json_extract", extractAndCast(col.getKey(), col.getValue())))
+                      .replace(
+                          """
                       CASE
                         WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
                           AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"')) != 'null')
@@ -424,13 +453,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                           THEN ["Problem with `${raw_col_name}`"]
                         ELSE []
                       END"""))
-          .collect(joining(",\n")) + ")";
+              .collect(joining(",\n"))
+          + ")";
     }
-    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String columnList = streamColumns.keySet().stream()
+        .map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",")
+        .collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
-      cdcConditionalOrIncludeStatement = """
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP
+        && streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
+      cdcConditionalOrIncludeStatement =
+          """
       OR (
         _airbyte_loaded_at IS NOT NULL
         AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
@@ -439,12 +473,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     return new StringSubstitutor(Map.of(
-        "raw_table_id", stream.id().rawTableId(QUOTE),
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
-        "column_casts", columnCasts,
-        "column_errors", columnErrors,
-        "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
-        "column_list", columnList)).replace(
+            "raw_table_id", stream.id().rawTableId(QUOTE),
+            "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
+            "column_casts", columnCasts,
+            "column_errors", columnErrors,
+            "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+            "column_list", columnList))
+        .replace(
             """
                 INSERT INTO ${final_table_id}
                 (
@@ -473,17 +508,19 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id,
-                         final String finalSuffix,
-                         final List<ColumnId> primaryKey,
-                         final ColumnId cursor) {
-    final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+  String dedupFinalTable(
+      final StreamId id,
+      final String finalSuffix,
+      final List<ColumnId> primaryKey,
+      final ColumnId cursor) {
+    final String pkList =
+        primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix),
-        "pk_list", pkList,
-        "cursor_name", cursor.name(QUOTE))
-        ).replace(
+            "final_table_id", id.finalTableId(QUOTE, finalSuffix),
+            "pk_list", pkList,
+            "cursor_name", cursor.name(QUOTE)))
+        .replace(
             """
             DELETE FROM ${final_table_id}
             WHERE
@@ -499,30 +536,40 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String cdcDeletes(final StreamConfig stream,
+  String cdcDeletes(
+      final StreamConfig stream,
       final String finalSuffix,
       final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
 
-    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP){
+    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
 
-    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
 
-    final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
+    final String pkList =
+        stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+    final String pkCasts = stream.primaryKey().stream()
+        .map(pk -> extractAndCast(pk, streamColumns.get(pk)))
+        .collect(joining(",\n"));
 
-    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
+    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
+    // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
-        "raw_table_id", stream.id().rawTableId(QUOTE),
-        "pk_list", pkList,
-        "pk_extracts", pkCasts,
-        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)
-    ).replace(
-        """
+            "final_table_id",
+            stream.id().finalTableId(QUOTE, finalSuffix),
+            "raw_table_id",
+            stream.id().rawTableId(QUOTE),
+            "pk_list",
+            pkList,
+            "pk_extracts",
+            pkCasts,
+            "quoted_cdc_delete_column",
+            QUOTE + "_ab_cdc_deleted_at" + QUOTE))
+        .replace(
+            """
         DELETE FROM ${final_table_id}
         WHERE
           (${pk_list}) IN (
@@ -532,16 +579,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             FROM  ${raw_table_id}
             WHERE JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
           )
-        ;"""
-    );
+        ;""");
   }
 
   @VisibleForTesting
   String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
-            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
+            "raw_table_id", id.rawTableId(QUOTE),
+            "final_table_id", id.finalTableId(QUOTE, finalSuffix)))
+        .replace(
+            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them
+            // out, but it
             // would be painful,
             // and it only matters in a few edge cases.
             """
@@ -556,8 +604,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @VisibleForTesting
   String commitRawTable(final StreamId id) {
-    return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE))).replace(
+    return new StringSubstitutor(Map.of("raw_table_id", id.rawTableId(QUOTE)))
+        .replace(
             """
             UPDATE ${raw_table_id}
             SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
@@ -570,7 +618,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of(
             "final_table_id", streamId.finalTableId(QUOTE),
             "tmp_final_table", streamId.finalTableId(QUOTE, finalSuffix),
-            "real_final_table", streamId.finalName(QUOTE))).replace(
+            "real_final_table", streamId.finalName(QUOTE)))
+        .replace(
             """
             DROP TABLE IF EXISTS ${final_table_id};
             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
@@ -584,18 +633,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
+  public String migrateFromV1toV2(
+      final StreamId streamId, final String namespace, final String tableName) {
     return new StringSubstitutor(Map.of(
-        "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
-        "dataset_location", datasetLocation,
-        "v2_raw_table", streamId.rawTableId(QUOTE),
-        "v1_raw_table", wrapAndQuote(namespace, tableName)
-    )
-    ).replace(
-        """
+            "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
+            "dataset_location", datasetLocation,
+            "v2_raw_table", streamId.rawTableId(QUOTE),
+            "v1_raw_table", wrapAndQuote(namespace, tableName)))
+        .replace(
+            """
             CREATE SCHEMA IF NOT EXISTS ${raw_namespace}
             OPTIONS(location="${dataset_location}");
-                 
+
             CREATE OR REPLACE TABLE ${v2_raw_table} (
               _airbyte_raw_id STRING,
               _airbyte_data JSON,
@@ -614,5 +663,4 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             );
             """);
   }
-
 }

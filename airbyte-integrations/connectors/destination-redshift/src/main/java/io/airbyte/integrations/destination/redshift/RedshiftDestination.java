@@ -53,8 +53,9 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final JsonNode jsonNode = findS3Options(config);
 
     if (anyOfS3FieldsAreNullOrEmpty(jsonNode)) {
-      LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
-          "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
+      LOGGER.warn(
+          "The \"standard\" upload mode is not performant, and is not recommended for production. "
+              + "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
       return DestinationType.STANDARD;
     }
     return DestinationType.COPY_S3;
@@ -64,8 +65,10 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   public ConnectorSpecification spec() throws Exception {
     // inject the standard ssh configuration into the spec.
     final ConnectorSpecification originalSpec = super.spec();
-    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
-    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
+    final ObjectNode propNode =
+        (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
+    propNode.set(
+        "tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
     return originalSpec;
   }
 
@@ -75,5 +78,4 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", RedshiftDestination.class);
   }
-
 }

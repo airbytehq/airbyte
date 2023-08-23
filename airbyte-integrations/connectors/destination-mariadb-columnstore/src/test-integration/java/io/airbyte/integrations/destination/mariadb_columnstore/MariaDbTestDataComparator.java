@@ -22,5 +22,4 @@ public class MariaDbTestDataComparator extends AdvancedTestDataComparator {
 
     return result;
   }
-
 }

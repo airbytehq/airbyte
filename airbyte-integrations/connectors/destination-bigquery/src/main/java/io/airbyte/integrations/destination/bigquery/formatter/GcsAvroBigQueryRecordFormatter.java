@@ -13,7 +13,8 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
  */
 public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatter {
 
-  public GcsAvroBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+  public GcsAvroBigQueryRecordFormatter(
+      JsonNode jsonSchema, StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
 
@@ -31,5 +32,4 @@ public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatt
   protected Object getData(AirbyteRecordMessage recordMessage) {
     return StandardNameTransformer.formatJsonPath(recordMessage.getData()).toString();
   }
-
 }

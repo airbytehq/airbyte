@@ -25,7 +25,8 @@ public class CatalogMigrationV1Helper {
    *
    * @param configuredAirbyteCatalog to migrate
    */
-  public static void upgradeSchemaIfNeeded(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+  public static void upgradeSchemaIfNeeded(
+      final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
     if (containsV0DataTypes(configuredAirbyteCatalog)) {
       upgradeSchema(configuredAirbyteCatalog);
     }
@@ -67,14 +68,14 @@ public class CatalogMigrationV1Helper {
   /**
    * Returns true if catalog contains v0 data types
    */
-  private static boolean containsV0DataTypes(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+  private static boolean containsV0DataTypes(
+      final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
     if (configuredAirbyteCatalog == null) {
       return false;
     }
 
-    return configuredAirbyteCatalog
-        .getStreams()
-        .stream().findFirst()
+    return configuredAirbyteCatalog.getStreams().stream()
+        .findFirst()
         .map(ConfiguredAirbyteStream::getStream)
         .map(CatalogMigrationV1Helper::streamContainsV0DataTypes)
         .orElse(false);
@@ -88,9 +89,8 @@ public class CatalogMigrationV1Helper {
       return false;
     }
 
-    return airbyteCatalog
-        .getStreams()
-        .stream().findFirst()
+    return airbyteCatalog.getStreams().stream()
+        .findFirst()
         .map(CatalogMigrationV1Helper::streamContainsV0DataTypes)
         .orElse(false);
   }
@@ -123,7 +123,8 @@ public class CatalogMigrationV1Helper {
    *
    * @param configuredAirbyteCatalog to migrate
    */
-  public static void downgradeSchemaIfNeeded(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+  public static void downgradeSchemaIfNeeded(
+      final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
     if (containsV1DataTypes(configuredAirbyteCatalog)) {
       downgradeSchema(configuredAirbyteCatalog);
     }
@@ -165,14 +166,14 @@ public class CatalogMigrationV1Helper {
   /**
    * Returns true if catalog contains v1 data types
    */
-  private static boolean containsV1DataTypes(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+  private static boolean containsV1DataTypes(
+      final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
     if (configuredAirbyteCatalog == null) {
       return false;
     }
 
-    return configuredAirbyteCatalog
-        .getStreams()
-        .stream().findFirst()
+    return configuredAirbyteCatalog.getStreams().stream()
+        .findFirst()
         .map(ConfiguredAirbyteStream::getStream)
         .map(CatalogMigrationV1Helper::streamContainsV1DataTypes)
         .orElse(false);
@@ -186,9 +187,8 @@ public class CatalogMigrationV1Helper {
       return false;
     }
 
-    return airbyteCatalog
-        .getStreams()
-        .stream().findFirst()
+    return airbyteCatalog.getStreams().stream()
+        .findFirst()
         .map(CatalogMigrationV1Helper::streamContainsV1DataTypes)
         .orElse(false);
   }
@@ -215,5 +215,4 @@ public class CatalogMigrationV1Helper {
     }
     return false;
   }
-
 }

@@ -61,7 +61,8 @@ class PostgresStressTest extends JdbcStressTest {
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     super.setup();
@@ -99,20 +100,25 @@ class PostgresStressTest extends JdbcStressTest {
     static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
     public PostgresTestSource() {
-      super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+      super(
+          DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-          .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-              config.get(JdbcUtils.HOST_KEY).asText(),
-              config.get(JdbcUtils.PORT_KEY).asInt(),
-              config.get(JdbcUtils.DATABASE_KEY).asText()));
+          .put(
+              JdbcUtils.JDBC_URL_KEY,
+              String.format(
+                  DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+                  config.get(JdbcUtils.HOST_KEY).asText(),
+                  config.get(JdbcUtils.PORT_KEY).asInt(),
+                  config.get(JdbcUtils.DATABASE_KEY).asText()));
 
       if (config.has(JdbcUtils.PASSWORD_KEY)) {
-        configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+        configBuilder.put(
+            JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
       }
 
       return Jsons.jsonNode(configBuilder.build());
@@ -134,7 +140,5 @@ class PostgresStressTest extends JdbcStressTest {
       new IntegrationRunner(source).run(args);
       LOGGER.info("completed source: {}", PostgresTestSource.class);
     }
-
   }
-
 }

@@ -40,7 +40,8 @@ public class TeradataSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String CREATE_DATABASE =
       "CREATE DATABASE \"database_name\" AS PERMANENT = 120e6, SPOOL = 120e6;";
 
-  private static final String CREATE_TABLE = """
+  private static final String CREATE_TABLE =
+      """
                                              CREATE TABLE database_name.table_name(
                                                id INTEGER NOT NULL,
                                                strength VARCHAR(30) NOT NULL,
@@ -61,12 +62,15 @@ public class TeradataSourceAcceptanceTest extends SourceAcceptanceTest {
   @BeforeAll
   void initEnvironment() throws ExecutionException, InterruptedException {
     jsonConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
-    TeradataHttpClient teradataHttpClient = new TeradataHttpClient(jsonConfig.get("env_host").asText());
+    TeradataHttpClient teradataHttpClient =
+        new TeradataHttpClient(jsonConfig.get("env_host").asText());
     var request = new CreateEnvironmentRequest(
         jsonConfig.get("env_name").asText(),
         jsonConfig.get("env_region").asText(),
         jsonConfig.get("env_password").asText());
-    var response = teradataHttpClient.createEnvironment(request, jsonConfig.get("env_token").asText()).get();
+    var response = teradataHttpClient
+        .createEnvironment(request, jsonConfig.get("env_token").asText())
+        .get();
     ((ObjectNode) jsonConfig).put("host", response.ip());
     try {
       Class.forName("com.teradata.jdbc.TeraDriver");
@@ -77,29 +81,37 @@ public class TeradataSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @AfterAll
   void cleanupEnvironment() throws ExecutionException, InterruptedException {
-    TeradataHttpClient teradataHttpClient = new TeradataHttpClient(jsonConfig.get("env_host").asText());
+    TeradataHttpClient teradataHttpClient =
+        new TeradataHttpClient(jsonConfig.get("env_host").asText());
     var request = new DeleteEnvironmentRequest(jsonConfig.get("env_name").asText());
-    teradataHttpClient.deleteEnvironment(request, jsonConfig.get("env_token").asText()).get();
+    teradataHttpClient
+        .deleteEnvironment(request, jsonConfig.get("env_token").asText())
+        .get();
   }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv testEnv) {
     var config = getConfig();
-    executeStatements(List.of(
-        statement -> statement.executeUpdate(CREATE_DATABASE),
-        statement -> statement.executeUpdate(CREATE_TABLE),
-        statement -> statement.executeUpdate(String.format(INSERT, 1, "laser power", 9)),
-        statement -> statement.executeUpdate(String.format(INSERT, 2, "night vision", 7))), config.get("host").asText(),
-        config.get("username").asText(), config.get("password").asText());
-
+    executeStatements(
+        List.of(
+            statement -> statement.executeUpdate(CREATE_DATABASE),
+            statement -> statement.executeUpdate(CREATE_TABLE),
+            statement -> statement.executeUpdate(String.format(INSERT, 1, "laser power", 9)),
+            statement -> statement.executeUpdate(String.format(INSERT, 2, "night vision", 7))),
+        config.get("host").asText(),
+        config.get("username").asText(),
+        config.get("password").asText());
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     var config = getConfig();
-    executeStatements(List.of(
-        statement -> statement.executeUpdate(DELETE_DATABASE),
-        statement -> statement.executeUpdate(DROP_DATABASE)), config.get("host").asText(), config.get("username").asText(),
+    executeStatements(
+        List.of(
+            statement -> statement.executeUpdate(DELETE_DATABASE),
+            statement -> statement.executeUpdate(DROP_DATABASE)),
+        config.get("host").asText(),
+        config.get("username").asText(),
         config.get("password").asText());
   }
 
@@ -129,39 +141,37 @@ public class TeradataSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(List.of(
-        new ConfiguredAirbyteStream()
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("updated_at"))
             .withPrimaryKey(List.of(List.of("id")))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                "table_name",
-                "database_name",
-                Field.of("strength", JsonSchemaType.STRING),
-                Field.of("agility", JsonSchemaType.INTEGER),
-                Field.of("updated_at", JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1))
+                    "table_name",
+                    "database_name",
+                    Field.of("strength", JsonSchemaType.STRING),
+                    Field.of("agility", JsonSchemaType.INTEGER),
+                    Field.of("updated_at", JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1))
                 .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
-  private static void executeStatements(List<SqlConsumer> consumers, String host, String username, String password) {
-    try (
-        Connection con = DriverManager.getConnection("jdbc:teradata://" + host + "/", username, password);
-        Statement stmt = con.createStatement();) {
+  private static void executeStatements(
+      List<SqlConsumer> consumers, String host, String username, String password) {
+    try (Connection con =
+            DriverManager.getConnection("jdbc:teradata://" + host + "/", username, password);
+        Statement stmt = con.createStatement(); ) {
       for (SqlConsumer consumer : consumers) {
         consumer.accept(stmt);
       }
     } catch (SQLException sqle) {
       throw new RuntimeException(sqle);
     }
-
   }
 
   @FunctionalInterface
   private interface SqlConsumer {
 
     void accept(Statement statement) throws SQLException;
-
   }
-
 }

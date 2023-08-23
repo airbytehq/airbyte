@@ -39,10 +39,11 @@ class CsvFileParserTest {
 
   @Test
   void parseFileTest() throws Exception {
-    InputStream stream = Thread.currentThread().getContextClassLoader()
-        .getResourceAsStream(LOG_FILE_CSV);
+    InputStream stream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(LOG_FILE_CSV);
 
-    List<JsonNode> jsonNodes = csvFileParser.parseFile(new ByteArrayInputStream(stream.readAllBytes()));
+    List<JsonNode> jsonNodes =
+        csvFileParser.parseFile(new ByteArrayInputStream(stream.readAllBytes()));
     assertNotNull(jsonNodes);
     assertEquals(2, jsonNodes.size());
     assertEquals(expectedFirstNode, jsonNodes.get(0));
@@ -51,12 +52,12 @@ class CsvFileParserTest {
 
   @Test
   void parseFileFirstLineTest() throws Exception {
-    InputStream stream = Thread.currentThread().getContextClassLoader()
-        .getResourceAsStream(LOG_FILE_CSV);
+    InputStream stream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(LOG_FILE_CSV);
 
-    JsonNode jsonNode = csvFileParser.parseFileFirstEntity(new ByteArrayInputStream(stream.readAllBytes()));
+    JsonNode jsonNode =
+        csvFileParser.parseFileFirstEntity(new ByteArrayInputStream(stream.readAllBytes()));
     assertNotNull(jsonNode);
     assertEquals(expectedFirstNode, jsonNode);
   }
-
 }

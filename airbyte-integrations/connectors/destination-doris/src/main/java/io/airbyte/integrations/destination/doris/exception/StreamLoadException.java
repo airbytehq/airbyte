@@ -22,11 +22,8 @@ public class StreamLoadException extends Exception {
     super(cause);
   }
 
-  protected StreamLoadException(String message,
-                                Throwable cause,
-                                boolean enableSuppression,
-                                boolean writableStackTrace) {
+  protected StreamLoadException(
+      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
-
 }

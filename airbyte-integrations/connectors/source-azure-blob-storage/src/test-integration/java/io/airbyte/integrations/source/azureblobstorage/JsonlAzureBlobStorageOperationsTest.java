@@ -41,15 +41,23 @@ class JsonlAzureBlobStorageOperationsTest {
     var azureBlobStorageConfig = AzureBlobStorageConfig.createAzureBlobStorageConfig(jsonConfig);
     blobContainerClient = azureBlobStorageConfig.createBlobContainerClient();
     blobContainerClient.createIfNotExists();
-    blobContainerClient.getBlobClient("FolderA/FolderB/blob1.json").upload(BinaryData
-        .fromString("""
+    blobContainerClient
+        .getBlobClient("FolderA/FolderB/blob1.json")
+        .upload(
+            BinaryData.fromString(
+                """
                     {"name":"Molecule Man","age":29,"secretIdentity":"Dan Jukes","powers":["Radiation resistance","Turning tiny","Radiation blast"]}
                     {"name":"Bat Man","secretIdentity":"Bruce Wayne","powers":["Agility", "Detective skills", "Determination"]}
                     """));
-    blobContainerClient.getBlobClient("FolderA/FolderB/blob2.json").upload(BinaryData.fromString(
-        "{\"name\":\"Molecule Man\",\"surname\":\"Powers\",\"powers\":[\"Radiation resistance\",\"Turning tiny\",\"Radiation blast\"]}\n"));
+    blobContainerClient
+        .getBlobClient("FolderA/FolderB/blob2.json")
+        .upload(
+            BinaryData.fromString(
+                "{\"name\":\"Molecule Man\",\"surname\":\"Powers\",\"powers\":[\"Radiation resistance\",\"Turning tiny\",\"Radiation blast\"]}\n"));
     // should be ignored since its in ignored path
-    blobContainerClient.getBlobClient("FolderA/blob3.json").upload(BinaryData.fromString("{\"ignored\":true}\n"));
+    blobContainerClient
+        .getBlobClient("FolderA/blob3.json")
+        .upload(BinaryData.fromString("{\"ignored\":true}\n"));
     azureBlobStorageOperations = new JsonlAzureBlobStorageOperations(azureBlobStorageConfig);
     objectMapper = new ObjectMapper();
   }
@@ -75,7 +83,9 @@ class JsonlAzureBlobStorageOperationsTest {
 
     var jsonSchema = azureBlobStorageOperations.inferSchema();
 
-    JSONAssert.assertEquals(objectMapper.writeValueAsString(jsonSchema), """
+    JSONAssert.assertEquals(
+        objectMapper.writeValueAsString(jsonSchema),
+        """
                                                                          {
                                                                          	"$schema": "http://json-schema.org/draft-07/schema#",
                                                                          	"type": "object",
@@ -107,8 +117,8 @@ class JsonlAzureBlobStorageOperationsTest {
                                                                          	},
                                                                          	"additionalProperties": true
                                                                          }
-                                                                         """, true);
-
+                                                                         """,
+        true);
   }
 
   @Test
@@ -117,9 +127,12 @@ class JsonlAzureBlobStorageOperationsTest {
 
     Thread.sleep(1000);
 
-    blobContainerClient.getBlobClient("FolderA/FolderB/blob1.json").upload(BinaryData.fromString(
-        "{\"name\":\"Super Man\",\"secretIdentity\":\"Clark Kent\",\"powers\":[\"Lightning fast\",\"Super strength\",\"Laser vision\"]}\n"),
-        true);
+    blobContainerClient
+        .getBlobClient("FolderA/FolderB/blob1.json")
+        .upload(
+            BinaryData.fromString(
+                "{\"name\":\"Super Man\",\"secretIdentity\":\"Clark Kent\",\"powers\":[\"Lightning fast\",\"Super strength\",\"Laser vision\"]}\n"),
+            true);
 
     var messages = azureBlobStorageOperations.readBlobs(now);
 
@@ -128,13 +141,13 @@ class JsonlAzureBlobStorageOperationsTest {
         .findAny()
         .orElseThrow();
 
-    assertThat(messages)
-        .hasSize(1);
+    assertThat(messages).hasSize(1);
 
-    JSONAssert.assertEquals(objectMapper.writeValueAsString(messages.get(0)), String.format(
-        "{\"name\":\"Super Man\",\"secretIdentity\":\"Clark Kent\",\"powers\":[\"Lightning fast\",\"Super strength\",\"Laser vision\"],\"_ab_source_blob_name\":\"%s\",\"_ab_source_file_last_modified\":\"%s\"}\n",
-        azureBlob.name(), azureBlob.lastModified().toString()), true);
-
+    JSONAssert.assertEquals(
+        objectMapper.writeValueAsString(messages.get(0)),
+        String.format(
+            "{\"name\":\"Super Man\",\"secretIdentity\":\"Clark Kent\",\"powers\":[\"Lightning fast\",\"Super strength\",\"Laser vision\"],\"_ab_source_blob_name\":\"%s\",\"_ab_source_file_last_modified\":\"%s\"}\n",
+            azureBlob.name(), azureBlob.lastModified().toString()),
+        true);
   }
-
 }

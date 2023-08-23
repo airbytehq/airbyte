@@ -19,11 +19,9 @@ class WaitingUtilsTest {
   @Test
   void testWaitForConditionConditionMet() {
     final Supplier<Boolean> condition = mock(Supplier.class);
-    when(condition.get())
-        .thenReturn(false)
-        .thenReturn(false)
-        .thenReturn(true);
-    assertTrue(WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition));
+    when(condition.get()).thenReturn(false).thenReturn(false).thenReturn(true);
+    assertTrue(
+        WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition));
   }
 
   @SuppressWarnings("unchecked")
@@ -31,7 +29,7 @@ class WaitingUtilsTest {
   void testWaitForConditionTimeout() {
     final Supplier<Boolean> condition = mock(Supplier.class);
     when(condition.get()).thenReturn(false);
-    assertFalse(WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition));
+    assertFalse(
+        WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition));
   }
-
 }

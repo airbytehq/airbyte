@@ -34,7 +34,8 @@ public class MssqlStressTest extends JdbcStressTest {
 
   @BeforeAll
   static void init() {
-    dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    dbContainer =
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     dbContainer.start();
   }
 
@@ -51,7 +52,8 @@ public class MssqlStressTest extends JdbcStressTest {
         configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
+        String.format(
+            "jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
         Map.of("encrypt", "false"));
@@ -61,7 +63,8 @@ public class MssqlStressTest extends JdbcStressTest {
 
       final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-      database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+      database.execute(
+          ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
       config = Jsons.clone(configWithoutDbName);
       ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
@@ -97,5 +100,4 @@ public class MssqlStressTest extends JdbcStressTest {
   public String getDriverClass() {
     return MssqlSource.DRIVER_CLASS;
   }
-
 }

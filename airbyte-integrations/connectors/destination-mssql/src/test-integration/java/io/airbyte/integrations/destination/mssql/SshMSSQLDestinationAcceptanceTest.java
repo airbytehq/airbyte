@@ -49,7 +49,10 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName), false);
+    return bastion.getTunnelConfig(
+        getTunnelMethod(),
+        bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName),
+        false);
   }
 
   @Override
@@ -60,20 +63,21 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
@@ -88,41 +92,40 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s",
+        String.format(
+            "jdbc:sqlserver://%s:%s",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
     return new Database(dslContext);
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws Exception {
     final var schema = schemaName == null ? this.schemaName : schemaName;
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
-        config,
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-            .query(
-                ctx -> ctx
-                    .fetch(String.format("USE %s;"
-                        + "SELECT * FROM %s.%s ORDER BY %s ASC;",
-                        database, schema, tableName.toLowerCase(),
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                    .stream()
-                    .map(this::getJsonFromRecord)
-                    .collect(Collectors.toList())));
+        config, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, (CheckedFunction<
+                JsonNode, List<JsonNode>, Exception>)
+            mangledConfig -> getDatabaseFromConfig(mangledConfig).query(ctx -> ctx
+                .fetch(String.format(
+                    "USE %s;" + "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                    database,
+                    schema,
+                    tableName.toLowerCase(),
+                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .stream()
+                .map(this::getJsonFromRecord)
+                .collect(Collectors.toList())));
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     startTestContainers();
 
     SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        mangledConfig -> {
+        getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> {
             ctx.fetch(String.format("CREATE DATABASE %s;", database));
             ctx.fetch(String.format("USE %s;", database));
@@ -170,5 +173,4 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   protected boolean supportObjectDataTypeTest() {
     return true;
   }
-
 }

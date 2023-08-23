@@ -46,7 +46,8 @@ public class PerformanceTest {
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
 
-  PerformanceTest(final String imageName, final String config, final String catalog) throws JsonProcessingException {
+  PerformanceTest(final String imageName, final String config, final String catalog)
+      throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
     this.imageName = imageName;
     this.config = mapper.readTree(config);
@@ -60,7 +61,8 @@ public class PerformanceTest {
     final String localIp = InetAddress.getLocalHost().getHostAddress();
     final String kubeHeartbeatUrl = localIp + ":" + 9000;
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
-    final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
+    final var processFactory =
+        new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
     final ResourceRequirements resourceReqs = new ResourceRequirements()
         .withCpuLimit("2.5")
         .withCpuRequest("2.5")
@@ -68,14 +70,23 @@ public class PerformanceTest {
         .withMemoryRequest("2Gi");
     final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
-    final var integrationLauncher =
-        new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
-    final var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags(), heartbeatMonitor);
+    final var integrationLauncher = new AirbyteIntegrationLauncher(
+        "1",
+        0,
+        this.imageName,
+        processFactory,
+        resourceReqs,
+        allowedHosts,
+        false,
+        new EnvVariableFeatureFlags());
+    final var source = new DefaultAirbyteSource(
+        integrationLauncher, new EnvVariableFeatureFlags(), heartbeatMonitor);
     final var jobRoot = "/";
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(this.config)
         .withState(null)
-        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
+        .withCatalog(convertProtocolObject(
+            this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
     log.info("Source starting");
     source.start(sourceConfig, Path.of(jobRoot));
@@ -92,11 +103,12 @@ public class PerformanceTest {
           totalBytes += Jsons.getEstimatedByteSize(airbyteMessage.getRecord().getData());
           counter++;
         }
-
       }
 
       if (counter > 0 && counter % MEGABYTE == 0) {
-        log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
+        log.info(
+            "current throughput: {} total MB {}",
+            (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
             totalBytes / MEGABYTE);
       }
     }
@@ -105,12 +117,16 @@ public class PerformanceTest {
     final var totalMB = totalBytes / MEGABYTE;
     final var totalTimeSecs = (end - start) / 1000.0;
     final var rps = counter / totalTimeSecs;
-    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
+    log.info(
+        "total secs: {}. total MB read: {}, rps: {}, throughput: {}",
+        totalTimeSecs,
+        totalMB,
+        rps,
+        totalMB / totalTimeSecs);
     source.close();
   }
 
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
-
 }

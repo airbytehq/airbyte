@@ -25,16 +25,16 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import org.jooq.impl.DSL;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.jooq.impl.DSL;
 
-public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public abstract class SshRedshiftDestinationBaseAcceptanceTest
+    extends JdbcDestinationAcceptanceTest {
 
   protected String schemaName;
   // config from which to create / delete schemas.
@@ -63,25 +63,30 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
     return getTunnelConfig(getTunnelMethod(), configMapBuilder);
   }
 
-  protected JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod, final ImmutableMap.Builder<Object, Object> builderWithSchema) {
+  protected JsonNode getTunnelConfig(
+      final SshTunnel.TunnelMethod tunnelMethod,
+      final ImmutableMap.Builder<Object, Object> builderWithSchema) {
     final JsonNode sshBastionHost = config.get("ssh_bastion_host");
     final JsonNode sshBastionPort = config.get("ssh_bastion_port");
     final JsonNode sshBastionUser = config.get("ssh_bastion_user");
     final JsonNode sshBastionPassword = config.get("ssh_bastion_password");
     final JsonNode sshBastionKey = config.get("ssh_bastion_key");
 
-    final String tunnelUserPassword = tunnelMethod.equals(SSH_PASSWORD_AUTH) ? sshBastionPassword.asText() : "";
+    final String tunnelUserPassword =
+        tunnelMethod.equals(SSH_PASSWORD_AUTH) ? sshBastionPassword.asText() : "";
     final String sshKey = tunnelMethod.equals(SSH_KEY_AUTH) ? sshBastionKey.asText() : "";
 
     return Jsons.jsonNode(builderWithSchema
-        .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
-            .put("tunnel_host", sshBastionHost)
-            .put("tunnel_method", tunnelMethod.toString())
-            .put("tunnel_port", sshBastionPort.intValue())
-            .put("tunnel_user", sshBastionUser)
-            .put("tunnel_user_password", tunnelUserPassword)
-            .put("ssh_key", sshKey)
-            .build()))
+        .put(
+            "tunnel_method",
+            Jsons.jsonNode(ImmutableMap.builder()
+                .put("tunnel_host", sshBastionHost)
+                .put("tunnel_method", tunnelMethod.toString())
+                .put("tunnel_port", sshBastionPort.intValue())
+                .put("tunnel_user", sshBastionUser)
+                .put("tunnel_user_password", tunnelUserPassword)
+                .put("ssh_key", sshKey)
+                .build()))
         .build());
   }
 
@@ -105,37 +110,37 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(j -> j.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws Exception {
     return SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        config -> {
+        getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, config -> {
           return getDatabase().query(ctx -> ctx
-              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .fetch(String.format(
+                  "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                  schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
               .stream()
               .map(this::getJsonFromRecord)
               .collect(Collectors.toList()));
         });
-
   }
 
   @Override
@@ -144,13 +149,15 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   private Database createDatabaseFromConfig(final JsonNode config) {
-    connection = ConnectionFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
-            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                    config.get(JdbcUtils.HOST_KEY).asText(),
-                    config.get(JdbcUtils.PORT_KEY).asInt(),
-                    config.get(JdbcUtils.DATABASE_KEY).asText()));
+    connection = ConnectionFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
+        String.format(
+            DatabaseDriver.REDSHIFT.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     return new Database(DSL.using(connection));
   }
@@ -165,7 +172,8 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     baseConfig = getStaticConfig();
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
@@ -175,45 +183,32 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
     database = createDatabaseFromConfig(config);
     // create the schema
 
-    SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        config -> {
-          getDatabase().query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
-        });
+    SshTunnel.sshWrap(getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, config -> {
+      getDatabase().query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
+    });
 
     // create the user
-    SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        config -> {
-          getDatabase().query(ctx -> ctx.fetch(String.format("CREATE USER %s WITH PASSWORD '%s' SESSION TIMEOUT 60;",
+    SshTunnel.sshWrap(getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, config -> {
+      getDatabase()
+          .query(ctx -> ctx.fetch(String.format(
+              "CREATE USER %s WITH PASSWORD '%s' SESSION TIMEOUT 60;",
               USER_WITHOUT_CREDS, baseConfig.get("password").asText())));
-        });
+    });
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     // blow away the test schema at the end.
-    SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        config -> {
-          getDatabase().query(ctx -> ctx.fetch(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", schemaName)));
-        });
+    SshTunnel.sshWrap(getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, config -> {
+      getDatabase()
+          .query(ctx -> ctx.fetch(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", schemaName)));
+    });
 
     // blow away the user at the end.
-    SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        config -> {
-          getDatabase().query(ctx -> ctx.fetch(String.format("DROP USER IF EXISTS %s;", USER_WITHOUT_CREDS)));
-        });
+    SshTunnel.sshWrap(getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, config -> {
+      getDatabase()
+          .query(ctx -> ctx.fetch(String.format("DROP USER IF EXISTS %s;", USER_WITHOUT_CREDS)));
+    });
     RedshiftConnectionHandler.close(connection);
   }
-
 }

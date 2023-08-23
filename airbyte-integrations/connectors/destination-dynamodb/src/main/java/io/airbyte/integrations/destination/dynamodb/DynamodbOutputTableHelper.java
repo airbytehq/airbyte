@@ -11,11 +11,13 @@ import java.util.List;
 
 public class DynamodbOutputTableHelper {
 
-  public static String getOutputTableName(final String tableNamePrefix, final AirbyteStream stream) {
+  public static String getOutputTableName(
+      final String tableNamePrefix, final AirbyteStream stream) {
     return getOutputTableName(tableNamePrefix, stream.getNamespace(), stream.getName());
   }
 
-  public static String getOutputTableName(final String tableNamePrefix, final String namespace, final String streamName) {
+  public static String getOutputTableName(
+      final String tableNamePrefix, final String namespace, final String streamName) {
     final List<String> paths = new LinkedList<>();
 
     if (tableNamePrefix != null) {
@@ -30,5 +32,4 @@ public class DynamodbOutputTableHelper {
 
     return String.join("_", paths);
   }
-
 }

@@ -25,13 +25,12 @@ import java.util.stream.Stream;
  * https://github.com/cockroachdb/cockroach/issues/40195?version=v21.2#issuecomment-870570351 The
  * same situation as kafka-connect applies to StreamingJdbcDatabase
  */
-public class CockroachJdbcDatabase
-    extends JdbcDatabase {
+public class CockroachJdbcDatabase extends JdbcDatabase {
 
   private final JdbcDatabase database;
 
-  public CockroachJdbcDatabase(final JdbcDatabase database,
-                               final JdbcCompatibleSourceOperations<?> sourceOperations) {
+  public CockroachJdbcDatabase(
+      final JdbcDatabase database, final JdbcCompatibleSourceOperations<?> sourceOperations) {
     super(sourceOperations);
     this.database = database;
   }
@@ -47,38 +46,43 @@ public class CockroachJdbcDatabase
   }
 
   @Override
-  public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> List<T> bufferedResultSetQuery(
+      final CheckedFunction<Connection, ResultSet, SQLException> query,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.bufferedResultSetQuery(query, recordTransform);
   }
 
   @Override
-  public <T> Stream<T> unsafeResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeResultSetQuery(
+      final CheckedFunction<Connection, ResultSet, SQLException> query,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.unsafeResultSetQuery(query, recordTransform);
   }
 
   @Override
-  public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                   final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeQuery(
+      final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.unsafeQuery(statementCreator, recordTransform);
   }
 
   @Override
-  public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws SQLException {
-    return bufferedResultSetQuery(connection -> {
-      final PreparedStatement statement = connection.prepareStatement(sql);
-      int i = 1;
-      for (final String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement.executeQuery();
-    }, sourceOperations::rowToJson).stream();
-
+  public Stream<JsonNode> unsafeQuery(final String sql, final String... params)
+      throws SQLException {
+    return bufferedResultSetQuery(
+        connection -> {
+          final PreparedStatement statement = connection.prepareStatement(sql);
+          int i = 1;
+          for (final String param : params) {
+            statement.setString(i, param);
+            ++i;
+          }
+          return statement.executeQuery();
+        },
+        sourceOperations::rowToJson)
+        .stream();
   }
-
 }

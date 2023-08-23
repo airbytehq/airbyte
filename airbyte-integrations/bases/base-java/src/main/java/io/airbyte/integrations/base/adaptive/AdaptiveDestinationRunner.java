@@ -39,10 +39,10 @@ public class AdaptiveDestinationRunner {
       this.deploymentMode = deploymentMode;
     }
 
-    public <OT extends Destination> CloudDestinationBuilder<OT> withOssDestination(final Supplier<OT> ossDestinationSupplier) {
+    public <OT extends Destination> CloudDestinationBuilder<OT> withOssDestination(
+        final Supplier<OT> ossDestinationSupplier) {
       return new CloudDestinationBuilder<>(deploymentMode, ossDestinationSupplier);
     }
-
   }
 
   public static final class CloudDestinationBuilder<OT extends Destination> {
@@ -50,15 +50,16 @@ public class AdaptiveDestinationRunner {
     private final String deploymentMode;
     private final Supplier<OT> ossDestinationSupplier;
 
-    public CloudDestinationBuilder(final String deploymentMode, final Supplier<OT> ossDestinationSupplier) {
+    public CloudDestinationBuilder(
+        final String deploymentMode, final Supplier<OT> ossDestinationSupplier) {
       this.deploymentMode = deploymentMode;
       this.ossDestinationSupplier = ossDestinationSupplier;
     }
 
-    public <CT extends Destination> Runner<OT, CT> withCloudDestination(final Supplier<CT> cloudDestinationSupplier) {
+    public <CT extends Destination> Runner<OT, CT> withCloudDestination(
+        final Supplier<CT> cloudDestinationSupplier) {
       return new Runner<>(deploymentMode, ossDestinationSupplier, cloudDestinationSupplier);
     }
-
   }
 
   public static final class Runner<OT extends Destination, CT extends Destination> {
@@ -67,9 +68,10 @@ public class AdaptiveDestinationRunner {
     private final Supplier<OT> ossDestinationSupplier;
     private final Supplier<CT> cloudDestinationSupplier;
 
-    public Runner(final String deploymentMode,
-                  final Supplier<OT> ossDestinationSupplier,
-                  final Supplier<CT> cloudDestinationSupplier) {
+    public Runner(
+        final String deploymentMode,
+        final Supplier<OT> ossDestinationSupplier,
+        final Supplier<CT> cloudDestinationSupplier) {
       this.deploymentMode = deploymentMode;
       this.ossDestinationSupplier = ossDestinationSupplier;
       this.cloudDestinationSupplier = cloudDestinationSupplier;
@@ -101,7 +103,5 @@ public class AdaptiveDestinationRunner {
       new IntegrationRunner(destination).run(args);
       LOGGER.info("Completed destination: {}", destination.getClass().getName());
     }
-
   }
-
 }

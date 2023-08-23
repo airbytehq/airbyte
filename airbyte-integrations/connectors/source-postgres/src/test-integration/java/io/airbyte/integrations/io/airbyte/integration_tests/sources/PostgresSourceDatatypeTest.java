@@ -33,13 +33,13 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
   protected Database setupDatabase() throws SQLException {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>("postgres:14-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "Standard").build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
@@ -54,7 +54,8 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -68,8 +69,10 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
       // In one of the test case, we have some money values with currency symbol. Postgres can only
       // understand those money values if the symbol corresponds to the monetary locale setting. For
       // example,
-      // if the locale is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is
-      // necessary here to make sure the unit test can pass, no matter what the locale the runner VM has.
+      // if the locale is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary
+      // locate is
+      // necessary here to make sure the unit test can pass, no matter what the locale the runner VM
+      // has.
       ctx.execute("SET lc_monetary TO 'en_US.utf8';");
       // Set up a fixed timezone here so that timetz and timestamptz always have the same time zone
       // wherever the tests are running on.
@@ -91,5 +94,4 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
   public boolean testCatalog() {
     return true;
   }
-
 }

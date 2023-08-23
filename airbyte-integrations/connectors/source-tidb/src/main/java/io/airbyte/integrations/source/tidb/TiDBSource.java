@@ -26,10 +26,8 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
-  public static final List<String> SSL_PARAMETERS = List.of(
-      "useSSL=true",
-      "requireSSL=true",
-      "verifyServerCertificate=false");
+  public static final List<String> SSL_PARAMETERS =
+      List.of("useSSL=true", "requireSSL=true", "verifyServerCertificate=false");
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new TiDBSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -41,7 +39,8 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s?",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(
+        "jdbc:mysql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
@@ -61,7 +60,8 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -69,11 +69,7 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Set.of(
-        "information_schema",
-        "metrics_schema",
-        "performance_schema",
-        "mysql");
+    return Set.of("information_schema", "metrics_schema", "performance_schema", "mysql");
   }
 
   @Override
@@ -87,5 +83,4 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", TiDBSource.class);
   }
-
 }

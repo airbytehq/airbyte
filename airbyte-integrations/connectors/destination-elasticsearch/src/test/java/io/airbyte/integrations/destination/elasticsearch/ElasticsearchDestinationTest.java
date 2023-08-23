@@ -49,7 +49,9 @@ public class ElasticsearchDestinationTest {
         .withStartupTimeout(Duration.ofSeconds(60));
     container.start();
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
+        .put(
+            "endpoint",
+            String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
         .build());
   }
 
@@ -67,16 +69,23 @@ public class ElasticsearchDestinationTest {
 
     final var namespace = "public";
     final var streamName = "appended_records";
-    final var testConfig = new TestConfig(namespace, streamName, DestinationSyncMode.APPEND, primaryKey);
+    final var testConfig =
+        new TestConfig(namespace, streamName, DestinationSyncMode.APPEND, primaryKey);
     final var testMessages = generateTestMessages(namespace, streamName, 0, 10);
     final var firstRecordSet = e2e(testConfig, testMessages);
 
     assertEquals(
-        testMessages.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
+        testMessages.stream()
+            .map(AirbyteMessage::getRecord)
+            .map(AirbyteRecordMessage::getData)
+            .collect(Collectors.toList()),
         firstRecordSet);
 
     final var secondRecordSet = e2e(testConfig, testMessages);
-    assertEquals(testMessages.size() * 2, secondRecordSet.size(), "it should have appended the test messages twice");
+    assertEquals(
+        testMessages.size() * 2,
+        secondRecordSet.size(),
+        "it should have appended the test messages twice");
   }
 
   @Test
@@ -86,16 +95,21 @@ public class ElasticsearchDestinationTest {
 
     final var namespace = "public";
     final var streamName = "overwritten_records";
-    final var testConfig = new TestConfig(namespace, streamName, DestinationSyncMode.OVERWRITE, primaryKey);
+    final var testConfig =
+        new TestConfig(namespace, streamName, DestinationSyncMode.OVERWRITE, primaryKey);
     final var testMessages = generateTestMessages(namespace, streamName, 0, 10);
     final var firstRecordSet = e2e(testConfig, testMessages);
 
     assertEquals(
-        testMessages.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
+        testMessages.stream()
+            .map(AirbyteMessage::getRecord)
+            .map(AirbyteRecordMessage::getData)
+            .collect(Collectors.toList()),
         firstRecordSet);
 
     final var secondRecordSet = e2e(testConfig, testMessages);
-    assertEquals(testMessages.size(), secondRecordSet.size(), "it should only have 1 set of test messages");
+    assertEquals(
+        testMessages.size(), secondRecordSet.size(), "it should only have 1 set of test messages");
   }
 
   @Test
@@ -105,12 +119,16 @@ public class ElasticsearchDestinationTest {
 
     final var namespace = "public";
     final var streamName = "appended_and_deduped_records";
-    final var testConfig = new TestConfig(namespace, streamName, DestinationSyncMode.APPEND_DEDUP, primaryKey);
+    final var testConfig =
+        new TestConfig(namespace, streamName, DestinationSyncMode.APPEND_DEDUP, primaryKey);
     final var firstTestMessages = generateTestMessages(namespace, streamName, 0, 10);
     final var firstRecordSet = e2e(testConfig, firstTestMessages);
 
     assertEquals(
-        firstTestMessages.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
+        firstTestMessages.stream()
+            .map(AirbyteMessage::getRecord)
+            .map(AirbyteRecordMessage::getData)
+            .collect(Collectors.toList()),
         firstRecordSet);
 
     final var secondTestMessages = generateTestMessages(namespace, streamName, 5, 15);
@@ -119,7 +137,8 @@ public class ElasticsearchDestinationTest {
     assertEquals(15, secondRecordSet.size(), "it should upsert records with matching primary keys");
   }
 
-  private List<JsonNode> e2e(final TestConfig testConfig, final List<AirbyteMessage> testMessages) throws Exception {
+  private List<JsonNode> e2e(final TestConfig testConfig, final List<AirbyteMessage> testMessages)
+      throws Exception {
     final var catalog = testConfig.getCatalog();
     final var namespace = testConfig.getNamespace();
     final var streamName = testConfig.getStreamName();
@@ -129,7 +148,8 @@ public class ElasticsearchDestinationTest {
     final var check = destination.check(config);
     log.info("check status: {}", check);
 
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer =
+        destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.start();
     testMessages.forEach(m -> {
@@ -141,13 +161,14 @@ public class ElasticsearchDestinationTest {
     });
     consumer.accept(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(namespace + "." + streamName, testMessages.size())))));
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.jsonNode(
+                ImmutableMap.of(namespace + "." + streamName, testMessages.size())))));
     consumer.close();
 
     final var connection = new ElasticsearchConnection(ConnectorConfiguration.fromJsonNode(config));
 
-    final List<JsonNode> actualRecords =
-        connection.getRecords(indexName);
+    final List<JsonNode> actualRecords = connection.getRecords(indexName);
 
     for (var record : actualRecords) {
       log.info("actual record: {}", record);
@@ -157,7 +178,8 @@ public class ElasticsearchDestinationTest {
   }
 
   // generate some messages. Taken from the postgres destination test
-  private List<AirbyteMessage> generateTestMessages(final String namespace, final String streamName, final int start, final int end) {
+  private List<AirbyteMessage> generateTestMessages(
+      final String namespace, final String streamName, final int start, final int end) {
     return IntStream.range(start, end)
         .boxed()
         .map(i -> new AirbyteMessage()
@@ -172,21 +194,23 @@ public class ElasticsearchDestinationTest {
 
   private static class TestConfig extends ElasticsearchWriteConfig {
 
-    public TestConfig(String namespace, String streamName, DestinationSyncMode destinationSyncMode, ArrayList<List<String>> primaryKey) {
+    public TestConfig(
+        String namespace,
+        String streamName,
+        DestinationSyncMode destinationSyncMode,
+        ArrayList<List<String>> primaryKey) {
       super(namespace, streamName, destinationSyncMode, primaryKey, false);
     }
 
     ConfiguredAirbyteCatalog getCatalog() {
-      return new ConfiguredAirbyteCatalog().withStreams(List.of(
-          CatalogHelpers.createConfiguredAirbyteStream(
-              this.getStreamName(),
-              this.getNamespace(),
-              Field.of("id", JsonSchemaType.NUMBER),
-              Field.of("name", JsonSchemaType.STRING))
+      return new ConfiguredAirbyteCatalog()
+          .withStreams(List.of(CatalogHelpers.createConfiguredAirbyteStream(
+                  this.getStreamName(),
+                  this.getNamespace(),
+                  Field.of("id", JsonSchemaType.NUMBER),
+                  Field.of("name", JsonSchemaType.STRING))
               .withDestinationSyncMode(this.getSyncMode())
               .withPrimaryKey(this.getPrimaryKey())));
     }
-
   }
-
 }

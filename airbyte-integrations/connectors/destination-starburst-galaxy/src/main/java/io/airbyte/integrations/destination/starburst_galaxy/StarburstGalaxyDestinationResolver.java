@@ -20,7 +20,8 @@ public class StarburstGalaxyDestinationResolver {
   }
 
   public static boolean isS3StagingStore(final JsonNode config) {
-    return config.has(STAGING_OBJECT_STORE) && config.get(STAGING_OBJECT_STORE).isObject() && config.get(STAGING_OBJECT_STORE).has(S_3_BUCKET_NAME);
+    return config.has(STAGING_OBJECT_STORE)
+        && config.get(STAGING_OBJECT_STORE).isObject()
+        && config.get(STAGING_OBJECT_STORE).has(S_3_BUCKET_NAME);
   }
-
 }

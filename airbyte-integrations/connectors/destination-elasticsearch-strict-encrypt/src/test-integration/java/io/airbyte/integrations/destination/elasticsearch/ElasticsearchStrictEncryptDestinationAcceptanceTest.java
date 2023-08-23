@@ -89,17 +89,24 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("endpoint", String.format("https://%s:%s", container.getHost(), container.getMappedPort(9200)))
+        .put(
+            "endpoint",
+            String.format("https://%s:%s", container.getHost(), container.getMappedPort(9200)))
         .put("authenticationMethod", getAuthConfig())
-        .put("ca_certificate", new String(container.copyFileFromContainer(
-            "/usr/share/elasticsearch/config/certs/http_ca.crt",
-            InputStream::readAllBytes), StandardCharsets.UTF_8))
+        .put(
+            "ca_certificate",
+            new String(
+                container.copyFileFromContainer(
+                    "/usr/share/elasticsearch/config/certs/http_ca.crt", InputStream::readAllBytes),
+                StandardCharsets.UTF_8))
         .build());
   }
 
   protected JsonNode getUnsecureConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
+        .put(
+            "endpoint",
+            String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
         .put("authenticationMethod", getAuthConfig())
         .build());
   }
@@ -118,10 +125,11 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final DestinationAcceptanceTest.TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final DestinationAcceptanceTest.TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
@@ -130,7 +138,8 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
         .setStreamName(streamName)
         .getIndexName();
 
-    final ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    final ElasticsearchConnection connection =
+        new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     return connection.getRecords(indexName);
   }
 
@@ -139,7 +148,8 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    final ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    final ElasticsearchConnection connection =
+        new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     connection.allIndices().forEach(connection::deleteIndexIfPresent);
   }
 
@@ -147,5 +157,4 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
   public void testCheckConnectionInvalidHttpProtocol() throws Exception {
     assertEquals(Status.FAILED, runCheck(getUnsecureConfig()).getStatus());
   }
-
 }

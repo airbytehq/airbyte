@@ -38,12 +38,17 @@ import org.junit.jupiter.api.Test;
 public class CsvSerializedBufferTest {
 
   private static final JsonNode MESSAGE_DATA = Jsons.jsonNode(Map.of(
-      "field1", 10000,
-      "column2", "string value",
-      "another field", true,
-      "nested_column", Map.of("array_column", List.of(1, 2, 3))));
+      "field1",
+      10000,
+      "column2",
+      "string value",
+      "another field",
+      true,
+      "nested_column",
+      Map.of("array_column", List.of(1, 2, 3))));
   private static final String STREAM = "stream1";
-  private static final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM, null);
+  private static final AirbyteStreamNameNamespacePair streamPair =
+      new AirbyteStreamNameNamespacePair(STREAM, null);
   private static final AirbyteRecordMessage message = new AirbyteRecordMessage()
       .withStream(STREAM)
       .withData(MESSAGE_DATA)
@@ -53,7 +58,8 @@ public class CsvSerializedBufferTest {
       Field.of("column2", JsonSchemaType.STRING),
       Field.of("another field", JsonSchemaType.BOOLEAN),
       Field.of("nested_column", JsonSchemaType.OBJECT));
-  private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
+  private static final ConfiguredAirbyteCatalog catalog =
+      CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
   private static final String CSV_FILE_EXTENSION = ".csv";
   private static final CSVFormat csvFormat = CSVFormat.newFormat(',');
 
@@ -64,25 +70,49 @@ public class CsvSerializedBufferTest {
 
   @Test
   public void testUncompressedDefaultCsvFormatWriter() throws Exception {
-    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), CSVFormat.DEFAULT, false, 350L, 365L, null,
+    runTest(
+        new InMemoryBuffer(CSV_FILE_EXTENSION),
+        CSVFormat.DEFAULT,
+        false,
+        350L,
+        365L,
+        null,
         getExpectedString(CSVFormat.DEFAULT));
   }
 
   @Test
   public void testUncompressedCsvWriter() throws Exception {
-    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), csvFormat, false, 320L, 335L, null,
+    runTest(
+        new InMemoryBuffer(CSV_FILE_EXTENSION),
+        csvFormat,
+        false,
+        320L,
+        335L,
+        null,
         getExpectedString(csvFormat));
   }
 
   @Test
   public void testCompressedCsvWriter() throws Exception {
-    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), csvFormat, true, 170L, 190L, null,
+    runTest(
+        new InMemoryBuffer(CSV_FILE_EXTENSION),
+        csvFormat,
+        true,
+        170L,
+        190L,
+        null,
         getExpectedString(csvFormat));
   }
 
   @Test
   public void testCompressedCsvFileWriter() throws Exception {
-    runTest(new FileBuffer(CSV_FILE_EXTENSION), csvFormat, true, 170L, 190L, null,
+    runTest(
+        new FileBuffer(CSV_FILE_EXTENSION),
+        csvFormat,
+        true,
+        170L,
+        190L,
+        null,
         getExpectedString(csvFormat));
   }
 
@@ -97,34 +127,41 @@ public class CsvSerializedBufferTest {
   @Test
   public void testFlattenCompressedCsvFileWriter() throws Exception {
     final String expectedData = "true,string value,10000,{\"array_column\":[1,2,3]}";
-    runTest(new FileBuffer(CSV_FILE_EXTENSION), CSVFormat.newFormat(',').withRecordSeparator('\n'), true, 135L, 150L,
-        new S3CsvFormatConfig(Jsons.jsonNode(Map.of(
-            "format_type", S3Format.CSV,
-            "flattening", Flattening.ROOT_LEVEL.getValue()))),
+    runTest(
+        new FileBuffer(CSV_FILE_EXTENSION),
+        CSVFormat.newFormat(',').withRecordSeparator('\n'),
+        true,
+        135L,
+        150L,
+        new S3CsvFormatConfig(Jsons.jsonNode(
+            Map.of("format_type", S3Format.CSV, "flattening", Flattening.ROOT_LEVEL.getValue()))),
         expectedData + expectedData);
   }
 
-  private static void runTest(final BufferStorage buffer,
-                              final CSVFormat csvFormat,
-                              final boolean withCompression,
-                              final Long minExpectedByte,
-                              final Long maxExpectedByte,
-                              final S3CsvFormatConfig config,
-                              final String expectedData)
+  private static void runTest(
+      final BufferStorage buffer,
+      final CSVFormat csvFormat,
+      final boolean withCompression,
+      final Long minExpectedByte,
+      final Long maxExpectedByte,
+      final S3CsvFormatConfig config,
+      final String expectedData)
       throws Exception {
     final File outputFile = buffer.getFile();
-    try (final CsvSerializedBuffer writer = (CsvSerializedBuffer) CsvSerializedBuffer
-        .createFunction(config, () -> buffer)
-        .apply(streamPair, catalog)) {
+    try (final CsvSerializedBuffer writer = (CsvSerializedBuffer)
+        CsvSerializedBuffer.createFunction(config, () -> buffer).apply(streamPair, catalog)) {
       writer.withCsvFormat(csvFormat);
       writer.withCompression(withCompression);
       writer.accept(message);
       writer.accept(message);
       writer.flush();
-      // some data are randomized (uuid, timestamp, compression?) so the expected byte count is not always
+      // some data are randomized (uuid, timestamp, compression?) so the expected byte count is not
+      // always
       // deterministic
-      assertTrue(minExpectedByte <= writer.getByteCount() && writer.getByteCount() <= maxExpectedByte,
-          String.format("Expected size between %d and %d, but actual size was %d",
+      assertTrue(
+          minExpectedByte <= writer.getByteCount() && writer.getByteCount() <= maxExpectedByte,
+          String.format(
+              "Expected size between %d and %d, but actual size was %d",
               minExpectedByte, maxExpectedByte, writer.getByteCount()));
       final InputStream inputStream;
       if (withCompression) {
@@ -140,7 +177,8 @@ public class CsvSerializedBufferTest {
             // remove the last part of the string with random timestamp
             .substring(0, expectedData.length());
       } else {
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+        final BufferedReader reader =
+            new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
         final StringBuilder tmpData = new StringBuilder();
         String line;
         while (reader.ready()) {
@@ -157,5 +195,4 @@ public class CsvSerializedBufferTest {
     }
     assertFalse(outputFile.exists());
   }
-
 }

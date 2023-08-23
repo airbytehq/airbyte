@@ -36,14 +36,17 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
+public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest
+    extends AbstractPostgresSourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   private static final String STREAM_NAME_MATERIALIZED_VIEW = "testview";
   private static final String SCHEMA_NAME = "public";
+
   @SystemStub
   private EnvironmentVariables environmentVariables;
+
   private PostgreSQLContainer<?> container;
   private JsonNode config;
   protected static final String PASSWORD = "Passw0rd";
@@ -53,13 +56,12 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
 
-    container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-        .asCompatibleSubstituteFor("postgres"));
+    container = new PostgreSQLContainer<>(
+        DockerImageName.parse("postgres:bullseye").asCompatibleSubstituteFor("postgres"));
     container.start();
     certs = getCertificate(container);
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "Standard").build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", HostPortResolver.resolveHost(container))
@@ -77,7 +79,8 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             config.get("database").asText()),
@@ -86,9 +89,11 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
 
       database.query(ctx -> {
         ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.fetch(
+            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        ctx.fetch(
+            "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
         ctx.fetch("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
         return null;
       });
@@ -109,37 +114,44 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME, SCHEMA_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2, SCHEMA_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME_MATERIALIZED_VIEW, SCHEMA_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("id"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME,
+                        SCHEMA_NAME,
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("id"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME2,
+                        SCHEMA_NAME,
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("id"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME_MATERIALIZED_VIEW,
+                        SCHEMA_NAME,
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
   }
 
   @Override
@@ -151,5 +163,4 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
   protected boolean supportsPerStream() {
     return true;
   }
-
 }

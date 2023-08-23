@@ -30,15 +30,16 @@ public class TestRunner {
 
     launcher.execute(plan, listener);
 
-    listener.getSummary().printFailuresTo(new PrintWriter(System.out, false, StandardCharsets.UTF_8));
+    listener
+        .getSummary()
+        .printFailuresTo(new PrintWriter(System.out, false, StandardCharsets.UTF_8));
     listener.getSummary().printTo(new PrintWriter(System.out, false, StandardCharsets.UTF_8));
 
     if (listener.getSummary().getTestsFailedCount() > 0) {
       System.out.println(
-          "There are failing tests. See https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/standard-source-tests " +
-              "for more information about the standard source test suite.");
+          "There are failing tests. See https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/standard-source-tests "
+              + "for more information about the standard source test suite.");
       System.exit(1);
     }
   }
-
 }

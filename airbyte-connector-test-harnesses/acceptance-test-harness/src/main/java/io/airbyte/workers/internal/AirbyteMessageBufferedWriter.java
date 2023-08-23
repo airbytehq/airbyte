@@ -14,5 +14,4 @@ public interface AirbyteMessageBufferedWriter {
   void flush() throws IOException;
 
   void close() throws IOException;
-
 }

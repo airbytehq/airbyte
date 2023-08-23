@@ -55,7 +55,8 @@ public class MoreResources {
    * @return stream of paths to each resource file. THIS STREAM MUST BE CLOSED.
    * @throws IOException you never know when you IO.
    */
-  public static Stream<Path> listResources(final Class<?> klass, final String name) throws IOException {
+  public static Stream<Path> listResources(final Class<?> klass, final String name)
+      throws IOException {
     Preconditions.checkNotNull(klass);
     Preconditions.checkNotNull(name);
     Preconditions.checkArgument(!name.isBlank());
@@ -68,7 +69,8 @@ public class MoreResources {
 
       final Path searchPath;
       if (url.toString().startsWith("jar")) {
-        final FileSystem fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
+        final FileSystem fileSystem =
+            FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
         searchPath = fileSystem.getPath(rootedResourceDir);
         return Files.walk(searchPath, 1).onClose(() -> Exceptions.toRuntime(fileSystem::close));
       } else {
@@ -80,5 +82,4 @@ public class MoreResources {
       throw new RuntimeException(e);
     }
   }
-
 }

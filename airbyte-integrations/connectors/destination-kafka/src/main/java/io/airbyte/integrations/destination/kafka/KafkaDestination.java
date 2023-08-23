@@ -43,19 +43,26 @@ public class KafkaDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final String testTopic = config.has("test_topic") ? config.get("test_topic").asText() : "";
+      final String testTopic =
+          config.has("test_topic") ? config.get("test_topic").asText() : "";
       if (!testTopic.isBlank()) {
-        final KafkaDestinationConfig kafkaDestinationConfig = KafkaDestinationConfig.getKafkaDestinationConfig(config);
+        final KafkaDestinationConfig kafkaDestinationConfig =
+            KafkaDestinationConfig.getKafkaDestinationConfig(config);
         final KafkaProducer<String, JsonNode> producer = kafkaDestinationConfig.getProducer();
         final String key = UUID.randomUUID().toString();
         final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
-            COLUMN_NAME_AB_ID, key,
-            COLUMN_NAME_STREAM, "test-topic-stream",
-            COLUMN_NAME_EMITTED_AT, System.currentTimeMillis(),
-            COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
+            COLUMN_NAME_AB_ID,
+            key,
+            COLUMN_NAME_STREAM,
+            "test-topic-stream",
+            COLUMN_NAME_EMITTED_AT,
+            System.currentTimeMillis(),
+            COLUMN_NAME_DATA,
+            Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
 
-        final RecordMetadata metadata = producer.send(new ProducerRecord<>(
-            namingResolver.getIdentifier(testTopic), key, value)).get();
+        final RecordMetadata metadata = producer
+            .send(new ProducerRecord<>(namingResolver.getIdentifier(testTopic), key, value))
+            .get();
         producer.flush();
 
         LOGGER.info("Successfully connected to Kafka brokers for topic '{}'.", metadata.topic());
@@ -65,15 +72,18 @@ public class KafkaDestination extends BaseConnector implements Destination {
       LOGGER.error("Exception attempting to connect to the Kafka brokers: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Could not connect to the Kafka brokers with provided configuration. \n" + e.getMessage());
+          .withMessage("Could not connect to the Kafka brokers with provided configuration. \n"
+              + e.getMessage());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new KafkaRecordConsumer(KafkaDestinationConfig.getKafkaDestinationConfig(config),
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    return new KafkaRecordConsumer(
+        KafkaDestinationConfig.getKafkaDestinationConfig(config),
         catalog,
         outputRecordCollector,
         namingResolver);
@@ -85,5 +95,4 @@ public class KafkaDestination extends BaseConnector implements Destination {
     new IntegrationRunner(destination).run(args);
     LOGGER.info("Completed destination: {}", KafkaDestination.class);
   }
-
 }

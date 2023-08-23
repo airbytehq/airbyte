@@ -18,5 +18,4 @@ public class SnowflakeDestinationRunner {
         .run(args);
     SCHEDULED_EXECUTOR_SERVICE.shutdownNow();
   }
-
 }

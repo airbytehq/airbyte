@@ -15,5 +15,4 @@ public interface CheckAndRemoveRecordWriter {
    * the new file where the record will be sent will be returned.
    */
   String apply(AirbyteStreamNameNamespacePair stream, String stagingFileName) throws Exception;
-
 }

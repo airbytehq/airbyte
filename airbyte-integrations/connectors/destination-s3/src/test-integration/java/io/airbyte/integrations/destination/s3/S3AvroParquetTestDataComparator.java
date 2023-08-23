@@ -36,13 +36,16 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
 
   @Override
   protected boolean compareDateTimeValues(String airbyteMessageValue, String destinationValue) {
-    LocalDateTime destinationDate = LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
+    LocalDateTime destinationDate =
+        LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
     return super.compareDateTimeValues(airbyteMessageValue, destinationDate.toString());
   }
 
   @Override
-  protected boolean compareTimeWithoutTimeZone(final String airbyteMessageValue, final String destinationValue) {
-    var destinationDate = LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
+  protected boolean compareTimeWithoutTimeZone(
+      final String airbyteMessageValue, final String destinationValue) {
+    var destinationDate =
+        LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
     var expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME);
     return expectedDate.equals(destinationDate);
   }
@@ -58,5 +61,4 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
     byte[] decoded = Base64.getDecoder().decode(string);
     return new String(decoded, StandardCharsets.UTF_8);
   }
-
 }

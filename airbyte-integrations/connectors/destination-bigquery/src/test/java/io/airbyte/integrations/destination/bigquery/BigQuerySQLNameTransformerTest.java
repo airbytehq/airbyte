@@ -45,5 +45,4 @@ class BigQuerySQLNameTransformerTest {
       assertEquals(normalized, INSTANCE.getNamespace(raw));
     });
   }
-
 }

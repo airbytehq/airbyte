@@ -37,33 +37,37 @@ public class S3FilenameTemplateManager {
   public String applyPatternToFilename(final S3FilenameTemplateParameterObject parameterObject)
       throws IOException {
     // sanitize fileFormat
-    final String sanitizedFileFormat = parameterObject
-        .getFileNamePattern()
-        .trim()
-        .replaceAll(" ", "_");
+    final String sanitizedFileFormat =
+        parameterObject.getFileNamePattern().trim().replaceAll(" ", "_");
 
-    stringSubstitutor.setVariableResolver(
-        StringLookupFactory.INSTANCE.mapStringLookup(fillTheMapWithDefaultPlaceHolders(sanitizedFileFormat, parameterObject)));
+    stringSubstitutor.setVariableResolver(StringLookupFactory.INSTANCE.mapStringLookup(
+        fillTheMapWithDefaultPlaceHolders(sanitizedFileFormat, parameterObject)));
     stringSubstitutor.setVariablePrefix("{");
     stringSubstitutor.setVariableSuffix("}");
-    return ofNullable(parameterObject.getObjectPath()).orElse(EMPTY) + stringSubstitutor.replace(sanitizedFileFormat);
+    return ofNullable(parameterObject.getObjectPath()).orElse(EMPTY)
+        + stringSubstitutor.replace(sanitizedFileFormat);
   }
 
-  private Map<String, String> fillTheMapWithDefaultPlaceHolders(final String stringToReplaceWithPlaceholder,
-                                                                final S3FilenameTemplateParameterObject parameterObject) {
+  private Map<String, String> fillTheMapWithDefaultPlaceHolders(
+      final String stringToReplaceWithPlaceholder,
+      final S3FilenameTemplateParameterObject parameterObject) {
 
     final long currentTimeMillis = Instant.now().toEpochMilli();
 
-    final Map<String, String> valuesMap = processExtendedPlaceholder(currentTimeMillis, stringToReplaceWithPlaceholder);
+    final Map<String, String> valuesMap =
+        processExtendedPlaceholder(currentTimeMillis, stringToReplaceWithPlaceholder);
 
-    final DateFormat defaultDateFormat = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    final DateFormat defaultDateFormat =
+        new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     defaultDateFormat.setTimeZone(TimeZone.getTimeZone(UTC));
 
     // here we set default values for supported placeholders.
-    valuesMap.put("date", ofNullable(defaultDateFormat.format(currentTimeMillis)).orElse(EMPTY));
+    valuesMap.put(
+        "date", ofNullable(defaultDateFormat.format(currentTimeMillis)).orElse(EMPTY));
     valuesMap.put("timestamp", ofNullable(String.valueOf(currentTimeMillis)).orElse(EMPTY));
     valuesMap.put("sync_id", ofNullable(System.getenv("WORKER_JOB_ID")).orElse(EMPTY));
-    valuesMap.put("format_extension", ofNullable(parameterObject.getFileExtension()).orElse(EMPTY));
+    valuesMap.put(
+        "format_extension", ofNullable(parameterObject.getFileExtension()).orElse(EMPTY));
     valuesMap.put("part_number", ofNullable(parameterObject.getPartId()).orElse(EMPTY));
 
     return valuesMap;
@@ -77,7 +81,8 @@ public class S3FilenameTemplateManager {
    *        placeholders
    * @return map with prepared placeholders.
    */
-  private Map<String, String> processExtendedPlaceholder(final long currentTimeMillis, final String stringToReplaceWithPlaceholder) {
+  private Map<String, String> processExtendedPlaceholder(
+      final long currentTimeMillis, final String stringToReplaceWithPlaceholder) {
     final Map<String, String> valuesMap = new HashMap<>();
 
     final Pattern pattern = Pattern.compile("\\{(date:.+?|timestamp:.+?)\\}");
@@ -97,7 +102,9 @@ public class S3FilenameTemplateManager {
               valuesMap.put(matcher.group(1), String.valueOf(currentTimeMillis));
             }
             case "micro" -> {
-              valuesMap.put(matcher.group(1), String.valueOf(convertToMicrosecondsRepresentation(currentTimeMillis)));
+              valuesMap.put(
+                  matcher.group(1),
+                  String.valueOf(convertToMicrosecondsRepresentation(currentTimeMillis)));
             }
           }
         }
@@ -110,5 +117,4 @@ public class S3FilenameTemplateManager {
     // The time representation in microseconds is equal to the milliseconds multiplied by 1,000.
     return milliSeconds * 1000;
   }
-
 }

@@ -38,11 +38,12 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
   private final NamingConventionTransformer nameTransformer;
   private final PulsarClient client;
 
-  public PulsarRecordConsumer(final PulsarDestinationConfig pulsarDestinationConfig,
-                              final ConfiguredAirbyteCatalog catalog,
-                              final PulsarClient pulsarClient,
-                              final Consumer<AirbyteMessage> outputRecordCollector,
-                              final NamingConventionTransformer nameTransformer) {
+  public PulsarRecordConsumer(
+      final PulsarDestinationConfig pulsarDestinationConfig,
+      final ConfiguredAirbyteCatalog catalog,
+      final PulsarClient pulsarClient,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final NamingConventionTransformer nameTransformer) {
     this.config = pulsarDestinationConfig;
     this.producerMap = new HashMap<>();
     this.catalog = catalog;
@@ -62,14 +63,17 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
       outputRecordCollector.accept(airbyteMessage);
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-      final Producer<GenericRecord> producer = producerMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
+      final Producer<GenericRecord> producer =
+          producerMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
       final String key = UUID.randomUUID().toString();
       final GenericRecord value = Schema.generic(PulsarDestinationConfig.getSchemaInfo())
           .newRecordBuilder()
           .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
           .set(PulsarDestination.COLUMN_NAME_STREAM, recordMessage.getStream())
           .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt())
-          .set(PulsarDestination.COLUMN_NAME_DATA, recordMessage.getData().toString().getBytes(StandardCharsets.UTF_8))
+          .set(
+              PulsarDestination.COLUMN_NAME_DATA,
+              recordMessage.getData().toString().getBytes(StandardCharsets.UTF_8))
           .build();
 
       sendRecord(producer, value);
@@ -81,13 +85,21 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
   Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> buildProducerMap() {
     return catalog.getStreams().stream()
         .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
-        .collect(Collectors.toMap(Function.identity(), pair -> {
-          String topic = nameTransformer.getIdentifier(config.getTopicPattern()
-              .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
-              .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")));
-          return PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), config.getProducerConfig(),
-              config.uriForTopic(topic));
-        }, (existing, newValue) -> existing));
+        .collect(Collectors.toMap(
+            Function.identity(),
+            pair -> {
+              String topic = nameTransformer.getIdentifier(config
+                  .getTopicPattern()
+                  .replaceAll(
+                      "\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
+                  .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")));
+              return PulsarUtils.buildProducer(
+                  client,
+                  Schema.generic(PulsarDestinationConfig.getSchemaInfo()),
+                  config.getProducerConfig(),
+                  config.uriForTopic(topic));
+            },
+            (existing, newValue) -> existing));
   }
 
   private void sendRecord(final Producer<GenericRecord> producer, final GenericRecord record) {
@@ -110,5 +122,4 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
     });
     Exceptions.swallow(client::close);
   }
-
 }

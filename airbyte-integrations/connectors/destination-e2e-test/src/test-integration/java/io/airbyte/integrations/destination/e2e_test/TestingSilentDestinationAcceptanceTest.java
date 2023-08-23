@@ -25,20 +25,23 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(
-        Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", TestDestinationType.SILENT.name())));
+    return Jsons.jsonNode(Collections.singletonMap(
+        "test_destination",
+        Collections.singletonMap("test_destination_type", TestDestinationType.SILENT.name())));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", "invalid")));
+    return Jsons.jsonNode(Collections.singletonMap(
+        "test_destination", Collections.singletonMap("test_destination_type", "invalid")));
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
     return Collections.emptyList();
   }
 
@@ -53,10 +56,10 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void assertSameMessages(final List<AirbyteMessage> expected,
-                                    final List<AirbyteRecordMessage> actual,
-                                    final boolean pruneAirbyteInternalFields) {
+  protected void assertSameMessages(
+      final List<AirbyteMessage> expected,
+      final List<AirbyteRecordMessage> actual,
+      final boolean pruneAirbyteInternalFields) {
     assertEquals(0, actual.size());
   }
-
 }

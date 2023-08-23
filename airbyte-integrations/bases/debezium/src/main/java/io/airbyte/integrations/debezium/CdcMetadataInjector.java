@@ -24,7 +24,8 @@ public interface CdcMetadataInjector<T> {
    */
   void addMetaData(ObjectNode event, JsonNode source);
 
-  default void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final T metadataToAdd) {
+  default void addMetaDataToRowsFetchedOutsideDebezium(
+      final ObjectNode record, final String transactionTimestamp, final T metadataToAdd) {
     throw new RuntimeException("Not Supported");
   }
 
@@ -36,5 +37,4 @@ public interface CdcMetadataInjector<T> {
    *        https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-create-events
    */
   String namespace(JsonNode source);
-
 }

@@ -35,29 +35,46 @@ class DynamodbSchemaSerializerTest {
   void serializeAttributeValueToJsonSchema() throws JsonProcessingException, JSONException {
 
     Map<String, AttributeValue> items = Map.of(
-        "sAttribute", AttributeValue.builder().s("string").build(),
-        "nAttribute", AttributeValue.builder().n("123").build(),
+        "sAttribute",
+        AttributeValue.builder().s("string").build(),
+        "nAttribute",
+        AttributeValue.builder().n("123").build(),
         "bAttribute",
-        AttributeValue.builder().b(SdkBytes.fromByteArray("byteArray".getBytes(StandardCharsets.UTF_8))).build(),
-        "ssAttribute", AttributeValue.builder().ss("string1", "string2").build(),
-        "nsAttribute", AttributeValue.builder().ns("125", "126").build(),
-        "bsAttribute", AttributeValue.builder().bs(
-            SdkBytes.fromByteArray("byteArray1".getBytes(StandardCharsets.UTF_8)),
-            SdkBytes.fromByteArray("byteArray2".getBytes(StandardCharsets.UTF_8))).build(),
-        "lAttribute", AttributeValue.builder().l(
-            AttributeValue.builder().s("string3").build(),
-            AttributeValue.builder().n("12.5").build()).build(),
-        "mAttribute", AttributeValue.builder().m(Map.of(
-            "attr1", AttributeValue.builder().s("string4").build(),
-            "attr2", AttributeValue.builder().s("number4").build())).build(),
-        "boolAttribute", AttributeValue.builder().bool(false).build(),
-        "nulAttribute", AttributeValue.builder().nul(true).build()
-
-    );
+        AttributeValue.builder()
+            .b(SdkBytes.fromByteArray("byteArray".getBytes(StandardCharsets.UTF_8)))
+            .build(),
+        "ssAttribute",
+        AttributeValue.builder().ss("string1", "string2").build(),
+        "nsAttribute",
+        AttributeValue.builder().ns("125", "126").build(),
+        "bsAttribute",
+        AttributeValue.builder()
+            .bs(
+                SdkBytes.fromByteArray("byteArray1".getBytes(StandardCharsets.UTF_8)),
+                SdkBytes.fromByteArray("byteArray2".getBytes(StandardCharsets.UTF_8)))
+            .build(),
+        "lAttribute",
+        AttributeValue.builder()
+            .l(
+                AttributeValue.builder().s("string3").build(),
+                AttributeValue.builder().n("12.5").build())
+            .build(),
+        "mAttribute",
+        AttributeValue.builder()
+            .m(Map.of(
+                "attr1", AttributeValue.builder().s("string4").build(),
+                "attr2", AttributeValue.builder().s("number4").build()))
+            .build(),
+        "boolAttribute",
+        AttributeValue.builder().bool(false).build(),
+        "nulAttribute",
+        AttributeValue.builder().nul(true).build());
 
     var jsonSchema = schemaObjectMapper.writeValueAsString(items);
 
-    JSONAssert.assertEquals(jsonSchema, """
+    JSONAssert.assertEquals(
+        jsonSchema,
+        """
                                          {
                                         	"bAttribute": {
                                         		"type": ["null", "string"],
@@ -116,8 +133,7 @@ class DynamodbSchemaSerializerTest {
                                         		}
                                         	}
                                         }
-                                        """, true);
-
+                                        """,
+        true);
   }
-
 }

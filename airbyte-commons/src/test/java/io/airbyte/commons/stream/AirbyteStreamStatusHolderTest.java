@@ -22,33 +22,40 @@ class AirbyteStreamStatusHolderTest {
   @Test
   void testToTraceMessage() {
     final Double startTime = Long.valueOf(System.currentTimeMillis()).doubleValue();
-    final AirbyteStreamNameNamespacePair airbyteStreamNameAndNamespacePair = new AirbyteStreamNameNamespacePair("name", "namespace");
+    final AirbyteStreamNameNamespacePair airbyteStreamNameAndNamespacePair =
+        new AirbyteStreamNameNamespacePair("name", "namespace");
     final AirbyteStreamStatus streamStatus = AirbyteStreamStatus.RUNNING;
-    final AirbyteStreamStatusHolder holder = new AirbyteStreamStatusHolder(airbyteStreamNameAndNamespacePair, streamStatus);
+    final AirbyteStreamStatusHolder holder =
+        new AirbyteStreamStatusHolder(airbyteStreamNameAndNamespacePair, streamStatus);
 
     final AirbyteTraceMessage traceMessage = holder.toTraceMessage();
     assertTrue(traceMessage.getEmittedAt() >= startTime);
     assertEquals(Type.STREAM_STATUS, traceMessage.getType());
     assertEquals(streamStatus, traceMessage.getStreamStatus().getStatus());
-    assertEquals(new StreamDescriptor()
-        .withName(airbyteStreamNameAndNamespacePair.getName())
-        .withNamespace(airbyteStreamNameAndNamespacePair.getNamespace()), traceMessage.getStreamStatus().getStreamDescriptor());
+    assertEquals(
+        new StreamDescriptor()
+            .withName(airbyteStreamNameAndNamespacePair.getName())
+            .withNamespace(airbyteStreamNameAndNamespacePair.getNamespace()),
+        traceMessage.getStreamStatus().getStreamDescriptor());
   }
 
   @Test
   void testToTraceMessageWithOptionalData() {
     final Double startTime = Long.valueOf(System.currentTimeMillis()).doubleValue();
-    final AirbyteStreamNameNamespacePair airbyteStreamNameAndNamespacePair = new AirbyteStreamNameNamespacePair("name", "namespace");
+    final AirbyteStreamNameNamespacePair airbyteStreamNameAndNamespacePair =
+        new AirbyteStreamNameNamespacePair("name", "namespace");
     final AirbyteStreamStatus streamStatus = AirbyteStreamStatus.COMPLETE;
-    final AirbyteStreamStatusHolder holder = new AirbyteStreamStatusHolder(airbyteStreamNameAndNamespacePair, streamStatus);
+    final AirbyteStreamStatusHolder holder =
+        new AirbyteStreamStatusHolder(airbyteStreamNameAndNamespacePair, streamStatus);
 
     final AirbyteTraceMessage traceMessage = holder.toTraceMessage();
     assertTrue(traceMessage.getEmittedAt() >= startTime);
     assertEquals(Type.STREAM_STATUS, traceMessage.getType());
     assertEquals(streamStatus, traceMessage.getStreamStatus().getStatus());
-    assertEquals(new StreamDescriptor()
-        .withName(airbyteStreamNameAndNamespacePair.getName())
-        .withNamespace(airbyteStreamNameAndNamespacePair.getNamespace()), traceMessage.getStreamStatus().getStreamDescriptor());
+    assertEquals(
+        new StreamDescriptor()
+            .withName(airbyteStreamNameAndNamespacePair.getName())
+            .withNamespace(airbyteStreamNameAndNamespacePair.getNamespace()),
+        traceMessage.getStreamStatus().getStreamDescriptor());
   }
-
 }

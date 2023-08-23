@@ -127,22 +127,25 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws IOException {
     return retrieveRecords(testEnv, streamName, namespace, null);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
-    final PulsarClient client = PulsarClient.builder()
-        .serviceUrl(PULSAR.getPulsarBrokerUrl())
-        .build();
-    final String topic = namingResolver.getIdentifier(namespace + "." + streamName + "." + TOPIC_NAME);
-    final Consumer<GenericRecord> consumer = client.newConsumer(Schema.AUTO_CONSUME())
+    final PulsarClient client =
+        PulsarClient.builder().serviceUrl(PULSAR.getPulsarBrokerUrl()).build();
+    final String topic =
+        namingResolver.getIdentifier(namespace + "." + streamName + "." + TOPIC_NAME);
+    final Consumer<GenericRecord> consumer = client
+        .newConsumer(Schema.AUTO_CONSUME())
         .topic(topic)
         .subscriptionName("test-subscription-" + UUID.randomUUID())
         .enableRetry(true)
@@ -156,7 +159,9 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
       if (message == null) {
         break;
       }
-      records.add(READER.readTree(Base64.getDecoder().decode(message.getValue().getField(PulsarDestination.COLUMN_NAME_DATA).toString())));
+      records.add(READER.readTree(Base64.getDecoder()
+          .decode(
+              message.getValue().getField(PulsarDestination.COLUMN_NAME_DATA).toString())));
       Exceptions.swallow(() -> consumer.acknowledge(message));
     }
     consumer.unsubscribe();
@@ -189,5 +194,4 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     PULSAR.close();
   }
-
 }

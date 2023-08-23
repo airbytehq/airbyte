@@ -40,8 +40,9 @@ public class YugabytedbDestination extends AbstractJdbcDestination {
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
-    String schema =
-        Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
+    String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY))
+        .map(JsonNode::asText)
+        .orElse("public");
 
     String jdbcUrl = "jdbc:yugabytedb://" + config.get(JdbcUtils.HOST_KEY).asText() + ":"
         + config.get(JdbcUtils.PORT_KEY).asText() + "/"
@@ -53,14 +54,16 @@ public class YugabytedbDestination extends AbstractJdbcDestination {
         .put(JdbcUtils.SCHEMA_KEY, schema);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.JDBC_URL_PARAMS_KEY,
+          config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
   }
-
 }

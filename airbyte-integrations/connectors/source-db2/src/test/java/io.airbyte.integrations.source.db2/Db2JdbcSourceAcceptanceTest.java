@@ -44,8 +44,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITHOUT_CURSOR_TYPE = "TABLE_NAME_WITHOUT_CURSOR_TYPE";
     TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE";
     TABLE_NAME_AND_TIMESTAMP = "NAME_AND_TIMESTAMP";
-    TEST_TABLES = ImmutableSet
-        .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK, TABLE_NAME_AND_TIMESTAMP);
+    TEST_TABLES = ImmutableSet.of(
+        TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK, TABLE_NAME_AND_TIMESTAMP);
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_UPDATED_AT = "UPDATED_AT";
@@ -55,9 +55,11 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     COL_TIMESTAMP = "TIMESTAMP";
     // In Db2 PK columns must be declared with NOT NULL statement.
     COLUMN_CLAUSE_WITH_PK = "id INTEGER NOT NULL, name VARCHAR(200), updated_at DATE";
-    COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE";
+    COLUMN_CLAUSE_WITH_COMPOSITE_PK =
+        "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE";
     // There is no IF EXISTS statement for a schema in Db2.
-    // The schema name must be in the catalog when attempting the DROP statement; otherwise an error is
+    // The schema name must be in the catalog when attempting the DROP statement; otherwise an error
+    // is
     // returned.
     DROP_SCHEMA_QUERY = "DROP SCHEMA %s RESTRICT";
     CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s boolean)";
@@ -72,9 +74,10 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "unencrypted")
-            .build()))
+        .put(
+            JdbcUtils.ENCRYPTION_KEY,
+            Jsons.jsonNode(
+                ImmutableMap.builder().put("encryption_method", "unencrypted").build()))
         .build());
 
     super.setup();
@@ -82,33 +85,55 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @AfterEach
   public void clean() throws Exception {
-    // In Db2 before dropping a schema, all objects that were in that schema must be dropped or moved to
+    // In Db2 before dropping a schema, all objects that were in that schema must be dropped or
+    // moved to
     // another schema.
     for (final String tableName : TEST_TABLES) {
-      final String dropTableQuery = String
-          .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
+      final String dropTableQuery =
+          String.format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
       super.database.execute(connection -> connection.createStatement().execute(dropTableQuery));
     }
     for (int i = 2; i < 10; i++) {
-      final String dropTableQuery = String
-          .format("DROP TABLE IF EXISTS %s.%s%s", SCHEMA_NAME, TABLE_NAME, i);
+      final String dropTableQuery =
+          String.format("DROP TABLE IF EXISTS %s.%s%s", SCHEMA_NAME, TABLE_NAME, i);
       super.database.execute(connection -> connection.createStatement().execute(dropTableQuery));
     }
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            enquoteIdentifier(TABLE_NAME_WITH_SPACES, connection.getMetaData().getIdentifierQuoteString()))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            enquoteIdentifier(TABLE_NAME_WITH_SPACES + 2, connection.getMetaData().getIdentifierQuoteString()))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME,
+            enquoteIdentifier(
+                TABLE_NAME_WITH_SPACES, connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME,
+            enquoteIdentifier(
+                TABLE_NAME_WITH_SPACES + 2, connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME2,
             enquoteIdentifier(TABLE_NAME, connection.getMetaData().getIdentifierQuoteString()))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            enquoteIdentifier(TABLE_NAME_WITHOUT_CURSOR_TYPE, connection.getMetaData().getIdentifierQuoteString()))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME,
+            enquoteIdentifier(
+                TABLE_NAME_WITHOUT_CURSOR_TYPE,
+                connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME,
+            enquoteIdentifier(
+                TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE,
+                connection.getMetaData().getIdentifierQuoteString()))));
     super.tearDown();
   }
 
@@ -136,5 +161,4 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new Db2Source();
   }
-
 }

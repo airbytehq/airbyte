@@ -37,20 +37,22 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
   @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseLocalDate(actualValue);
-    var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+    var expectedDate =
+        LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   @Override
   protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
-    return ZonedDateTime.of(LocalDateTime.parse(destinationValue,
-        DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT)), ZoneOffset.UTC);
+    return ZonedDateTime.of(
+        LocalDateTime.parse(
+            destinationValue, DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT)),
+        ZoneOffset.UTC);
   }
 
   private LocalDate parseLocalDate(String dateTimeValue) {
     if (dateTimeValue != null) {
-      return LocalDate.parse(dateTimeValue,
-          DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
+      return LocalDate.parse(dateTimeValue, DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
     } else {
       return null;
     }
@@ -67,5 +69,4 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
       return AIRBYTE_DATETIME_PARSED_FORMAT;
     }
   }
-
 }

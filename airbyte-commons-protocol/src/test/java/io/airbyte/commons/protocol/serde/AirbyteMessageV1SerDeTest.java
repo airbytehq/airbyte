@@ -23,15 +23,14 @@ class AirbyteMessageV1SerDeTest {
 
     final AirbyteMessage message = new AirbyteMessage()
         .withType(Type.SPEC)
-        .withSpec(
-            new ConnectorSpecification()
-                .withProtocolVersion("1.0.0")
-                .withDocumentationUrl(new URI("file:///tmp/doc")));
+        .withSpec(new ConnectorSpecification()
+            .withProtocolVersion("1.0.0")
+            .withDocumentationUrl(new URI("file:///tmp/doc")));
 
     final String serializedMessage = ser.serialize(message);
-    final AirbyteMessage deserializedMessage = deser.deserialize(Jsons.deserialize(serializedMessage));
+    final AirbyteMessage deserializedMessage =
+        deser.deserialize(Jsons.deserialize(serializedMessage));
 
     assertEquals(message, deserializedMessage);
   }
-
 }

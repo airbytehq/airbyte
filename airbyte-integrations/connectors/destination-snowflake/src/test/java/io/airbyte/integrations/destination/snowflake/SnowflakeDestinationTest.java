@@ -5,37 +5,24 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class SnowflakeDestinationTest {
@@ -47,7 +34,8 @@ public class SnowflakeDestinationTest {
 
   private static Stream<Arguments> urlsDataProvider() {
     return Stream.of(
-        // See https://docs.snowflake.com/en/user-guide/admin-account-identifier for specific requirements
+        // See https://docs.snowflake.com/en/user-guide/admin-account-identifier for specific
+        // requirements
         // "Account name in organization" style
         arguments("https://acme-marketing-test-account.snowflakecomputing.com", true),
         arguments("https://acme-marketing_test_account.snowflakecomputing.com", true),
@@ -80,8 +68,13 @@ public class SnowflakeDestinationTest {
   @ParameterizedTest
   @MethodSource({"urlsDataProvider"})
   void testUrlPattern(final String url, final boolean isMatch) throws Exception {
-    final ConnectorSpecification spec = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).spec();
-    final Pattern pattern = Pattern.compile(spec.getConnectionSpecification().get("properties").get("host").get("pattern").asText());
+    final ConnectorSpecification spec =
+        new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).spec();
+    final Pattern pattern = Pattern.compile(spec.getConnectionSpecification()
+        .get("properties")
+        .get("host")
+        .get("pattern")
+        .asText());
 
     final Matcher matcher = pattern.matcher(url);
     assertEquals(isMatch, matcher.find());
@@ -89,8 +82,10 @@ public class SnowflakeDestinationTest {
 
   @ParameterizedTest
   @MethodSource("destinationTypeToConfig")
-  public void testS3ConfigType(final String configFileName, final DestinationType expectedDestinationType) throws Exception {
-    final JsonNode config = Jsons.deserialize(MoreResources.readResource(configFileName), JsonNode.class);
+  public void testS3ConfigType(
+      final String configFileName, final DestinationType expectedDestinationType) throws Exception {
+    final JsonNode config =
+        Jsons.deserialize(MoreResources.readResource(configFileName), JsonNode.class);
     final DestinationType typeFromConfig = SnowflakeDestinationResolver.getTypeFromConfig(config);
     assertEquals(expectedDestinationType, typeFromConfig);
   }
@@ -101,10 +96,11 @@ public class SnowflakeDestinationTest {
 
   @Test
   void testWriteSnowflakeInternal() throws Exception {
-    final JsonNode config = Jsons.deserialize(MoreResources.readResource("internal_staging_config.json"), JsonNode.class);
-    final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS)
+    final JsonNode config = Jsons.deserialize(
+        MoreResources.readResource("internal_staging_config.json"), JsonNode.class);
+    final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(
+            OssCloudEnvVarConsts.AIRBYTE_OSS)
         .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
     assertEquals(AsyncStreamConsumer.class, consumer.getClass());
   }
-
 }

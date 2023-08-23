@@ -37,5 +37,4 @@ public class ClickHouseStrictEncryptSource extends SpecModifyingSource implement
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", ClickHouseStrictEncryptSource.class);
   }
-
 }

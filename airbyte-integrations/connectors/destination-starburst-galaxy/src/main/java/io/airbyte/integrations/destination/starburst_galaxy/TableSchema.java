@@ -25,5 +25,4 @@ public class TableSchema {
   public Set<ColumnMetadata> columns() {
     return ImmutableSet.copyOf(columns);
   }
-
 }

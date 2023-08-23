@@ -46,7 +46,8 @@ public abstract class GcsStreamCopier implements StreamCopier {
   // file.
   // The BATCH_SIZE is defined in CopyConsumerFactory.
   // The average size of such a file will be about 1 GB.
-  // This will make it easier to work with files and speed up the recording of large amounts of data.
+  // This will make it easier to work with files and speed up the recording of large amounts of
+  // data.
   // In addition, for a large number of records, we will not get a drop in the copy request to
   // QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
@@ -66,15 +67,16 @@ public abstract class GcsStreamCopier implements StreamCopier {
   private final HashMap<String, WriteChannel> channels = new HashMap<>();
   private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
 
-  public GcsStreamCopier(final String stagingFolder,
-                         final DestinationSyncMode destSyncMode,
-                         final String schema,
-                         final String streamName,
-                         final Storage storageClient,
-                         final JdbcDatabase db,
-                         final GcsConfig gcsConfig,
-                         final StandardNameTransformer nameTransformer,
-                         final SqlOperations sqlOperations) {
+  public GcsStreamCopier(
+      final String stagingFolder,
+      final DestinationSyncMode destSyncMode,
+      final String schema,
+      final String streamName,
+      final Storage storageClient,
+      final JdbcDatabase db,
+      final GcsConfig gcsConfig,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -85,7 +87,8 @@ public abstract class GcsStreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.storageClient = storageClient;
     this.gcsConfig = gcsConfig;
-    this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
+    this.filenameGenerator = new StagingFilenameGenerator(
+        streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
 
   private String prepareGcsStagingFile() {
@@ -115,11 +118,16 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String gcsFileName) throws Exception {
+  public void write(
+      final UUID id, final AirbyteRecordMessage recordMessage, final String gcsFileName)
+      throws Exception {
     if (csvPrinters.containsKey(gcsFileName)) {
-      csvPrinters.get(gcsFileName).printRecord(id,
-          Jsons.serialize(recordMessage.getData()),
-          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+      csvPrinters
+          .get(gcsFileName)
+          .printRecord(
+              id,
+              Jsons.serialize(recordMessage.getData()),
+              Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }
 
@@ -142,11 +150,21 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}.", tmpTableName, streamName, schemaName);
+    LOGGER.info(
+        "Starting copy to tmp table: {} in destination for stream: {}, schema: {}.",
+        tmpTableName,
+        streamName,
+        schemaName);
     for (final var gcsStagingFile : gcsStagingFiles) {
-      copyGcsCsvFileIntoTable(db, getFullGcsPath(gcsConfig.getBucketName(), gcsStagingFile), schemaName, tmpTableName, gcsConfig);
+      copyGcsCsvFileIntoTable(
+          db,
+          getFullGcsPath(gcsConfig.getBucketName(), gcsStagingFile),
+          schemaName,
+          tmpTableName,
+          gcsConfig);
     }
-    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+    LOGGER.info(
+        "Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
   @Override
@@ -173,7 +191,11 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   @Override
   public void createTemporaryTable() throws Exception {
-    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
+    LOGGER.info(
+        "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
+        streamName,
+        schemaName,
+        tmpTableName);
     sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
   }
 
@@ -189,11 +211,18 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   @Override
   public String generateMergeStatement(final String destTableName) throws Exception {
-    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
+    LOGGER.info(
+        "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
+        tmpTableName,
+        destTableName,
+        schemaName);
     final var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.", destTableName, schemaName);
+      LOGGER.info(
+          "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.",
+          destTableName,
+          schemaName);
     }
     queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
@@ -211,11 +240,13 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   public static void attemptWriteToPersistence(final GcsConfig gcsConfig) throws IOException {
-    final String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+    final String outputTableName =
+        "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteGcsObject(gcsConfig, outputTableName);
   }
 
-  private static void attemptWriteAndDeleteGcsObject(final GcsConfig gcsConfig, final String outputTableName) throws IOException {
+  private static void attemptWriteAndDeleteGcsObject(
+      final GcsConfig gcsConfig, final String outputTableName) throws IOException {
     final var storage = getStorageClient(gcsConfig);
     final var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
     final var blobInfo = BlobInfo.newBuilder(blobId).build();
@@ -225,7 +256,8 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   public static Storage getStorageClient(final GcsConfig gcsConfig) throws IOException {
-    final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes(StandardCharsets.UTF_8));
+    final InputStream credentialsInputStream =
+        new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes(StandardCharsets.UTF_8));
     final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
     return StorageOptions.newBuilder()
         .setCredentials(credentials)
@@ -244,11 +276,11 @@ public abstract class GcsStreamCopier implements StreamCopier {
     return gcsStagingFiles;
   }
 
-  public abstract void copyGcsCsvFileIntoTable(JdbcDatabase database,
-                                               String gcsFileLocation,
-                                               String schema,
-                                               String tableName,
-                                               GcsConfig gcsConfig)
+  public abstract void copyGcsCsvFileIntoTable(
+      JdbcDatabase database,
+      String gcsFileLocation,
+      String schema,
+      String tableName,
+      GcsConfig gcsConfig)
       throws SQLException;
-
 }

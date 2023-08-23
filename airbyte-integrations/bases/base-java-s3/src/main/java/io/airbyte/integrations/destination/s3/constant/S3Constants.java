@@ -21,5 +21,4 @@ public final class S3Constants {
   public static final String ACCOUNT_ID = "account_id";
 
   private S3Constants() {}
-
 }

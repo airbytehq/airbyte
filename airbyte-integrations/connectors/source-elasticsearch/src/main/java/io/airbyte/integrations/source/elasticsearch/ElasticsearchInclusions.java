@@ -11,5 +11,4 @@ public class ElasticsearchInclusions {
   private static final String type = "type";
   private static final String properties = "properties";
   public static final List<String> KEEP_LIST = List.of(type, properties);
-
 }

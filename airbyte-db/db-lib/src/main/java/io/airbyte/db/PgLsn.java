@@ -54,7 +54,8 @@ public class PgLsn implements Comparable<PgLsn> {
     Preconditions.checkArgument(slashIndex >= 0);
 
     final String logicalXLogStr = lsn.substring(0, slashIndex);
-    // parses as a long but then cast to int. this allows us to retain the full 32 bits of the integer
+    // parses as a long but then cast to int. this allows us to retain the full 32 bits of the
+    // integer
     // as opposed to the reduced value of Integer.MAX_VALUE.
     final int logicalXlog = (int) Long.parseLong(logicalXLogStr, 16);
     final String segmentStr = lsn.substring(slashIndex + 1, lsn.length());
@@ -76,9 +77,6 @@ public class PgLsn implements Comparable<PgLsn> {
 
   @Override
   public String toString() {
-    return "PgLsn{" +
-        "lsn=" + lsn +
-        '}';
+    return "PgLsn{" + "lsn=" + lsn + '}';
   }
-
 }

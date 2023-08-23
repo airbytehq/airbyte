@@ -13,5 +13,4 @@ public class JsonValidationException extends Exception {
   public JsonValidationException(final String message, final Throwable cause) {
     super(message, cause);
   }
-
 }

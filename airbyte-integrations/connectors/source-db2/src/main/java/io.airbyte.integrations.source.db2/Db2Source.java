@@ -56,7 +56,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.DB2.getUrlFormatString(),
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(
+        DatabaseDriver.DB2.getUrlFormatString(),
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get("db").asText()));
@@ -80,8 +81,12 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
           .build());
     }
 
-    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      ((ObjectNode) result).put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null
+        && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      ((ObjectNode) result)
+          .put(
+              JdbcUtils.JDBC_URL_PARAMS_KEY,
+              config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return result;
@@ -90,19 +95,32 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
-        "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
-        "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
+        "NULLID",
+        "SYSCAT",
+        "SQLJ",
+        "SYSFUN",
+        "SYSIBM",
+        "SYSIBMADM",
+        "SYSIBMINTERNAL",
+        "SYSIBMTS",
+        "SYSPROC",
+        "SYSPUBLIC",
+        "SYSSTAT",
+        "SYSTOOLS");
   }
 
   @Override
-  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(
+      final JdbcDatabase database, final String schema) throws SQLException {
+    try (final Stream<JsonNode> stream =
+        database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {
       return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
     }
   }
 
   @Override
-  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
+  protected boolean isNotInternalSchema(
+      final JsonNode jsonNode, final Set<String> internalSchemas) {
     return false;
   }
 
@@ -157,7 +175,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
     return keyStorePassword;
   }
 
-  private static void convertAndImportCertificate(final String certificate, final String keyStorePassword)
+  private static void convertAndImportCertificate(
+      final String certificate, final String keyStorePassword)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
@@ -165,16 +184,17 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
     runProcess(
-        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + keyStorePassword + " -noprompt",
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH
+            + " -file certificate.der -storepass " + keyStorePassword + " -noprompt",
         run);
   }
 
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+  private static void runProcess(final String cmd, final Runtime run)
+      throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
   }
-
 }

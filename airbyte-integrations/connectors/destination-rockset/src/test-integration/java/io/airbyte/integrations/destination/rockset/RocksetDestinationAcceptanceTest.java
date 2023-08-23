@@ -79,19 +79,15 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
   @Override
   protected JsonNode getFailCheckConfig() throws Exception {
-    return Jsons.jsonNode(
-        ImmutableMap.builder()
-            .put("workspace", "commons")
-            .put("api_key", "nope nope nope")
-            .build());
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("workspace", "commons")
+        .put("api_key", "nope nope nope")
+        .build());
   }
 
   @Override
   protected List<JsonNode> retrieveRecords(
-                                           TestDestinationEnv testEnv,
-                                           String stream,
-                                           String namespace,
-                                           JsonNode streamSchema)
+      TestDestinationEnv testEnv, String stream, String namespace, JsonNode streamSchema)
       throws Exception {
 
     final String ws = getConfig().get("workspace").asText();
@@ -108,7 +104,8 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
     // ORDER BY _event_time because the test suite expects to retrieve messages in the order they
     // were
     // originally written
-    final String sqlText = String.format("SELECT * FROM %s.%s ORDER BY _event_time;", ws, streamName);
+    final String sqlText =
+        String.format("SELECT * FROM %s.%s ORDER BY _event_time;", ws, streamName);
 
     final QueryRequest query = new QueryRequest().sql(new QueryRequestSql().query(sqlText));
 
@@ -131,7 +128,8 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
       final Response response = queryClient.queryCall(query, null, null).execute();
       final JsonNode json = mapper.readTree(response.body().string());
       results = Lists.newArrayList(json.get("results").iterator());
-      LOGGER.info("Waiting on stable doc counts, prev= " + previousResultSize + " currrent=" + results.size());
+      LOGGER.info("Waiting on stable doc counts, prev= " + previousResultSize + " currrent="
+          + results.size());
     } while (results.size() != previousResultSize);
 
     return results.stream()
@@ -158,10 +156,11 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
       final ApiClient client = RocksetUtils.apiClientFromConfig(getConfig());
       String workspace = getConfig().get("workspace").asText();
       collectionsToClear.stream()
-          .map(
-              cn -> CompletableFuture.runAsync(() -> {
+          .map(cn -> CompletableFuture.runAsync(
+              () -> {
                 RocksetUtils.clearCollectionIfCollectionExists(client, workspace, cn);
-              }, tearDownExec))
+              },
+              tearDownExec))
           // collect to avoid laziness of stream
           .collect(Collectors.toList())
           .forEach(CompletableFuture::join);
@@ -177,20 +176,21 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
     final ApiClient client = RocksetUtils.apiClientFromConfig(config);
     final String workspace = config.get("workspace").asText();
-    collectionsToDelete.stream().map(cn -> deleteCollection(client, workspace, cn)).collect(Collectors.toList()).forEach(CompletableFuture::join);
+    collectionsToDelete.stream()
+        .map(cn -> deleteCollection(client, workspace, cn))
+        .collect(Collectors.toList())
+        .forEach(CompletableFuture::join);
     tearDownExec.shutdown();
-
   }
 
-  private static CompletableFuture<Void> deleteCollection(ApiClient client, String workspace, String cn) {
+  private static CompletableFuture<Void> deleteCollection(
+      ApiClient client, String workspace, String cn) {
     return CompletableFuture.runAsync(
-        () -> Exceptions.toRuntime(
-            () -> {
-              RocksetUtils.deleteCollectionIfExists(client, workspace, cn);
-              RocksetUtils.waitUntilCollectionDeleted(client, workspace, cn);
-              Thread.sleep(2500); // Let services pick up deletion in case of re-creation
-            }),
+        () -> Exceptions.toRuntime(() -> {
+          RocksetUtils.deleteCollectionIfExists(client, workspace, cn);
+          RocksetUtils.waitUntilCollectionDeleted(client, workspace, cn);
+          Thread.sleep(2500); // Let services pick up deletion in case of re-creation
+        }),
         tearDownExec);
   }
-
 }

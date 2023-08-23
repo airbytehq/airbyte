@@ -13,7 +13,8 @@ public class FirstNLogger extends BaseLogger implements TestingLogger {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FirstNLogger.class);
 
-  public FirstNLogger(final AirbyteStreamNameNamespacePair streamNamePair, final int maxEntryCount) {
+  public FirstNLogger(
+      final AirbyteStreamNameNamespacePair streamNamePair, final int maxEntryCount) {
     super(streamNamePair, maxEntryCount);
   }
 
@@ -26,5 +27,4 @@ public class FirstNLogger extends BaseLogger implements TestingLogger {
     loggedEntryCount += 1;
     LOGGER.info(entryMessage(recordMessage));
   }
-
 }

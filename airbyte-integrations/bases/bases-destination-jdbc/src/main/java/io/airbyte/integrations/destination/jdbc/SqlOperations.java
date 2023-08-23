@@ -46,7 +46,8 @@ public interface SqlOperations {
    * @param schemaName Name of schema.
    * @return true if the schema exists in destination database, false if it doesn't
    */
-  default boolean isSchemaExists(final JdbcDatabase database, final String schemaName) throws Exception {
+  default boolean isSchemaExists(final JdbcDatabase database, final String schemaName)
+      throws Exception {
     return false;
   }
 
@@ -58,7 +59,8 @@ public interface SqlOperations {
    * @param tableName Name of table
    * @throws Exception exception
    */
-  void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
+  void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName)
+      throws Exception;
 
   /**
    * Query to create a table with provided name in provided schema if it does not already exist.
@@ -77,7 +79,8 @@ public interface SqlOperations {
    * @param tableName Name of table
    * @throws Exception exception
    */
-  void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
+  void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName)
+      throws Exception;
 
   /**
    * Query to remove all records from a table. Assumes the table exists.
@@ -98,7 +101,12 @@ public interface SqlOperations {
    * @param tableName Name of table
    * @throws Exception exception
    */
-  void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
+  void insertRecords(
+      JdbcDatabase database,
+      List<AirbyteRecordMessage> records,
+      String schemaName,
+      String tableName)
+      throws Exception;
 
   /**
    * Query to insert all records from source table to destination table. Both tables must be in the
@@ -114,7 +122,11 @@ public interface SqlOperations {
    * @param destinationTableName Name of destination table
    * @return SQL Query string
    */
-  String insertTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName);
+  String insertTableQuery(
+      JdbcDatabase database,
+      String schemaName,
+      String sourceTableName,
+      String destinationTableName);
 
   /**
    * Given an arbitrary number of queries, execute a transaction.
@@ -136,5 +148,4 @@ public interface SqlOperations {
    * @return true if the destination supports schema (ex: Postgres), false if it doesn't(MySQL)
    */
   boolean isSchemaRequired();
-
 }

@@ -36,14 +36,16 @@ class LazyAutoCloseableIteratorTest {
   @Test
   void testNullInput() {
     assertThrows(NullPointerException.class, () -> new LazyAutoCloseableIterator<>(null, null));
-    final AutoCloseableIterator<String> iteratorWithNullSupplier = new LazyAutoCloseableIterator<>(() -> null, null);
+    final AutoCloseableIterator<String> iteratorWithNullSupplier =
+        new LazyAutoCloseableIterator<>(() -> null, null);
     assertThrows(NullPointerException.class, iteratorWithNullSupplier::next);
   }
 
   @Test
   void testEmptyInput() throws Exception {
     mockInternalIteratorWith(Collections.emptyIterator());
-    final AutoCloseableIterator<String> iterator = new LazyAutoCloseableIterator<>(iteratorSupplier, null);
+    final AutoCloseableIterator<String> iterator =
+        new LazyAutoCloseableIterator<>(iteratorSupplier, null);
 
     assertFalse(iterator.hasNext());
     iterator.close();
@@ -54,7 +56,8 @@ class LazyAutoCloseableIteratorTest {
   void test() throws Exception {
     mockInternalIteratorWith(MoreIterators.of("a", "b", "c"));
 
-    final AutoCloseableIterator<String> iterator = new LazyAutoCloseableIterator<>(iteratorSupplier, null);
+    final AutoCloseableIterator<String> iterator =
+        new LazyAutoCloseableIterator<>(iteratorSupplier, null);
     verify(iteratorSupplier, never()).get();
     assertNext(iterator, "a");
     verify(iteratorSupplier).get();
@@ -68,7 +71,8 @@ class LazyAutoCloseableIteratorTest {
   @Test
   void testCloseBeforeSupply() throws Exception {
     mockInternalIteratorWith(MoreIterators.of("a", "b", "c"));
-    final AutoCloseableIterator<String> iterator = new LazyAutoCloseableIterator<>(iteratorSupplier, null);
+    final AutoCloseableIterator<String> iterator =
+        new LazyAutoCloseableIterator<>(iteratorSupplier, null);
     iterator.close();
     verify(iteratorSupplier, never()).get();
   }
@@ -82,5 +86,4 @@ class LazyAutoCloseableIteratorTest {
     assertTrue(iterator.hasNext());
     assertEquals(value, iterator.next());
   }
-
 }

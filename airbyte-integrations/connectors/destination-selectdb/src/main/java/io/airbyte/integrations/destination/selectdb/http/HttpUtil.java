@@ -11,12 +11,9 @@ import org.apache.http.impl.client.HttpClients;
 public class HttpUtil {
 
   private final HttpClientBuilder httpClientBuilder =
-      HttpClients
-          .custom()
-          .disableRedirectHandling();
+      HttpClients.custom().disableRedirectHandling();
 
   public CloseableHttpClient getClient() {
     return httpClientBuilder.build();
   }
-
 }

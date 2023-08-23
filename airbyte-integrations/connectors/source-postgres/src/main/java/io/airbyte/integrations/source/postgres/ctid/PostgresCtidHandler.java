@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -39,7 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
@@ -57,20 +55,22 @@ public class PostgresCtidHandler {
   private final CtidStateManager ctidStateManager;
   private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
-  private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  private final Function<AirbyteStreamNameNamespacePair, JsonNode>
+      streamStateForIncrementalRunSupplier;
   private static final int QUERY_TARGET_SIZE_GB = 1;
   public static final double MEGABYTE = Math.pow(1024, 2);
   public static final double GIGABYTE = MEGABYTE * 1024;
 
-
-  public PostgresCtidHandler(final JsonNode config,
-                             final JdbcDatabase database,
-                             final CtidPostgresSourceOperations sourceOperations,
-                             final String quoteString,
-                             final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
-                             final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes,
-                             final CtidStateManager ctidStateManager,
-                             final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
+  public PostgresCtidHandler(
+      final JsonNode config,
+      final JdbcDatabase database,
+      final CtidPostgresSourceOperations sourceOperations,
+      final String quoteString,
+      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
+      final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes,
+      final CtidStateManager ctidStateManager,
+      final Function<AirbyteStreamNameNamespacePair, JsonNode>
+          streamStateForIncrementalRunSupplier) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
@@ -82,26 +82,27 @@ public class PostgresCtidHandler {
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
-                                                                             final Instant emmitedAt) {
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+      final Instant emmitedAt) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String streamName = stream.getName();
       final String namespace = stream.getNamespace();
-      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
-      final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
+      final AirbyteStreamNameNamespacePair pair =
+          new AirbyteStreamNameNamespacePair(streamName, namespace);
+      final String fullyQualifiedTableName =
+          DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
       if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
         LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
         continue;
       }
       if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
         // Grab the selected fields to sync
-        final TableInfo<CommonField<PostgresType>> table = tableNameToTable
-            .get(fullyQualifiedTableName);
-        final List<String> selectedDatabaseFields = table.getFields()
-            .stream()
+        final TableInfo<CommonField<PostgresType>> table =
+            tableNameToTable.get(fullyQualifiedTableName);
+        final List<String> selectedDatabaseFields = table.getFields().stream()
             .map(CommonField::getName)
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .toList();
@@ -113,10 +114,11 @@ public class PostgresCtidHandler {
             tableBlockSizes.get(pair).blockSize());
         final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
-        final AutoCloseableIterator<AirbyteMessage> logAugmented = augmentWithLogs(recordAndMessageIterator, pair, streamName);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator =
+            augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> logAugmented =
+            augmentWithLogs(recordAndMessageIterator, pair, streamName);
         iteratorList.add(logAugmented);
-
       }
     }
     return iteratorList;
@@ -133,12 +135,13 @@ public class PostgresCtidHandler {
    * @return a list of ctid that can be used to generate queries.
    */
   @VisibleForTesting
-  static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
+  static List<Pair<Ctid, Ctid>> ctidQueryPlan(
+      final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound;
     final double oneGigaPages = GIGABYTE / blockSize;
-    final long eachStep = (long)oneGigaPages * chunkSizeGB;
+    final long eachStep = (long) oneGigaPages * chunkSizeGB;
     LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSizeGB);
     final long theoreticalLastPage = relationSize / blockSize;
     LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
@@ -151,7 +154,9 @@ public class PostgresCtidHandler {
       while (upperBound < theoreticalLastPage) {
         lowerBound = upperBound;
         upperBound += eachStep;
-        chunks.add(Pair.of(Ctid.of(lowerBound, 0), upperBound > theoreticalLastPage ? null : Ctid.of(upperBound, 0)));
+        chunks.add(Pair.of(
+            Ctid.of(lowerBound, 0),
+            upperBound > theoreticalLastPage ? null : Ctid.of(upperBound, 0)));
       }
     }
     // The last pair is (x,y) -> null to indicate an unbounded "WHERE ctid > (x,y)" query.
@@ -160,11 +165,11 @@ public class PostgresCtidHandler {
   }
 
   private AutoCloseableIterator<RowDataWithCtid> queryTableCtid(
-                                                                final List<String> columnNames,
-                                                                final String schemaName,
-                                                                final String tableName,
-                                                                final long tableSize,
-                                                                final long blockSize) {
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final long tableSize,
+      final long blockSize) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
     final AirbyteStreamNameNamespacePair airbyteStream =
@@ -175,42 +180,55 @@ public class PostgresCtidHandler {
     // Rather than trying to read an entire table with a "WHERE ctid > (0,0)" query,
     // We are creating a list of lazy iterators each holding a subquery according to the plan.
     // All subqueries are then composed in a single composite iterator.
-    // Because list consists of lazy iterators, the query is only executing when needed one after the other.
-    final List<Pair<Ctid, Ctid>> subQueriesPlan = ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0,0) : Ctid.of(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
+    // Because list consists of lazy iterators, the query is only executing when needed one after
+    // the other.
+    final List<Pair<Ctid, Ctid>> subQueriesPlan = ctidQueryPlan(
+        (currentCtidStatus == null) ? Ctid.of(0, 0) : Ctid.of(currentCtidStatus.getCtid()),
+        tableSize,
+        blockSize,
+        QUERY_TARGET_SIZE_GB);
     final List<AutoCloseableIterator<RowDataWithCtid>> subQueriesIterators = new ArrayList<>();
-    subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
-      try {
-        final Stream<RowDataWithCtid> stream = database.unsafeQuery(
-            connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),sourceOperations::recordWithCtid);
+    subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(
+        () -> {
+          try {
+            final Stream<RowDataWithCtid> stream = database.unsafeQuery(
+                connection -> createCtidQueryStatement(
+                    connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),
+                sourceOperations::recordWithCtid);
 
-        return AutoCloseableIterators.fromStream(stream, airbyteStream);
-      } catch (final SQLException e) {
-        throw new RuntimeException(e);
-      }
-    }, airbyteStream)));
+            return AutoCloseableIterators.fromStream(stream, airbyteStream);
+          } catch (final SQLException e) {
+            throw new RuntimeException(e);
+          }
+        },
+        airbyteStream)));
     return AutoCloseableIterators.concatWithEagerClose(subQueriesIterators);
   }
 
   private PreparedStatement createCtidQueryStatement(
-                                                     final Connection connection,
-                                                     final List<String> columnNames,
-                                                     final String schemaName,
-                                                     final String tableName,
-                                                     final Ctid lowerBound, final Ctid upperBound) {
+      final Connection connection,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final Ctid lowerBound,
+      final Ctid upperBound) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
-      final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
-          quoteString);
-      final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, quoteString);
+      final String wrappedColumnNames =
+          RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
       if (upperBound != null) {
-        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid AND ctid <= ?::tid".formatted(wrappedColumnNames, fullTableName);
+        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid AND ctid <= ?::tid"
+            .formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
         preparedStatement.setObject(2, upperBound.toString());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       } else {
-        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
+        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid"
+            .formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
@@ -223,26 +241,31 @@ public class PostgresCtidHandler {
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
   private AutoCloseableIterator<AirbyteMessageWithCtid> getRecordIterator(
-                                                                          final AutoCloseableIterator<RowDataWithCtid> recordIterator,
-                                                                          final String streamName,
-                                                                          final String namespace,
-                                                                          final long emittedAt) {
-    return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessageWithCtid(new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(streamName)
-            .withNamespace(namespace)
-            .withEmittedAt(emittedAt)
-            .withData(r.data())),
-        r.ctid()));
+      final AutoCloseableIterator<RowDataWithCtid> recordIterator,
+      final String streamName,
+      final String namespace,
+      final long emittedAt) {
+    return AutoCloseableIterators.transform(
+        recordIterator,
+        r -> new AirbyteMessageWithCtid(
+            new AirbyteMessage()
+                .withType(Type.RECORD)
+                .withRecord(new AirbyteRecordMessage()
+                    .withStream(streamName)
+                    .withNamespace(namespace)
+                    .withEmittedAt(emittedAt)
+                    .withData(r.data())),
+            r.ctid()));
   }
 
   // Augments the given iterator with record count logs.
-  private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(final AutoCloseableIterator<AirbyteMessage> iterator,
-                                                                final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
-                                                                final String streamName) {
+  private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(
+      final AutoCloseableIterator<AirbyteMessage> iterator,
+      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
+      final String streamName) {
     final AtomicLong recordCount = new AtomicLong();
-    return AutoCloseableIterators.transform(iterator,
+    return AutoCloseableIterators.transform(
+        iterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
         r -> {
           final long count = recordCount.incrementAndGet();
@@ -253,26 +276,35 @@ public class PostgresCtidHandler {
         });
   }
 
-  private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator,
-                                                                 final AirbyteStreamNameNamespacePair pair) {
+  private AutoCloseableIterator<AirbyteMessage> augmentWithState(
+      final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator,
+      final AirbyteStreamNameNamespacePair pair) {
 
     final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(pair);
     final JsonNode incrementalState =
-        (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
+        (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null)
+            ? streamStateForIncrementalRunSupplier.apply(pair)
             : currentCtidStatus.getIncrementalState();
     final Long latestFileNode = fileNodes.get(pair);
     assert latestFileNode != null;
 
-    final Duration syncCheckpointDuration =
-        config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
-            : CtidStateIterator.SYNC_CHECKPOINT_DURATION;
-    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
+    final Duration syncCheckpointDuration = config.get("sync_checkpoint_seconds") != null
+        ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
+        : CtidStateIterator.SYNC_CHECKPOINT_DURATION;
+    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null
+        ? config.get("sync_checkpoint_records").asLong()
         : CtidStateIterator.SYNC_CHECKPOINT_RECORDS;
 
     return AutoCloseableIterators.transformIterator(
-        r -> new CtidStateIterator(r, pair, latestFileNode, ctidStateManager, incrementalState,
-            syncCheckpointDuration, syncCheckpointRecords),
-        recordIterator, pair);
+        r -> new CtidStateIterator(
+            r,
+            pair,
+            latestFileNode,
+            ctidStateManager,
+            incrementalState,
+            syncCheckpointDuration,
+            syncCheckpointRecords),
+        recordIterator,
+        pair);
   }
-
 }

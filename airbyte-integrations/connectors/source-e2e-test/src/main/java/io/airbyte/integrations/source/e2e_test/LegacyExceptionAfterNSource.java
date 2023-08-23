@@ -37,8 +37,12 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
   private static final Logger LOGGER = LoggerFactory.getLogger(LegacyExceptionAfterNSource.class);
 
   static final AirbyteCatalog CATALOG = Jsons.clone(LegacyConstants.DEFAULT_CATALOG);
+
   static {
-    CATALOG.getStreams().get(0).setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    CATALOG
+        .getStreams()
+        .get(0)
+        .setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
     CATALOG.getStreams().get(0).setSourceDefinedCursor(true);
   }
 
@@ -53,7 +57,8 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final long throwAfterNRecords = config.get("throw_after_n_records").asLong();
 
     final AtomicLong recordsEmitted = new AtomicLong();
@@ -73,32 +78,39 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
       protected AirbyteMessage computeNext() {
         if (recordsEmitted.get() % 5 == 0 && !hasEmittedStateAtCount.get()) {
 
-          LOGGER.info("{}: emitting state record with value {}", LegacyExceptionAfterNSource.class, recordValue.get());
+          LOGGER.info(
+              "{}: emitting state record with value {}",
+              LegacyExceptionAfterNSource.class,
+              recordValue.get());
 
           hasEmittedStateAtCount.set(true);
           return new AirbyteMessage()
               .withType(Type.STATE)
-              .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
+              .withState(new AirbyteStateMessage()
+                  .withData(Jsons.jsonNode(
+                      ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
         } else if (throwAfterNRecords > recordsEmitted.get()) {
           recordsEmitted.incrementAndGet();
           recordValue.incrementAndGet();
           hasEmittedStateAtCount.set(false);
 
-          LOGGER.info("{} ExceptionAfterNSource: emitting record with value {}. record {} in sync.",
-              LegacyExceptionAfterNSource.class, recordValue.get(), recordsEmitted.get());
+          LOGGER.info(
+              "{} ExceptionAfterNSource: emitting record with value {}. record {} in sync.",
+              LegacyExceptionAfterNSource.class,
+              recordValue.get(),
+              recordsEmitted.get());
 
           return new AirbyteMessage()
               .withType(Type.RECORD)
               .withRecord(new AirbyteRecordMessage()
                   .withStream(LegacyConstants.DEFAULT_STREAM)
                   .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
+                  .withData(Jsons.jsonNode(
+                      ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
         } else {
           throw new IllegalStateException("Scheduled exceptional event.");
         }
       }
-
     });
   }
-
 }

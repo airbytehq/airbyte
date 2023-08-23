@@ -14,8 +14,7 @@ import java.util.List;
  */
 public interface RedisCache extends Closeable {
 
-  ObjectMapper objectMapper = new ObjectMapper()
-      .findAndRegisterModules();
+  ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
   /**
    * Return implementation cache type.
@@ -77,5 +76,4 @@ public interface RedisCache extends Closeable {
   enum CacheType {
     HASH
   }
-
 }

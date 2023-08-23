@@ -9,15 +9,13 @@ import io.airbyte.integrations.destination.redis.RedisCache.CacheType;
 
 public class RedisCacheFactory {
 
-  private RedisCacheFactory() {
-
-  }
+  private RedisCacheFactory() {}
 
   static RedisCache newInstance(JsonNode jsonConfig) {
-    CacheType cacheType = CacheType.valueOf(jsonConfig.get("cache_type").asText().toUpperCase());
+    CacheType cacheType =
+        CacheType.valueOf(jsonConfig.get("cache_type").asText().toUpperCase());
     return switch (cacheType) {
       case HASH -> new RedisHCache(jsonConfig);
     };
   }
-
 }

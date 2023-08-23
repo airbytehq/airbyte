@@ -25,7 +25,8 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
 
-public abstract class S3BaseAvroDestinationAcceptanceTest extends S3AvroParquetDestinationAcceptanceTest {
+public abstract class S3BaseAvroDestinationAcceptanceTest
+    extends S3AvroParquetDestinationAcceptanceTest {
 
   protected S3BaseAvroDestinationAcceptanceTest() {
     super(S3Format.AVRO);
@@ -34,26 +35,28 @@ public abstract class S3BaseAvroDestinationAcceptanceTest extends S3AvroParquetD
   @Override
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
-        "format_type", "Avro",
-        "compression_codec", Map.of(
-            "codec", "zstandard",
-            "compression_level", 5,
-            "include_checksum", true)));
+        "format_type",
+        "Avro",
+        "compression_codec",
+        Map.of("codec", "zstandard", "compression_level", 5, "include_checksum", true)));
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
+    final JsonFieldNameUpdater nameUpdater =
+        AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      final S3Object object =
+          s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
       try (final DataFileReader<Record> dataFileReader = new DataFileReader<>(
           new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
           new GenericDatumReader<>())) {
@@ -77,13 +80,15 @@ public abstract class S3BaseAvroDestinationAcceptanceTest extends S3AvroParquetD
   }
 
   @Override
-  protected Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
+  protected Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(
+      final String streamName, final String namespace) throws Exception {
 
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     Map<String, Set<Type>> resultDataTypes = new HashMap<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      final S3Object object =
+          s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
       try (final DataFileReader<Record> dataFileReader = new DataFileReader<>(
           new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
           new GenericDatumReader<>())) {
@@ -96,5 +101,4 @@ public abstract class S3BaseAvroDestinationAcceptanceTest extends S3AvroParquetD
     }
     return resultDataTypes;
   }
-
 }

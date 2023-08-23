@@ -6,10 +6,4 @@ package io.airbyte.integrations.destination.redpanda;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
-public record RedpandaWriteConfig(
-
-                                  String topicName,
-
-                                  DestinationSyncMode destinationSyncMode
-
-) {}
+public record RedpandaWriteConfig(String topicName, DestinationSyncMode destinationSyncMode) {}

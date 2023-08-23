@@ -15,18 +15,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-public abstract class S3BaseJsonlGzipDestinationAcceptanceTest extends S3BaseJsonlDestinationAcceptanceTest {
+public abstract class S3BaseJsonlGzipDestinationAcceptanceTest
+    extends S3BaseJsonlDestinationAcceptanceTest {
 
   @Override
   protected JsonNode getFormatConfig() {
     // config without compression defaults to GZIP
-    return Jsons.jsonNode(Map.of(
-        "format_type", outputFormat,
-        "flattening", Flattening.NO.getValue()));
+    return Jsons.jsonNode(
+        Map.of("format_type", outputFormat, "flattening", Flattening.NO.getValue()));
   }
 
   protected BufferedReader getReader(final S3Object s3Object) throws IOException {
-    return new BufferedReader(new InputStreamReader(new GZIPInputStream(s3Object.getObjectContent()), StandardCharsets.UTF_8));
+    return new BufferedReader(new InputStreamReader(
+        new GZIPInputStream(s3Object.getObjectContent()), StandardCharsets.UTF_8));
   }
-
 }

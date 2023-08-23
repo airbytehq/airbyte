@@ -57,13 +57,13 @@ class TestJdbcUtils {
   private static PostgreSQLContainer<?> PSQL_DB;
 
   private DataSource dataSource;
-  private static final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
+  private static final JdbcSourceOperations sourceOperations =
+      JdbcUtils.getDefaultSourceOperations();
 
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
-
   }
 
   @BeforeEach
@@ -73,14 +73,16 @@ class TestJdbcUtils {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     dataSource = DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));
@@ -88,8 +90,13 @@ class TestJdbcUtils {
     final JdbcDatabase defaultJdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
     defaultJdbcDatabase.execute(connection -> {
-      connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      connection
+          .createStatement()
+          .execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      connection
+          .createStatement()
+          .execute(
+              "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
     });
   }
 
@@ -104,7 +111,8 @@ class TestJdbcUtils {
   }
 
   // Takes in a generic sslValue because useSsl maps sslValue to a boolean
-  private <T> JsonNode getConfigWithSsl(final PostgreSQLContainer<?> psqlDb, final String dbName, final T sslValue) {
+  private <T> JsonNode getConfigWithSsl(
+      final PostgreSQLContainer<?> psqlDb, final String dbName, final T sslValue) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -128,7 +136,8 @@ class TestJdbcUtils {
   void testToStream() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
       final ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;");
-      final List<JsonNode> actual = JdbcDatabase.toUnsafeStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
+      final List<JsonNode> actual =
+          JdbcDatabase.toUnsafeStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
       assertEquals(RECORDS_AS_JSON, actual);
     }
   }
@@ -150,9 +159,11 @@ class TestJdbcUtils {
     try (final Connection connection = dataSource.getConnection()) {
       createTableWithAllTypes(connection);
 
-      final PreparedStatement ps = connection.prepareStatement("INSERT INTO data VALUES(?::bit,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+      final PreparedStatement ps = connection.prepareStatement(
+          "INSERT INTO data VALUES(?::bit,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
 
-      // insert the bit here to stay consistent even though setStatementField does not support it yet.
+      // insert the bit here to stay consistent even though setStatementField does not support it
+      // yet.
       ps.setString(1, "1");
       sourceOperations.setCursorField(ps, 2, JDBCType.BOOLEAN, "true");
       sourceOperations.setCursorField(ps, 3, JDBCType.SMALLINT, "1");
@@ -220,13 +231,15 @@ class TestJdbcUtils {
         .put("database", dbName)
         .put("username", PSQL_DB.getUsername())
         .put("password", PSQL_DB.getPassword())
-        .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "verify-full")
-            .put("ca_certificate", "test_ca_cert")
-            .put("client_certificate", "test_client_cert")
-            .put("client_key", "test_client_key")
-            .put("client_key_password", "test_pass")
-            .build())
+        .put(
+            "ssl_mode",
+            ImmutableMap.builder()
+                .put("mode", "verify-full")
+                .put("ca_certificate", "test_ca_cert")
+                .put("client_certificate", "test_client_cert")
+                .put("client_key", "test_client_key")
+                .put("client_key_password", "test_pass")
+                .build())
         .build());
     final boolean sslSet = JdbcUtils.useSsl(config);
     assertTrue(sslSet);
@@ -240,90 +253,94 @@ class TestJdbcUtils {
         .put("database", dbName)
         .put("username", PSQL_DB.getUsername())
         .put("password", PSQL_DB.getPassword())
-        .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "disable")
-            .build())
+        .put("ssl_mode", ImmutableMap.builder().put("mode", "disable").build())
         .build());
     final boolean sslSet = JdbcUtils.useSsl(config);
     assertFalse(sslSet);
   }
 
   private static void createTableWithAllTypes(final Connection connection) throws SQLException {
-    // jdbctype not included because they are not directly supported in postgres: TINYINT, LONGVARCHAR,
+    // jdbctype not included because they are not directly supported in postgres: TINYINT,
+    // LONGVARCHAR,
     // VARBINAR, LONGVARBINARY
-    connection.createStatement().execute("CREATE TABLE data("
-        + "bit BIT, "
-        + "boolean BOOLEAN, "
-        + "smallint SMALLINT,"
-        + "int INTEGER,"
-        + "bigint BIGINT,"
-        + "float FLOAT,"
-        + "double DOUBLE PRECISION,"
-        + "real REAL,"
-        + "numeric NUMERIC,"
-        + "decimal DECIMAL,"
-        + "char CHAR,"
-        + "varchar VARCHAR,"
-        + "date DATE,"
-        + "time TIME,"
-        + "timestamp TIMESTAMP,"
-        + "binary1 bytea,"
-        + "text_array _text,"
-        + "int_array int[]"
-        + ");");
-
+    connection
+        .createStatement()
+        .execute("CREATE TABLE data("
+            + "bit BIT, "
+            + "boolean BOOLEAN, "
+            + "smallint SMALLINT,"
+            + "int INTEGER,"
+            + "bigint BIGINT,"
+            + "float FLOAT,"
+            + "double DOUBLE PRECISION,"
+            + "real REAL,"
+            + "numeric NUMERIC,"
+            + "decimal DECIMAL,"
+            + "char CHAR,"
+            + "varchar VARCHAR,"
+            + "date DATE,"
+            + "time TIME,"
+            + "timestamp TIMESTAMP,"
+            + "binary1 bytea,"
+            + "text_array _text,"
+            + "int_array int[]"
+            + ");");
   }
 
   private static void insertRecordOfEachType(final Connection connection) throws SQLException {
-    connection.createStatement().execute("INSERT INTO data("
-        + "bit,"
-        + "boolean,"
-        + "smallint,"
-        + "int,"
-        + "bigint,"
-        + "float,"
-        + "double,"
-        + "real,"
-        + "numeric,"
-        + "decimal,"
-        + "char,"
-        + "varchar,"
-        + "date,"
-        + "time,"
-        + "timestamp,"
-        + "binary1,"
-        + "text_array,"
-        + "int_array"
-        + ") VALUES("
-        + "1::bit(1),"
-        + "true,"
-        + "1,"
-        + "1,"
-        + "1,"
-        + ONE_POINT_0
-        + ONE_POINT_0
-        + ONE_POINT_0
-        + "1,"
-        + ONE_POINT_0
-        + "'a',"
-        + "'a',"
-        + "'2020-11-01',"
-        + "'05:00',"
-        + "'2001-09-29 03:00',"
-        + "decode('61616161', 'hex'),"
-        + "'{one,two,three}',"
-        + "'{1,2,3}'"
-        + ");");
+    connection
+        .createStatement()
+        .execute("INSERT INTO data("
+            + "bit,"
+            + "boolean,"
+            + "smallint,"
+            + "int,"
+            + "bigint,"
+            + "float,"
+            + "double,"
+            + "real,"
+            + "numeric,"
+            + "decimal,"
+            + "char,"
+            + "varchar,"
+            + "date,"
+            + "time,"
+            + "timestamp,"
+            + "binary1,"
+            + "text_array,"
+            + "int_array"
+            + ") VALUES("
+            + "1::bit(1),"
+            + "true,"
+            + "1,"
+            + "1,"
+            + "1,"
+            + ONE_POINT_0
+            + ONE_POINT_0
+            + ONE_POINT_0
+            + "1,"
+            + ONE_POINT_0
+            + "'a',"
+            + "'a',"
+            + "'2020-11-01',"
+            + "'05:00',"
+            + "'2001-09-29 03:00',"
+            + "decode('61616161', 'hex'),"
+            + "'{one,two,three}',"
+            + "'{1,2,3}'"
+            + ");");
   }
 
-  private static void assertExpectedOutputValues(final Connection connection, final ObjectNode expected) throws SQLException {
+  private static void assertExpectedOutputValues(
+      final Connection connection, final ObjectNode expected) throws SQLException {
     final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
 
     resultSet.next();
     final JsonNode actual = sourceOperations.rowToJson(resultSet);
 
     // field-wise comparison to make debugging easier.
-    MoreStreams.toStream(expected.fields()).forEach(e -> assertEquals(e.getValue(), actual.get(e.getKey()), "key: " + e.getKey()));
+    MoreStreams.toStream(expected.fields())
+        .forEach(e -> assertEquals(e.getValue(), actual.get(e.getKey()), "key: " + e.getKey()));
     assertEquals(expected, actual);
   }
 
@@ -334,8 +351,10 @@ class TestJdbcUtils {
     final int columnCount = resultSet.getMetaData().getColumnCount();
     final Map<String, JsonSchemaType> actual = new HashMap<>(columnCount);
     for (int i = 1; i <= columnCount; i++) {
-      actual.put(resultSet.getMetaData().getColumnName(i),
-          sourceOperations.getAirbyteType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
+      actual.put(
+          resultSet.getMetaData().getColumnName(i),
+          sourceOperations.getAirbyteType(
+              JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
     }
 
     final Map<String, JsonSchemaType> expected = ImmutableMap.<String, JsonSchemaType>builder()
@@ -401,26 +420,29 @@ class TestJdbcUtils {
   }
 
   @ParameterizedTest
-  @CsvSource({"'3E+1', 30",
+  @CsvSource({
+    "'3E+1', 30",
     "'30', 30",
     "'999000000000', 999000000000",
     "'999E+9', 999000000000",
-    "'1.79E+3', 1790"})
+    "'1.79E+3', 1790"
+  })
   void testSetStatementSpecialValues(final String colValue, final long value) throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
       createTableWithAllTypes(connection);
 
-      final PreparedStatement ps = connection.prepareStatement("INSERT INTO data(bigint) VALUES(?);");
+      final PreparedStatement ps =
+          connection.prepareStatement("INSERT INTO data(bigint) VALUES(?);");
 
-      // insert the bit here to stay consistent even though setStatementField does not support it yet.
+      // insert the bit here to stay consistent even though setStatementField does not support it
+      // yet.
       sourceOperations.setCursorField(ps, 1, JDBCType.BIGINT, colValue);
       ps.execute();
 
-      assertExpectedOutputValues(connection,
-          ((ObjectNode) Jsons.jsonNode(Collections.emptyMap()))
-              .put("bigint", (long) value));
+      assertExpectedOutputValues(
+          connection,
+          ((ObjectNode) Jsons.jsonNode(Collections.emptyMap())).put("bigint", (long) value));
       assertExpectedOutputTypes(connection);
     }
   }
-
 }

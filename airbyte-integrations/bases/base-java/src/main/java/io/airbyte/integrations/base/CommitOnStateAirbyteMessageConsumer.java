@@ -15,9 +15,11 @@ import org.slf4j.LoggerFactory;
  * time a state message appears. This class does that commit and then immediately emits the state
  * message. This should only be used in cases when the commit is relatively cheap. immediately.
  */
-public abstract class CommitOnStateAirbyteMessageConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
+public abstract class CommitOnStateAirbyteMessageConsumer
+    extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CommitOnStateAirbyteMessageConsumer.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(CommitOnStateAirbyteMessageConsumer.class);
 
   private final Consumer<AirbyteMessage> outputRecordCollector;
 
@@ -35,5 +37,4 @@ public abstract class CommitOnStateAirbyteMessageConsumer extends FailureTrackin
   }
 
   public abstract void commit() throws Exception;
-
 }

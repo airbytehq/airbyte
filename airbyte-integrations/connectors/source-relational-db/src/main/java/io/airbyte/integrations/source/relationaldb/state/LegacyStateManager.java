@@ -41,7 +41,8 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
   /**
    * {@link Function} that extracts the cursor field(s) from the stream state.
    */
-  private static final Function<DbStreamState, List<String>> CURSOR_FIELD_FUNCTION = DbStreamState::getCursorField;
+  private static final Function<DbStreamState, List<String>> CURSOR_FIELD_FUNCTION =
+      DbStreamState::getCursorField;
 
   private static final Function<DbStreamState, Long> CURSOR_RECORD_COUNT_FUNCTION =
       stream -> Objects.requireNonNullElse(stream.getCursorRecordCount(), 0L);
@@ -49,8 +50,9 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
   /**
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.
    */
-  private static final Function<DbStreamState, AirbyteStreamNameNamespacePair> NAME_NAMESPACE_PAIR_FUNCTION =
-      s -> new AirbyteStreamNameNamespacePair(s.getStreamName(), s.getStreamNamespace());
+  private static final Function<DbStreamState, AirbyteStreamNameNamespacePair>
+      NAME_NAMESPACE_PAIR_FUNCTION =
+          s -> new AirbyteStreamNameNamespacePair(s.getStreamName(), s.getStreamNamespace());
 
   /**
    * Tracks whether the connector associated with this state manager supports CDC.
@@ -71,14 +73,16 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
    *        manager.
    */
   public LegacyStateManager(final DbState dbState, final ConfiguredAirbyteCatalog catalog) {
-    super(catalog,
+    super(
+        catalog,
         dbState::getStreams,
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
         CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
-    this.cdcStateManager = new CdcStateManager(dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog), null);
+    this.cdcStateManager = new CdcStateManager(
+        dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog), null);
     this.isCdc = dbState.getCdc();
     if (dbState.getCdc() == null) {
       this.isCdc = false;
@@ -92,7 +96,8 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
 
   @Override
   public List<AirbyteStateMessage> getRawStateMessages() {
-    throw new UnsupportedOperationException("Raw state retrieval not supported by global state manager.");
+    throw new UnsupportedOperationException(
+        "Raw state retrieval not supported by global state manager.");
   }
 
   @Override
@@ -102,16 +107,22 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
         .withCdcState(getCdcStateManager().getCdcState());
 
     LOGGER.debug("Generated legacy state for {} streams", dbState.getStreams().size());
-    return new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
+    return new AirbyteStateMessage()
+        .withType(AirbyteStateType.LEGACY)
+        .withData(Jsons.jsonNode(dbState));
   }
 
   @Override
-  public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
+  public AirbyteStateMessage updateAndEmit(
+      final AirbyteStreamNameNamespacePair pair, final String cursor) {
     return updateAndEmit(pair, cursor, 0L);
   }
 
   @Override
-  public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final long cursorRecordCount) {
+  public AirbyteStateMessage updateAndEmit(
+      final AirbyteStreamNameNamespacePair pair,
+      final String cursor,
+      final long cursorRecordCount) {
     // cdc file gets updated by debezium so the "update" part is a no op.
     if (!isCdc) {
       return super.updateAndEmit(pair, cursor, cursorRecordCount);
@@ -119,5 +130,4 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
 
     return toState(Optional.ofNullable(pair));
   }
-
 }

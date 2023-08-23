@@ -30,12 +30,14 @@ class AirbyteMessageMigratorTest {
   static class Migrate0to1 implements AirbyteMessageMigration<ObjectV0, ObjectV1> {
 
     @Override
-    public ObjectV0 downgrade(ObjectV1 message, Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+    public ObjectV0 downgrade(
+        ObjectV1 message, Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
       return new ObjectV0(message.name1);
     }
 
     @Override
-    public ObjectV1 upgrade(ObjectV0 message, Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+    public ObjectV1 upgrade(
+        ObjectV0 message, Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
       return new ObjectV1(message.name0);
     }
 
@@ -48,18 +50,19 @@ class AirbyteMessageMigratorTest {
     public Version getCurrentVersion() {
       return v1;
     }
-
   }
 
   static class Migrate1to2 implements AirbyteMessageMigration<ObjectV1, ObjectV2> {
 
     @Override
-    public ObjectV1 downgrade(ObjectV2 message, Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+    public ObjectV1 downgrade(
+        ObjectV2 message, Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
       return new ObjectV1(message.name2);
     }
 
     @Override
-    public ObjectV2 upgrade(ObjectV1 message, Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+    public ObjectV2 upgrade(
+        ObjectV1 message, Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
       return new ObjectV2(message.name1);
     }
 
@@ -72,15 +75,13 @@ class AirbyteMessageMigratorTest {
     public Version getCurrentVersion() {
       return v2;
     }
-
   }
 
   AirbyteMessageMigrator migrator;
 
   @BeforeEach
   void beforeEach() {
-    migrator = new AirbyteMessageMigrator(
-        List.of(new Migrate0to1(), new Migrate1to2()));
+    migrator = new AirbyteMessageMigrator(List.of(new Migrate0to1(), new Migrate1to2()));
     migrator.initialize();
   }
 
@@ -135,5 +136,4 @@ class AirbyteMessageMigratorTest {
       migrator.initialize();
     });
   }
-
 }

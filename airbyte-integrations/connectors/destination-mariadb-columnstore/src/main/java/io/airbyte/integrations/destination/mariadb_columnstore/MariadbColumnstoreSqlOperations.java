@@ -25,10 +25,11 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   private boolean isLocalFileEnabled = false;
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -56,15 +57,15 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
           Files.delete(tmpFile.toPath());
         }
       } catch (final IOException e) {
-        if (primaryException != null)
-          e.addSuppressed(primaryException);
+        if (primaryException != null) e.addSuppressed(primaryException);
         throw new RuntimeException(e);
       }
     }
   }
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     database.execute(connection -> {
       try (final Statement stmt = connection.createStatement()) {
         stmt.addBatch("BEGIN;");
@@ -83,14 +84,19 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR(256),\n"
             + "%s LONGTEXT,\n"
             + "%s TIMESTAMP\n"
             + ") engine=columnstore;\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   VersionCompatibility isCompatibleVersion(final JdbcDatabase database) throws SQLException {
@@ -107,7 +113,9 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
     if (matcher.find()) {
       return new Semver(matcher.group(1));
     } else {
-      throw new RuntimeException(String.format("Unexpected version string: %s\nExpected version format is X.X.X-MariaDB", versions.get(0)));
+      throw new RuntimeException(String.format(
+          "Unexpected version string: %s\nExpected version format is X.X.X-MariaDB",
+          versions.get(0)));
     }
   }
 
@@ -121,7 +129,8 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
     final List<String> localFiles = database.queryStrings(
-        connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
+        connection ->
+            connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
         resultSet -> resultSet.getString("Value"));
     return localFiles.get(0).equalsIgnoreCase("on");
   }
@@ -155,7 +164,5 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
     public boolean isCompatible() {
       return isCompatible;
     }
-
   }
-
 }

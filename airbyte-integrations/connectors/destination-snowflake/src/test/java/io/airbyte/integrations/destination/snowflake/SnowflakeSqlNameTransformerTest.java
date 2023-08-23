@@ -28,5 +28,4 @@ class SnowflakeSqlNameTransformerTest {
       assertEquals(normalized, INSTANCE.getNamespace(raw));
     });
   }
-
 }

@@ -48,9 +48,7 @@ public class MySqlSourceOperationsTest {
         "root",
         "test",
         DRIVER_CLASS,
-        String.format("jdbc:mysql://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
+        String.format("jdbc:mysql://%s:%s", container.getHost(), container.getFirstMappedPort()),
         SQLDialect.MYSQL));
   }
 
@@ -67,7 +65,8 @@ public class MySqlSourceOperationsTest {
   public void dateColumnAsCursor() throws SQLException {
     final String tableName = container.getDatabaseName() + ".table_with_date";
     final String cursorColumn = "cursor_column";
-    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " DATE);");
+    executeQuery(
+        "CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " DATE);");
 
     final List<JsonNode> expectedRecords = new ArrayList<>();
     for (int i = 1; i <= 4; i++) {
@@ -85,7 +84,11 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATE, DateTimeConverter.convertToDate(LocalDate.of(2019, 1, 1)));
+      sqlSourceOperations.setCursorField(
+          preparedStatement,
+          1,
+          MysqlType.DATE,
+          DateTimeConverter.convertToDate(LocalDate.of(2019, 1, 1)));
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
@@ -105,7 +108,8 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATE, "2019-01-01T00:00:00Z");
+      sqlSourceOperations.setCursorField(
+          preparedStatement, 1, MysqlType.DATE, "2019-01-01T00:00:00Z");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
@@ -124,7 +128,8 @@ public class MySqlSourceOperationsTest {
   public void timeColumnAsCursor() throws SQLException {
     final String tableName = container.getDatabaseName() + ".table_with_time";
     final String cursorColumn = "cursor_column";
-    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " TIME);");
+    executeQuery(
+        "CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " TIME);");
 
     final List<JsonNode> expectedRecords = new ArrayList<>();
     for (int i = 1; i <= 4; i++) {
@@ -142,7 +147,11 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIME, DateTimeConverter.convertToTime(LocalTime.of(20, 1, 0)));
+      sqlSourceOperations.setCursorField(
+          preparedStatement,
+          1,
+          MysqlType.TIME,
+          DateTimeConverter.convertToTime(LocalTime.of(20, 1, 0)));
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
@@ -162,7 +171,8 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIME, "1970-01-01T20:01:00Z");
+      sqlSourceOperations.setCursorField(
+          preparedStatement, 1, MysqlType.TIME, "1970-01-01T20:01:00Z");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
@@ -180,7 +190,8 @@ public class MySqlSourceOperationsTest {
   public void dateTimeColumnAsCursor() throws SQLException {
     final String tableName = container.getDatabaseName() + ".table_with_datetime";
     final String cursorColumn = "cursor_column";
-    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " DATETIME);");
+    executeQuery(
+        "CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " DATETIME);");
 
     final List<JsonNode> expectedRecords = new ArrayList<>();
     for (int i = 1; i <= 4; i++) {
@@ -198,7 +209,10 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME,
+      sqlSourceOperations.setCursorField(
+          preparedStatement,
+          1,
+          MysqlType.DATETIME,
           DateTimeConverter.convertToTimestamp(LocalDateTime.of(2019, 1, 20, 3, 0, 0)));
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -219,7 +233,8 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000");
+      sqlSourceOperations.setCursorField(
+          preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
@@ -238,7 +253,8 @@ public class MySqlSourceOperationsTest {
   public void timestampColumnAsCursor() throws SQLException {
     final String tableName = container.getDatabaseName() + ".table_with_timestamp";
     final String cursorColumn = "cursor_column";
-    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " timestamp);");
+    executeQuery(
+        "CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " timestamp);");
 
     final List<JsonNode> expectedRecords = new ArrayList<>();
     for (int i = 1; i <= 4; i++) {
@@ -246,7 +262,8 @@ public class MySqlSourceOperationsTest {
       jsonNode.put("id", i);
       final Instant cursorValue = Instant.ofEpochSecond(1660298508L).plusSeconds(i - 1);
       jsonNode.put("cursor_column", DateTimeConverter.convertToTimestampWithTimezone(cursorValue));
-      executeQuery("INSERT INTO " + tableName + " VALUES (" + i + ", '" + Timestamp.from(cursorValue) + "');");
+      executeQuery("INSERT INTO " + tableName + " VALUES (" + i + ", '"
+          + Timestamp.from(cursorValue) + "');");
       if (i >= 2) {
         expectedRecords.add(jsonNode);
       }
@@ -256,7 +273,10 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIMESTAMP,
+      sqlSourceOperations.setCursorField(
+          preparedStatement,
+          1,
+          MysqlType.TIMESTAMP,
           DateTimeConverter.convertToTimestampWithTimezone(Instant.ofEpochSecond(1660298508L)));
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -278,7 +298,11 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIMESTAMP, Instant.ofEpochSecond(1660298508L).toString());
+      sqlSourceOperations.setCursorField(
+          preparedStatement,
+          1,
+          MysqlType.TIMESTAMP,
+          Instant.ofEpochSecond(1660298508L).toString());
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
@@ -295,12 +319,9 @@ public class MySqlSourceOperationsTest {
 
   protected void executeQuery(final String query) {
     try {
-      database.query(
-          ctx -> ctx
-              .execute(query));
+      database.query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
-
 }

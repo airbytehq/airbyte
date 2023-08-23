@@ -31,10 +31,8 @@ public class JsonSchemaGenerator {
     objectNode.put("type", "object");
     objectNode.set("properties", properties);
     ObjectMapper jacksonObjectMapper = new ObjectMapper();
-    return jacksonObjectMapper
-        .readTree(cleanUp(jacksonObjectMapper
-            .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(objectNode)));
+    return jacksonObjectMapper.readTree(cleanUp(
+        jacksonObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectNode)));
   }
 
   private static ObjectNode createProperty(JsonNode jsonData) {
@@ -54,7 +52,8 @@ public class JsonSchemaGenerator {
     return propObject;
   }
 
-  private static ObjectNode processJsonField(JsonNode fieldValue, JsonNodeType fieldType, String fieldName) {
+  private static ObjectNode processJsonField(
+      JsonNode fieldValue, JsonNodeType fieldType, String fieldName) {
     ObjectNode property = OBJECT_MAPPER.createObjectNode();
     switch (fieldType) {
       case ARRAY -> {
@@ -79,10 +78,6 @@ public class JsonSchemaGenerator {
   }
 
   private static String cleanUp(String input) {
-    return input
-        .replace("\\", "")
-        .replace("\"[", "[")
-        .replace("]\"", "]");
+    return input.replace("\\", "").replace("\"[", "[").replace("]\"", "]");
   }
-
 }

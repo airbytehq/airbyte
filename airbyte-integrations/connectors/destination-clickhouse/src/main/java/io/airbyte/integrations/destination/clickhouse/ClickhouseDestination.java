@@ -35,14 +35,13 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
 
-  static final List<String> SSL_PARAMETERS = ImmutableList.of(
-      "socket_timeout=3000000",
-      "sslmode=NONE");
-  static final List<String> DEFAULT_PARAMETERS = ImmutableList.of(
-      "socket_timeout=3000000");
+  static final List<String> SSL_PARAMETERS =
+      ImmutableList.of("socket_timeout=3000000", "sslmode=NONE");
+  static final List<String> DEFAULT_PARAMETERS = ImmutableList.of("socket_timeout=3000000");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new ClickhouseDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedDestination(
+        new ClickhouseDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public ClickhouseDestination() {
@@ -52,12 +51,12 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final boolean isSsl = JdbcUtils.useSsl(config);
-    final StringBuilder jdbcUrl = new StringBuilder(
-        String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-            isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()));
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(
+        DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+        isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (isSsl) {
       jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
@@ -70,11 +69,14 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.JDBC_URL_PARAMS_KEY,
+          config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -86,8 +88,10 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
-      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
+      final String outputSchema =
+          namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
+      attemptSQLCreateAndDropTableOperations(
+          outputSchema, database, namingResolver, getSqlOperations());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -114,5 +118,4 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", ClickhouseDestination.class);
   }
-
 }

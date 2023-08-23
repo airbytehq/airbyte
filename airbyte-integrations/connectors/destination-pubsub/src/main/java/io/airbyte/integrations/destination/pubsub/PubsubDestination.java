@@ -39,32 +39,38 @@ public class PubsubDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       var pubsubDestinationConfig = PubsubDestinationConfig.fromJsonNode(config);
-      final TopicAdminClient adminClient = TopicAdminClient
-          .create(TopicAdminSettings.newBuilder().setCredentialsProvider(
-              FixedCredentialsProvider.create(pubsubDestinationConfig.getCredentials())).build());
+      final TopicAdminClient adminClient = TopicAdminClient.create(TopicAdminSettings.newBuilder()
+          .setCredentialsProvider(
+              FixedCredentialsProvider.create(pubsubDestinationConfig.getCredentials()))
+          .build());
 
       // check if topic is present and the service account has necessary permissions on it
       final List<String> requiredPermissions = List.of("pubsub.topics.publish");
-      final TestIamPermissionsResponse response = adminClient.testIamPermissions(
-          TestIamPermissionsRequest.newBuilder().setResource(pubsubDestinationConfig.getTopic().toString())
-              .addAllPermissions(requiredPermissions).build());
-      Preconditions.checkArgument(response.getPermissionsList().containsAll(requiredPermissions),
+      final TestIamPermissionsResponse response =
+          adminClient.testIamPermissions(TestIamPermissionsRequest.newBuilder()
+              .setResource(pubsubDestinationConfig.getTopic().toString())
+              .addAllPermissions(requiredPermissions)
+              .build());
+      Preconditions.checkArgument(
+          response.getPermissionsList().containsAll(requiredPermissions),
           "missing required permissions " + requiredPermissions);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.info("Check failed.", e);
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED)
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
           .withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
-    return new PubsubConsumer(PubsubDestinationConfig.fromJsonNode(config), configuredCatalog, outputRecordCollector);
+    return new PubsubConsumer(
+        PubsubDestinationConfig.fromJsonNode(config), configuredCatalog, outputRecordCollector);
   }
-
 }

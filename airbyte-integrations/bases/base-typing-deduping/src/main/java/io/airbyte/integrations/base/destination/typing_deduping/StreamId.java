@@ -21,12 +21,13 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
  *        are collisions). There is no rawNamespace because we assume that we're writing raw tables
  *        to the airbyte namespace.
  */
-public record StreamId(String finalNamespace,
-                       String finalName,
-                       String rawNamespace,
-                       String rawName,
-                       String originalNamespace,
-                       String originalName) {
+public record StreamId(
+    String finalNamespace,
+    String finalName,
+    String rawNamespace,
+    String rawName,
+    String originalNamespace,
+    String originalName) {
 
   /**
    * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience
@@ -85,5 +86,4 @@ public record StreamId(String finalNamespace,
 
     return namespace + "_raw" + "_".repeat(longestUnderscoreRun + 1) + "stream_" + name;
   }
-
 }

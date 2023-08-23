@@ -40,7 +40,8 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Writer.class);
 
-  private static final S3FilenameTemplateManager s3FilenameTemplateManager = new S3FilenameTemplateManager();
+  private static final S3FilenameTemplateManager s3FilenameTemplateManager =
+      new S3FilenameTemplateManager();
   private static final String DEFAULT_SUFFIX = "_0";
 
   protected final S3DestinationConfig config;
@@ -49,9 +50,10 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
   protected final DestinationSyncMode syncMode;
   protected final String outputPrefix;
 
-  protected BaseS3Writer(final S3DestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream) {
+  protected BaseS3Writer(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -82,18 +84,21 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
       if (syncMode == DestinationSyncMode.OVERWRITE) {
         LOGGER.info("Overwrite mode");
         final List<KeyVersion> keysToDelete = new LinkedList<>();
-        final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
-            .getObjectSummaries();
+        final List<S3ObjectSummary> objects =
+            s3Client.listObjects(bucket, outputPrefix).getObjectSummaries();
         for (final S3ObjectSummary object : objects) {
           keysToDelete.add(new KeyVersion(object.getKey()));
         }
 
         if (keysToDelete.size() > 0) {
-          LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
+          LOGGER.info(
+              "Purging non-empty output path for stream '{}' under OVERWRITE mode...",
               stream.getName());
-          final DeleteObjectsResult result = s3Client
-              .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
-          LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
+          final DeleteObjectsResult result =
+              s3Client.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
+          LOGGER.info(
+              "Deleted {} file(s) for stream '{}'.",
+              result.getDeletedObjects().size(),
               stream.getName());
         }
       }
@@ -134,9 +139,11 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
     // Do nothing by default
   }
 
-  public static String determineOutputFilename(final S3FilenameTemplateParameterObject parameterObject)
-      throws IOException {
-    return isNotBlank(parameterObject.getFileNamePattern()) ? getOutputFilename(parameterObject) : getDefaultOutputFilename(parameterObject);
+  public static String determineOutputFilename(
+      final S3FilenameTemplateParameterObject parameterObject) throws IOException {
+    return isNotBlank(parameterObject.getFileNamePattern())
+        ? getOutputFilename(parameterObject)
+        : getDefaultOutputFilename(parameterObject);
   }
 
   /**
@@ -145,19 +152,23 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
    * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For
    *         example, "2021_12_09_1639077474000_customSuffix.csv"
    */
-  private static String getDefaultOutputFilename(final S3FilenameTemplateParameterObject parameterObject) {
-    final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+  private static String getDefaultOutputFilename(
+      final S3FilenameTemplateParameterObject parameterObject) {
+    final DateFormat formatter =
+        new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
         "%s_%d%s.%s",
         formatter.format(parameterObject.getTimestamp()),
         parameterObject.getTimestamp().getTime(),
-        null == parameterObject.getCustomSuffix() ? DEFAULT_SUFFIX : parameterObject.getCustomSuffix(),
+        null == parameterObject.getCustomSuffix()
+            ? DEFAULT_SUFFIX
+            : parameterObject.getCustomSuffix(),
         parameterObject.getS3Format().getFileExtension());
   }
 
-  private static String getOutputFilename(final S3FilenameTemplateParameterObject parameterObject) throws IOException {
+  private static String getOutputFilename(final S3FilenameTemplateParameterObject parameterObject)
+      throws IOException {
     return s3FilenameTemplateManager.applyPatternToFilename(parameterObject);
   }
-
 }

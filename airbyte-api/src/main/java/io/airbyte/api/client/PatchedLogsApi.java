@@ -66,20 +66,23 @@ public class PatchedLogsApi {
    * @return ApiResponse&lt;File&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<File> getLogsWithHttpInfo(final LogsRequestBody logsRequestBody) throws ApiException {
+  public ApiResponse<File> getLogsWithHttpInfo(final LogsRequestBody logsRequestBody)
+      throws ApiException {
     final HttpRequest.Builder localVarRequestBuilder = getLogsRequestBuilder(logsRequestBody);
     try {
       final HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
+          localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
       if (isErrorResponse(localVarResponse)) {
-        throw new ApiException(localVarResponse.statusCode(),
+        throw new ApiException(
+            localVarResponse.statusCode(),
             "getLogs call received non-success response",
             localVarResponse.headers(),
-            localVarResponse.body() == null ? null : new String(localVarResponse.body().readAllBytes()));
+            localVarResponse.body() == null
+                ? null
+                : new String(localVarResponse.body().readAllBytes()));
       }
 
       final File tmpFile = File.createTempFile("patched-logs-api", "response"); // CHANGED
@@ -88,10 +91,8 @@ public class PatchedLogsApi {
       FileUtils.copyInputStreamToFile(localVarResponse.body(), tmpFile); // CHANGED
 
       return new ApiResponse<File>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          tmpFile // CHANGED
-      );
+          localVarResponse.statusCode(), localVarResponse.headers().map(), tmpFile // CHANGED
+          );
     } catch (final IOException e) {
       throw new ApiException(e);
     } catch (final InterruptedException e) {
@@ -104,10 +105,12 @@ public class PatchedLogsApi {
     return httpResponse.statusCode() / 100 != 2;
   }
 
-  private HttpRequest.Builder getLogsRequestBuilder(final LogsRequestBody logsRequestBody) throws ApiException {
+  private HttpRequest.Builder getLogsRequestBuilder(final LogsRequestBody logsRequestBody)
+      throws ApiException {
     // verify the required parameter 'logsRequestBody' is set
     if (logsRequestBody == null) {
-      throw new ApiException(400, "Missing the required parameter 'logsRequestBody' when calling getLogs");
+      throw new ApiException(
+          400, "Missing the required parameter 'logsRequestBody' when calling getLogs");
     }
 
     final HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
@@ -122,7 +125,8 @@ public class PatchedLogsApi {
 
     try {
       final byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(logsRequestBody);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+      localVarRequestBuilder.method(
+          "POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
     } catch (final IOException e) {
       throw new ApiException(e);
     }
@@ -134,5 +138,4 @@ public class PatchedLogsApi {
     }
     return localVarRequestBuilder;
   }
-
 }

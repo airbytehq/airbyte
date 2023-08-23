@@ -6,13 +6,7 @@ package io.airbyte.integrations.source.azureblobstorage;
 
 import java.time.OffsetDateTime;
 
-public record AzureBlob(
-
-                        String name,
-
-                        OffsetDateTime lastModified
-
-) {
+public record AzureBlob(String name, OffsetDateTime lastModified) {
 
   public static class Builder {
 
@@ -33,7 +27,5 @@ public record AzureBlob(
     public AzureBlob build() {
       return new AzureBlob(name, lastModified);
     }
-
   }
-
 }

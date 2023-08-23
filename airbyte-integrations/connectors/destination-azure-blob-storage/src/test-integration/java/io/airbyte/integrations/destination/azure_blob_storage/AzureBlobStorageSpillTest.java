@@ -47,11 +47,14 @@ public class AzureBlobStorageSpillTest {
   void setup() {
     azureBlobStorageContainer = new AzureBlobStorageContainer().withExposedPorts(10000);
     azureBlobStorageContainer.start();
-    var azureBlobStorageDestinationConfig = createConfig(azureBlobStorageContainer.getMappedPort(10000));
+    var azureBlobStorageDestinationConfig =
+        createConfig(azureBlobStorageContainer.getMappedPort(10000));
     var configuredAirbyteCatalog = createConfiguredAirbyteCatalog();
-    azureBlobStorageConsumer =
-        new AzureBlobStorageConsumer(azureBlobStorageDestinationConfig, configuredAirbyteCatalog,
-            new ProductionWriterFactory(), m -> {});
+    azureBlobStorageConsumer = new AzureBlobStorageConsumer(
+        azureBlobStorageDestinationConfig,
+        configuredAirbyteCatalog,
+        new ProductionWriterFactory(),
+        m -> {});
     var credential = new StorageSharedKeyCredential(
         azureBlobStorageDestinationConfig.getAccountName(),
         azureBlobStorageDestinationConfig.getAccountKey());
@@ -61,7 +64,6 @@ public class AzureBlobStorageSpillTest {
         .credential(credential)
         .containerName(azureBlobStorageDestinationConfig.getContainerName())
         .buildClient();
-
   }
 
   @AfterEach
@@ -82,8 +84,7 @@ public class AzureBlobStorageSpillTest {
 
     // create blob exceeding 1mb in size
     for (int i = 1; i <= 512; i++) {
-      azureBlobStorageConsumer.acceptTracked(
-          createAirbyteMessage(function.apply(content)));
+      azureBlobStorageConsumer.acceptTracked(createAirbyteMessage(function.apply(content)));
     }
 
     azureBlobStorageConsumer.close(false);
@@ -93,7 +94,6 @@ public class AzureBlobStorageSpillTest {
         .hasSize(2)
         .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
         .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
-
   }
 
   private static AzureBlobStorageDestinationConfig createConfig(Integer mappedPort) {
@@ -133,5 +133,4 @@ public class AzureBlobStorageSpillTest {
   private static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(List.of(createConfiguredAirbyteStream()));
   }
-
 }

@@ -65,9 +65,8 @@ public class ScyllaCqlProvider implements Closeable {
     var createKeyspace = SchemaBuilder.createKeyspace(keyspace)
         .ifNotExists()
         .with()
-        .replication(Map.of(
-            "class", "SimpleStrategy",
-            "replication_factor", scyllaConfig.getReplication()))
+        .replication(
+            Map.of("class", "SimpleStrategy", "replication_factor", scyllaConfig.getReplication()))
         .durableWrites(true);
     session.execute(createKeyspace);
   }
@@ -111,20 +110,24 @@ public class ScyllaCqlProvider implements Closeable {
 
   public List<Tuple<String, List<String>>> metadata() {
     return cluster.getMetadata().getKeyspaces().stream()
-        .map(keyspace -> Tuple.of(keyspace.getName(), keyspace.getTables().stream()
-            .map(AbstractTableMetadata::getName)
-            .collect(Collectors.toList())))
+        .map(keyspace -> Tuple.of(
+            keyspace.getName(),
+            keyspace.getTables().stream()
+                .map(AbstractTableMetadata::getName)
+                .collect(Collectors.toList())))
         .collect(Collectors.toList());
   }
 
   public void copy(String keyspace, String sourceTable, String destinationTable) {
 
-    var select = String.format("SELECT * FROM %s.%s WHERE token(%s) > ? AND token(%s) <= ?",
+    var select = String.format(
+        "SELECT * FROM %s.%s WHERE token(%s) > ? AND token(%s) <= ?",
         keyspace, sourceTable, columnId, columnId);
 
     var selectStatement = session.prepare(select);
 
-    var insert = String.format("INSERT INTO %s.%s (%s, %s, %s) VALUES (?, ?, ?)",
+    var insert = String.format(
+        "INSERT INTO %s.%s (%s, %s, %s) VALUES (?, ?, ?)",
         keyspace, destinationTable, columnId, columnData, columnTimestamp);
 
     var insertStatement = session.prepare(insert);
@@ -135,9 +138,9 @@ public class ScyllaCqlProvider implements Closeable {
     cluster.getMetadata().getTokenRanges().stream()
         .flatMap(range -> range.unwrap().stream())
         .map(range -> selectStatement.bind(range.getStart(), range.getEnd()))
-        .map(selectBoundStatement -> executorService.submit(() -> batchInsert(selectBoundStatement, insertStatement)))
+        .map(selectBoundStatement ->
+            executorService.submit(() -> batchInsert(selectBoundStatement, insertStatement)))
         .forEach(this::awaitThread);
-
   }
 
   private void batchInsert(BoundStatement select, PreparedStatement insert) {
@@ -173,5 +176,4 @@ public class ScyllaCqlProvider implements Closeable {
     // close scylla session
     ScyllaSessionPool.closeSession(scyllaConfig);
   }
-
 }

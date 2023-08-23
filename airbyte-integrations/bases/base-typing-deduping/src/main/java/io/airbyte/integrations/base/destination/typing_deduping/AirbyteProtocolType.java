@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
  * Union.)
  */
 public enum AirbyteProtocolType implements AirbyteType {
-
   STRING,
   DATE,
   TIME_WITHOUT_TIMEZONE,
@@ -29,7 +28,8 @@ public enum AirbyteProtocolType implements AirbyteType {
     try {
       return AirbyteProtocolType.valueOf(type.toUpperCase());
     } catch (final IllegalArgumentException e) {
-      LOGGER.error(String.format("Could not find matching AirbyteProtocolType for \"%s\": %s", type, e));
+      LOGGER.error(
+          String.format("Could not find matching AirbyteProtocolType for \"%s\": %s", type, e));
       return UNKNOWN;
     }
   }
@@ -64,7 +64,8 @@ public enum AirbyteProtocolType implements AirbyteType {
       } else if (AirbyteType.nodeMatches(format, "date-time")) {
         if (AirbyteType.nodeMatches(airbyteType, "timestamp_without_timezone")) {
           return TIMESTAMP_WITHOUT_TIMEZONE;
-        } else if (airbyteType == null || AirbyteType.nodeMatches(airbyteType, "timestamp_with_timezone")) {
+        } else if (airbyteType == null
+            || AirbyteType.nodeMatches(airbyteType, "timestamp_with_timezone")) {
           return TIMESTAMP_WITH_TIMEZONE;
         }
       } else {
@@ -74,5 +75,4 @@ public enum AirbyteProtocolType implements AirbyteType {
 
     return UNKNOWN;
   }
-
 }

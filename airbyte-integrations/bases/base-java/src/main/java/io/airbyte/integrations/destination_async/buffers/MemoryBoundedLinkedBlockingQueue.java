@@ -62,7 +62,8 @@ class MemoryBoundedLinkedBlockingQueue<E> {
     return hiddenQueue.poll();
   }
 
-  public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> poll(final long timeout, final TimeUnit unit) throws InterruptedException {
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> poll(
+      final long timeout, final TimeUnit unit) throws InterruptedException {
     return hiddenQueue.poll(timeout, unit);
   }
 
@@ -72,7 +73,8 @@ class MemoryBoundedLinkedBlockingQueue<E> {
    *
    * @param <E>
    */
-  private static class HiddenQueue<E> extends LinkedBlockingQueue<MemoryBoundedLinkedBlockingQueue.MemoryItem<E>> {
+  private static class HiddenQueue<E>
+      extends LinkedBlockingQueue<MemoryBoundedLinkedBlockingQueue.MemoryItem<E>> {
 
     private final AtomicLong currentMemoryUsage;
     private final AtomicLong maxMemoryUsage;
@@ -117,7 +119,8 @@ class MemoryBoundedLinkedBlockingQueue<E> {
     }
 
     @Override
-    public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> poll(final long timeout, final TimeUnit unit) throws InterruptedException {
+    public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> poll(
+        final long timeout, final TimeUnit unit) throws InterruptedException {
       final MemoryItem<E> memoryItem = super.poll(timeout, unit);
       if (memoryItem != null) {
         currentMemoryUsage.addAndGet(-memoryItem.size());
@@ -125,9 +128,7 @@ class MemoryBoundedLinkedBlockingQueue<E> {
       }
       return null;
     }
-
   }
 
-  public record MemoryItem<E> (E item, long size) {}
-
+  public record MemoryItem<E>(E item, long size) {}
 }

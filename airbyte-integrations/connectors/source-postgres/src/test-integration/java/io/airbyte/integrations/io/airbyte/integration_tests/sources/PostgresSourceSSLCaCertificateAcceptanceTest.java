@@ -6,7 +6,8 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.google.common.collect.ImmutableMap;
 
-public class PostgresSourceSSLCaCertificateAcceptanceTest extends AbstractPostgresSourceSSLCertificateAcceptanceTest {
+public class PostgresSourceSSLCaCertificateAcceptanceTest
+    extends AbstractPostgresSourceSSLCertificateAcceptanceTest {
 
   @Override
   public ImmutableMap getCertificateConfiguration() {
@@ -16,5 +17,4 @@ public class PostgresSourceSSLCaCertificateAcceptanceTest extends AbstractPostgr
         .put("client_key_password", PASSWORD)
         .build();
   }
-
 }

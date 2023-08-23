@@ -43,62 +43,72 @@ public class S3GlueConsumerFactory {
 
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
 
-  public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final BlobStorageOperations storageOperations,
-                                       final MetastoreOperations metastoreOperations,
-                                       final NamingConventionTransformer namingResolver,
-                                       final BufferCreateFunction onCreateBuffer,
-                                       final S3DestinationConfig s3Config,
-                                       final GlueDestinationConfig glueConfig,
-                                       final ConfiguredAirbyteCatalog catalog) {
-    final List<S3GlueWriteConfig> writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog);
+  public AirbyteMessageConsumer create(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final BlobStorageOperations storageOperations,
+      final MetastoreOperations metastoreOperations,
+      final NamingConventionTransformer namingResolver,
+      final BufferCreateFunction onCreateBuffer,
+      final S3DestinationConfig s3Config,
+      final GlueDestinationConfig glueConfig,
+      final ConfiguredAirbyteCatalog catalog) {
+    final List<S3GlueWriteConfig> writeConfigs =
+        createWriteConfigs(storageOperations, s3Config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(storageOperations, writeConfigs),
         new SerializedBufferingStrategy(
-            onCreateBuffer,
-            catalog,
-            flushBufferFunction(storageOperations, writeConfigs, catalog)),
+            onCreateBuffer, catalog, flushBufferFunction(storageOperations, writeConfigs, catalog)),
         onCloseFunction(storageOperations, metastoreOperations, writeConfigs, glueConfig, s3Config),
         catalog,
         storageOperations::isValidData);
   }
 
-  private static List<S3GlueWriteConfig> createWriteConfigs(final BlobStorageOperations storageOperations,
-                                                            final S3DestinationConfig config,
-                                                            final ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams()
-        .stream()
+  private static List<S3GlueWriteConfig> createWriteConfigs(
+      final BlobStorageOperations storageOperations,
+      final S3DestinationConfig config,
+      final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
         .map(toWriteConfig(storageOperations, config))
         .collect(Collectors.toList());
   }
 
   private static Function<ConfiguredAirbyteStream, S3GlueWriteConfig> toWriteConfig(
-                                                                                    final BlobStorageOperations storageOperations,
-                                                                                    final S3DestinationConfig s3Config) {
+      final BlobStorageOperations storageOperations, final S3DestinationConfig s3Config) {
     return stream -> {
-      Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
+      Preconditions.checkNotNull(
+          stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
       final String namespace = abStream.getNamespace();
       final String streamName = abStream.getName();
       final String bucketPath = s3Config.getBucketPath();
       final String customOutputFormat = String.join("/", bucketPath, s3Config.getPathFormat());
-      final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
+      final String fullOutputPath = storageOperations.getBucketObjectPath(
+          namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       final JsonNode jsonSchema = abStream.getJsonSchema();
-      ((ObjectNode) jsonSchema.get("properties")).putPOJO(JavaBaseConstants.COLUMN_NAME_AB_ID, Map.of("type", "string"));
-      ((ObjectNode) jsonSchema.get("properties")).putPOJO(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Map.of("type", "number"));
-      final String location = "s3://" + s3Config.getBucketName() + "/" +
-          fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
-      final S3GlueWriteConfig writeConfig =
-          new S3GlueWriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode,
-              jsonSchema, location);
+      ((ObjectNode) jsonSchema.get("properties"))
+          .putPOJO(JavaBaseConstants.COLUMN_NAME_AB_ID, Map.of("type", "string"));
+      ((ObjectNode) jsonSchema.get("properties"))
+          .putPOJO(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Map.of("type", "number"));
+      final String location = "s3://" + s3Config.getBucketName() + "/"
+          + fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
+      final S3GlueWriteConfig writeConfig = new S3GlueWriteConfig(
+          namespace,
+          streamName,
+          bucketPath,
+          customOutputFormat,
+          fullOutputPath,
+          syncMode,
+          jsonSchema,
+          location);
       LOGGER.info("Write config: {}", writeConfig);
       return writeConfig;
     };
   }
 
-  private OnStartFunction onStartFunction(final BlobStorageOperations storageOperations, final List<S3GlueWriteConfig> writeConfigs) {
+  private OnStartFunction onStartFunction(
+      final BlobStorageOperations storageOperations, final List<S3GlueWriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing bucket in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
@@ -107,10 +117,17 @@ public class S3GlueConsumerFactory {
           final String stream = writeConfig.getStreamName();
           final String outputBucketPath = writeConfig.getOutputBucketPath();
           final String pathFormat = writeConfig.getPathFormat();
-          LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {} pathFormat {}",
-              namespace, stream, outputBucketPath, pathFormat);
+          LOGGER.info(
+              "Clearing storage area in destination started for namespace {} stream {} bucketObject {} pathFormat {}",
+              namespace,
+              stream,
+              outputBucketPath,
+              pathFormat);
           storageOperations.cleanUpBucketObject(namespace, stream, outputBucketPath, pathFormat);
-          LOGGER.info("Clearing storage area in destination completed for namespace {} stream {} bucketObject {}", namespace, stream,
+          LOGGER.info(
+              "Clearing storage area in destination completed for namespace {} stream {} bucketObject {}",
+              namespace,
+              stream,
               outputBucketPath);
         }
       }
@@ -123,18 +140,22 @@ public class S3GlueConsumerFactory {
   }
 
   private FlushBufferFunction flushBufferFunction(
-                                                  final BlobStorageOperations storageOperations,
-                                                  final List<S3GlueWriteConfig> writeConfigs,
-                                                  final ConfiguredAirbyteCatalog catalog) {
-    final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
-        writeConfigs.stream()
-            .collect(Collectors.toUnmodifiableMap(S3GlueConsumerFactory::toNameNamespacePair, Function.identity()));
+      final BlobStorageOperations storageOperations,
+      final List<S3GlueWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog) {
+    final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
+        .collect(Collectors.toUnmodifiableMap(
+            S3GlueConsumerFactory::toNameNamespacePair, Function.identity()));
 
     return (pair, writer) -> {
-      LOGGER.info("Flushing buffer for stream {} ({}) to storage", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+      LOGGER.info(
+          "Flushing buffer for stream {} ({}) to storage",
+          pair.getName(),
+          FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {
-        throw new IllegalArgumentException(
-            String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", pair, Jsons.serialize(catalog)));
+        throw new IllegalArgumentException(String.format(
+            "Message contained record from a stream %s that was not in the catalog. \ncatalog: %s",
+            pair, Jsons.serialize(catalog)));
       }
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
@@ -152,27 +173,31 @@ public class S3GlueConsumerFactory {
     };
   }
 
-  private OnCloseFunction onCloseFunction(final BlobStorageOperations storageOperations,
-                                          final MetastoreOperations metastoreOperations,
-                                          final List<S3GlueWriteConfig> writeConfigs,
-                                          GlueDestinationConfig glueDestinationConfig,
-                                          S3DestinationConfig s3DestinationConfig) {
+  private OnCloseFunction onCloseFunction(
+      final BlobStorageOperations storageOperations,
+      final MetastoreOperations metastoreOperations,
+      final List<S3GlueWriteConfig> writeConfigs,
+      GlueDestinationConfig glueDestinationConfig,
+      S3DestinationConfig s3DestinationConfig) {
     return (hasFailed) -> {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {
-          storageOperations.cleanUpBucketObject(writeConfig.getFullOutputPath(), writeConfig.getStoredFiles());
+          storageOperations.cleanUpBucketObject(
+              writeConfig.getFullOutputPath(), writeConfig.getStoredFiles());
           writeConfig.clearStoredFiles();
         }
         LOGGER.info("Cleaning up destination completed.");
       } else {
         for (final S3GlueWriteConfig writeConfig : writeConfigs) {
-          metastoreOperations.upsertTable(glueDestinationConfig.getDatabase(),
-              writeConfig.getStreamName(), writeConfig.getLocation(), writeConfig.getJsonSchema(),
+          metastoreOperations.upsertTable(
+              glueDestinationConfig.getDatabase(),
+              writeConfig.getStreamName(),
+              writeConfig.getLocation(),
+              writeConfig.getJsonSchema(),
               glueDestinationConfig.getSerializationLibrary());
         }
       }
     };
   }
-
 }

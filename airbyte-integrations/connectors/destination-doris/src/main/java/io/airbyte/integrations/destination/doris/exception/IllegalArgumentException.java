@@ -13,5 +13,4 @@ public class IllegalArgumentException extends DorisException {
   public IllegalArgumentException(String arg, String value) {
     super("argument '" + arg + "' is illegal, value is '" + value + "'.");
   }
-
 }

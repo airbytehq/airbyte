@@ -30,13 +30,9 @@ class EmptyIterator implements CloseableIterable<Record> {
       public Record next() {
         return null;
       }
-
     };
   }
 
   @Override
-  public void close() throws IOException {
-
-  }
-
+  public void close() throws IOException {}
 }

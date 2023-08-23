@@ -23,11 +23,11 @@ public class S3FormatConfigsTest {
   @DisplayName("When CSV format is specified, it returns CSV format config")
   public void testGetCsvS3FormatConfig() {
     final JsonNode configJson = Jsons.jsonNode(Map.of(
-        "format", Jsons.jsonNode(Map.of(
+        "format",
+        Jsons.jsonNode(Map.of(
             "format_type", S3Format.CSV.toString(),
             "flattening", Flattening.ROOT_LEVEL.getValue(),
-            "compression", Jsons.jsonNode(Map.of(
-                "compression_type", "No Compression"))))));
+            "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))))));
 
     final S3FormatConfig formatConfig = S3FormatConfigs.getS3FormatConfig(configJson);
     assertEquals(formatConfig.getFormat(), S3Format.CSV);
@@ -36,5 +36,4 @@ public class S3FormatConfigsTest {
     assertEquals(Flattening.ROOT_LEVEL, csvFormatConfig.getFlattening());
     assertEquals(CompressionType.NO_COMPRESSION, csvFormatConfig.getCompressionType());
   }
-
 }

@@ -77,7 +77,9 @@ public class PerformanceHarness {
 
   private DefaultAirbyteDestination destination;
 
-  PerformanceHarness(final String imageName, final String config, final String catalog, final String datasource) throws JsonProcessingException {
+  PerformanceHarness(
+      final String imageName, final String config, final String catalog, final String datasource)
+      throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
     this.imageName = imageName;
     this.config = mapper.readTree(config);
@@ -99,7 +101,9 @@ public class PerformanceHarness {
    * @throws Exception
    */
   void runTest() throws Exception {
-    final List<String> streamNames = catalog.getStreams().stream().map(stream -> stream.getStream().getName()).toList();
+    final List<String> streamNames = catalog.getStreams().stream()
+        .map(stream -> stream.getStream().getName())
+        .toList();
     final Random random = new Random();
     final AirbyteIntegrationLauncher dstIntegtationLauncher = getAirbyteIntegrationLauncher();
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
@@ -166,7 +170,10 @@ public class PerformanceHarness {
         totalBytes += recordString.length();
         counter++;
         if (counter > 0 && counter % MEGABYTE == 0) {
-          log.info("current throughput({}): {} total MB {}", counter, (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
+          log.info(
+              "current throughput({}): {} total MB {}",
+              counter,
+              (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
               totalBytes / MEGABYTE);
         }
 
@@ -204,7 +211,12 @@ public class PerformanceHarness {
     final var totalMB = totalBytes / MEGABYTE;
     final var totalTimeSecs = (end - start) / 1000.0;
     final var rps = counter / totalTimeSecs;
-    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
+    log.info(
+        "total secs: {}. total MB read: {}, rps: {}, throughput: {}",
+        totalTimeSecs,
+        totalMB,
+        rps,
+        totalMB / totalTimeSecs);
   }
 
   private AirbyteIntegrationLauncher getAirbyteIntegrationLauncher() throws UnknownHostException {
@@ -215,15 +227,23 @@ public class PerformanceHarness {
     final String kubeHeartbeatUrl = localIp + ":" + 9000;
 
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
-    final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
+    final var processFactory =
+        new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
     final ResourceRequirements resourceReqs = new ResourceRequirements()
         .withCpuLimit("2.5")
         .withCpuRequest("2.5")
         .withMemoryLimit("2Gi")
         .withMemoryRequest("2Gi");
     final AllowedHosts allowedHosts = new AllowedHosts().withHosts(List.of("*"));
-    return new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs,
-        allowedHosts, false, new EnvVariableFeatureFlags());
+    return new AirbyteIntegrationLauncher(
+        "1",
+        0,
+        this.imageName,
+        processFactory,
+        resourceReqs,
+        allowedHosts,
+        false,
+        new EnvVariableFeatureFlags());
   }
 
   private String buildRecordString(final List<String> columns, final List row) {
@@ -257,5 +277,4 @@ public class PerformanceHarness {
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
-
 }

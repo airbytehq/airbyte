@@ -4,13 +4,10 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -35,14 +32,19 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
-  protected static final List<Field> SUB_FIELDS = List.of(
-      Field.of("testObject", JsonSchemaType.OBJECT, List.of(
+  protected static final List<Field> SUB_FIELDS = List.of(Field.of(
+      "testObject",
+      JsonSchemaType.OBJECT,
+      List.of(
           Field.of("name", JsonSchemaType.STRING),
           Field.of("testField1", JsonSchemaType.STRING),
           Field.of("testInt", JsonSchemaType.NUMBER),
-          Field.of("thirdLevelDocument", JsonSchemaType.OBJECT, List.of(
-              Field.of("data", JsonSchemaType.STRING),
-              Field.of("intData", JsonSchemaType.NUMBER))))));
+          Field.of(
+              "thirdLevelDocument",
+              JsonSchemaType.OBJECT,
+              List.of(
+                  Field.of("data", JsonSchemaType.STRING),
+                  Field.of("intData", JsonSchemaType.NUMBER))))));
 
   protected static final List<Field> FIELDS = List.of(
       Field.of("id", JsonSchemaType.STRING),
@@ -58,31 +60,50 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a MongoDB credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
 
-    final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
+    final String connectionString = String.format(
+        "mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
         config.get("user").asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         config.get("instance_type").get("cluster_url").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
-    database = new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());
+    database =
+        new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
-    final var objectDocument = new Document("testObject", new Document("name", "subName").append("testField1", "testField1").append("testInt", 10)
-        .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
-    final var doc1 = new Document("id", "0001").append("name", "Test")
-        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
-        .append("double_test", 100.12).append("int_test", 100).append("object_test", objectDocument);
-    final var doc2 =
-        new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201).append("object_test", objectDocument);
-    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
-        .append("double_test", 212.11).append("int_test", 302).append("object_test", objectDocument);
+    final var objectDocument = new Document(
+        "testObject",
+        new Document("name", "subName")
+            .append("testField1", "testField1")
+            .append("testInt", 10)
+            .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
+    final var doc1 = new Document("id", "0001")
+        .append("name", "Test")
+        .append("test", 10)
+        .append(
+            "test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12)
+        .append("int_test", 100)
+        .append("object_test", objectDocument);
+    final var doc2 = new Document("id", "0002")
+        .append("name", "Mongo")
+        .append("test", "test_value")
+        .append("int_test", 201)
+        .append("object_test", objectDocument);
+    final var doc3 = new Document("id", "0003")
+        .append("name", "Source")
+        .append("test", null)
+        .append("double_test", 212.11)
+        .append("int_test", 302)
+        .append("object_test", objectDocument);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
@@ -130,11 +151,9 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
 
   @Test
   public void testCheckIncorrectAccessToDataBase() throws Exception {
-    ((ObjectNode) config).put("user", "test_user_without_access")
-        .put("password", "test12321");
+    ((ObjectNode) config).put("user", "test_user_without_access").put("password", "test12321");
     final AirbyteConnectionStatus status = new MongoDbSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 13"));
   }
-
 }

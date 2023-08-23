@@ -21,7 +21,9 @@ import java.util.Collections;
 public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
 
   @Override
-  protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putBoolean(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
     if ("bit".equalsIgnoreCase(resultSet.getMetaData().getColumnTypeName(index))) {
       node.put(columnName, resultSet.getByte(index));
     } else {
@@ -30,12 +32,16 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putDouble(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putDouble(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
     node.put(columnName, resultSet.getDouble(index));
   }
 
   @Override
-  protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putBigDecimal(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
     node.put(columnName, resultSet.getBigDecimal(index));
   }
 
@@ -57,7 +63,8 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
     return jsonNode;
   }
 
-  private void putCockroachSpecialDataType(final ResultSet resultSet, final int index, final ObjectNode node) throws SQLException {
+  private void putCockroachSpecialDataType(
+      final ResultSet resultSet, final int index, final ObjectNode node) throws SQLException {
     final String columnType = resultSet.getMetaData().getColumnTypeName(index);
     final String columnName = resultSet.getMetaData().getColumnName(index);
     try {
@@ -74,5 +81,4 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
       node.put(columnName, (Double) null);
     }
   }
-
 }

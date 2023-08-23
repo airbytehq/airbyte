@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -48,14 +47,16 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
+  private static final NamingConventionTransformer NAME_TRANSFORMER =
+      new SnowflakeSQLNameTransformer();
   protected static final String NO_ACTIVE_WAREHOUSE_ERR_MSG =
       "No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.";
 
   protected static final String NO_USER_PRIVILEGES_ERR_MSG =
       "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges";
 
-  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "is not allowed to access Snowflake. Contact your account administrator.";
+  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG =
+      "is not allowed to access Snowflake. Contact your account administrator.";
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
@@ -103,7 +104,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   public JsonNode getStaticConfig() {
-    final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
+    final JsonNode insertConfig =
+        Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
     return insertConfig;
   }
 
@@ -115,12 +117,14 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(NAME_TRANSFORMER.getRawTableName(streamName), NAME_TRANSFORMER.getNamespace(namespace))
+    return retrieveRecordsFromTable(
+            NAME_TRANSFORMER.getRawTableName(streamName), NAME_TRANSFORMER.getNamespace(namespace))
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
         .collect(Collectors.toList());
@@ -142,28 +146,36 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = NAME_TRANSFORMER.getIdentifier(streamName);
     final String schema = NAME_TRANSFORMER.getNamespace(namespace);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema)
+      throws SQLException {
     final TimeZone timeZone = TimeZone.getTimeZone("UTC");
     TimeZone.setDefault(timeZone);
 
     return database.bufferedResultSetQuery(
         connection -> {
-          try (final ResultSet tableInfo = connection.createStatement()
-              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema))) {
+          try (final ResultSet tableInfo = connection
+              .createStatement()
+              .executeQuery(
+                  String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema))) {
             assertTrue(tableInfo.next());
-            // check that we're creating permanent tables. DBT defaults to transient tables, which have
+            // check that we're creating permanent tables. DBT defaults to transient tables, which
+            // have
             // `TRANSIENT` as the value for the `kind` column.
             assertEquals("TABLE", tableInfo.getString("kind"));
             connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
-            return connection.createStatement()
-                .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+            return connection
+                .createStatement()
+                .executeQuery(String.format(
+                    "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                    schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
           }
         },
         new SnowflakeTestSourceOperations()::rowToJson);
@@ -171,7 +183,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     TEST_SCHEMAS.add(schemaName);
@@ -190,7 +203,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     for (final String schema : TEST_SCHEMAS) {
       // we need to wrap namespaces in quotes, but that means we have to manually upcase them.
       // thanks, v1 destinations!
-      // this probably doesn't actually work, because v1 destinations are mangling namespaces and names
+      // this probably doesn't actually work, because v1 destinations are mangling namespaces and
+      // names
       // but it's approximately correct and maybe works for some things.
       final String mangledSchema = schema.toUpperCase();
       final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS \"%s\"", mangledSchema);
@@ -204,8 +218,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Test
   public void testCheckWithNoTextSchemaPermissionConnection() throws Exception {
     // Config to user (creds) that has no permission to schema
-    final JsonNode config = Jsons.deserialize(IOs.readFile(
-        Path.of("secrets/config_no_text_schema_permission.json")));
+    final JsonNode config =
+        Jsons.deserialize(IOs.readFile(Path.of("secrets/config_no_text_schema_permission.json")));
 
     final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
@@ -216,8 +230,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Test
   public void testCheckIpNotInWhiteListConnection() throws Exception {
     // Config to user(creds) that has no warehouse assigned
-    final JsonNode config = Jsons.deserialize(IOs.readFile(
-        Path.of("secrets/insert_ip_not_in_whitelist_config.json")));
+    final JsonNode config =
+        Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_ip_not_in_whitelist_config.json")));
 
     final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
@@ -238,8 +252,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   @Test
   void testCheckWithKeyPairAuth() throws Exception {
-    final JsonNode credentialsJsonString = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
-    final AirbyteConnectionStatus check = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString);
+    final JsonNode credentialsJsonString =
+        Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
+    final AirbyteConnectionStatus check =
+        new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
   }
 
@@ -249,17 +265,22 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Disabled
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithBillionRecords(final String messagesFilename, final String catalogFilename) throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).toList();
+  public void testSyncWithBillionRecords(
+      final String messagesFilename, final String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename)
+        .lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .toList();
 
-    final List<AirbyteMessage> largeNumberRecords =
-        Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+    final List<AirbyteMessage> largeNumberRecords = Collections.nCopies(15000000, messages).stream()
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
 
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
   }
-
 }

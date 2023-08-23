@@ -18,7 +18,8 @@ public class ConfiguredAirbyteCatalogMigrator {
 
   private final MigrationContainer<ConfiguredAirbyteCatalogMigration<?, ?>> migrationContainer;
 
-  public ConfiguredAirbyteCatalogMigrator(final List<ConfiguredAirbyteCatalogMigration<?, ?>> migrations) {
+  public ConfiguredAirbyteCatalogMigrator(
+      final List<ConfiguredAirbyteCatalogMigration<?, ?>> migrations) {
     migrationContainer = new MigrationContainer<>(migrations);
   }
 
@@ -31,16 +32,20 @@ public class ConfiguredAirbyteCatalogMigrator {
    * Downgrade a message from the most recent version to the target version by chaining all the
    * required migrations
    */
-  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final Version target) {
-    return migrationContainer.downgrade(message, target, ConfiguredAirbyteCatalogMigrator::applyDowngrade);
+  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(
+      final CurrentVersion message, final Version target) {
+    return migrationContainer.downgrade(
+        message, target, ConfiguredAirbyteCatalogMigrator::applyDowngrade);
   }
 
   /**
    * Upgrade a message from the source version to the most recent version by chaining all the required
    * migrations
    */
-  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final Version source) {
-    return migrationContainer.upgrade(message, source, ConfiguredAirbyteCatalogMigrator::applyUpgrade);
+  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(
+      final PreviousVersion message, final Version source) {
+    return migrationContainer.upgrade(
+        message, source, ConfiguredAirbyteCatalogMigrator::applyUpgrade);
   }
 
   public Version getMostRecentVersion() {
@@ -48,14 +53,16 @@ public class ConfiguredAirbyteCatalogMigrator {
   }
 
   // Helper function to work around type casting
-  private static <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(final ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersion> migration,
-                                                                                  final Object message) {
+  private static <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(
+      final ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersion> migration,
+      final Object message) {
     return migration.downgrade((CurrentVersion) message);
   }
 
   // Helper function to work around type casting
-  private static <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(final ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersion> migration,
-                                                                               final Object message) {
+  private static <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(
+      final ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersion> migration,
+      final Object message) {
     return migration.upgrade((PreviousVersion) message);
   }
 
@@ -64,5 +71,4 @@ public class ConfiguredAirbyteCatalogMigrator {
   Set<String> getMigrationKeys() {
     return migrationContainer.getMigrationKeys();
   }
-
 }

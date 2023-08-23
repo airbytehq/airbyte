@@ -9,5 +9,4 @@ public class CopyIntoException extends SelectdbRuntimeException {
   public CopyIntoException(String message) {
     super(message);
   }
-
 }

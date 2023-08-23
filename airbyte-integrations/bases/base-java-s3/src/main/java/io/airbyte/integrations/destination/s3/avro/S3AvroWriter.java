@@ -38,33 +38,39 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
   private final String objectKey;
   private final String gcsFileLocation;
 
-  public S3AvroWriter(final S3DestinationConfig config,
-                      final AmazonS3 s3Client,
-                      final ConfiguredAirbyteStream configuredStream,
-                      final Timestamp uploadTimestamp,
-                      final Schema schema,
-                      final JsonAvroConverter converter)
+  public S3AvroWriter(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final Schema schema,
+      final JsonAvroConverter converter)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
-        .builder()
-        .timestamp(uploadTimestamp)
-        .s3Format(S3Format.AVRO)
-        .fileExtension(S3Format.AVRO.getFileExtension())
-        .fileNamePattern(config.getFileNamePattern())
-        .build());
+    final String outputFilename =
+        determineOutputFilename(S3FilenameTemplateParameterObject.builder()
+            .timestamp(uploadTimestamp)
+            .s3Format(S3Format.AVRO)
+            .fileExtension(S3Format.AVRO.getFileExtension())
+            .fileNamePattern(config.getFileNamePattern())
+            .build());
 
     objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
+    LOGGER.info(
+        "Full S3 path for stream '{}': s3://{}/{}",
+        stream.getName(),
+        config.getBucketName(),
+        objectKey);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
-    this.uploadManager = StreamTransferManagerFactory
-        .create(config.getBucketName(), objectKey, s3Client)
+    this.uploadManager = StreamTransferManagerFactory.create(
+            config.getBucketName(), objectKey, s3Client)
         .get();
-    // We only need one output stream as we only have one input stream. This is reasonably performant.
+    // We only need one output stream as we only have one input stream. This is reasonably
+    // performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
     final S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
@@ -114,5 +120,4 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
     final Record record = avroRecordFactory.getAvroRecord(formattedData);
     dataFileWriter.append(record);
   }
-
 }

@@ -36,9 +36,10 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Map<AirbyteStreamNameNamespacePair, Map<String, String>> attributes;
   private Publisher publisher;
 
-  public PubsubConsumer(final PubsubDestinationConfig config,
-                        final ConfiguredAirbyteCatalog catalog,
-                        final Consumer<AirbyteMessage> outputRecordCollector) {
+  public PubsubConsumer(
+      final PubsubDestinationConfig config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
     this.config = config;
     this.catalog = catalog;
@@ -75,14 +76,13 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
       return;
     }
     final AirbyteRecordMessage recordMessage = msg.getRecord();
-    final AirbyteStreamNameNamespacePair streamKey = AirbyteStreamNameNamespacePair
-        .fromRecordMessage(recordMessage);
+    final AirbyteStreamNameNamespacePair streamKey =
+        AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!attributes.containsKey(streamKey)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
+      throw new IllegalArgumentException(String.format(
+          "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+          Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
     }
     final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
         JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
@@ -105,5 +105,4 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
       LOGGER.info("shutting down consumer.");
     }
   }
-
 }

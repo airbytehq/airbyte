@@ -45,14 +45,16 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting
+    // directly
     // and not over SSH tunnel
     if (config.has(TUNNEL_METHOD)
         && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
         && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
       // If no SSH tunnel
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
-        if (Set.of(SSL_MODE_DISABLE, SSL_MODE_ALLOW, SSL_MODE_PREFER).contains(config.get(SSL_MODE).get(MODE).asText())) {
+        if (Set.of(SSL_MODE_DISABLE, SSL_MODE_ALLOW, SSL_MODE_PREFER)
+            .contains(config.get(SSL_MODE).get(MODE).asText())) {
           // Fail in case SSL mode is disable, allow or prefer
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
@@ -70,5 +72,4 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSourceStrictEncrypt.class);
   }
-
 }

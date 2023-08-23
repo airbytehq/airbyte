@@ -25,7 +25,9 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
   private static final String valueBase = "valuevaluevaluevaluevalue";
   private static final AirbyteMessage message = new AirbyteMessage()
       .withType(Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()).withStream("stream1"));
+      .withRecord(new AirbyteRecordMessage()
+          .withEmittedAt(Instant.EPOCH.toEpochMilli())
+          .withStream("stream1"));
   private static final JsonNode jsonNode = Jsons.emptyObject();
 
   private final long maxRecords;
@@ -53,5 +55,4 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
     message.getRecord().withData(jsonNode);
     return Jsons.clone(message);
   }
-
 }

@@ -20,10 +20,11 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
 
   protected double maxRowByteSize = 0.0;
 
-  protected BaseSizeEstimator(final long targetBufferByteSize,
-                              final int minFetchSize,
-                              final int defaultFetchSize,
-                              final int maxFetchSize) {
+  protected BaseSizeEstimator(
+      final long targetBufferByteSize,
+      final int minFetchSize,
+      final int defaultFetchSize,
+      final int maxFetchSize) {
     this.targetBufferByteSize = targetBufferByteSize;
     this.minFetchSize = minFetchSize;
     this.defaultFetchSize = defaultFetchSize;
@@ -46,7 +47,8 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
     // the string to byte[] to get the exact length. That conversion is known
     // to introduce a lot of memory overhead.
     //
-    // We are using 3L as the median byte-size of a serialized char here assuming that most chars fit
+    // We are using 3L as the median byte-size of a serialized char here assuming that most chars
+    // fit
     // into the ASCII space (fewer bytes)
 
     return Jsons.serialize(rowData).length() * 3L;
@@ -71,5 +73,4 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
   double getMaxRowByteSize() {
     return maxRowByteSize;
   }
-
 }

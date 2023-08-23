@@ -9,11 +9,11 @@ import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 /**
  * @author Leibniz on 2022/11/3.
  */
-public class IcebergHadoopCatalogS3ParquetIntegrationTest extends BaseIcebergHadoopCatalogS3IntegrationTest {
+public class IcebergHadoopCatalogS3ParquetIntegrationTest
+    extends BaseIcebergHadoopCatalogS3IntegrationTest {
 
   @Override
   DataFileFormat fileFormat() {
     return DataFileFormat.PARQUET;
   }
-
 }

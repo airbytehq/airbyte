@@ -56,10 +56,11 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
    * will be checked and if it more than the available memory * MAX_SIZE_RATIO the sync will be failed
    * by throwing the exception provided. The exception must have a constructor that accept a string.
    */
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
-                              final Logger logger,
-                              final MdcScope.Builder containerLogMdcBuilder,
-                              final Optional<Class<? extends RuntimeException>> messageSizeExceptionClass) {
+  DefaultAirbyteStreamFactory(
+      final AirbyteProtocolPredicate protocolPredicate,
+      final Logger logger,
+      final MdcScope.Builder containerLogMdcBuilder,
+      final Optional<Class<? extends RuntimeException>> messageSizeExceptionClass) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
@@ -68,11 +69,12 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   }
 
   @VisibleForTesting
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
-                              final Logger logger,
-                              final MdcScope.Builder containerLogMdcBuilder,
-                              final Optional<Class<? extends RuntimeException>> messageSizeExceptionClass,
-                              final long maxMemory) {
+  DefaultAirbyteStreamFactory(
+      final AirbyteProtocolPredicate protocolPredicate,
+      final Logger logger,
+      final MdcScope.Builder containerLogMdcBuilder,
+      final Optional<Class<? extends RuntimeException>> messageSizeExceptionClass,
+      final long maxMemory) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
@@ -95,7 +97,10 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
                     humanReadableByteCountSI(maxMemory),
                     humanReadableByteCountSI(messageSize));
                 throw exceptionClass.get().getConstructor(String.class).newInstance(errorMessage);
-              } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+              } catch (final InstantiationException
+                  | IllegalAccessException
+                  | InvocationTargetException
+                  | NoSuchMethodException e) {
                 throw new RuntimeException(e);
               }
             }
@@ -147,9 +152,10 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   }
 
   protected void internalLog(final AirbyteLogMessage logMessage) {
-    final String combinedMessage =
-        logMessage.getMessage() + (logMessage.getStackTrace() != null ? (System.lineSeparator()
-            + "Stack Trace: " + logMessage.getStackTrace()) : "");
+    final String combinedMessage = logMessage.getMessage()
+        + (logMessage.getStackTrace() != null
+            ? (System.lineSeparator() + "Stack Trace: " + logMessage.getStackTrace())
+            : "");
 
     switch (logMessage.getLevel()) {
       case FATAL, ERROR -> logger.error(combinedMessage);
@@ -174,5 +180,4 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     }
     return String.format("%.1f %cB", bytes / 1000.0, ci.current());
   }
-
 }

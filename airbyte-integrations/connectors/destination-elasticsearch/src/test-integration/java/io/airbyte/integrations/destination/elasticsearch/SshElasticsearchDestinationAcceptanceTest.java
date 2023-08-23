@@ -15,42 +15,60 @@ import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.Network;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
-public abstract class SshElasticsearchDestinationAcceptanceTest extends ElasticsearchDestinationAcceptanceTest {
+public abstract class SshElasticsearchDestinationAcceptanceTest
+    extends ElasticsearchDestinationAcceptanceTest {
 
   private static final Network network = Network.newNetwork();
   private static final SshBastionContainer bastion = new SshBastionContainer();
   private static ElasticsearchContainer container;
   private final ObjectMapper mapper = new ObjectMapper();
-  private final static String ELASTIC_PASSWORD = "MagicWord";
+  private static final String ELASTIC_PASSWORD = "MagicWord";
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   private String getEndPoint() {
-    return String.format("http://%s:%d",
-        container.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .entrySet().stream().findFirst().get().getValue().getIpAddress(),
+    return String.format(
+        "http://%s:%d",
+        container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream()
+            .findFirst()
+            .get()
+            .getValue()
+            .getIpAddress(),
         container.getExposedPorts().get(0));
   }
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder().put("endpoint", getEndPoint())
-        .put("upsert", false)
-        .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
-            .put("username", "elastic")
-            .put("password", ELASTIC_PASSWORD).build())),
+    return bastion.getTunnelConfig(
+        getTunnelMethod(),
+        ImmutableMap.builder()
+            .put("endpoint", getEndPoint())
+            .put("upsert", false)
+            .put(
+                "authenticationMethod",
+                Jsons.jsonNode(ImmutableMap.builder()
+                    .put("method", "basic")
+                    .put("username", "elastic")
+                    .put("password", ELASTIC_PASSWORD)
+                    .build())),
         false);
   }
 
   @Override
   protected JsonNode getFailCheckConfig() throws Exception {
     // should result in a failed connection check
-    return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder().put("endpoint", getEndPoint())
-        .put("upsert", true)
-        .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
-            .put("username", "elastic")
-            .put("password", "wrongpassword").build())),
+    return bastion.getTunnelConfig(
+        getTunnelMethod(),
+        ImmutableMap.builder()
+            .put("endpoint", getEndPoint())
+            .put("upsert", true)
+            .put(
+                "authenticationMethod",
+                Jsons.jsonNode(ImmutableMap.builder()
+                    .put("method", "basic")
+                    .put("username", "elastic")
+                    .put("password", "wrongpassword")
+                    .build())),
         false);
   }
 
@@ -68,5 +86,4 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
     container.close();
     bastion.getContainer().close();
   }
-
 }

@@ -39,8 +39,8 @@ public class CursorBasedCtidUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CursorBasedCtidUtils.class);
 
-  public static StreamsCategorised<CursorBasedStreams> categoriseStreams(final StateManager stateManager,
-                                                                         final ConfiguredAirbyteCatalog fullCatalog) {
+  public static StreamsCategorised<CursorBasedStreams> categoriseStreams(
+      final StateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog) {
     final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
     final List<AirbyteStateMessage> statesFromCtidSync = new ArrayList<>();
     final Set<AirbyteStreamNameNamespacePair> alreadySeenStreamPairs = new HashSet<>();
@@ -57,39 +57,50 @@ public class CursorBasedCtidUtils {
           return;
         }
 
-        final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
-            streamDescriptor.getNamespace());
+        final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(
+            streamDescriptor.getName(), streamDescriptor.getNamespace());
 
         if (streamState.has(STATE_TYPE_KEY)) {
           if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase(StateType.CTID.value())) {
             statesFromCtidSync.add(stateMessage);
             stillInCtidStreamPairs.add(pair);
-          } else if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase(StateType.CURSOR_BASED.value())) {
+          } else if (streamState
+              .get(STATE_TYPE_KEY)
+              .asText()
+              .equalsIgnoreCase(StateType.CURSOR_BASED.value())) {
             cursorBasedSyncStreamPairs.add(pair);
             statesFromCursorBasedSync.add(stateMessage);
           } else {
-            throw new RuntimeException("Unknown state type: " + streamState.get(STATE_TYPE_KEY).asText());
+            throw new RuntimeException(
+                "Unknown state type: " + streamState.get(STATE_TYPE_KEY).asText());
           }
         } else {
-          LOGGER.info("State type not present, syncing stream {} via cursor", streamDescriptor.getName());
+          LOGGER.info(
+              "State type not present, syncing stream {} via cursor", streamDescriptor.getName());
           cursorBasedSyncStreamPairs.add(pair);
           statesFromCursorBasedSync.add(stateMessage);
         }
-        alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+        alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(
+            streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
     }
 
-    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs, SyncMode.INCREMENTAL);
-    final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs, SyncMode.INCREMENTAL);
-    final List<ConfiguredAirbyteStream> streamsForCursorBasedSync = getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams =
+        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> streamsForCtidSync =
+        getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> streamsForCursorBasedSync =
+        getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs, SyncMode.INCREMENTAL);
     streamsForCtidSync.addAll(newlyAddedIncrementalStreams);
 
-    return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync),
+    return new StreamsCategorised<>(
+        new CtidStreams(streamsForCtidSync, statesFromCtidSync),
         new CursorBasedStreams(streamsForCursorBasedSync, statesFromCursorBasedSync));
   }
 
-  public record CursorBasedStreams(List<ConfiguredAirbyteStream> streamsForCursorBasedSync,
-                                   List<AirbyteStateMessage> statesFromCursorBasedSync) {}
+  public record CursorBasedStreams(
+      List<ConfiguredAirbyteStream> streamsForCursorBasedSync,
+      List<AirbyteStateMessage> statesFromCursorBasedSync) {}
 
   /**
    * Reclassifies previously categorised ctid stream into standard category.
@@ -97,34 +108,43 @@ public class CursorBasedCtidUtils {
    * @param categorisedStreams categorised streams
    * @param streamPair stream to reclassify
    */
-  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<CursorBasedStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
-    final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
-        .ctidStreams()
-        .streamsForCtidSync().stream().filter(c -> Objects.equals(
-            streamPair,
-            new AirbyteStreamNameNamespacePair(c.getStream().getName(), c.getStream().getNamespace())))
-        .findFirst();
+  public static void reclassifyCategorisedCtidStream(
+      final StreamsCategorised<CursorBasedStreams> categorisedStreams,
+      AirbyteStreamNameNamespacePair streamPair) {
+    final Optional<ConfiguredAirbyteStream> foundStream =
+        categorisedStreams.ctidStreams().streamsForCtidSync().stream()
+            .filter(c -> Objects.equals(
+                streamPair,
+                new AirbyteStreamNameNamespacePair(
+                    c.getStream().getName(), c.getStream().getNamespace())))
+            .findFirst();
     foundStream.ifPresent(c -> {
       categorisedStreams.remainingStreams().streamsForCursorBasedSync().add(c);
       categorisedStreams.ctidStreams().streamsForCtidSync().remove(c);
-      LOGGER.info("Reclassified {}.{} as standard stream", c.getStream().getNamespace(), c.getStream().getName());
+      LOGGER.info(
+          "Reclassified {}.{} as standard stream",
+          c.getStream().getNamespace(),
+          c.getStream().getName());
     });
 
     // Should there ever be a matching ctid state when ctid is not possible?
-    final Optional<AirbyteStateMessage> foundStateMessage = categorisedStreams
-        .ctidStreams()
-        .statesFromCtidSync().stream().filter(m -> Objects.equals(streamPair,
-            new AirbyteStreamNameNamespacePair(
-                m.getStream().getStreamDescriptor().getName(),
-                m.getStream().getStreamDescriptor().getNamespace())))
-        .findFirst();
+    final Optional<AirbyteStateMessage> foundStateMessage =
+        categorisedStreams.ctidStreams().statesFromCtidSync().stream()
+            .filter(m -> Objects.equals(
+                streamPair,
+                new AirbyteStreamNameNamespacePair(
+                    m.getStream().getStreamDescriptor().getName(),
+                    m.getStream().getStreamDescriptor().getNamespace())))
+            .findFirst();
     foundStateMessage.ifPresent(m -> {
       categorisedStreams.remainingStreams().statesFromCursorBasedSync().add(m);
       categorisedStreams.ctidStreams().statesFromCtidSync().remove(m);
     });
   }
 
-  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<CursorBasedStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+  public static void reclassifyCategorisedCtidStreams(
+      final StreamsCategorised<CursorBasedStreams> categorisedStreams,
+      List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
 }

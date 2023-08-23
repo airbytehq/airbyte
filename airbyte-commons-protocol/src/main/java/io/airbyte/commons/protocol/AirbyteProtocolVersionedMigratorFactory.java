@@ -16,8 +16,9 @@ public class AirbyteProtocolVersionedMigratorFactory {
   private final AirbyteMessageMigrator airbyteMessageMigrator;
   private final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator;
 
-  public AirbyteProtocolVersionedMigratorFactory(final AirbyteMessageMigrator airbyteMessageMigrator,
-                                                 final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator) {
+  public AirbyteProtocolVersionedMigratorFactory(
+      final AirbyteMessageMigrator airbyteMessageMigrator,
+      final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator) {
     this.airbyteMessageMigrator = airbyteMessageMigrator;
     this.configuredAirbyteCatalogMigrator = configuredAirbyteCatalogMigrator;
   }
@@ -33,5 +34,4 @@ public class AirbyteProtocolVersionedMigratorFactory {
   public Version getMostRecentVersion() {
     return airbyteMessageMigrator.getMostRecentVersion();
   }
-
 }

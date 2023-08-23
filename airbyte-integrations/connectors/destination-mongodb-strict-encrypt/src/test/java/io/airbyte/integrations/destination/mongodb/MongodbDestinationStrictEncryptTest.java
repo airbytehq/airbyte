@@ -16,9 +16,9 @@ public class MongodbDestinationStrictEncryptTest {
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = new MongodbDestinationStrictEncrypt().spec();
-    final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
+    final ConnectorSpecification expected = Jsons.deserialize(
+        MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
 
     assertEquals(expected, actual);
   }
-
 }

@@ -25,5 +25,4 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Lo
   public String namespace(final JsonNode source) {
     return source.get("schema").asText();
   }
-
 }

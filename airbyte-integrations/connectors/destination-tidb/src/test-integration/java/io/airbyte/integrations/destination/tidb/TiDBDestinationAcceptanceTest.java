@@ -96,39 +96,39 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     try (final DSLContext dslContext = DSLContextFactory.create(
         usernameKey,
         passwordKey,
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             databaseKey),
         SQLDialect.MYSQL)) {
-      return new Database(dslContext).query(
-          ctx -> ctx
-              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .map(this::getJsonFromRecord)
-              .collect(Collectors.toList()));
+      return new Database(dslContext).query(ctx -> ctx
+          .fetch(String.format(
+              "SELECT * FROM %s.%s ORDER BY %s ASC;",
+              schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .stream()
+          .map(this::getJsonFromRecord)
+          .collect(Collectors.toList()));
     }
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -137,8 +137,8 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
 
   @Override
   protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
-    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
-        .withExposedPorts(4000);
+    container =
+        new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly")).withExposedPorts(4000);
     container.start();
   }
 
@@ -147,5 +147,4 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
     container.stop();
     container.close();
   }
-
 }

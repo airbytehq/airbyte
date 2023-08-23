@@ -16,9 +16,7 @@ import software.amazon.awssdk.services.kinesis.model.KinesisException;
  */
 public class KinesisUtils {
 
-  private KinesisUtils() {
-
-  }
+  private KinesisUtils() {}
 
   /**
    * Configures and returns a Kinesis client with the provided configuration.
@@ -54,10 +52,8 @@ public class KinesisUtils {
    * @return KinesisException to be thrown
    */
   static KinesisException buildKinesisException(String message, Throwable cause) {
-    return (KinesisException) KinesisException.builder()
-        .message(message)
-        .cause(cause)
-        .build();
+    return (KinesisException)
+        KinesisException.builder().message(message).cause(cause).build();
   }
 
   /**
@@ -68,5 +64,4 @@ public class KinesisUtils {
   static String buildPartitionKey() {
     return UUID.randomUUID().toString();
   }
-
 }

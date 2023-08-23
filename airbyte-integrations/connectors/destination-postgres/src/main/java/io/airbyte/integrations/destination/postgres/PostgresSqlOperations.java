@@ -25,10 +25,11 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -41,8 +42,10 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
         writeBatchToFile(tmpFile, records);
 
         final var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
-        final var sql = String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
-        final var bufferedReader = new BufferedReader(new FileReader(tmpFile, StandardCharsets.UTF_8));
+        final var sql =
+            String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
+        final var bufferedReader =
+            new BufferedReader(new FileReader(tmpFile, StandardCharsets.UTF_8));
         copyManager.copyIn(sql, bufferedReader);
       } catch (final Exception e) {
         throw new RuntimeException(e);
@@ -57,5 +60,4 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
       }
     });
   }
-
 }

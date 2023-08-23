@@ -32,7 +32,8 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSourceOperations.class);
 
   @Override
-  protected void putDouble(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
+  protected void putDouble(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     try {
       final double value = resultSet.getDouble(index);
       node.put(columnName, value);
@@ -49,7 +50,8 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
           ? JDBCType.TIMESTAMP_WITH_TIMEZONE
           : JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
-      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+      LOGGER.warn(String.format(
+          "Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
           field.get(INTERNAL_COLUMN_NAME),
           field.get(INTERNAL_SCHEMA_NAME),
           field.get(INTERNAL_TABLE_NAME),
@@ -59,7 +61,8 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putBigInt(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
+  protected void putBigInt(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     try {
       final var value = resultSet.getBigDecimal(index);
       node.put(columnName, value);
@@ -69,16 +72,21 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setString(parameterIndex, value);
-  }
-
-  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+  protected void setTimestamp(
+      final PreparedStatement preparedStatement, final int parameterIndex, final String value)
       throws SQLException {
     preparedStatement.setString(parameterIndex, value);
   }
 
-  protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+  protected void setTimestampWithTimezone(
+      final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
+  protected void setTimeWithTimezone(
+      final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
     preparedStatement.setString(parameterIndex, value);
   }
 
@@ -96,16 +104,19 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
       case ARRAY -> JsonSchemaType.ARRAY;
-      // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
-      // types to String
+        // since column types aren't necessarily meaningful to Airbyte, liberally convert all
+        // unrecgonised
+        // types to String
       default -> JsonSchemaType.STRING;
     };
   }
 
   @Override
-  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
+      throws SQLException {
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
-    final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
+    final String columnTypeName =
+        resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
     // TIMESTAMPLTZ data type detected as JDBCType.TIMESTAMP which is not correct
     if ("TIMESTAMPLTZ".equalsIgnoreCase(columnTypeName)) {
@@ -116,31 +127,33 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+  protected void setDate(
+      final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
     final LocalDate date = LocalDate.parse(value);
     preparedStatement.setDate(parameterIndex, Date.valueOf(date));
   }
 
   @Override
-  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+  protected void putTimestampWithTimezone(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamp));
   }
 
   @Override
-  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putTimestamp(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
 
   @Override
-  protected void putTime(final ObjectNode node,
-                         final String columnName,
-                         final ResultSet resultSet,
-                         final int index)
+  protected void putTime(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
     putJavaSQLTime(node, columnName, resultSet, index);
   }
-
 }

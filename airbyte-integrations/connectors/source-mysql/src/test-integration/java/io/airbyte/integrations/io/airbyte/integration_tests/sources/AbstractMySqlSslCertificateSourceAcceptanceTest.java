@@ -18,7 +18,8 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest
+    extends MySqlSourceAcceptanceTest {
 
   protected static MySqlUtils.Certificate certs;
   protected static final String PASSWORD = "Passw0rd";
@@ -32,9 +33,8 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
     certs = getCertificates();
 
     var sslMode = getSslConfig();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "STANDARD")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "STANDARD").build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
@@ -56,10 +56,9 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
         container.getUsername(),
         container.getPassword(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()),
+        String.format(
+            "jdbc:mysql://%s:%s/%s",
+            container.getHost(), container.getFirstMappedPort(), container.getDatabaseName()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 
@@ -74,5 +73,4 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
       });
     }
   }
-
 }

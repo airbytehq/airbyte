@@ -28,9 +28,9 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
   private JsonStringEncoder jsonEncoder;
 
   public DorisConsumer(
-                       final Map<String, DorisWriteConfig> writeConfigs,
-                       final ConfiguredAirbyteCatalog catalog,
-                       final Consumer<AirbyteMessage> outputRecordCollector) {
+      final Map<String, DorisWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     super(outputRecordCollector);
     jsonEncoder = JsonStringEncoder.getInstance();
     this.catalog = catalog;
@@ -55,17 +55,20 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
     }
     final AirbyteRecordMessage recordMessage = msg.getRecord();
     if (!writeConfigs.containsKey(recordMessage.getStream())) {
-      throw new IllegalArgumentException(
-          String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
+      throw new IllegalArgumentException(String.format(
+          "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+          Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
     }
 
-    writeConfigs.get(recordMessage.getStream()).getWriter().printRecord(
-        UUID.randomUUID(),
-        // new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(recordMessage.getEmittedAt())),
-        recordMessage.getEmittedAt(),
-        new String(jsonEncoder.quoteAsString(Jsons.serialize(recordMessage.getData()))));
-
+    writeConfigs
+        .get(recordMessage.getStream())
+        .getWriter()
+        .printRecord(
+            UUID.randomUUID(),
+            // new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new
+            // Date(recordMessage.getEmittedAt())),
+            recordMessage.getEmittedAt(),
+            new String(jsonEncoder.quoteAsString(Jsons.serialize(recordMessage.getData()))));
   }
 
   @Override
@@ -101,7 +104,9 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
         for (final DorisWriteConfig writeConfig : writeConfigs.values()) {
           if (writeConfig.getDorisStreamLoad().getTxnID() > 0)
             writeConfig.getDorisStreamLoad().commitTransaction();
-          LOGGER.info(String.format("stream load commit (TxnID:  %s ) successed ", writeConfig.getDorisStreamLoad().getTxnID()));
+          LOGGER.info(String.format(
+              "stream load commit (TxnID:  %s ) successed ",
+              writeConfig.getDorisStreamLoad().getTxnID()));
         }
       } else {
         final String message = "Failed to commit doris in destination";
@@ -118,7 +123,5 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
         writeConfig.getDorisStreamLoad().close();
       }
     }
-
   }
-
 }

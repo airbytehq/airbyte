@@ -16,5 +16,4 @@ public interface ConfigSchemaValidator<T extends Enum<T>> {
   void ensure(T configType, JsonNode objectJson) throws JsonValidationException;
 
   void ensureAsRuntime(T configType, JsonNode objectJson);
-
 }

@@ -32,10 +32,11 @@ import org.apache.logging.log4j.status.StatusLogger;
  * project. The file is named {@code specs_secrets_mask.yaml} and is located in the
  * {@code src/main/resources/seed} directory of the {@link :airbyte-config:init} project.
  */
-@Plugin(name = "MaskedDataInterceptor",
-        category = "Core",
-        elementType = "rewritePolicy",
-        printObject = true)
+@Plugin(
+    name = "MaskedDataInterceptor",
+    category = "Core",
+    elementType = "rewritePolicy",
+    printObject = true)
 public class MaskedDataInterceptor implements RewritePolicy {
 
   protected static final Logger logger = StatusLogger.getLogger();
@@ -47,8 +48,8 @@ public class MaskedDataInterceptor implements RewritePolicy {
 
   @PluginFactory
   public static MaskedDataInterceptor createPolicy(
-                                                   @PluginAttribute(value = "specMaskFile",
-                                                                    defaultString = "/seed/specs_secrets_mask.yaml") final String specMaskFile) {
+      @PluginAttribute(value = "specMaskFile", defaultString = "/seed/specs_secrets_mask.yaml")
+          final String specMaskFile) {
     return new MaskedDataInterceptor(specMaskFile);
   }
 
@@ -81,7 +82,8 @@ public class MaskedDataInterceptor implements RewritePolicy {
    */
   private String applyMask(final String message) {
     if (pattern.isPresent()) {
-      return message.replaceAll(pattern.get(), "\"$1\":\"" + AirbyteSecretConstants.SECRETS_MASK + "\"");
+      return message.replaceAll(
+          pattern.get(), "\"$1\":\"" + AirbyteSecretConstants.SECRETS_MASK + "\"");
     } else {
       return message;
     }
@@ -96,8 +98,10 @@ public class MaskedDataInterceptor implements RewritePolicy {
   private Set<String> getMaskableProperties(final String specMaskFile) {
 
     try {
-      final String maskFileContents = IOUtils.toString(getClass().getResourceAsStream(specMaskFile), Charset.defaultCharset());
-      final Map<String, Set<String>> properties = Jsons.object(Yamls.deserialize(maskFileContents), new TypeReference<>() {});
+      final String maskFileContents =
+          IOUtils.toString(getClass().getResourceAsStream(specMaskFile), Charset.defaultCharset());
+      final Map<String, Set<String>> properties =
+          Jsons.object(Yamls.deserialize(maskFileContents), new TypeReference<>() {});
       return properties.getOrDefault("properties", Set.of());
     } catch (final Exception e) {
       logger.error("Unable to load mask data from '{}': {}.", specMaskFile, e.getMessage());
@@ -113,7 +117,9 @@ public class MaskedDataInterceptor implements RewritePolicy {
    */
   private Optional<String> buildPattern(final String specMaskFile) {
     final Set<String> maskableProperties = getMaskableProperties(specMaskFile);
-    return !maskableProperties.isEmpty() ? Optional.of(generatePattern(maskableProperties)) : Optional.empty();
+    return !maskableProperties.isEmpty()
+        ? Optional.of(generatePattern(maskableProperties))
+        : Optional.empty();
   }
 
   /**
@@ -130,5 +136,4 @@ public class MaskedDataInterceptor implements RewritePolicy {
     builder.append(")\"\\s*:\\s*(\"(?:[^\"\\\\]|\\\\.)*\"|\\[[^]\\[]*]|\\d+)");
     return builder.toString();
   }
-
 }

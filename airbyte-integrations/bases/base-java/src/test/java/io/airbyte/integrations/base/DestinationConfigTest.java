@@ -17,7 +17,8 @@ import org.junit.jupiter.api.Test;
 
 public class DestinationConfigTest {
 
-  private static final String JSON = """
+  private static final String JSON =
+      """
                                      {
                                        "foo": "bar",
                                        "baz": true
@@ -61,5 +62,4 @@ public class DestinationConfigTest {
     assertEquals(Jsons.deserialize("true"), DestinationConfig.getInstance().getNodeValue("baz"));
     assertNull(DestinationConfig.getInstance().getNodeValue("blah"));
   }
-
 }

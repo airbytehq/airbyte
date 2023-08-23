@@ -14,5 +14,4 @@ public interface ArrayFormatter {
   void surroundArraysByObjects(final JsonNode node);
 
   JsonNode formatArrayItems(final List<JsonNode> arrayItems);
-
 }

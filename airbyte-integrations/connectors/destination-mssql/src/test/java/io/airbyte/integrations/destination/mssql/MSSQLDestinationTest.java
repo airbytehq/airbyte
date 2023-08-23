@@ -26,7 +26,8 @@ public class MSSQLDestinationTest {
     return createConfig(sslMethod, new HashMap<>());
   }
 
-  private JsonNode createConfig(final String sslMethod, final Map<String, String> additionalConfigs) {
+  private JsonNode createConfig(
+      final String sslMethod, final Map<String, String> additionalConfigs) {
     return Jsons.jsonNode(MoreMaps.merge(baseParameters(sslMethod), additionalConfigs));
   }
 
@@ -87,7 +88,8 @@ public class MSSQLDestinationTest {
     final String trustStoreLocation = getProperty("java.home") + "/lib/security/cacerts";
     assertEquals(properties.get("trustStore"), trustStoreLocation);
     assertNull(properties.get("trustStorePassword"));
-    assertNull(properties.get("hostNameInCertificate")); // TODO: add test with hostname in certificate
+    assertNull(
+        properties.get("hostNameInCertificate")); // TODO: add test with hostname in certificate
   }
 
   @Test
@@ -103,7 +105,8 @@ public class MSSQLDestinationTest {
   public void testEncryptedVerifyCertificateWithEmptyTrustStorePassword() {
     setProperty("javax.net.ssl.trustStorePassword", "");
     final MSSQLDestination destination = new MSSQLDestination();
-    final JsonNode config = createConfig("encrypted_verify_certificate", ImmutableMap.of("trustStorePassword", ""));
+    final JsonNode config =
+        createConfig("encrypted_verify_certificate", ImmutableMap.of("trustStorePassword", ""));
 
     final Map<String, String> properties = destination.getDefaultConnectionProperties(config);
     assertEquals(properties.get("encrypt"), "true");
@@ -119,7 +122,9 @@ public class MSSQLDestinationTest {
     final String TRUST_STORE_PASSWORD = "TRUSTSTOREPASSWORD";
     setProperty("javax.net.ssl.trustStorePassword", TRUST_STORE_PASSWORD);
     final MSSQLDestination destination = new MSSQLDestination();
-    final JsonNode config = createConfig("encrypted_verify_certificate", ImmutableMap.of("trustStorePassword", TRUST_STORE_PASSWORD));
+    final JsonNode config = createConfig(
+        "encrypted_verify_certificate",
+        ImmutableMap.of("trustStorePassword", TRUST_STORE_PASSWORD));
 
     final Map<String, String> properties = destination.getDefaultConnectionProperties(config);
     assertEquals(properties.get("encrypt"), "true");
@@ -134,7 +139,9 @@ public class MSSQLDestinationTest {
   public void testEncryptedVerifyCertificateWithHostNameInCertificate() {
     final MSSQLDestination destination = new MSSQLDestination();
     final String HOSTNAME_IN_CERTIFICATE = "HOSTNAME_IN_CERTIFICATE";
-    final JsonNode config = createConfig("encrypted_verify_certificate", ImmutableMap.of("hostNameInCertificate", HOSTNAME_IN_CERTIFICATE));
+    final JsonNode config = createConfig(
+        "encrypted_verify_certificate",
+        ImmutableMap.of("hostNameInCertificate", HOSTNAME_IN_CERTIFICATE));
 
     final Map<String, String> properties = destination.getDefaultConnectionProperties(config);
     assertEquals(properties.get("encrypt"), "true");
@@ -187,29 +194,40 @@ public class MSSQLDestinationTest {
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
     assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     assertEquals(extraParam, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
-
   }
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
-        "ssl_method", "ssl_method",
-        JdbcUtils.HOST_KEY, "localhost",
-        JdbcUtils.PORT_KEY, "1773",
-        JdbcUtils.DATABASE_KEY, "db",
-        JdbcUtils.USERNAME_KEY, "username",
-        JdbcUtils.PASSWORD_KEY, "verysecure"));
+        "ssl_method",
+        "ssl_method",
+        JdbcUtils.HOST_KEY,
+        "localhost",
+        JdbcUtils.PORT_KEY,
+        "1773",
+        JdbcUtils.DATABASE_KEY,
+        "db",
+        JdbcUtils.USERNAME_KEY,
+        "username",
+        JdbcUtils.PASSWORD_KEY,
+        "verysecure"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
 
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
-        "ssl_method", "ssl_method",
-        JdbcUtils.HOST_KEY, "localhost",
-        JdbcUtils.PORT_KEY, "1773",
-        JdbcUtils.DATABASE_KEY, "db",
-        JdbcUtils.USERNAME_KEY, "username",
-        JdbcUtils.PASSWORD_KEY, "verysecure",
-        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
+        "ssl_method",
+        "ssl_method",
+        JdbcUtils.HOST_KEY,
+        "localhost",
+        JdbcUtils.PORT_KEY,
+        "1773",
+        JdbcUtils.DATABASE_KEY,
+        "db",
+        JdbcUtils.USERNAME_KEY,
+        "username",
+        JdbcUtils.PASSWORD_KEY,
+        "verysecure",
+        JdbcUtils.JDBC_URL_PARAMS_KEY,
+        extraParam));
   }
-
 }

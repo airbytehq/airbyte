@@ -19,11 +19,9 @@ class BaseS3WriterTest {
     final Timestamp timestamp = new Timestamp(1471461319000L);
     assertEquals(
         "2016_08_17_1471461319000_0.csv",
-        BaseS3Writer.determineOutputFilename(S3FilenameTemplateParameterObject
-            .builder()
+        BaseS3Writer.determineOutputFilename(S3FilenameTemplateParameterObject.builder()
             .s3Format(S3Format.CSV)
             .timestamp(timestamp)
             .build()));
   }
-
 }

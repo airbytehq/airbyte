@@ -24,7 +24,10 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   public S3CsvFormatConfig(final JsonNode formatConfig) {
     this(
-        Flattening.fromValue(formatConfig.has("flattening") ? formatConfig.get("flattening").asText() : Flattening.NO.getValue()),
+        Flattening.fromValue(
+            formatConfig.has("flattening")
+                ? formatConfig.get("flattening").asText()
+                : Flattening.NO.getValue()),
         formatConfig.has(COMPRESSION_ARG_NAME)
             ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
             : DEFAULT_COMPRESSION_TYPE);
@@ -55,10 +58,9 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   @Override
   public String toString() {
-    return "S3CsvFormatConfig{" +
-        "flattening=" + flattening +
-        ", compression=" + compressionType.name() +
-        '}';
+    return "S3CsvFormatConfig{" + "flattening="
+        + flattening + ", compression="
+        + compressionType.name() + '}';
   }
 
   @Override
@@ -70,13 +72,11 @@ public class S3CsvFormatConfig implements S3FormatConfig {
       return false;
     }
     final S3CsvFormatConfig that = (S3CsvFormatConfig) o;
-    return flattening == that.flattening
-        && Objects.equals(compressionType, that.compressionType);
+    return flattening == that.flattening && Objects.equals(compressionType, that.compressionType);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(flattening, compressionType);
   }
-
 }

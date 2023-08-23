@@ -26,13 +26,12 @@ public class GcsCsvGzipDestinationAcceptanceTest extends GcsCsvDestinationAccept
   @Override
   protected JsonNode getFormatConfig() {
     // config without compression defaults to GZIP
-    return Jsons.jsonNode(Map.of(
-        "format_type", outputFormat,
-        "flattening", Flattening.ROOT_LEVEL.getValue()));
+    return Jsons.jsonNode(
+        Map.of("format_type", outputFormat, "flattening", Flattening.ROOT_LEVEL.getValue()));
   }
 
   protected Reader getReader(final S3Object s3Object) throws IOException {
-    return new InputStreamReader(new GZIPInputStream(s3Object.getObjectContent()), StandardCharsets.UTF_8);
+    return new InputStreamReader(
+        new GZIPInputStream(s3Object.getObjectContent()), StandardCharsets.UTF_8);
   }
-
 }

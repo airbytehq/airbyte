@@ -23,5 +23,4 @@ class CDKConstantsTest {
   void mustFail() {
     fail("This is an intentionally failing test.");
   }
-
 }

@@ -28,5 +28,4 @@ public class GlobalMemoryManagerTest {
 
     assertEquals(BYTES_10_MB, mgr.requestMemory());
   }
-
 }

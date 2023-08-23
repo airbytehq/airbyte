@@ -40,23 +40,29 @@ public class GcsJsonlWriter extends BaseGcsWriter implements DestinationFileWrit
   private final String gcsFileLocation;
   private final String objectKey;
 
-  public GcsJsonlWriter(final GcsDestinationConfig config,
-                        final AmazonS3 s3Client,
-                        final ConfiguredAirbyteStream configuredStream,
-                        final Timestamp uploadTimestamp) {
+  public GcsJsonlWriter(
+      final GcsDestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp) {
     super(config, s3Client, configuredStream);
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.JSONL);
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
-    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
+    LOGGER.info(
+        "Full GCS path for stream '{}': {}/{}",
+        stream.getName(),
+        config.getBucketName(),
+        objectKey);
 
-    this.uploadManager = StreamTransferManagerFactory
-        .create(config.getBucketName(), objectKey, s3Client)
+    this.uploadManager = StreamTransferManagerFactory.create(
+            config.getBucketName(), objectKey, s3Client)
         .get();
 
-    // We only need one output stream as we only have one input stream. This is reasonably performant.
+    // We only need one output stream as we only have one input stream. This is reasonably
+    // performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.printWriter = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
   }
@@ -103,5 +109,4 @@ public class GcsJsonlWriter extends BaseGcsWriter implements DestinationFileWrit
   public String getOutputPath() {
     return objectKey;
   }
-
 }

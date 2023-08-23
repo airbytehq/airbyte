@@ -23,7 +23,8 @@ public abstract class BaseLogger implements TestingLogger {
   }
 
   protected String entryMessage(final AirbyteRecordMessage recordMessage) {
-    return String.format("[%s] %s #%04d: %s",
+    return String.format(
+        "[%s] %s #%04d: %s",
         emissionTimestamp(recordMessage.getEmittedAt()),
         streamName(streamNamePair),
         loggedEntryCount,
@@ -39,9 +40,7 @@ public abstract class BaseLogger implements TestingLogger {
   }
 
   protected static String emissionTimestamp(final long emittedAt) {
-    return OffsetDateTime
-        .ofInstant(Instant.ofEpochMilli(emittedAt), ZoneId.systemDefault())
+    return OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAt), ZoneId.systemDefault())
         .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
   }
-
 }

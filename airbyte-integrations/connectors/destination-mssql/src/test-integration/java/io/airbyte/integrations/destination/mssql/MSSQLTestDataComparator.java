@@ -21,19 +21,21 @@ public class MSSQLTestDataComparator extends AdvancedTestDataComparator {
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
-  protected boolean compareDateTimeWithTzValues(final String airbyteMessageValue,
-                                                final String destinationValue) {
+  protected boolean compareDateTimeWithTzValues(
+      final String airbyteMessageValue, final String destinationValue) {
     try {
-      final ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue,
-          getAirbyteDateTimeWithTzFormatter());
+      final ZonedDateTime airbyteDate =
+          ZonedDateTime.parse(airbyteMessageValue, getAirbyteDateTimeWithTzFormatter());
 
-      final ZonedDateTime destinationDate = ZonedDateTime.parse(destinationValue,
-          getAirbyteDateTimeParsedWithTzFormatter());
+      final ZonedDateTime destinationDate =
+          ZonedDateTime.parse(destinationValue, getAirbyteDateTimeParsedWithTzFormatter());
       return airbyteDate.equals(destinationDate);
     } catch (DateTimeParseException e) {
       LOGGER.warn(
           "Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
-          airbyteMessageValue, destinationValue, e);
+          airbyteMessageValue,
+          destinationValue,
+          e);
       return compareTextValues(airbyteMessageValue, destinationValue);
     }
   }
@@ -54,15 +56,14 @@ public class MSSQLTestDataComparator extends AdvancedTestDataComparator {
   @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     final var destinationDate = parseLocalDateTime(actualValue);
-    final var expectedDate = LocalDate.parse(expectedValue,
-        DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+    final var expectedDate =
+        LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   private LocalDate parseLocalDateTime(String dateTimeValue) {
     if (dateTimeValue != null) {
-      return LocalDate.parse(dateTimeValue,
-          DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
+      return LocalDate.parse(dateTimeValue, DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
     } else {
       return null;
     }
@@ -77,5 +78,4 @@ public class MSSQLTestDataComparator extends AdvancedTestDataComparator {
       return AIRBYTE_DATETIME_PARSED_FORMAT;
     }
   }
-
 }

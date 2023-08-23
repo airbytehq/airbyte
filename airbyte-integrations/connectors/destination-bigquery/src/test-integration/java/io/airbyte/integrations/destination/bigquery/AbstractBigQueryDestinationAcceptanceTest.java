@@ -37,8 +37,10 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractBigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final NamingConventionTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
-  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBigQueryDestinationAcceptanceTest.class);
+  private static final NamingConventionTransformer NAME_TRANSFORMER =
+      new BigQuerySQLNameTransformer();
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(AbstractBigQueryDestinationAcceptanceTest.class);
 
   protected static final String CONFIG_PROJECT_ID = "project_id";
   protected Path secretsFile;
@@ -110,10 +112,13 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected void assertNamespaceNormalization(final String testCaseId,
-                                              final String expectedNormalizedNamespace,
-                                              final String actualNormalizedNamespace) {
-    final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
+  protected void assertNamespaceNormalization(
+      final String testCaseId,
+      final String expectedNormalizedNamespace,
+      final String actualNormalizedNamespace) {
+    final String message = String.format(
+        "Test case %s failed; if this is expected, please override assertNamespaceNormalization",
+        testCaseId);
     if (testCaseId.equals("S3A-1")) {
       // bigquery allows namespace starting with a number, and prepending underscore
       // will hide the dataset, so we don't do it as we do for other destinations
@@ -129,7 +134,8 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -137,36 +143,40 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
+    return retrieveRecordsFromTable(
+            namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
         .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
 
-  protected List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
+  protected List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema)
+      throws InterruptedException {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
-    final QueryJobConfiguration queryConfig =
-        QueryJobConfiguration
-            .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .setUseLegacySql(false)
-            .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
-            .build();
+    final QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(String.format(
+            "SELECT * FROM `%s`.`%s` order by %s asc;",
+            schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+        .setUseLegacySql(false)
+        .setConnectionProperties(
+            Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
+        .build();
 
-    final TableResult queryResults = BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    final TableResult queryResults =
+        BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
     final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
     return Streams.stream(queryResults.iterateAll())
-        .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
+        .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields)))
+        .collect(Collectors.toList());
   }
 
   protected void setUpBigQuery() throws IOException {
@@ -184,5 +194,4 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   protected void tearDownBigQuery() {
     BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
   }
-
 }

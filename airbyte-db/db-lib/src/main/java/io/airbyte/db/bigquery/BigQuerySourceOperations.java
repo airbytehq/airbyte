@@ -30,33 +30,49 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQuerySourceOperations implements SourceOperations<BigQueryResultSet, StandardSQLTypeName> {
+public class BigQuerySourceOperations
+    implements SourceOperations<BigQueryResultSet, StandardSQLTypeName> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySourceOperations.class);
 
   private final DateFormat BIG_QUERY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-  private final DateFormat BIG_QUERY_DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-  private final DateFormat BIG_QUERY_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS z");
+  private final DateFormat BIG_QUERY_DATETIME_FORMAT =
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  private final DateFormat BIG_QUERY_TIMESTAMP_FORMAT =
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS z");
 
   @Override
   public JsonNode rowToJson(final BigQueryResultSet bigQueryResultSet) {
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-    bigQueryResultSet.getFieldList().forEach(field -> setJsonField(field, bigQueryResultSet.getRowValues().get(field.getName()), jsonNode));
+    bigQueryResultSet
+        .getFieldList()
+        .forEach(field ->
+            setJsonField(field, bigQueryResultSet.getRowValues().get(field.getName()), jsonNode));
     return jsonNode;
   }
 
-  private void fillObjectNode(final String fieldName, final StandardSQLTypeName fieldType, final FieldValue fieldValue, final ContainerNode<?> node) {
+  private void fillObjectNode(
+      final String fieldName,
+      final StandardSQLTypeName fieldType,
+      final FieldValue fieldValue,
+      final ContainerNode<?> node) {
     switch (fieldType) {
       case BOOL -> JsonUtil.putBooleanValueIntoJson(node, fieldValue.getBooleanValue(), fieldName);
       case INT64 -> JsonUtil.putLongValueIntoJson(node, fieldValue.getLongValue(), fieldName);
       case FLOAT64 -> JsonUtil.putDoubleValueIntoJson(node, fieldValue.getDoubleValue(), fieldName);
-      case NUMERIC -> JsonUtil.putBigDecimalValueIntoJson(node, fieldValue.getNumericValue(), fieldName);
-      case BIGNUMERIC -> JsonUtil.putBigDecimalValueIntoJson(node, returnNullIfInvalid(fieldValue::getNumericValue), fieldName);
-      case STRING, TIME -> JsonUtil.putStringValueIntoJson(node, fieldValue.getStringValue(), fieldName);
+      case NUMERIC -> JsonUtil.putBigDecimalValueIntoJson(
+          node, fieldValue.getNumericValue(), fieldName);
+      case BIGNUMERIC -> JsonUtil.putBigDecimalValueIntoJson(
+          node, returnNullIfInvalid(fieldValue::getNumericValue), fieldName);
+      case STRING, TIME -> JsonUtil.putStringValueIntoJson(
+          node, fieldValue.getStringValue(), fieldName);
       case BYTES -> JsonUtil.putBytesValueIntoJson(node, fieldValue.getBytesValue(), fieldName);
-      case DATE -> JsonUtil.putStringValueIntoJson(node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)), fieldName);
-      case DATETIME -> JsonUtil.putStringValueIntoJson(node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)), fieldName);
-      case TIMESTAMP -> JsonUtil.putStringValueIntoJson(node, toISO8601String(fieldValue.getTimestampValue() / 1000), fieldName);
+      case DATE -> JsonUtil.putStringValueIntoJson(
+          node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)), fieldName);
+      case DATETIME -> JsonUtil.putStringValueIntoJson(
+          node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)), fieldName);
+      case TIMESTAMP -> JsonUtil.putStringValueIntoJson(
+          node, toISO8601String(fieldValue.getTimestampValue() / 1000), fieldName);
       default -> JsonUtil.putStringValueIntoJson(node, fieldValue.getStringValue(), fieldName);
     }
   }
@@ -75,15 +91,17 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
       final FieldList subFields = field.getSubFields();
       // Array of primitive
       if (subFields == null || subFields.isEmpty()) {
-        fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode));
+        fieldValue
+            .getRepeatedValue()
+            .forEach(arrayFieldValue ->
+                fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode));
         // Array of records
       } else {
         for (final FieldValue arrayFieldValue : fieldValue.getRepeatedValue()) {
           int count = 0; // named get doesn't work here for some reasons.
           final ObjectNode newNode = arrayNode.addObject();
           for (final Field repeatedField : subFields) {
-            setJsonField(repeatedField, arrayFieldValue.getRecordValue().get(count++),
-                newNode);
+            setJsonField(repeatedField, arrayFieldValue.getRecordValue().get(count++), newNode);
           }
         }
       }
@@ -91,11 +109,13 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
       final ObjectNode newNode = node.putObject(fieldName);
       final FieldList subFields = field.getSubFields();
       try {
-        // named get doesn't work here with nested arrays and objects; index is the only correlation between
+        // named get doesn't work here with nested arrays and objects; index is the only correlation
+        // between
         // field and field value
         if (subFields != null && !subFields.isEmpty()) {
           for (int i = 0; i < subFields.size(); i++) {
-            setJsonField(field.getSubFields().get(i), fieldValue.getRecordValue().get(i), newNode);
+            setJsonField(
+                field.getSubFields().get(i), fieldValue.getRecordValue().get(i), newNode);
           }
         }
       } catch (final UnsupportedOperationException e) {
@@ -132,21 +152,22 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
     try {
       return switch (paramType) {
         case DATE -> BIG_QUERY_DATE_FORMAT.format(DataTypeUtils.getDateFormat().parse(paramValue));
-        case DATETIME -> BIG_QUERY_DATETIME_FORMAT
-            .format(DataTypeUtils.getDateFormat().parse(paramValue));
-        case TIMESTAMP -> BIG_QUERY_TIMESTAMP_FORMAT
-            .format(DataTypeUtils.getDateFormat().parse(paramValue));
+        case DATETIME -> BIG_QUERY_DATETIME_FORMAT.format(
+            DataTypeUtils.getDateFormat().parse(paramValue));
+        case TIMESTAMP -> BIG_QUERY_TIMESTAMP_FORMAT.format(
+            DataTypeUtils.getDateFormat().parse(paramValue));
         default -> paramValue;
       };
     } catch (final ParseException e) {
-      throw new RuntimeException("Fail to parse value " + paramValue + " to type " + paramType.name(), e);
+      throw new RuntimeException(
+          "Fail to parse value " + paramValue + " to type " + paramType.name(), e);
     }
   }
 
-  public QueryParameterValue getQueryParameter(final StandardSQLTypeName paramType, final String paramValue) {
+  public QueryParameterValue getQueryParameter(
+      final StandardSQLTypeName paramType, final String paramValue) {
     final String value = getFormattedValue(paramType, paramValue);
     LOGGER.info("Query parameter for set : " + value + ". Type: " + paramType.name());
     return QueryParameterValue.newBuilder().setType(paramType).setValue(value).build();
   }
-
 }

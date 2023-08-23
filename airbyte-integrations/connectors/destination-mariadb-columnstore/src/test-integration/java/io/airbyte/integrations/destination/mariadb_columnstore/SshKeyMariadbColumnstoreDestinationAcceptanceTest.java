@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.mariadb_columnstore;
 
 import io.airbyte.integrations.base.ssh.SshTunnel;
 
-public class SshKeyMariadbColumnstoreDestinationAcceptanceTest extends SshMariadbColumnstoreDestinationAcceptanceTest {
+public class SshKeyMariadbColumnstoreDestinationAcceptanceTest
+    extends SshMariadbColumnstoreDestinationAcceptanceTest {
 
   @Override
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
-
 }

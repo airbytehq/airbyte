@@ -29,7 +29,8 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   // This is an unfortunately fragile way to capture this, but Snowflake doesn't
   // provide a more specific permission exception error code
-  private static final String NO_PRIVILEGES_ERROR_MESSAGE = "but current role has no privileges on it";
+  private static final String NO_PRIVILEGES_ERROR_MESSAGE =
+      "but current role has no privileges on it";
   private static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake";
 
   private final boolean use1s1t;
@@ -39,7 +40,8 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName)
+      throws Exception {
     try {
       if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
         if (use1s1t) {
@@ -56,7 +58,8 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     if (use1s1t) {
       return String.format(
           """
@@ -80,17 +83,24 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
                 %s VARIANT,
                 %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
               ) data_retention_time_in_days = 0;""",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+          schemaName,
+          tableName,
+          JavaBaseConstants.COLUMN_NAME_AB_ID,
+          JavaBaseConstants.COLUMN_NAME_DATA,
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     }
   }
 
   @Override
-  public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
+  public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema)
+      throws Exception {
     try (final Stream<JsonNode> results = database.unsafeQuery(SHOW_SCHEMAS)) {
       if (use1s1t) {
         return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equals);
       } else {
-        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
+        return results
+            .map(schemas -> schemas.get(NAME).asText())
+            .anyMatch(outputSchema::equalsIgnoreCase);
       }
     } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
@@ -98,7 +108,8 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String truncateTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     if (use1s1t) {
       return String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", schemaName, tableName);
     } else {
@@ -116,16 +127,18 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
     // snowflake query syntax:
     // requires selecting from a set of values in order to invoke the parse_json function.
-    // INSERT INTO public.users (ab_id, data, emitted_at) SELECT column1, parse_json(column2), column3
+    // INSERT INTO public.users (ab_id, data, emitted_at) SELECT column1, parse_json(column2),
+    // column3
     // FROM VALUES
     // (?, ?, ?),
     // ...
@@ -135,11 +148,19 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
       // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
       insertQuery = String.format(
           "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
+          schemaName,
+          tableName,
+          JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+          JavaBaseConstants.COLUMN_NAME_DATA,
+          JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     } else {
       insertQuery = String.format(
           "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+          schemaName,
+          tableName,
+          JavaBaseConstants.COLUMN_NAME_AB_ID,
+          JavaBaseConstants.COLUMN_NAME_DATA,
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     }
     final String recordQuery = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
@@ -147,9 +168,11 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   protected String generateFilesList(final List<String> files) {
     if (0 < files.size() && files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
-      // see https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
+      // see
+      // https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
       final StringJoiner joiner = new StringJoiner(",");
-      files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
+      files.forEach(
+          filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
       return " files = (" + joiner + ")";
     } else {
       return "";
@@ -158,12 +181,14 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   @Override
   protected Optional<ConfigErrorException> checkForKnownConfigExceptions(final Exception e) {
-    if (e instanceof SnowflakeSQLException && e.getMessage().contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
+    if (e instanceof SnowflakeSQLException
+        && e.getMessage().contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
       return Optional.of(new ConfigErrorException(
           "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",
           e));
     }
-    if (e instanceof SnowflakeSQLException && e.getMessage().contains(IP_NOT_IN_WHITE_LIST_ERR_MSG)) {
+    if (e instanceof SnowflakeSQLException
+        && e.getMessage().contains(IP_NOT_IN_WHITE_LIST_ERR_MSG)) {
       return Optional.of(new ConfigErrorException(
           """
               Snowflake has blocked access from Airbyte IP address. Please make sure that your Snowflake user account's
@@ -175,5 +200,4 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     }
     return Optional.empty();
   }
-
 }

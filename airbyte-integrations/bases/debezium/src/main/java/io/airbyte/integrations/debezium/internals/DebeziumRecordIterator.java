@@ -55,11 +55,12 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
   private int maxInstanceOfNoRecordsFound;
   private boolean signalledDebeziumEngineShutdown;
 
-  public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
-                                final CdcTargetPosition<T> targetPosition,
-                                final Supplier<Boolean> publisherStatusSupplier,
-                                final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure,
-                                final Duration firstRecordWaitTime) {
+  public DebeziumRecordIterator(
+      final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
+      final CdcTargetPosition<T> targetPosition,
+      final Supplier<Boolean> publisherStatusSupplier,
+      final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure,
+      final Duration firstRecordWaitTime) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
@@ -85,23 +86,27 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
   @Override
   protected ChangeEventWithMetadata computeNext() {
     // keep trying until the publisher is closed or until the queue is empty. the latter case is
-    // possible when the publisher has shutdown but the consumer has not yet processed all messages it
+    // possible when the publisher has shutdown but the consumer has not yet processed all messages
+    // it
     // emitted.
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
 
-      final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
+      final Duration waitTime =
+          receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
       try {
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
 
-      // if within the timeout, the consumer could not get a record, it is time to tell the producer to
+      // if within the timeout, the consumer could not get a record, it is time to tell the producer
+      // to
       // shutdown.
       if (next == null) {
         if (!receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10) {
-          requestClose(String.format("No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
+          requestClose(String.format(
+              "No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
               waitTime.getSeconds()));
         }
         LOGGER.info("no record found. polling again.");
@@ -115,7 +120,8 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
         }
 
         final T heartbeatPos = getHeartbeatPosition(next);
-        // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
+        // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't
+        // changed for
         // too long
         if (hasSyncFinished(heartbeatPos)) {
           requestClose("Closing: Heartbeat indicates sync is done");
@@ -130,7 +136,8 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
       final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(next);
       hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent();
 
-      // if the last record matches the target file position, it is time to tell the producer to shutdown.
+      // if the last record matches the target file position, it is time to tell the producer to
+      // shutdown.
       if (targetPosition.reachedTargetPosition(changeEventWithMetadata)) {
         requestClose("Closing: Change event reached target position");
       }
@@ -149,7 +156,8 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     while (!debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().isEmpty()) {
       final ChangeEvent<String, String> event;
       try {
-        event = debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll(10, TimeUnit.SECONDS);
+        event =
+            debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll(10, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -191,11 +199,14 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
   }
 
   private boolean isHeartbeatEvent(final ChangeEvent<String, String> event) {
-    return targetPosition.isHeartbeatSupported() && Objects.nonNull(event) && !event.value().contains("source");
+    return targetPosition.isHeartbeatSupported()
+        && Objects.nonNull(event)
+        && !event.value().contains("source");
   }
 
   private boolean heartbeatPosNotChanging() {
-    final Duration timeElapsedSinceLastHeartbeatTs = Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
+    final Duration timeElapsedSinceLastHeartbeatTs =
+        Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
     LOGGER.debug("Time since last hb_pos change {}s", timeElapsedSinceLastHeartbeatTs.toSeconds());
     // wait time for no change in heartbeat position is half of initial waitTime
     return timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
@@ -234,7 +245,8 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
         heartbeatEventSourceField.put(eventClass, f);
 
         if (heartbeatEventSourceField.size() > 1) {
-          LOGGER.warn("Field Cache size growing beyond expected size of 1, size is " + heartbeatEventSourceField.size());
+          LOGGER.warn("Field Cache size growing beyond expected size of 1, size is "
+              + heartbeatEventSourceField.size());
         }
       }
 
@@ -245,5 +257,4 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
       throw new RuntimeException(e);
     }
   }
-
 }

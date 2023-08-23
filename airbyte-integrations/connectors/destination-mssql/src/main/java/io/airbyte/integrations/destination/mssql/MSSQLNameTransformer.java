@@ -12,5 +12,4 @@ public class MSSQLNameTransformer extends StandardNameTransformer {
   public String applyDefaultCase(final String input) {
     return input.toUpperCase();
   }
-
 }

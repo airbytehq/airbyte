@@ -39,8 +39,10 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   @BeforeEach
   public void setup() throws Exception {
     db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
-        .waitingFor(Wait.forHttp("/ping").forPort(8123)
-            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+        .waitingFor(Wait.forHttp("/ping")
+            .forPort(8123)
+            .forStatusCode(200)
+            .withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -59,8 +61,7 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   protected String createTableQuery(final String tableName, final String columnClause) {
     // ClickHouse requires Engine to be mentioned as part of create table query.
     // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
-    return String.format("CREATE TABLE %s(%s) %s",
-        tableName, columnClause, "ENGINE = TinyLog");
+    return String.format("CREATE TABLE %s(%s) %s", tableName, columnClause, "ENGINE = TinyLog");
   }
 
   @AfterEach
@@ -83,5 +84,4 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   public AbstractJdbcSource<JDBCType> getSource() {
     return new ClickHouseSource();
   }
-
 }

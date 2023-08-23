@@ -30,10 +30,11 @@ public class PubsubDestinationConfig {
   private final boolean orderingEnabled;
   private final BatchingSettings batchingSettings;
 
-  private PubsubDestinationConfig(TopicName topic,
-                                  ServiceAccountCredentials credentials,
-                                  boolean orderingEnabled,
-                                  BatchingSettings batchingSettings) {
+  private PubsubDestinationConfig(
+      TopicName topic,
+      ServiceAccountCredentials credentials,
+      boolean orderingEnabled,
+      BatchingSettings batchingSettings) {
     this.topic = topic;
     this.credentials = credentials;
     this.orderingEnabled = orderingEnabled;
@@ -47,22 +48,26 @@ public class PubsubDestinationConfig {
     final String credentialsString = config.get(CONFIG_CREDS).isObject()
         ? Jsons.serialize(config.get(CONFIG_CREDS))
         : config.get(CONFIG_CREDS).asText();
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(
+        new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
     final boolean orderingEnabled = config.get(CONFIG_ORDERING_ENABLED).asBoolean();
 
     final var batchingSetting = BatchingSettings.newBuilder()
         .setIsEnabled(config.get(CONFIG_BATCHING_ENABLED).asBoolean())
-        .setDelayThreshold(Duration.ofMillis(getOrDefault(config, CONFIG_BATCHING_DELAY_THRESHOLD, JsonNode::asLong, 1L)))
-        .setRequestByteThreshold(getOrDefault(config, CONFIG_BATCHING_REQUEST_BYTES_THRESHOLD, JsonNode::asLong, 1L))
-        .setElementCountThreshold(getOrDefault(config, CONFIG_BATCHING_ELEMENT_COUNT_THRESHOLD, JsonNode::asLong, 1L))
+        .setDelayThreshold(Duration.ofMillis(
+            getOrDefault(config, CONFIG_BATCHING_DELAY_THRESHOLD, JsonNode::asLong, 1L)))
+        .setRequestByteThreshold(
+            getOrDefault(config, CONFIG_BATCHING_REQUEST_BYTES_THRESHOLD, JsonNode::asLong, 1L))
+        .setElementCountThreshold(
+            getOrDefault(config, CONFIG_BATCHING_ELEMENT_COUNT_THRESHOLD, JsonNode::asLong, 1L))
         .build();
 
     return new PubsubDestinationConfig(topic, credentials, orderingEnabled, batchingSetting);
   }
 
-  private static <T> T getOrDefault(JsonNode node, String key, Function<JsonNode, T> consumer, T defaultValue) {
+  private static <T> T getOrDefault(
+      JsonNode node, String key, Function<JsonNode, T> consumer, T defaultValue) {
     var value = node.get(key);
     if (value != null) {
       return consumer.apply(value);
@@ -86,5 +91,4 @@ public class PubsubDestinationConfig {
   public TopicName getTopic() {
     return topic;
   }
-
 }

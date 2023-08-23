@@ -23,8 +23,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter implements
-    AzureBlobStorageWriter {
+public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter
+    implements AzureBlobStorageWriter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageJsonlWriter.class);
 
@@ -40,13 +40,16 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
 
   private int sequence;
 
-  public AzureBlobStorageJsonlWriter(final AzureBlobStorageDestinationConfig config,
-                                     final AppendBlobClient appendBlobClient,
-                                     final ConfiguredAirbyteStream configuredStream) {
+  public AzureBlobStorageJsonlWriter(
+      final AzureBlobStorageDestinationConfig config,
+      final AppendBlobClient appendBlobClient,
+      final ConfiguredAirbyteStream configuredStream) {
     super(config, appendBlobClient, configuredStream);
-    this.specializedBlobClientBuilder = AzureBlobStorageDestinationConfig.createSpecializedBlobClientBuilder(config);
+    this.specializedBlobClientBuilder =
+        AzureBlobStorageDestinationConfig.createSpecializedBlobClientBuilder(config);
     // at this moment we already receive appendBlobClient initialized
-    this.blobOutputStream = new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
+    this.blobOutputStream = new BufferedOutputStream(
+        appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
     // layered buffered streams/writers on multiple levels might not bring any benefits
     // since PrintWriter already uses BufferedWriter behind the scenes
     this.printWriter = new PrintWriter(blobOutputStream, false, StandardCharsets.UTF_8);
@@ -66,19 +69,20 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
     int recordSize = jsonRecord.getBytes(StandardCharsets.UTF_8).length;
     if (config.getBlobSpillSize() > 0 && replicatedBytes + recordSize > config.getBlobSpillSize()) {
       sequence++;
-      String subBlobName = appendBlobClient.getBlobName().substring(0, appendBlobClient.getBlobName().length() - 1);
+      String subBlobName = appendBlobClient
+          .getBlobName()
+          .substring(0, appendBlobClient.getBlobName().length() - 1);
       String blobName = subBlobName + sequence;
 
-      final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
-          .blobName(blobName)
-          .buildAppendBlobClient();
+      final AppendBlobClient appendBlobClient =
+          specializedBlobClientBuilder.blobName(blobName).buildAppendBlobClient();
 
       appendBlobClient.create(true);
 
       reinitAppendBlobClient(appendBlobClient);
 
-      blobOutputStream =
-          new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
+      blobOutputStream = new BufferedOutputStream(
+          appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
 
       // force flush of previous records
       printWriter.close();
@@ -105,5 +109,4 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
     // this would also close the blobOutputStream
     printWriter.close();
   }
-
 }

@@ -20,5 +20,4 @@ public abstract class AbstractPostgresSourceAcceptanceTest extends SourceAccepta
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.getSpecAndInjectSsh(Optional.of("security"));
   }
-
 }

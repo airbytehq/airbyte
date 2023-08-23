@@ -23,18 +23,22 @@ public class BigQuerySourceEscapeColumnNameTest extends AbstractBigQuerySourceTe
   @Override
   public void createTable(String datasetId) throws SQLException {
     // create column name interval which should be escaped
-    database.execute("CREATE TABLE " + datasetId + ".id_and_interval(id INT64, `interval` STRING);");
-    database.execute("INSERT INTO " + datasetId + ".id_and_interval (id, `interval`) VALUES (1,'picard');");
+    database.execute(
+        "CREATE TABLE " + datasetId + ".id_and_interval(id INT64, `interval` STRING);");
+    database.execute(
+        "INSERT INTO " + datasetId + ".id_and_interval (id, `interval`) VALUES (1,'picard');");
   }
 
   @Test
   public void testReadSuccess() throws Exception {
-    final List<AirbyteMessage> actualMessages = MoreIterators.toList(new BigQuerySource().read(config, getConfiguredCatalog(), null));
+    final List<AirbyteMessage> actualMessages =
+        MoreIterators.toList(new BigQuerySource().read(config, getConfiguredCatalog(), null));
     assertNotNull(actualMessages);
     assertEquals(1, actualMessages.size());
 
     assertNotNull(actualMessages.get(0).getRecord().getData().get("interval"));
-    assertEquals("picard", actualMessages.get(0).getRecord().getData().get("interval").asText());
+    assertEquals(
+        "picard", actualMessages.get(0).getRecord().getData().get("interval").asText());
   }
 
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
@@ -44,5 +48,4 @@ public class BigQuerySourceEscapeColumnNameTest extends AbstractBigQuerySourceTe
         Field.of("id", JsonSchemaType.NUMBER),
         Field.of("interval", JsonSchemaType.STRING));
   }
-
 }

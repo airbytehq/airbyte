@@ -10,7 +10,8 @@ import org.slf4j.LoggerFactory;
 public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteExceptionHandler.class);
-  public static final String logMessage = "Something went wrong in the connector. See the logs for more details.";
+  public static final String logMessage =
+      "Something went wrong in the connector. See the logs for more details.";
 
   @Override
   public void uncaughtException(Thread t, Throwable e) {
@@ -19,7 +20,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     // If a connector implements AirbyteTraceMessage emission itself, this code will result in an
     // additional one being emitted.
     // this is fine tho because:
-    // "The earliest AirbyteTraceMessage where type=error will be used to populate the FailureReason for
+    // "The earliest AirbyteTraceMessage where type=error will be used to populate the FailureReason
+    // for
     // the sync."
     // from the spec:
     // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
@@ -33,5 +35,4 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   protected void terminate() {
     System.exit(1);
   }
-
 }

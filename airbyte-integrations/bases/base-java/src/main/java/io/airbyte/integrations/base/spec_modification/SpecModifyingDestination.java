@@ -21,7 +21,8 @@ public abstract class SpecModifyingDestination implements Destination {
     this.destination = destination;
   }
 
-  public abstract ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) throws Exception;
+  public abstract ConnectorSpecification modifySpec(ConnectorSpecification originalSpec)
+      throws Exception;
 
   @Override
   public ConnectorSpecification spec() throws Exception {
@@ -34,11 +35,11 @@ public abstract class SpecModifyingDestination implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return destination.getConsumer(config, catalog, outputRecordCollector);
   }
-
 }

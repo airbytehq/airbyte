@@ -19,7 +19,8 @@ import javax.annotation.Nullable;
 
 public class StateMessageHelper {
 
-  public static class AirbyteStateMessageListTypeReference extends TypeReference<List<AirbyteStateMessage>> {}
+  public static class AirbyteStateMessageListTypeReference
+      extends TypeReference<List<AirbyteStateMessage>> {}
 
   /**
    * This a takes a json blob state and tries return either a legacy state in the format of a json
@@ -29,7 +30,8 @@ public class StateMessageHelper {
    * @return An optional state wrapper, if there is no state an empty optional will be returned
    */
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  public static Optional<StateWrapper> getTypedState(final JsonNode state, final boolean useStreamCapableState) {
+  public static Optional<StateWrapper> getTypedState(
+      final JsonNode state, final boolean useStreamCapableState) {
     if (state == null) {
       return Optional.empty();
     } else {
@@ -64,15 +66,16 @@ public class StateMessageHelper {
           }
         }
       } else {
-        if (stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
+        if (stateMessages.stream()
+            .allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
           return Optional.of(provideStreamState(stateMessages, useStreamCapableState));
         }
         if (stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == null)) {
           return Optional.of(getLegacyStateWrapper(state));
         }
 
-        throw new IllegalStateException("Unexpected state blob, the state contains either multiple global or conflicting state type.");
-
+        throw new IllegalStateException(
+            "Unexpected state blob, the state contains either multiple global or conflicting state type.");
       }
     }
   }
@@ -96,19 +99,21 @@ public class StateMessageHelper {
     };
   }
 
-  public static Boolean isMigration(final StateType currentStateType, final Optional<StateWrapper> previousState) {
-    return previousState.isPresent() && isMigration(currentStateType, previousState.get().getStateType());
+  public static Boolean isMigration(
+      final StateType currentStateType, final Optional<StateWrapper> previousState) {
+    return previousState.isPresent()
+        && isMigration(currentStateType, previousState.get().getStateType());
   }
 
-  public static Boolean isMigration(final StateType currentStateType, final @Nullable StateType previousStateType) {
+  public static Boolean isMigration(
+      final StateType currentStateType, final @Nullable StateType previousStateType) {
     return previousStateType == StateType.LEGACY && currentStateType != StateType.LEGACY;
   }
 
-  private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {
+  private static StateWrapper provideGlobalState(
+      final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {
     if (useStreamCapableState) {
-      return new StateWrapper()
-          .withStateType(StateType.GLOBAL)
-          .withGlobal(stateMessages);
+      return new StateWrapper().withStateType(StateType.GLOBAL).withGlobal(stateMessages);
     } else {
       return new StateWrapper()
           .withStateType(StateType.LEGACY)
@@ -123,11 +128,10 @@ public class StateMessageHelper {
    * @param useStreamCapableState - a flag that indicates whether to return the new format
    * @return a wrapped state
    */
-  private static StateWrapper provideStreamState(final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
+  private static StateWrapper provideStreamState(
+      final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
     if (useStreamCapableState) {
-      return new StateWrapper()
-          .withStateType(StateType.STREAM)
-          .withStateMessages(stateMessages);
+      return new StateWrapper().withStateType(StateType.STREAM).withStateMessages(stateMessages);
     } else {
       return new StateWrapper()
           .withStateType(StateType.LEGACY)
@@ -136,9 +140,6 @@ public class StateMessageHelper {
   }
 
   private static StateWrapper getLegacyStateWrapper(final JsonNode state) {
-    return new StateWrapper()
-        .withStateType(StateType.LEGACY)
-        .withLegacyState(state);
+    return new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(state);
   }
-
 }

@@ -11,7 +11,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,15 +55,22 @@ public class CursorManager<S> {
    *        {@link AirbyteStreamNameNamespacePair} that identifies each stream in the connector's
    *        state.
    */
-  public CursorManager(final ConfiguredAirbyteCatalog catalog,
-                       final Supplier<Collection<S>> streamSupplier,
-                       final Function<S, String> cursorFunction,
-                       final Function<S, List<String>> cursorFieldFunction,
-                       final Function<S, Long> cursorRecordCountFunction,
-                       final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
-                       final boolean onlyIncludeIncrementalStreams) {
+  public CursorManager(
+      final ConfiguredAirbyteCatalog catalog,
+      final Supplier<Collection<S>> streamSupplier,
+      final Function<S, String> cursorFunction,
+      final Function<S, List<String>> cursorFieldFunction,
+      final Function<S, Long> cursorRecordCountFunction,
+      final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
+      final boolean onlyIncludeIncrementalStreams) {
     pairToCursorInfo = createCursorInfoMap(
-        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, onlyIncludeIncrementalStreams);
+        catalog,
+        streamSupplier,
+        cursorFunction,
+        cursorFieldFunction,
+        cursorRecordCountFunction,
+        namespacePairFunction,
+        onlyIncludeIncrementalStreams);
   }
 
   /**
@@ -87,15 +93,14 @@ public class CursorManager<S> {
    */
   @VisibleForTesting
   protected Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(
-                                                                                final ConfiguredAirbyteCatalog catalog,
-                                                                                final Supplier<Collection<S>> streamSupplier,
-                                                                                final Function<S, String> cursorFunction,
-                                                                                final Function<S, List<String>> cursorFieldFunction,
-                                                                                final Function<S, Long> cursorRecordCountFunction,
-                                                                                final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
-                                                                                final boolean onlyIncludeIncrementalStreams) {
-    final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
-        .stream()
+      final ConfiguredAirbyteCatalog catalog,
+      final Supplier<Collection<S>> streamSupplier,
+      final Function<S, String> cursorFunction,
+      final Function<S, List<String>> cursorFieldFunction,
+      final Function<S, Long> cursorRecordCountFunction,
+      final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
+      final boolean onlyIncludeIncrementalStreams) {
+    final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams().stream()
         .filter(c -> {
           if (onlyIncludeIncrementalStreams) {
             return c.getSyncMode() == SyncMode.INCREMENTAL;
@@ -105,20 +110,32 @@ public class CursorManager<S> {
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStreamNameNamespacePair::fromAirbyteStream)
         .collect(Collectors.toSet());
-    allStreamNames.addAll(streamSupplier.get().stream().map(namespacePairFunction).filter(Objects::nonNull).collect(Collectors.toSet()));
+    allStreamNames.addAll(streamSupplier.get().stream()
+        .map(namespacePairFunction)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet()));
 
     final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new ConcurrentHashMap<>();
-    final Map<AirbyteStreamNameNamespacePair, S> pairToState = streamSupplier.get()
-        .stream()
+    final Map<AirbyteStreamNameNamespacePair, S> pairToState = streamSupplier.get().stream()
         .collect(Collectors.toMap(namespacePairFunction, Function.identity()));
-    final Map<AirbyteStreamNameNamespacePair, ConfiguredAirbyteStream> pairToConfiguredAirbyteStream = catalog.getStreams().stream()
-        .collect(Collectors.toMap(AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam, Function.identity()));
+    final Map<AirbyteStreamNameNamespacePair, ConfiguredAirbyteStream>
+        pairToConfiguredAirbyteStream = catalog.getStreams().stream()
+            .collect(Collectors.toMap(
+                AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam, Function.identity()));
 
     for (final AirbyteStreamNameNamespacePair pair : allStreamNames) {
       final Optional<S> stateOptional = Optional.ofNullable(pairToState.get(pair));
-      final Optional<ConfiguredAirbyteStream> streamOptional = Optional.ofNullable(pairToConfiguredAirbyteStream.get(pair));
-      localMap.put(pair,
-          createCursorInfoForStream(pair, stateOptional, streamOptional, cursorFunction, cursorFieldFunction, cursorRecordCountFunction));
+      final Optional<ConfiguredAirbyteStream> streamOptional =
+          Optional.ofNullable(pairToConfiguredAirbyteStream.get(pair));
+      localMap.put(
+          pair,
+          createCursorInfoForStream(
+              pair,
+              stateOptional,
+              streamOptional,
+              cursorFunction,
+              cursorFieldFunction,
+              cursorRecordCountFunction));
     }
 
     return localMap;
@@ -144,18 +161,20 @@ public class CursorManager<S> {
    */
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   @VisibleForTesting
-  protected CursorInfo createCursorInfoForStream(final AirbyteStreamNameNamespacePair pair,
-                                                 final Optional<S> stateOptional,
-                                                 final Optional<ConfiguredAirbyteStream> streamOptional,
-                                                 final Function<S, String> cursorFunction,
-                                                 final Function<S, List<String>> cursorFieldFunction,
-                                                 final Function<S, Long> cursorRecordCountFunction) {
+  protected CursorInfo createCursorInfoForStream(
+      final AirbyteStreamNameNamespacePair pair,
+      final Optional<S> stateOptional,
+      final Optional<ConfiguredAirbyteStream> streamOptional,
+      final Function<S, String> cursorFunction,
+      final Function<S, List<String>> cursorFieldFunction,
+      final Function<S, Long> cursorRecordCountFunction) {
     final String originalCursorField = stateOptional
         .map(cursorFieldFunction)
         .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
         .orElse(null);
     final String originalCursor = stateOptional.map(cursorFunction).orElse(null);
-    final long originalCursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L);
+    final long originalCursorRecordCount =
+        stateOptional.map(cursorRecordCountFunction).orElse(0L);
 
     final String cursor;
     final String cursorField;
@@ -170,14 +189,21 @@ public class CursorManager<S> {
       // if cursor field is set in state.
       if (stateOptional.map(cursorFieldFunction).isPresent()) {
         // if cursor field in catalog and state are the same.
-        if (stateOptional.map(cursorFieldFunction).equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
+        if (stateOptional
+            .map(cursorFieldFunction)
+            .equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
           cursor = stateOptional.map(cursorFunction).orElse(null);
           cursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L);
-          // If a matching cursor is found in the state, and it's value is null - this indicates a CDC stream
+          // If a matching cursor is found in the state, and it's value is null - this indicates a
+          // CDC stream
           // and we shouldn't log anything.
           if (cursor != null) {
-            LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
-                pair, cursorField, cursor, cursorRecordCount);
+            LOGGER.info(
+                "Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
+                pair,
+                cursorField,
+                cursor,
+                cursorRecordCount);
           }
           // if cursor field in catalog and state are different.
         } else {
@@ -185,11 +211,16 @@ public class CursorManager<S> {
           cursorRecordCount = 0L;
           LOGGER.info(
               "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {} (count {}). New Cursor Field: {}. Resetting cursor value.",
-              pair, originalCursorField, originalCursorRecordCount, cursorField);
+              pair,
+              originalCursorField,
+              originalCursorRecordCount,
+              cursorField);
         }
         // if cursor field is not set in state but is set in catalog.
       } else {
-        LOGGER.info("No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value", pair,
+        LOGGER.info(
+            "No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value",
+            pair,
             cursorField);
         cursor = null;
         cursorRecordCount = 0L;
@@ -198,13 +229,21 @@ public class CursorManager<S> {
     } else {
       LOGGER.info(
           "Cursor field set in state but not present in catalog. Stream: {}. Original Cursor Field: {}. Original value: {}. Resetting cursor.",
-          pair, originalCursorField, originalCursor);
+          pair,
+          originalCursorField,
+          originalCursor);
       cursorField = null;
       cursor = null;
       cursorRecordCount = 0L;
     }
 
-    return new CursorInfo(originalCursorField, originalCursor, originalCursorRecordCount, cursorField, cursor, cursorRecordCount);
+    return new CursorInfo(
+        originalCursorField,
+        originalCursor,
+        originalCursorRecordCount,
+        cursorField,
+        cursor,
+        cursorRecordCount);
   }
 
   /**
@@ -251,5 +290,4 @@ public class CursorManager<S> {
   public Optional<String> getCursor(final AirbyteStreamNameNamespacePair pair) {
     return getCursorInfo(pair).map(CursorInfo::getCursor);
   }
-
 }

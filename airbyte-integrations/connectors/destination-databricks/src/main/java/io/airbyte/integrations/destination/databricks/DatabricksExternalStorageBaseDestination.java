@@ -34,9 +34,10 @@ public abstract class DatabricksExternalStorageBaseDestination extends CopyDesti
   protected abstract void checkPersistence(DatabricksStorageConfigProvider databricksConfig);
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
     final DataSource dataSource = getDataSource(config);
     return CopyConsumerFactory.create(
@@ -72,5 +73,4 @@ public abstract class DatabricksExternalStorageBaseDestination extends CopyDesti
   public SqlOperations getSqlOperations() {
     return new DatabricksSqlOperations();
   }
-
 }

@@ -14,7 +14,6 @@ import com.google.cloud.bigquery.StandardSQLTypeName;
  * are included in the same type array.
  */
 public enum JsonSchemaType {
-
   STRING(0, "string", StandardSQLTypeName.STRING),
   NUMBER(1, "number", StandardSQLTypeName.FLOAT64),
   INTEGER(2, "integer", StandardSQLTypeName.INT64),
@@ -27,7 +26,8 @@ public enum JsonSchemaType {
   private final String jsonSchemaType;
   private final StandardSQLTypeName bigQueryType;
 
-  JsonSchemaType(final int order, final String jsonSchemaType, final StandardSQLTypeName bigQueryType) {
+  JsonSchemaType(
+      final int order, final String jsonSchemaType, final StandardSQLTypeName bigQueryType) {
     this.order = order;
     this.jsonSchemaType = jsonSchemaType;
     this.bigQueryType = bigQueryType;
@@ -58,5 +58,4 @@ public enum JsonSchemaType {
   public String toString() {
     return jsonSchemaType;
   }
-
 }

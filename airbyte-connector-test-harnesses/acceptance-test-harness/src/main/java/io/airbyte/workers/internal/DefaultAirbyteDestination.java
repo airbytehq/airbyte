@@ -38,13 +38,12 @@ import org.slf4j.LoggerFactory;
 public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestination.class);
-  public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
-      .setLogPrefix("destination")
-      .setPrefixColor(Color.YELLOW_BACKGROUND);
+  public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER =
+      new Builder().setLogPrefix("destination").setPrefixColor(Color.YELLOW_BACKGROUND);
   static final Set<Integer> IGNORED_EXIT_CODES = Set.of(
       0, // Normal exit
       143 // SIGTERM
-  );
+      );
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
@@ -59,15 +58,18 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private Integer exitValue = null;
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory(),
+    this(
+        integrationLauncher,
+        new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
+        new DefaultAirbyteMessageBufferedWriterFactory(),
         new DefaultProtocolSerializer());
-
   }
 
-  public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher,
-                                   final AirbyteStreamFactory streamFactory,
-                                   final AirbyteMessageBufferedWriterFactory messageWriterFactory,
-                                   final ProtocolSerializer protocolSerializer) {
+  public DefaultAirbyteDestination(
+      final IntegrationLauncher integrationLauncher,
+      final AirbyteStreamFactory streamFactory,
+      final AirbyteMessageBufferedWriterFactory messageWriterFactory,
+      final ProtocolSerializer protocolSerializer) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.messageWriterFactory = messageWriterFactory;
@@ -75,7 +77,10 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot, final Map<String, String> additionalEnvironmentVariables)
+  public void start(
+      final WorkerDestinationConfig destinationConfig,
+      final Path jobRoot,
+      final Map<String, String> additionalEnvironmentVariables)
       throws IOException, TestHarnessException {
     Preconditions.checkState(destinationProcess == null);
 
@@ -88,12 +93,18 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         protocolSerializer.serialize(destinationConfig.getCatalog()),
         additionalEnvironmentVariables);
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
+    LineGobbler.gobble(
+        destinationProcess.getErrorStream(),
+        LOGGER::error,
+        "airbyte-destination",
+        CONTAINER_LOG_MDC_BUILDER);
 
-    writer = messageWriterFactory.createWriter(new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8)));
+    writer = messageWriterFactory.createWriter(new BufferedWriter(
+        new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8)));
 
     final List<Type> acceptedMessageTypes = List.of(Type.STATE, Type.TRACE, Type.CONTROL);
-    messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess.getInputStream()))
+    messageIterator = streamFactory
+        .create(IOs.newBufferedReader(destinationProcess.getInputStream()))
         .filter(message -> acceptedMessageTypes.contains(message.getType()))
         .iterator();
   }
@@ -128,9 +139,11 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     LOGGER.debug("Closing destination process");
     TestHarnessUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
     if (destinationProcess.isAlive() || !IGNORED_EXIT_CODES.contains(getExitValue())) {
-      final String message =
-          destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + getExitValue();
-      throw new TestHarnessException(message + ". This warning is normal if the job was cancelled.");
+      final String message = destinationProcess.isAlive()
+          ? "Destination has not terminated "
+          : "Destination process exit with code " + getExitValue();
+      throw new TestHarnessException(
+          message + ". This warning is normal if the job was cancelled.");
     }
   }
 
@@ -159,8 +172,11 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public int getExitValue() {
-    Preconditions.checkState(destinationProcess != null, "Destination process is null, cannot retrieve exit value.");
-    Preconditions.checkState(!destinationProcess.isAlive(), "Destination process is still alive, cannot retrieve exit value.");
+    Preconditions.checkState(
+        destinationProcess != null, "Destination process is null, cannot retrieve exit value.");
+    Preconditions.checkState(
+        !destinationProcess.isAlive(),
+        "Destination process is still alive, cannot retrieve exit value.");
 
     if (exitValue == null) {
       exitValue = destinationProcess.exitValue();
@@ -175,5 +191,4 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
-
 }

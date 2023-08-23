@@ -50,12 +50,14 @@ class DefaultAirbyteStreamFactoryTest {
 
   @Test
   void testValid() {
-    final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final AirbyteMessage record1 =
+        AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
 
     final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(record1));
     final Stream<AirbyteMessage> expectedStream = Stream.of(record1);
 
-    assertEquals(expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
+    assertEquals(
+        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
     verifyNoInteractions(logger);
   }
 
@@ -72,7 +74,8 @@ class DefaultAirbyteStreamFactoryTest {
 
   @Test
   void testLoggingLevel() {
-    final AirbyteMessage logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
+    final AirbyteMessage logMessage =
+        AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
 
     final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(logMessage));
 
@@ -109,13 +112,17 @@ class DefaultAirbyteStreamFactoryTest {
 
   @Test
   void testFailsSize() {
-    final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final AirbyteMessage record1 =
+        AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
 
-    final InputStream inputStream = new ByteArrayInputStream(record1.toString().getBytes(StandardCharsets.UTF_8));
-    final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+    final InputStream inputStream =
+        new ByteArrayInputStream(record1.toString().getBytes(StandardCharsets.UTF_8));
+    final BufferedReader bufferedReader =
+        new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
 
-    final Stream<AirbyteMessage> messageStream =
-        new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder(), Optional.of(RuntimeException.class), 1l).create(bufferedReader);
+    final Stream<AirbyteMessage> messageStream = new DefaultAirbyteStreamFactory(
+            protocolPredicate, logger, new Builder(), Optional.of(RuntimeException.class), 1l)
+        .create(bufferedReader);
 
     assertThrows(RuntimeException.class, () -> messageStream.toList());
   }
@@ -123,8 +130,10 @@ class DefaultAirbyteStreamFactoryTest {
   @Test
   @Disabled
   void testMissingNewLineBetweenValidRecords() {
-    final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
-    final AirbyteMessage record2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
+    final AirbyteMessage record1 =
+        AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final AirbyteMessage record2 =
+        AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
 
     final String inputString = Jsons.serialize(record1) + Jsons.serialize(record2);
 
@@ -136,9 +145,12 @@ class DefaultAirbyteStreamFactoryTest {
   }
 
   private Stream<AirbyteMessage> stringToMessageStream(final String inputString) {
-    final InputStream inputStream = new ByteArrayInputStream(inputString.getBytes(StandardCharsets.UTF_8));
-    final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-    return new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder(), Optional.empty()).create(bufferedReader);
+    final InputStream inputStream =
+        new ByteArrayInputStream(inputString.getBytes(StandardCharsets.UTF_8));
+    final BufferedReader bufferedReader =
+        new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+    return new DefaultAirbyteStreamFactory(
+            protocolPredicate, logger, new Builder(), Optional.empty())
+        .create(bufferedReader);
   }
-
 }

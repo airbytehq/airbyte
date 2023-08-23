@@ -42,7 +42,8 @@ public class S3DestinationTest {
     final InitiateMultipartUploadResult uploadResult = mock(InitiateMultipartUploadResult.class);
     final UploadPartResult uploadPartResult = mock(UploadPartResult.class);
     when(s3.uploadPart(any(UploadPartRequest.class))).thenReturn(uploadPartResult);
-    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class))).thenReturn(uploadResult);
+    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class)))
+        .thenReturn(uploadResult);
 
     config = S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
         .withEndpoint("fake-endpoint")
@@ -52,14 +53,14 @@ public class S3DestinationTest {
 
     factoryConfig = new S3DestinationConfigFactory() {
 
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
+      public S3DestinationConfig getS3DestinationConfig(
+          final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("https://s3.example.com")
             .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
             .withS3Client(s3)
             .get();
       }
-
     };
   }
 
@@ -69,10 +70,14 @@ public class S3DestinationTest {
    */
   public void checksS3WithoutListObjectPermission() {
     final S3Destination destinationFail = new S3Destination(factoryConfig);
-    doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
+    doThrow(new AmazonS3Exception("Access Denied"))
+        .when(s3)
+        .listObjects(any(ListObjectsRequest.class));
     final AirbyteConnectionStatus status = destinationFail.check(null);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
-    assertTrue(status.getMessage().indexOf("Access Denied") > 0, "Connection check returned wrong failure message");
+    assertTrue(
+        status.getMessage().indexOf("Access Denied") > 0,
+        "Connection check returned wrong failure message");
   }
 
   @Test
@@ -87,7 +92,8 @@ public class S3DestinationTest {
 
   @Test
   public void createsThenDeletesTestFile() {
-    S3BaseChecks.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
+    S3BaseChecks.attemptS3WriteAndDelete(
+        mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
 
     // We want to enforce that putObject happens before deleteObject, so use inOrder.verify()
     final InOrder inOrder = Mockito.inOrder(s3);
@@ -96,12 +102,13 @@ public class S3DestinationTest {
     inOrder.verify(s3).putObject(eq("fake-bucket"), testFileCaptor.capture(), anyString());
 
     final String testFile = testFileCaptor.getValue();
-    assertTrue(testFile.startsWith("fake-fileToWriteAndDelete/_airbyte_connection_test_"), "testFile was actually " + testFile);
+    assertTrue(
+        testFile.startsWith("fake-fileToWriteAndDelete/_airbyte_connection_test_"),
+        "testFile was actually " + testFile);
 
     inOrder.verify(s3).listObjects(any(ListObjectsRequest.class));
     inOrder.verify(s3).deleteObject("fake-bucket", testFile);
 
     verifyNoMoreInteractions(s3);
   }
-
 }

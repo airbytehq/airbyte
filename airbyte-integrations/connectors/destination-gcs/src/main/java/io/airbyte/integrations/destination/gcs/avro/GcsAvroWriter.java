@@ -44,43 +44,50 @@ public class GcsAvroWriter extends BaseGcsWriter implements DestinationFileWrite
   private final String gcsFileLocation;
   private final String objectKey;
 
-  public GcsAvroWriter(final GcsDestinationConfig config,
-                       final AmazonS3 s3Client,
-                       final ConfiguredAirbyteStream configuredStream,
-                       final Timestamp uploadTimestamp,
-                       final JsonAvroConverter converter)
+  public GcsAvroWriter(
+      final GcsDestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final JsonAvroConverter converter)
       throws IOException {
     this(config, s3Client, configuredStream, uploadTimestamp, converter, null);
   }
 
-  public GcsAvroWriter(final GcsDestinationConfig config,
-                       final AmazonS3 s3Client,
-                       final ConfiguredAirbyteStream configuredStream,
-                       final Timestamp uploadTimestamp,
-                       final JsonAvroConverter converter,
-                       final JsonNode jsonSchema)
+  public GcsAvroWriter(
+      final GcsDestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final JsonAvroConverter converter,
+      final JsonNode jsonSchema)
       throws IOException {
     super(config, s3Client, configuredStream);
 
     final Schema schema = jsonSchema == null
         ? GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true)
-        : new JsonToAvroSchemaConverter().getAvroSchema(jsonSchema, stream.getName(),
-            stream.getNamespace(), true, false, false, true);
+        : new JsonToAvroSchemaConverter()
+            .getAvroSchema(
+                jsonSchema, stream.getName(), stream.getNamespace(), true, false, false, true);
     LOGGER.info("Avro schema for stream {}: {}", stream.getName(), schema.toString(false));
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     objectKey = String.join("/", outputPrefix, outputFilename);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
-    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info(
+        "Full GCS path for stream '{}': {}/{}",
+        stream.getName(),
+        config.getBucketName(),
         objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
-    this.uploadManager = StreamTransferManagerFactory
-        .create(config.getBucketName(), objectKey, s3Client)
+    this.uploadManager = StreamTransferManagerFactory.create(
+            config.getBucketName(), objectKey, s3Client)
         .setPartSize((long) DEFAULT_PART_SIZE_MB)
         .get();
-    // We only need one output stream as we only have one input stream. This is reasonably performant.
+    // We only need one output stream as we only have one input stream. This is reasonably
+    // performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
     final S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
@@ -130,5 +137,4 @@ public class GcsAvroWriter extends BaseGcsWriter implements DestinationFileWrite
   public String getOutputPath() {
     return objectKey;
   }
-
 }

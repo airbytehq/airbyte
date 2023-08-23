@@ -39,29 +39,44 @@ class IntegrationCliParserTest {
 
   @Test
   void testWrite() {
-    final String[] args = new String[] {"--write", "--config", CONFIG_FILENAME, "--catalog", CATALOG_FILENAME};
+    final String[] args =
+        new String[] {"--write", "--config", CONFIG_FILENAME, "--catalog", CATALOG_FILENAME};
     final IntegrationConfig actual = new IntegrationCliParser().parse(args);
-    assertEquals(IntegrationConfig.write(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME)), actual);
+    assertEquals(
+        IntegrationConfig.write(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME)), actual);
   }
 
   @Test
   void testReadWithoutState() {
-    final String[] args = new String[] {"--read", "--config", CONFIG_FILENAME, "--catalog", CATALOG_FILENAME};
+    final String[] args =
+        new String[] {"--read", "--config", CONFIG_FILENAME, "--catalog", CATALOG_FILENAME};
     final IntegrationConfig actual = new IntegrationCliParser().parse(args);
-    assertEquals(IntegrationConfig.read(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME), null), actual);
+    assertEquals(
+        IntegrationConfig.read(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME), null), actual);
   }
 
   @Test
   void testReadWithState() {
-    final String[] args = new String[] {"--read", "--config", CONFIG_FILENAME, "--catalog", CATALOG_FILENAME, "--state", STATE_FILENAME};
+    final String[] args = new String[] {
+      "--read",
+      "--config",
+      CONFIG_FILENAME,
+      "--catalog",
+      CATALOG_FILENAME,
+      "--state",
+      STATE_FILENAME
+    };
     final IntegrationConfig actual = new IntegrationCliParser().parse(args);
-    assertEquals(IntegrationConfig.read(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME), Path.of(STATE_FILENAME)), actual);
+    assertEquals(
+        IntegrationConfig.read(
+            Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME), Path.of(STATE_FILENAME)),
+        actual);
   }
 
   @Test
   void testFailsOnUnknownArg() {
-    final String[] args = new String[] {"--check", "--config", CONFIG_FILENAME, "--random", "garbage"};
+    final String[] args =
+        new String[] {"--check", "--config", CONFIG_FILENAME, "--random", "garbage"};
     assertThrows(IllegalArgumentException.class, () -> new IntegrationCliParser().parse(args));
   }
-
 }

@@ -56,7 +56,9 @@ public final class DebeziumConverterUtils {
         return input.toString();
       }
     }
-    LOGGER.warn("Uncovered date class type '{}'. Use default converter", input.getClass().getName());
+    LOGGER.warn(
+        "Uncovered date class type '{}'. Use default converter",
+        input.getClass().getName());
     return input.toString();
   }
 
@@ -68,5 +70,4 @@ public final class DebeziumConverterUtils {
     }
     return null;
   }
-
 }

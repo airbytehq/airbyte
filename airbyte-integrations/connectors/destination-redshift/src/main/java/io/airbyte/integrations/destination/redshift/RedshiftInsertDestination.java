@@ -25,11 +25,11 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      JdbcUtils.SSL_KEY, "true",
-      "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
+      JdbcUtils.SSL_KEY, "true", "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new RedshiftInsertDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedDestination(
+        new RedshiftInsertDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public RedshiftInsertDestination() {
@@ -46,7 +46,9 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
     final var jdbcConfig = getJdbcConfig(config);
     return DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY)
+            ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
+            : null,
         RedshiftInsertDestination.DRIVER_CLASS,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         SSL_JDBC_PARAMETERS);
@@ -63,21 +65,26 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
-    final String schema = Optional.ofNullable(redshiftConfig.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(redshiftConfig.get(JdbcUtils.SCHEMA_KEY))
+        .map(JsonNode::asText)
+        .orElse("public");
     Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:redshift://%s:%s/%s",
-            redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
-            redshiftConfig.get(JdbcUtils.PORT_KEY).asText(),
-            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()))
+        .put(
+            JdbcUtils.JDBC_URL_KEY,
+            String.format(
+                "jdbc:redshift://%s:%s/%s",
+                redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
+                redshiftConfig.get(JdbcUtils.PORT_KEY).asText(),
+                redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()))
         .put(JdbcUtils.SCHEMA_KEY, schema);
 
     if (redshiftConfig.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+      configBuilder.put(
+          JdbcUtils.JDBC_URL_PARAMS_KEY, redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());
   }
-
 }

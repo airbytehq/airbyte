@@ -42,7 +42,8 @@ public class DorisDestination extends BaseConnector implements Destination {
   private static HttpUtil http = new HttpUtil();
   static final String DESTINATION_TEMP_PATH_FIELD = "destination_temp_path";
   private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-  private static final String DB_URL_PATTERN = "jdbc:mysql://%s:%d/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8";
+  private static final String DB_URL_PATTERN =
+      "jdbc:mysql://%s:%d/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8";
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new DorisDestination()).run(args);
@@ -61,9 +62,10 @@ public class DorisDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException, SQLException {
     final Map<String, DorisWriteConfig> writeConfigs = new HashMap<>();
 
@@ -81,8 +83,7 @@ public class DorisDestination extends BaseConnector implements Destination {
         final String tableName = namingResolver.getIdentifier(streamName);
         final String tmpTableName = namingResolver.getTmpTableName(streamName);
         final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
-        if (conn == null)
-          checkDorisAndConnect(config);
+        if (conn == null) checkDorisAndConnect(config);
         Statement stmt = conn.createStatement();
         stmt.execute(createTableQuery(tableName));
         if (syncMode == DestinationSyncMode.OVERWRITE) {
@@ -96,7 +97,8 @@ public class DorisDestination extends BaseConnector implements Destination {
                 JavaBaseConstants.COLUMN_NAME_AB_ID,
                 JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
                 JavaBaseConstants.COLUMN_NAME_DATA);
-        final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), false);
+        final FileWriter fileWriter =
+            new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), false);
         final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
         DorisStreamLoad dorisStreamLoad = new DorisStreamLoad(
             tmpPath,
@@ -115,15 +117,18 @@ public class DorisDestination extends BaseConnector implements Destination {
       LOGGER.error("Exception while handling temporary csv files : ", e);
       throw new IOException(e);
     } finally {
-      if (conn != null)
-        conn.close();
+      if (conn != null) conn.close();
     }
     return new DorisConsumer(writeConfigs, configuredCatalog, outputRecordCollector);
   }
 
   protected void checkDorisAndConnect(JsonNode config) throws ClassNotFoundException, SQLException {
     DorisConnectionOptions dorisConnection = DorisConnectionOptions.getDorisConnection(config, "");
-    String dbUrl = String.format(DB_URL_PATTERN, dorisConnection.getFeHost(), dorisConnection.getFeQueryPort(), dorisConnection.getDb());
+    String dbUrl = String.format(
+        DB_URL_PATTERN,
+        dorisConnection.getFeHost(),
+        dorisConnection.getFeQueryPort(),
+        dorisConnection.getDb());
     Class.forName(JDBC_DRIVER);
     conn = DriverManager.getConnection(dbUrl, dorisConnection.getUser(), dorisConnection.getPwd());
   }
@@ -133,7 +138,8 @@ public class DorisDestination extends BaseConnector implements Destination {
         + "`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "` varchar(40),\n"
         + "`" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "` BIGINT,\n"
         + "`" + JavaBaseConstants.COLUMN_NAME_DATA + "` String)\n"
-        + "DUPLICATE KEY(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`,`" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "`) \n"
+        + "DUPLICATE KEY(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`,`"
+        + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "`) \n"
         + "DISTRIBUTED BY HASH(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`) BUCKETS 16 \n"
         + "PROPERTIES ( \n"
         + "\"replication_allocation\" = \"tag.location.default: 1\" \n"
@@ -156,9 +162,9 @@ public class DorisDestination extends BaseConnector implements Destination {
     }
     final Path normalizePath = path.normalize();
     if (!normalizePath.startsWith("/local")) {
-      throw new IllegalArgumentException("Stream Load destination temp file should be inside the /local directory");
+      throw new IllegalArgumentException(
+          "Stream Load destination temp file should be inside the /local directory");
     }
     return path;
   }
-
 }

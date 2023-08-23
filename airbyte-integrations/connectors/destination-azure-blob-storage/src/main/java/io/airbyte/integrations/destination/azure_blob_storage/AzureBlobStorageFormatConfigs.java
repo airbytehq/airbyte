@@ -13,18 +13,17 @@ import org.slf4j.LoggerFactory;
 
 public class AzureBlobStorageFormatConfigs {
 
-  private AzureBlobStorageFormatConfigs() {
+  private AzureBlobStorageFormatConfigs() {}
 
-  }
+  protected static final Logger LOGGER =
+      LoggerFactory.getLogger(AzureBlobStorageFormatConfigs.class);
 
-  protected static final Logger LOGGER = LoggerFactory
-      .getLogger(AzureBlobStorageFormatConfigs.class);
-
-  public static AzureBlobStorageFormatConfig getAzureBlobStorageFormatConfig(final JsonNode config) {
+  public static AzureBlobStorageFormatConfig getAzureBlobStorageFormatConfig(
+      final JsonNode config) {
     final JsonNode formatConfig = config.get("format");
     LOGGER.info("Azure Blob Storage format config: {}", formatConfig.toString());
-    final AzureBlobStorageFormat formatType = AzureBlobStorageFormat
-        .valueOf(formatConfig.get("format_type").asText().toUpperCase());
+    final AzureBlobStorageFormat formatType =
+        AzureBlobStorageFormat.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     switch (formatType) {
       case CSV -> {
@@ -34,8 +33,6 @@ public class AzureBlobStorageFormatConfigs {
         return new AzureBlobStorageJsonlFormatConfig();
       }
       default -> throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
-
     }
   }
-
 }

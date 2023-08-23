@@ -11,12 +11,13 @@ import java.util.UUID;
 
 public interface DefinitionsProvider {
 
-  StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException;
+  StandardSourceDefinition getSourceDefinition(final UUID definitionId)
+      throws ConfigNotFoundException;
 
   List<StandardSourceDefinition> getSourceDefinitions();
 
-  StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException;
+  StandardDestinationDefinition getDestinationDefinition(final UUID definitionId)
+      throws ConfigNotFoundException;
 
   List<StandardDestinationDefinition> getDestinationDefinitions();
-
 }

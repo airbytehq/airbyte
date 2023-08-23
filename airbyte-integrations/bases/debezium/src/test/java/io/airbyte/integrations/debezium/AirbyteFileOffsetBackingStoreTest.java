@@ -32,21 +32,25 @@ class AirbyteFileOffsetBackingStoreTest {
     final Path writeFilePath = testRoot.resolve("offset.dat");
     final Path secondWriteFilePath = testRoot.resolve("offset_2.dat");
 
-    final AirbyteFileOffsetBackingStore offsetStore = new AirbyteFileOffsetBackingStore(templateFilePath, Optional.empty());
+    final AirbyteFileOffsetBackingStore offsetStore =
+        new AirbyteFileOffsetBackingStore(templateFilePath, Optional.empty());
     final Map<String, String> offset = offsetStore.read();
 
-    final AirbyteFileOffsetBackingStore offsetStore2 = new AirbyteFileOffsetBackingStore(writeFilePath, Optional.empty());
+    final AirbyteFileOffsetBackingStore offsetStore2 =
+        new AirbyteFileOffsetBackingStore(writeFilePath, Optional.empty());
     offsetStore2.persist(Jsons.jsonNode(offset));
     final Map<String, String> stateFromOffsetStore2 = offsetStore2.read();
 
-    final AirbyteFileOffsetBackingStore offsetStore3 = new AirbyteFileOffsetBackingStore(secondWriteFilePath, Optional.empty());
+    final AirbyteFileOffsetBackingStore offsetStore3 =
+        new AirbyteFileOffsetBackingStore(secondWriteFilePath, Optional.empty());
     offsetStore3.persist(Jsons.jsonNode(stateFromOffsetStore2));
     final Map<String, String> stateFromOffsetStore3 = offsetStore3.read();
 
     // verify that, after a round trip through the offset store, we get back the same data.
     assertEquals(stateFromOffsetStore2, stateFromOffsetStore3);
     // verify that the file written by the offset store is identical to the template file.
-    assertTrue(com.google.common.io.Files.equal(secondWriteFilePath.toFile(), writeFilePath.toFile()));
+    assertTrue(
+        com.google.common.io.Files.equal(secondWriteFilePath.toFile(), writeFilePath.toFile()));
   }
 
   @Test
@@ -60,21 +64,24 @@ class AirbyteFileOffsetBackingStoreTest {
     final Path writeFilePath = testRoot.resolve("offset.dat");
     final Path secondWriteFilePath = testRoot.resolve("offset_2.dat");
 
-    final AirbyteFileOffsetBackingStore offsetStore = new AirbyteFileOffsetBackingStore(templateFilePath, Optional.of("orders"));
+    final AirbyteFileOffsetBackingStore offsetStore =
+        new AirbyteFileOffsetBackingStore(templateFilePath, Optional.of("orders"));
     final Map<String, String> offset = offsetStore.read();
 
-    final AirbyteFileOffsetBackingStore offsetStore2 = new AirbyteFileOffsetBackingStore(writeFilePath, Optional.of("orders"));
+    final AirbyteFileOffsetBackingStore offsetStore2 =
+        new AirbyteFileOffsetBackingStore(writeFilePath, Optional.of("orders"));
     offsetStore2.persist(Jsons.jsonNode(offset));
     final Map<String, String> stateFromOffsetStore2 = offsetStore2.read();
 
-    final AirbyteFileOffsetBackingStore offsetStore3 = new AirbyteFileOffsetBackingStore(secondWriteFilePath, Optional.of("orders"));
+    final AirbyteFileOffsetBackingStore offsetStore3 =
+        new AirbyteFileOffsetBackingStore(secondWriteFilePath, Optional.of("orders"));
     offsetStore3.persist(Jsons.jsonNode(stateFromOffsetStore2));
     final Map<String, String> stateFromOffsetStore3 = offsetStore3.read();
 
     // verify that, after a round trip through the offset store, we get back the same data.
     assertEquals(stateFromOffsetStore2, stateFromOffsetStore3);
     // verify that the file written by the offset store is identical to the template file.
-    assertTrue(com.google.common.io.Files.equal(secondWriteFilePath.toFile(), writeFilePath.toFile()));
+    assertTrue(
+        com.google.common.io.Files.equal(secondWriteFilePath.toFile(), writeFilePath.toFile()));
   }
-
 }

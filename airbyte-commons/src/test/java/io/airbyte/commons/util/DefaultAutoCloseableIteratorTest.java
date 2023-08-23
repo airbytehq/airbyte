@@ -21,15 +21,20 @@ class DefaultAutoCloseableIteratorTest {
   @Test
   void testNullInput() {
     final VoidCallable onClose = mock(VoidCallable.class);
-    assertThrows(NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(null, onClose, null));
-    assertThrows(NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(Collections.emptyIterator(), null, null));
-    assertThrows(NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(null, null, null));
+    assertThrows(
+        NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(null, onClose, null));
+    assertThrows(
+        NullPointerException.class,
+        () -> new DefaultAutoCloseableIterator<>(Collections.emptyIterator(), null, null));
+    assertThrows(
+        NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(null, null, null));
   }
 
   @Test
   void testEmptyInput() throws Exception {
     final VoidCallable onClose = mock(VoidCallable.class);
-    final AutoCloseableIterator<String> iterator = new DefaultAutoCloseableIterator<>(Collections.emptyIterator(), onClose, null);
+    final AutoCloseableIterator<String> iterator =
+        new DefaultAutoCloseableIterator<>(Collections.emptyIterator(), onClose, null);
     assertFalse(iterator.hasNext());
     iterator.close();
     verify(onClose).call();
@@ -38,7 +43,8 @@ class DefaultAutoCloseableIteratorTest {
   @Test
   void test() throws Exception {
     final VoidCallable onClose = mock(VoidCallable.class);
-    final AutoCloseableIterator<String> iterator = new DefaultAutoCloseableIterator<>(MoreIterators.of("a", "b", "c"), onClose, null);
+    final AutoCloseableIterator<String> iterator =
+        new DefaultAutoCloseableIterator<>(MoreIterators.of("a", "b", "c"), onClose, null);
 
     assertNext(iterator, "a");
     assertNext(iterator, "b");
@@ -51,7 +57,8 @@ class DefaultAutoCloseableIteratorTest {
   @Test
   void testCannotOperateAfterClosing() throws Exception {
     final VoidCallable onClose = mock(VoidCallable.class);
-    final AutoCloseableIterator<String> iterator = new DefaultAutoCloseableIterator<>(MoreIterators.of("a", "b", "c"), onClose, null);
+    final AutoCloseableIterator<String> iterator =
+        new DefaultAutoCloseableIterator<>(MoreIterators.of("a", "b", "c"), onClose, null);
 
     assertNext(iterator, "a");
     assertNext(iterator, "b");
@@ -65,5 +72,4 @@ class DefaultAutoCloseableIteratorTest {
     assertTrue(iterator.hasNext());
     assertEquals(value, iterator.next());
   }
-
 }

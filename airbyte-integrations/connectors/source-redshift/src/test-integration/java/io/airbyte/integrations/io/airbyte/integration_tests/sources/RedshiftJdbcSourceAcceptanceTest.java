@@ -30,7 +30,8 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeAll
   static void init() {
     CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s GEOMETRY)";
-    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(ST_Point(129.77099609375, 62.093299865722656))";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY =
+        "INSERT INTO %s VALUES(ST_Point(129.77099609375, 62.093299865722656))";
   }
 
   @BeforeEach
@@ -63,5 +64,4 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public void tearDownRedshift() throws SQLException {
     super.tearDown();
   }
-
 }

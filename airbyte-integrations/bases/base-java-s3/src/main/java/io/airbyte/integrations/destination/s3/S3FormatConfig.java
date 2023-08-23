@@ -12,7 +12,8 @@ public interface S3FormatConfig {
 
   String getFileExtension();
 
-  static String withDefault(final JsonNode config, final String property, final String defaultValue) {
+  static String withDefault(
+      final JsonNode config, final String property, final String defaultValue) {
     final JsonNode value = config.get(property);
     if (value == null || value.isNull()) {
       return defaultValue;
@@ -28,12 +29,12 @@ public interface S3FormatConfig {
     return value.asInt();
   }
 
-  static boolean withDefault(final JsonNode config, final String property, final boolean defaultValue) {
+  static boolean withDefault(
+      final JsonNode config, final String property, final boolean defaultValue) {
     final JsonNode value = config.get(property);
     if (value == null || value.isNull()) {
       return defaultValue;
     }
     return value.asBoolean();
   }
-
 }

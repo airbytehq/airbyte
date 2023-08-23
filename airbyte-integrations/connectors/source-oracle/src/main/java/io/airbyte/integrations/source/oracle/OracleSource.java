@@ -59,7 +59,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new OracleSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedSource(
+        new OracleSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   @Override
@@ -81,18 +82,27 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     final String connectionString;
     if (config.has(CONNECTION_DATA)) {
       final JsonNode connectionData = config.get(CONNECTION_DATA);
-      final String connectionType = connectionData.has("connection_type") ? connectionData.get("connection_type").asText()
+      final String connectionType = connectionData.has("connection_type")
+          ? connectionData.get("connection_type").asText()
           : UNRECOGNIZED;
       connectionString = switch (connectionType) {
-        case SERVICE_NAME -> buildConnectionString(config, protocol.toString(), SERVICE_NAME.toUpperCase(),
+        case SERVICE_NAME -> buildConnectionString(
+            config,
+            protocol.toString(),
+            SERVICE_NAME.toUpperCase(),
             config.get(CONNECTION_DATA).get(SERVICE_NAME).asText());
-        case SID -> buildConnectionString(config, protocol.toString(), SID.toUpperCase(), config.get(CONNECTION_DATA).get(SID).asText());
-        default -> throw new IllegalArgumentException("Unrecognized connection type: " + connectionType);
-      };
+        case SID -> buildConnectionString(
+            config,
+            protocol.toString(),
+            SID.toUpperCase(),
+            config.get(CONNECTION_DATA).get(SID).asText());
+        default -> throw new IllegalArgumentException(
+            "Unrecognized connection type: " + connectionType);};
     } else {
       // To keep backward compatibility with existing connectors which doesn't have connection_data
       // and use only sid.
-      connectionString = buildConnectionString(config, protocol.toString(), SID.toUpperCase(), config.get(SID).asText());
+      connectionString = buildConnectionString(
+          config, protocol.toString(), SID.toUpperCase(), config.get(SID).asText());
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
@@ -100,7 +110,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         .put(JdbcUtils.JDBC_URL_KEY, connectionString);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     // Use the upper-cased username by default.
@@ -112,19 +123,23 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
       }
     }
 
-    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      additionalParameters.addAll(List.of(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null
+        && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      additionalParameters.addAll(
+          List.of(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
     }
 
     if (!additionalParameters.isEmpty()) {
-      final String connectionParams = String.join(ORACLE_JDBC_PARAMETER_DELIMITER, additionalParameters);
+      final String connectionParams =
+          String.join(ORACLE_JDBC_PARAMETER_DELIMITER, additionalParameters);
       configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, connectionParams);
     }
 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private Protocol obtainConnectionProtocol(final JsonNode encryption, final List<String> additionalParameters) {
+  private Protocol obtainConnectionProtocol(
+      final JsonNode encryption, final List<String> additionalParameters) {
     final String encryptionMethod = encryption.get("encryption_method").asText();
     switch (encryptionMethod) {
       case "unencrypted" -> {
@@ -152,27 +167,32 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         "Failed to obtain connection protocol from config " + encryption.asText());
   }
 
-  private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
+  private static void convertAndImportCertificate(final String certificate)
+      throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
     runProcess(
-        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt",
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH
+            + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt",
         run);
   }
 
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+  private static void runProcess(final String cmd, final Runtime run)
+      throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
-    } ;
+    }
+    ;
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
+      throws Exception {
     final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
     for (final String schema : schemas) {
       LOGGER.debug("Discovering schema: {}", schema);
@@ -207,10 +227,11 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     LOGGER.info("completed source: {}", OracleSource.class);
   }
 
-  private String buildConnectionString(final JsonNode config,
-                                       final String protocol,
-                                       final String connectionTypeName,
-                                       final String connectionTypeValue) {
+  private String buildConnectionString(
+      final JsonNode config,
+      final String protocol,
+      final String connectionTypeName,
+      final String connectionTypeValue) {
     return String.format(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(%s=%s)))",
         protocol,
@@ -219,5 +240,4 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         connectionTypeName,
         connectionTypeValue);
   }
-
 }

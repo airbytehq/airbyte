@@ -50,9 +50,11 @@ class DefaultArrayFormatterTest {
 
   @Test
   void formatArrayItems_notArray() throws JsonProcessingException {
-    final JsonNode objectNodeInput = mapper.readTree("""
+    final JsonNode objectNodeInput = mapper.readTree(
+        """
                                                      {"type":"object","items":{"type":"integer"}}""");
-    final JsonNode expectedResult = mapper.readTree("""
+    final JsonNode expectedResult = mapper.readTree(
+        """
                                                     [{"type":"object","items":{"type":"integer"}}]""");
 
     final JsonNode result = formatter.formatArrayItems(List.of(objectNodeInput));
@@ -64,26 +66,35 @@ class DefaultArrayFormatterTest {
   void findArrays() throws JsonProcessingException {
     final JsonNode schemaArrays = getSchemaArrays();
     final List<JsonNode> expectedResult = List.of(
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":"integer"}}"""),
         mapper.readTree(
             """
             {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":"integer"}}"""));
 
     final List<JsonNode> result = formatter.findArrays(schemaArrays);
@@ -95,5 +106,4 @@ class DefaultArrayFormatterTest {
     final List<JsonNode> result = formatter.findArrays(null);
     assertTrue(result.isEmpty());
   }
-
 }

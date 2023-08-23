@@ -29,13 +29,15 @@ public class GcsDestinationConfig extends S3DestinationConfig {
 
   private final GcsCredentialConfig credentialConfig;
 
-  public GcsDestinationConfig(final String bucketName,
-                              final String bucketPath,
-                              final String bucketRegion,
-                              final GcsCredentialConfig credentialConfig,
-                              final S3FormatConfig formatConfig) {
+  public GcsDestinationConfig(
+      final String bucketName,
+      final String bucketPath,
+      final String bucketRegion,
+      final GcsCredentialConfig credentialConfig,
+      final S3FormatConfig formatConfig) {
 
-    super(GCS_ENDPOINT,
+    super(
+        GCS_ENDPOINT,
         bucketName,
         bucketPath,
         bucketRegion,
@@ -63,8 +65,10 @@ public class GcsDestinationConfig extends S3DestinationConfig {
   protected AmazonS3 createS3Client() {
     switch (credentialConfig.getCredentialType()) {
       case HMAC_KEY -> {
-        final GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) credentialConfig;
-        final BasicAWSCredentials awsCreds = new BasicAWSCredentials(hmacKeyCredential.getHmacKeyAccessId(), hmacKeyCredential.getHmacKeySecret());
+        final GcsHmacKeyCredentialConfig hmacKeyCredential =
+            (GcsHmacKeyCredentialConfig) credentialConfig;
+        final BasicAWSCredentials awsCreds = new BasicAWSCredentials(
+            hmacKeyCredential.getHmacKeyAccessId(), hmacKeyCredential.getHmacKeySecret());
 
         return AmazonS3ClientBuilder.standard()
             .withEndpointConfiguration(
@@ -72,12 +76,12 @@ public class GcsDestinationConfig extends S3DestinationConfig {
             .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
             .build();
       }
-      default -> throw new IllegalArgumentException("Unsupported credential type: " + credentialConfig.getCredentialType().name());
+      default -> throw new IllegalArgumentException(
+          "Unsupported credential type: " + credentialConfig.getCredentialType().name());
     }
   }
 
   public GcsCredentialConfig getGcsCredentialConfig() {
     return credentialConfig;
   }
-
 }

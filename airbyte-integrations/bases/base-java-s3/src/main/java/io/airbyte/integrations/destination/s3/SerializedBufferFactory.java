@@ -41,28 +41,33 @@ public class SerializedBufferFactory {
    * creating a new buffer where to store data. Note that we typically associate which format is being
    * stored in the storage object thanks to its file extension.
    */
-  public static BufferCreateFunction getCreateFunction(final S3DestinationConfig config,
-                                                       final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
+  public static BufferCreateFunction getCreateFunction(
+      final S3DestinationConfig config,
+      final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
     final S3FormatConfig formatConfig = config.getFormatConfig();
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     switch (formatConfig.getFormat()) {
       case AVRO -> {
         final Callable<BufferStorage> createStorageFunctionWithExtension =
             () -> createStorageFunctionWithoutExtension.apply(formatConfig.getFileExtension());
-        return AvroSerializedBuffer.createFunction((S3AvroFormatConfig) formatConfig, createStorageFunctionWithExtension);
+        return AvroSerializedBuffer.createFunction(
+            (S3AvroFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case CSV -> {
         final Callable<BufferStorage> createStorageFunctionWithExtension =
             () -> createStorageFunctionWithoutExtension.apply(formatConfig.getFileExtension());
-        return CsvSerializedBuffer.createFunction((S3CsvFormatConfig) formatConfig, createStorageFunctionWithExtension);
+        return CsvSerializedBuffer.createFunction(
+            (S3CsvFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case JSONL -> {
         final Callable<BufferStorage> createStorageFunctionWithExtension =
             () -> createStorageFunctionWithoutExtension.apply(formatConfig.getFileExtension());
-        return JsonLSerializedBuffer.createBufferFunction((S3JsonlFormatConfig) formatConfig, createStorageFunctionWithExtension);
+        return JsonLSerializedBuffer.createBufferFunction(
+            (S3JsonlFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case PARQUET -> {
-        // we can't choose the type of buffer storage with parquet because of how the underlying hadoop
+        // we can't choose the type of buffer storage with parquet because of how the underlying
+        // hadoop
         // library is imposing file usage.
         return ParquetSerializedBuffer.createFunction(config);
       }
@@ -71,5 +76,4 @@ public class SerializedBufferFactory {
       }
     }
   }
-
 }

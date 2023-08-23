@@ -35,7 +35,8 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultCheckConnectionTestHarness implements CheckConnectionTestHarness {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCheckConnectionTestHarness.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(DefaultCheckConnectionTestHarness.class);
 
   private final IntegrationLauncher integrationLauncher;
   private final ConnectorConfigUpdater connectorConfigUpdater;
@@ -43,56 +44,62 @@ public class DefaultCheckConnectionTestHarness implements CheckConnectionTestHar
 
   private Process process;
 
-  public DefaultCheckConnectionTestHarness(final IntegrationLauncher integrationLauncher,
-                                           final ConnectorConfigUpdater connectorConfigUpdater,
-                                           final AirbyteStreamFactory streamFactory) {
+  public DefaultCheckConnectionTestHarness(
+      final IntegrationLauncher integrationLauncher,
+      final ConnectorConfigUpdater connectorConfigUpdater,
+      final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.connectorConfigUpdater = connectorConfigUpdater;
     this.streamFactory = streamFactory;
   }
 
-  public DefaultCheckConnectionTestHarness(final IntegrationLauncher integrationLauncher, final ConnectorConfigUpdater connectorConfigUpdater) {
+  public DefaultCheckConnectionTestHarness(
+      final IntegrationLauncher integrationLauncher,
+      final ConnectorConfigUpdater connectorConfigUpdater) {
     this(integrationLauncher, connectorConfigUpdater, new DefaultAirbyteStreamFactory());
   }
 
   @Override
-  public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws TestHarnessException {
+  public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot)
+      throws TestHarnessException {
     LineGobbler.startSection("CHECK");
 
     try {
       final JsonNode inputConfig = input.getConnectionConfiguration();
       process = integrationLauncher.check(
-          jobRoot,
-          WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-          Jsons.serialize(inputConfig));
+          jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(inputConfig));
 
-      final ConnectorJobOutput jobOutput = new ConnectorJobOutput()
-          .withOutputType(OutputType.CHECK_CONNECTION);
+      final ConnectorJobOutput jobOutput =
+          new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30);
-      final Optional<AirbyteConnectionStatus> connectionStatus = messagesByType
-          .getOrDefault(Type.CONNECTION_STATUS, new ArrayList<>()).stream()
-          .map(AirbyteMessage::getConnectionStatus)
-          .findFirst();
+      final Map<Type, List<AirbyteMessage>> messagesByType =
+          TestHarnessUtils.getMessagesByType(process, streamFactory, 30);
+      final Optional<AirbyteConnectionStatus> connectionStatus =
+          messagesByType.getOrDefault(Type.CONNECTION_STATUS, new ArrayList<>()).stream()
+              .map(AirbyteMessage::getConnectionStatus)
+              .findFirst();
 
       if (input.getActorId() != null && input.getActorType() != null) {
-        final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType);
-        if (optionalConfigMsg.isPresent() && TestHarnessUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
+        final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg =
+            TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType);
+        if (optionalConfigMsg.isPresent()
+            && TestHarnessUtils.getDidControlMessageChangeConfig(
+                inputConfig, optionalConfigMsg.get())) {
           switch (input.getActorType()) {
             case SOURCE -> connectorConfigUpdater.updateSource(
-                input.getActorId(),
-                optionalConfigMsg.get().getConfig());
+                input.getActorId(), optionalConfigMsg.get().getConfig());
             case DESTINATION -> connectorConfigUpdater.updateDestination(
-                input.getActorId(),
-                optionalConfigMsg.get().getConfig());
+                input.getActorId(), optionalConfigMsg.get().getConfig());
           }
           jobOutput.setConnectorConfigurationUpdated(true);
         }
       }
 
-      final Optional<FailureReason> failureReason = TestHarnessUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
+      final Optional<FailureReason> failureReason =
+          TestHarnessUtils.getJobFailureReasonFromMessages(
+              OutputType.CHECK_CONNECTION, messagesByType);
       failureReason.ifPresent(jobOutput::setFailureReason);
 
       final int exitCode = process.exitValue();
@@ -107,7 +114,9 @@ public class DefaultCheckConnectionTestHarness implements CheckConnectionTestHar
         LOGGER.info("Check connection job received output: {}", output);
         jobOutput.setCheckConnection(output);
       } else if (failureReason.isEmpty()) {
-        TestHarnessUtils.throwWorkerException("Error checking connection status: no status nor failure reason were outputted", process);
+        TestHarnessUtils.throwWorkerException(
+            "Error checking connection status: no status nor failure reason were outputted",
+            process);
       }
       LineGobbler.endSection("CHECK");
       return jobOutput;
@@ -123,5 +132,4 @@ public class DefaultCheckConnectionTestHarness implements CheckConnectionTestHar
   public void cancel() {
     TestHarnessUtils.cancelProcess(process);
   }
-
 }

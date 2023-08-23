@@ -37,7 +37,8 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> type
  */
-public final class CompositeIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
+public final class CompositeIterator<T> extends AbstractIterator<T>
+    implements AutoCloseableIterator<T> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CompositeIterator.class);
 
@@ -48,7 +49,9 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   private boolean firstRead;
   private boolean hasClosed;
 
-  CompositeIterator(final List<AutoCloseableIterator<T>> iterators, final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
+  CompositeIterator(
+      final List<AutoCloseableIterator<T>> iterators,
+      final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
     Preconditions.checkNotNull(iterators);
 
     this.airbyteStreamStatusConsumer = Optional.ofNullable(airbyteStreamStatusConsumer);
@@ -74,7 +77,8 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
         currentIterator().close();
         StreamStatusUtils.emitCompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
       } catch (final Exception e) {
-        StreamStatusUtils.emitIncompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
+        StreamStatusUtils.emitIncompleteStreamStatus(
+            getAirbyteStream(), airbyteStreamStatusConsumer);
         throw new RuntimeException(e);
       }
 
@@ -142,5 +146,4 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   private void assertHasNotClosed() {
     Preconditions.checkState(!hasClosed);
   }
-
 }

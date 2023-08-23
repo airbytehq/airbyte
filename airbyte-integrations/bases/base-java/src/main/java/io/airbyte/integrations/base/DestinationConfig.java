@@ -71,5 +71,4 @@ public class DestinationConfig {
     }
     return node.asBoolean();
   }
-
 }

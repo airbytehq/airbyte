@@ -33,7 +33,10 @@ public class SchemaMigrations {
    * @param matcher A function which returns true on any schema node that needs to be transformed
    * @param transformer A function which mutates a schema node
    */
-  public static void mutateSchemas(final Function<JsonNode, Boolean> matcher, final Consumer<JsonNode> transformer, final JsonNode schema) {
+  public static void mutateSchemas(
+      final Function<JsonNode, Boolean> matcher,
+      final Consumer<JsonNode> transformer,
+      final JsonNode schema) {
     if (schema.isBoolean()) {
       // We never want to modify a schema of `true` or `false` (e.g. additionalProperties: true)
       // so just return immediately
@@ -92,7 +95,8 @@ public class SchemaMigrations {
     }
     findSubschemas(subschemas, schema, "additionalProperties");
 
-    // combining restrictions - destinations have limited support for these, but we should handle the
+    // combining restrictions - destinations have limited support for these, but we should handle
+    // the
     // schemas correctly anyway
     findSubschemas(subschemas, schema, "allOf");
     findSubschemas(subschemas, schema, "oneOf");
@@ -127,7 +131,8 @@ public class SchemaMigrations {
    * (technically `true` is a valid JsonSchema, but we don't want to modify it)</li>
    * </ul>
    */
-  public static void findSubschemas(final List<JsonNode> subschemas, final JsonNode schema, final String key) {
+  public static void findSubschemas(
+      final List<JsonNode> subschemas, final JsonNode schema, final String key) {
     if (schema.hasNonNull(key)) {
       final JsonNode subschemaNode = schema.get(key);
       if (subschemaNode.isArray()) {
@@ -139,5 +144,4 @@ public class SchemaMigrations {
       }
     }
   }
-
 }

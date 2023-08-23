@@ -21,5 +21,4 @@ public final class StarburstGalaxyConstants {
   public static final String STAGING_OBJECT_STORE = "staging_object_store";
 
   private StarburstGalaxyConstants() {}
-
 }

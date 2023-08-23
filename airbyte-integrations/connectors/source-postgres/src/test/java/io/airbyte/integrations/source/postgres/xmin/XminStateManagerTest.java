@@ -31,11 +31,14 @@ public class XminStateManagerTest {
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(new AirbyteStreamState()
-            .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+            .withStreamDescriptor(
+                new StreamDescriptor().withName(STREAM_NAME1).withNamespace(NAMESPACE))
             .withStreamState(Jsons.jsonNode("Not a state object")));
 
-    final Throwable throwable = catchThrowable(() -> new XminStateManager(List.of(airbyteStateMessage)));
-    assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+    final Throwable throwable =
+        catchThrowable(() -> new XminStateManager(List.of(airbyteStateMessage)));
+    assertThat(throwable)
+        .isInstanceOf(ConfigErrorException.class)
         .hasMessageContaining(
             "Invalid per-stream state. If this connection was migrated to a Xmin incremental mode from a cursor-based or CDC incremental "
                 + "mode, please reset your connection and re-sync.");
@@ -43,15 +46,17 @@ public class XminStateManagerTest {
 
   @Test
   void testGetXminStates() {
-    final XminStateManager xminStateManager = new XminStateManager(List.of(XMIN_STATE_MESSAGE_1.getState(), XMIN_STATE_MESSAGE_2.getState()));
+    final XminStateManager xminStateManager = new XminStateManager(
+        List.of(XMIN_STATE_MESSAGE_1.getState(), XMIN_STATE_MESSAGE_2.getState()));
     assertThat(xminStateManager.getXminStatus(PAIR1)).isEqualTo(XMIN_STATUS1);
     assertThat(xminStateManager.getXminStatus(PAIR2)).isEqualTo(XMIN_STATUS2);
   }
 
   @Test
   void testCreateStateMessage() {
-    assertThat(XminStateManager.createStateMessage(PAIR1, XMIN_STATUS1)).isEqualTo(XMIN_STATE_MESSAGE_1);
-    assertThat(XminStateManager.createStateMessage(PAIR2, XMIN_STATUS2)).isEqualTo(XMIN_STATE_MESSAGE_2);
+    assertThat(XminStateManager.createStateMessage(PAIR1, XMIN_STATUS1))
+        .isEqualTo(XMIN_STATE_MESSAGE_1);
+    assertThat(XminStateManager.createStateMessage(PAIR2, XMIN_STATUS2))
+        .isEqualTo(XMIN_STATE_MESSAGE_2);
   }
-
 }

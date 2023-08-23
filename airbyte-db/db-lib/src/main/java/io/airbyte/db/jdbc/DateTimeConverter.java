@@ -44,23 +44,29 @@ public class DateTimeConverter {
 
   public static String convertToTimeWithTimezone(final Object time) {
     if (time instanceof final java.time.OffsetTime timetz) {
-      return hasZeroSecondsAndNanos(timetz.toLocalTime()) ? timetz.format(TIMETZ_FORMATTER) : timetz.toString();
+      return hasZeroSecondsAndNanos(timetz.toLocalTime())
+          ? timetz.format(TIMETZ_FORMATTER)
+          : timetz.toString();
     } else {
       if (!loggedUnknownTimeWithTimeZoneClass) {
         LOGGER.info("Unknown class for Time with timezone data type" + time.getClass());
         loggedUnknownTimeWithTimeZoneClass = true;
       }
       final OffsetTime timetz = OffsetTime.parse(time.toString(), TIME_WITH_TIMEZONE_FORMATTER);
-      return hasZeroSecondsAndNanos(timetz.toLocalTime()) ? timetz.format(TIMETZ_FORMATTER) : timetz.toString();
+      return hasZeroSecondsAndNanos(timetz.toLocalTime())
+          ? timetz.format(TIMETZ_FORMATTER)
+          : timetz.toString();
     }
   }
 
   public static String convertToTimestampWithTimezone(final Object timestamp) {
     if (timestamp instanceof final Timestamp t) {
       // In snapshot mode, debezium produces a java.sql.Timestamp object for the TIMESTAMPTZ type.
-      // Conceptually, a timestamp with timezone is an Instant. But t.toInstant() actually mangles the
+      // Conceptually, a timestamp with timezone is an Instant. But t.toInstant() actually mangles
+      // the
       // value for ancient dates, because leap years weren't applied consistently in ye olden days.
-      // Additionally, toInstant() (and toLocalDateTime()) actually lose the era indicator, so we can't
+      // Additionally, toInstant() (and toLocalDateTime()) actually lose the era indicator, so we
+      // can't
       // rely on their getEra() methods.
       // So we have special handling for this case, which sidesteps the toInstant conversion.
       final ZonedDateTime timestamptz = t.toLocalDateTime().atZone(UTC);
@@ -98,15 +104,23 @@ public class DateTimeConverter {
     if (timestamp instanceof final Timestamp t) {
       // Snapshot mode
       final LocalDateTime localDateTime = t.toLocalDateTime();
-      return resolveEra(t,
-          hasZeroSecondsAndNanos(localDateTime.toLocalTime()) ? localDateTime.format(TIMESTAMP_FORMATTER) : localDateTime.toString());
+      return resolveEra(
+          t,
+          hasZeroSecondsAndNanos(localDateTime.toLocalTime())
+              ? localDateTime.format(TIMESTAMP_FORMATTER)
+              : localDateTime.toString());
     } else if (timestamp instanceof final Instant i) {
       // Incremental mode
-      return resolveEra(i.atZone(UTC).toLocalDate(), i.atOffset(UTC).toLocalDateTime().format(TIMESTAMP_FORMATTER));
+      return resolveEra(
+          i.atZone(UTC).toLocalDate(),
+          i.atOffset(UTC).toLocalDateTime().format(TIMESTAMP_FORMATTER));
     } else if (timestamp instanceof final LocalDateTime localDateTime) {
       final LocalDate date = localDateTime.toLocalDate();
-      return resolveEra(date,
-          hasZeroSecondsAndNanos(localDateTime.toLocalTime()) ? localDateTime.format(TIMESTAMP_FORMATTER) : localDateTime.toString());
+      return resolveEra(
+          date,
+          hasZeroSecondsAndNanos(localDateTime.toLocalTime())
+              ? localDateTime.format(TIMESTAMP_FORMATTER)
+              : localDateTime.toString());
     } else {
       if (!loggedUnknownTimestampClass) {
         LOGGER.info("Unknown class for Timestamp data type" + timestamp.getClass());
@@ -114,8 +128,11 @@ public class DateTimeConverter {
       }
       final LocalDateTime localDateTime = LocalDateTime.parse(timestamp.toString());
       final LocalDate date = localDateTime.toLocalDate();
-      return resolveEra(date,
-          hasZeroSecondsAndNanos(localDateTime.toLocalTime()) ? localDateTime.format(TIMESTAMP_FORMATTER) : localDateTime.toString());
+      return resolveEra(
+          date,
+          hasZeroSecondsAndNanos(localDateTime.toLocalTime())
+              ? localDateTime.format(TIMESTAMP_FORMATTER)
+              : localDateTime.toString());
     }
   }
 
@@ -152,7 +169,9 @@ public class DateTimeConverter {
         return formatTime(LocalTime.ofNanoOfDay(value));
       } else {
         final long updatedValue = Math.min(Math.abs(value), LocalTime.MAX.toNanoOfDay());
-        LOGGER.debug("Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
+        LOGGER.debug(
+            "Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ",
+            value,
             updatedValue);
         return formatTime(LocalTime.ofNanoOfDay(updatedValue));
       }
@@ -172,22 +191,25 @@ public class DateTimeConverter {
   }
 
   private static String formatTime(LocalTime localTime) {
-    return hasZeroSecondsAndNanos(localTime) ? localTime.format(TIME_FORMATTER) : localTime.toString();
+    return hasZeroSecondsAndNanos(localTime)
+        ? localTime.format(TIME_FORMATTER)
+        : localTime.toString();
   }
 
   public static boolean hasZeroSecondsAndNanos(LocalTime localTime) {
     return (localTime.getSecond() == 0 && localTime.getNano() == 0);
   }
 
-  public static void putJavaSQLDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  public static void putJavaSQLDate(
+      ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     final Date date = resultSet.getDate(index);
     node.put(columnName, convertToDate(date));
   }
 
-  public static void putJavaSQLTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  public static void putJavaSQLTime(
+      ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     // resultSet.getTime() will lose nanoseconds precision
     final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
     node.put(columnName, convertToTime(localTime));
   }
-
 }

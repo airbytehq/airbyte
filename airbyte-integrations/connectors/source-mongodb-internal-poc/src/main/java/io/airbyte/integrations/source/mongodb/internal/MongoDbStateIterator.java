@@ -65,7 +65,8 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    * @param emittedAt when this iterator was started
    * @param checkpointInterval how often a state message should be emitted.
    */
-  MongoDbStateIterator(final MongoCursor<Document> iter,
+  MongoDbStateIterator(
+      final MongoCursor<Document> iter,
       final ConfiguredAirbyteStream stream,
       Optional<MongodbStreamState> state,
       final Instant emittedAt,
@@ -111,9 +112,8 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
         streamState.withStreamState(Jsons.jsonNode(new MongodbStreamState(lastId)));
       }
 
-      final var stateMessage = new AirbyteStateMessage()
-          .withType(AirbyteStateType.STREAM)
-          .withStream(streamState);
+      final var stateMessage =
+          new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(streamState);
 
       return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
     }
@@ -132,5 +132,4 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
             .withEmittedAt(emittedAt.toEpochMilli())
             .withData(jsonNode));
   }
-
 }

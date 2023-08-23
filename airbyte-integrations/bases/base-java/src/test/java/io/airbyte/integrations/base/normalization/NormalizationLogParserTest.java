@@ -47,9 +47,7 @@ class NormalizationLogParserTest {
             logMessage(Level.INFO, "[error] oh no"),
             logMessage(Level.INFO, "asdf"),
             logMessage(Level.INFO, "[error] qwer")),
-        List.of(
-            "[error] oh no",
-            "[error] qwer"));
+        List.of("[error] oh no", "[error] qwer"));
   }
 
   @Test
@@ -73,8 +71,7 @@ class NormalizationLogParserTest {
                         .withMessage("uh oh")
                         .withStackTrace("normalization blew up")
                         .withInternalMessage("normalization blew up with more detail")))),
-        List.of(
-            "oh no"));
+        List.of("oh no"));
   }
 
   @Test
@@ -90,33 +87,29 @@ class NormalizationLogParserTest {
         List.of(
             logMessage(Level.INFO, "null"),
             logMessage(Level.INFO, "\"null\""),
-            logMessage(Level.INFO, "{\n  \"msg\" : \"message with no level\",\n  \"type\" : \"log_line\"\n}"),
+            logMessage(
+                Level.INFO,
+                "{\n  \"msg\" : \"message with no level\",\n  \"type\" : \"log_line\"\n}"),
             logMessage(Level.INFO, ""),
             logMessage(Level.ERROR, "")),
-        List.of(
-            ""));
+        List.of(""));
   }
 
-  private void runTest(String rawLogs, List<AirbyteMessage> expectedMessages, List<String> expectedDbtErrors) {
-    final List<AirbyteMessage> messages = parser.create(new BufferedReader(
-        new InputStreamReader(
-            new ByteArrayInputStream(
-                rawLogs.getBytes(StandardCharsets.UTF_8)),
+  private void runTest(
+      String rawLogs, List<AirbyteMessage> expectedMessages, List<String> expectedDbtErrors) {
+    final List<AirbyteMessage> messages = parser
+        .create(new BufferedReader(new InputStreamReader(
+            new ByteArrayInputStream(rawLogs.getBytes(StandardCharsets.UTF_8)),
             StandardCharsets.UTF_8)))
         .toList();
 
-    assertEquals(
-        expectedMessages,
-        messages);
+    assertEquals(expectedMessages, messages);
     assertEquals(expectedDbtErrors, parser.getDbtErrors());
   }
 
   private AirbyteMessage logMessage(Level level, String message) {
     return new AirbyteMessage()
         .withType(Type.LOG)
-        .withLog(new AirbyteLogMessage()
-            .withLevel(level)
-            .withMessage(message));
+        .withLog(new AirbyteLogMessage().withLevel(level).withMessage(message));
   }
-
 }

@@ -103,8 +103,8 @@ public class AirbyteSchemaHistoryStorage {
         final Document read = reader.read(element);
         final String line = writer.write(read);
 
-        try (final BufferedWriter historyWriter = Files
-            .newBufferedWriter(path, StandardOpenOption.APPEND)) {
+        try (final BufferedWriter historyWriter =
+            Files.newBufferedWriter(path, StandardOpenOption.APPEND)) {
           try {
             historyWriter.append(line);
             historyWriter.newLine();
@@ -118,7 +118,8 @@ public class AirbyteSchemaHistoryStorage {
     }
   }
 
-  public static AirbyteSchemaHistoryStorage initializeDBHistory(final Optional<JsonNode> schemaHistory) {
+  public static AirbyteSchemaHistoryStorage initializeDBHistory(
+      final Optional<JsonNode> schemaHistory) {
     final Path dbHistoryWorkingDir;
     try {
       dbHistoryWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-db-history");
@@ -127,9 +128,9 @@ public class AirbyteSchemaHistoryStorage {
     }
     final Path dbHistoryFilePath = dbHistoryWorkingDir.resolve("dbhistory.dat");
 
-    final AirbyteSchemaHistoryStorage schemaHistoryManager = new AirbyteSchemaHistoryStorage(dbHistoryFilePath);
+    final AirbyteSchemaHistoryStorage schemaHistoryManager =
+        new AirbyteSchemaHistoryStorage(dbHistoryFilePath);
     schemaHistoryManager.persist(schemaHistory);
     return schemaHistoryManager;
   }
-
 }

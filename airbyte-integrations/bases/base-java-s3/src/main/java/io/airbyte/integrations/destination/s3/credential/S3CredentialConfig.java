@@ -9,5 +9,4 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 public interface S3CredentialConfig extends BlobStorageCredentialConfig<S3CredentialType> {
 
   AWSCredentialsProvider getS3CredentialsProvider();
-
 }

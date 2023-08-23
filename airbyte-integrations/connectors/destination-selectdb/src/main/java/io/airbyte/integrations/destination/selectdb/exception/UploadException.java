@@ -9,5 +9,4 @@ public class UploadException extends SelectdbRuntimeException {
   public UploadException(Exception exception) {
     super(exception);
   }
-
 }

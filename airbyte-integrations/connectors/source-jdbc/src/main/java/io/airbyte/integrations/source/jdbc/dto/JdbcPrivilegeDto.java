@@ -73,7 +73,6 @@ public class JdbcPrivilegeDto {
     public JdbcPrivilegeDto build() {
       return new JdbcPrivilegeDto(grantee, tableName, schemaName, privilege);
     }
-
   }
 
   @Override
@@ -85,8 +84,10 @@ public class JdbcPrivilegeDto {
       return false;
     }
     JdbcPrivilegeDto that = (JdbcPrivilegeDto) o;
-    return Objects.equal(grantee, that.grantee) && Objects.equal(tableName, that.tableName)
-        && Objects.equal(schemaName, that.schemaName) && Objects.equal(privilege, that.privilege);
+    return Objects.equal(grantee, that.grantee)
+        && Objects.equal(tableName, that.tableName)
+        && Objects.equal(schemaName, that.schemaName)
+        && Objects.equal(privilege, that.privilege);
   }
 
   @Override
@@ -96,12 +97,10 @@ public class JdbcPrivilegeDto {
 
   @Override
   public String toString() {
-    return "JdbcPrivilegeDto{" +
-        "grantee='" + grantee + '\'' +
-        ", columnName='" + tableName + '\'' +
-        ", schemaName='" + schemaName + '\'' +
-        ", privilege='" + privilege + '\'' +
-        '}';
+    return "JdbcPrivilegeDto{" + "grantee='"
+        + grantee + '\'' + ", columnName='"
+        + tableName + '\'' + ", schemaName='"
+        + schemaName + '\'' + ", privilege='"
+        + privilege + '\'' + '}';
   }
-
 }

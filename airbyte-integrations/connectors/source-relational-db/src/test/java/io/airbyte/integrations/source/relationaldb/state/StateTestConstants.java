@@ -21,9 +21,11 @@ public final class StateTestConstants {
 
   public static final String NAMESPACE = "public";
   public static final String STREAM_NAME1 = "cars";
-  public static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR1 = new AirbyteStreamNameNamespacePair(STREAM_NAME1, NAMESPACE);
+  public static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR1 =
+      new AirbyteStreamNameNamespacePair(STREAM_NAME1, NAMESPACE);
   public static final String STREAM_NAME2 = "bicycles";
-  public static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR2 = new AirbyteStreamNameNamespacePair(STREAM_NAME2, NAMESPACE);
+  public static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR2 =
+      new AirbyteStreamNameNamespacePair(STREAM_NAME2, NAMESPACE);
   public static final String STREAM_NAME3 = "stationary_bicycles";
   public static final String CURSOR_FIELD1 = "year";
   public static final String CURSOR_FIELD2 = "generation";
@@ -39,7 +41,8 @@ public final class StateTestConstants {
         .withCursor(cursor));
   }
 
-  public static Optional<DbStreamState> getState(final String cursorField, final String cursor, final long cursorRecordCount) {
+  public static Optional<DbStreamState> getState(
+      final String cursorField, final String cursor, final long cursorRecordCount) {
     return Optional.of(new DbStreamState()
         .withStreamName(STREAM_NAME1)
         .withCursorField(Lists.newArrayList(cursorField))
@@ -55,7 +58,7 @@ public final class StateTestConstants {
   public static Optional<ConfiguredAirbyteStream> getStream(final String cursorField) {
     return Optional.of(new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(STREAM_NAME1))
-        .withCursorField(cursorField == null ? Collections.emptyList() : Lists.newArrayList(cursorField)));
+        .withCursorField(
+            cursorField == null ? Collections.emptyList() : Lists.newArrayList(cursorField)));
   }
-
 }

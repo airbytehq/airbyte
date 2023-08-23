@@ -22,8 +22,8 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest")
-        .acceptLicense();
+    container =
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     container.start();
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
@@ -49,14 +49,17 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
   }
 
   private static DSLContext getDslContext(final JsonNode config) {
-    return DSLContextFactory.create(DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false")), null);
+    return DSLContextFactory.create(
+        DataSourceFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+            String.format(
+                "jdbc:sqlserver://%s:%d;",
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt()),
+            Map.of("encrypt", "false")),
+        null);
   }
 
   private static Database getDatabase(final DSLContext dslContext) {
@@ -74,5 +77,4 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
   public boolean testCatalog() {
     return true;
   }
-
 }

@@ -27,9 +27,10 @@ public class ScyllaMessageConsumer extends FailureTrackingAirbyteMessageConsumer
 
   private final ScyllaCqlProvider scyllaCqlProvider;
 
-  public ScyllaMessageConsumer(ScyllaConfig scyllaConfig,
-                               ConfiguredAirbyteCatalog configuredCatalog,
-                               Consumer<AirbyteMessage> outputRecordCollector) {
+  public ScyllaMessageConsumer(
+      ScyllaConfig scyllaConfig,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     this.scyllaConfig = scyllaConfig;
     this.outputRecordCollector = outputRecordCollector;
     this.scyllaCqlProvider = new ScyllaCqlProvider(scyllaConfig);
@@ -101,5 +102,4 @@ public class ScyllaMessageConsumer extends FailureTrackingAirbyteMessageConsumer
     });
     scyllaCqlProvider.close();
   }
-
 }

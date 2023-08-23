@@ -27,7 +27,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.joda.time.DateTime;
 
-public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implements StagingOperations {
+public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations
+    implements StagingOperations {
 
   private static final Encoder BASE64_ENCODER = Base64.getEncoder();
   private final NamingConventionTransformer nameTransformer;
@@ -36,10 +37,11 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   private final ObjectMapper objectMapper;
   private final byte[] keyEncryptingKey;
 
-  public RedshiftS3StagingSqlOperations(final NamingConventionTransformer nameTransformer,
-                                        final AmazonS3 s3Client,
-                                        final S3DestinationConfig s3Config,
-                                        final EncryptionConfig encryptionConfig) {
+  public RedshiftS3StagingSqlOperations(
+      final NamingConventionTransformer nameTransformer,
+      final AmazonS3 s3Client,
+      final S3DestinationConfig s3Config,
+      final EncryptionConfig encryptionConfig) {
     this.nameTransformer = nameTransformer;
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, s3Config);
     this.s3Config = s3Config;
@@ -54,16 +56,23 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
+    return nameTransformer.applyDefaultCase(String.join(
+        "_",
         nameTransformer.convertStreamName(namespace),
         nameTransformer.convertStreamName(streamName)));
   }
 
   @Override
-  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(
+      final UUID connectionId,
+      final String namespace,
+      final String streamName,
+      final DateTime writeDatetime) {
     final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    return nameTransformer.applyDefaultCase(String.format("%s%s/%s_%02d_%02d_%02d_%s/",
+    final String prefix =
+        bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    return nameTransformer.applyDefaultCase(String.format(
+        "%s%s/%s_%02d_%02d_%02d_%s/",
         prefix,
         getStageName(namespace, streamName),
         writeDatetime.year().get(),
@@ -74,38 +83,47 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
+  public void createStageIfNotExists(final JdbcDatabase database, final String stageName)
+      throws Exception {
     final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    final String prefix =
+        bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     s3StorageOperations.createBucketIfNotExists();
   }
 
   @Override
-  public String uploadRecordsToStage(final JdbcDatabase database,
-                                     final SerializableBuffer recordsData,
-                                     final String schemaName,
-                                     final String stageName,
-                                     final String stagingPath)
+  public String uploadRecordsToStage(
+      final JdbcDatabase database,
+      final SerializableBuffer recordsData,
+      final String schemaName,
+      final String stageName,
+      final String stagingPath)
       throws Exception {
-    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
+    return s3StorageOperations.uploadRecordsToBucket(
+        recordsData, schemaName, stageName, stagingPath);
   }
 
   private String putManifest(final String manifestContents, final String stagingPath) {
     final String manifestFilePath = stagingPath + String.format("%s.manifest", UUID.randomUUID());
-    s3StorageOperations.uploadManifest(s3Config.getBucketName(), manifestFilePath, manifestContents);
+    s3StorageOperations.uploadManifest(
+        s3Config.getBucketName(), manifestFilePath, manifestContents);
     return manifestFilePath;
   }
 
   @Override
-  public void copyIntoTableFromStage(final JdbcDatabase database,
-                                     final String stageName,
-                                     final String stagingPath,
-                                     final List<String> stagedFiles,
-                                     final String tableName,
-                                     final String schemaName)
+  public void copyIntoTableFromStage(
+      final JdbcDatabase database,
+      final String stageName,
+      final String stagingPath,
+      final List<String> stagedFiles,
+      final String tableName,
+      final String schemaName)
       throws Exception {
-    LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
-        tableName, stagingPath, schemaName);
+    LOGGER.info(
+        "Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
+        tableName,
+        stagingPath,
+        schemaName);
     final var possibleManifest = Optional.ofNullable(createManifest(stagedFiles, stagingPath));
     Exceptions.toRuntime(() -> possibleManifest.stream()
         .map(manifestContent -> putManifest(manifestContent, stagingPath))
@@ -116,13 +134,20 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   /**
    * Generates the COPY data from staging files into target table
    */
-  private void executeCopy(final String manifestPath, final JdbcDatabase db, final String schemaName, final String tableName) {
-    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
+  private void executeCopy(
+      final String manifestPath,
+      final JdbcDatabase db,
+      final String schemaName,
+      final String tableName) {
+    final S3AccessKeyCredentialConfig credentialConfig =
+        (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
     final String encryptionClause;
     if (keyEncryptingKey == null) {
       encryptionClause = "";
     } else {
-      encryptionClause = String.format(" encryption = (type = 'aws_cse' master_key = '%s')", BASE64_ENCODER.encodeToString(keyEncryptingKey));
+      encryptionClause = String.format(
+          " encryption = (type = 'aws_cse' master_key = '%s')",
+          BASE64_ENCODER.encodeToString(keyEncryptingKey));
     }
 
     final var copyQuery = String.format(
@@ -162,22 +187,27 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
   }
 
-  private static String getManifestPath(final String s3BucketName, final String s3StagingFile, final String stagingPath) {
+  private static String getManifestPath(
+      final String s3BucketName, final String s3StagingFile, final String stagingPath) {
     return "s3://" + s3BucketName + "/" + stagingPath + s3StagingFile;
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
+  public void cleanUpStage(
+      final JdbcDatabase database, final String stageName, final List<String> stagedFiles)
+      throws Exception {
     final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    final String prefix =
+        bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     s3StorageOperations.cleanUpBucketObject(prefix + stageName, stagedFiles);
   }
 
   @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName)
+      throws Exception {
     final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    final String prefix =
+        bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     s3StorageOperations.dropBucketObject(prefix + stageName);
   }
-
 }

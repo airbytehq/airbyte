@@ -21,11 +21,9 @@ public class CatalogDefinitionsConfig {
     }
 
     return DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH;
-
   }
 
   public static String getIconSubdirectory() {
     return ICON_SUBDIRECTORY;
   }
-
 }

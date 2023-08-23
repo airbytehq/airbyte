@@ -22,22 +22,31 @@ public class WriteConfig {
   private final DestinationSyncMode syncMode;
   private final DateTime writeDatetime;
 
-  public WriteConfig(final String streamName,
-                     final String namespace,
-                     final String outputSchemaName,
-                     final String tmpTableName,
-                     final String outputTableName,
-                     final DestinationSyncMode syncMode) {
-    this(streamName, namespace, outputSchemaName, tmpTableName, outputTableName, syncMode, DateTime.now(DateTimeZone.UTC));
+  public WriteConfig(
+      final String streamName,
+      final String namespace,
+      final String outputSchemaName,
+      final String tmpTableName,
+      final String outputTableName,
+      final DestinationSyncMode syncMode) {
+    this(
+        streamName,
+        namespace,
+        outputSchemaName,
+        tmpTableName,
+        outputTableName,
+        syncMode,
+        DateTime.now(DateTimeZone.UTC));
   }
 
-  public WriteConfig(final String streamName,
-                     final String namespace,
-                     final String outputSchemaName,
-                     final String tmpTableName,
-                     final String outputTableName,
-                     final DestinationSyncMode syncMode,
-                     final DateTime writeDatetime) {
+  public WriteConfig(
+      final String streamName,
+      final String namespace,
+      final String outputSchemaName,
+      final String tmpTableName,
+      final String outputTableName,
+      final DestinationSyncMode syncMode,
+      final DateTime writeDatetime) {
     this.streamName = streamName;
     this.namespace = namespace;
     this.outputSchemaName = outputSchemaName;
@@ -77,14 +86,12 @@ public class WriteConfig {
 
   @Override
   public String toString() {
-    return "WriteConfig{" +
-        "streamName=" + streamName +
-        ", namespace=" + namespace +
-        ", outputSchemaName=" + outputSchemaName +
-        ", tmpTableName=" + tmpTableName +
-        ", outputTableName=" + outputTableName +
-        ", syncMode=" + syncMode +
-        '}';
+    return "WriteConfig{" + "streamName="
+        + streamName + ", namespace="
+        + namespace + ", outputSchemaName="
+        + outputSchemaName + ", tmpTableName="
+        + tmpTableName + ", outputTableName="
+        + outputTableName + ", syncMode="
+        + syncMode + '}';
   }
-
 }

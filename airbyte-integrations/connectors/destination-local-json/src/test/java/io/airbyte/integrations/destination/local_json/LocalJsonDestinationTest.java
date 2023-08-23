@@ -52,31 +52,54 @@ class LocalJsonDestinationTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
-  private static final String USERS_FILE = new StandardNameTransformer().getRawTableName(USERS_STREAM_NAME) + ".jsonl";
-  private static final String TASKS_FILE = new StandardNameTransformer().getRawTableName(TASKS_STREAM_NAME) + ".jsonl";;
-  private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
+  private static final String USERS_FILE =
+      new StandardNameTransformer().getRawTableName(USERS_STREAM_NAME) + ".jsonl";
+  private static final String TASKS_FILE =
+      new StandardNameTransformer().getRawTableName(TASKS_STREAM_NAME) + ".jsonl";
+  ;
+  private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage()
+      .withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage()
+          .withStream(USERS_STREAM_NAME)
+          .withData(Jsons.jsonNode(
+              ImmutableMap.builder().put("name", "john").put("id", "10").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
+  private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage()
+      .withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage()
+          .withStream(USERS_STREAM_NAME)
+          .withData(Jsons.jsonNode(
+              ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
-          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "announce the game.").build()))
+  private static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage()
+      .withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage()
+          .withStream(TASKS_STREAM_NAME)
+          .withData(Jsons.jsonNode(
+              ImmutableMap.builder().put("goal", "announce the game.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
-          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some code.").build()))
+  private static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage()
+      .withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage()
+          .withStream(TASKS_STREAM_NAME)
+          .withData(Jsons.jsonNode(
+              ImmutableMap.builder().put("goal", "ship some code.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
-      .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
+  private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage()
+      .withType(AirbyteMessage.Type.STATE)
+      .withState(new AirbyteStateMessage()
+          .withData(
+              Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, null, Field.of("name", JsonSchemaType.STRING),
-          Field.of("id", JsonSchemaType.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, null, Field.of("goal", JsonSchemaType.STRING))));
+  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog()
+      .withStreams(Lists.newArrayList(
+          CatalogHelpers.createConfiguredAirbyteStream(
+              USERS_STREAM_NAME,
+              null,
+              Field.of("name", JsonSchemaType.STRING),
+              Field.of("id", JsonSchemaType.STRING)),
+          CatalogHelpers.createConfiguredAirbyteStream(
+              TASKS_STREAM_NAME, null, Field.of("goal", JsonSchemaType.STRING))));
 
   private Path destinationPath;
   private JsonNode config;
@@ -84,7 +107,8 @@ class LocalJsonDestinationTest {
   @BeforeEach
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
-    config = Jsons.jsonNode(ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
+    config = Jsons.jsonNode(
+        ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
   }
 
   private LocalJsonDestination getDestination() {
@@ -97,7 +121,8 @@ class LocalJsonDestinationTest {
   void testSpec() throws Exception {
     final ConnectorSpecification actual = getDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
-    final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
+    final ConnectorSpecification expected =
+        Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
     assertEquals(expected, actual);
   }
@@ -105,7 +130,8 @@ class LocalJsonDestinationTest {
   @Test
   void testCheckSuccess() {
     final AirbyteConnectionStatus actual = getDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    final AirbyteConnectionStatus expected =
+        new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
@@ -115,11 +141,14 @@ class LocalJsonDestinationTest {
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
     final LocalJsonDestination destination = spy(LocalJsonDestination.class);
     doReturn(looksLikeADirectoryButIsAFile).when(destination).getDestinationPath(any());
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
+        LocalJsonDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
     final AirbyteConnectionStatus actual = destination.check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED);
+    final AirbyteConnectionStatus expected =
+        new AirbyteConnectionStatus().withStatus(Status.FAILED);
 
-    // the message includes the random file path, so just verify it exists and then remove it when we do
+    // the message includes the random file path, so just verify it exists and then remove it when
+    // we do
     // rest of the comparison.
     assertNotNull(actual.getMessage());
     actual.setMessage(null);
@@ -129,10 +158,13 @@ class LocalJsonDestinationTest {
   @Test
   void testCheckInvalidDestinationFolder() {
     final Path relativePath = Path.of("../tmp/conf.d/");
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, relativePath.toString()));
+    final JsonNode config = Jsons.jsonNode(
+        ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, relativePath.toString()));
     final AirbyteConnectionStatus actual = new LocalJsonDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED);
-    // the message includes the random file path, so just verify it exists and then remove it when we do
+    final AirbyteConnectionStatus expected =
+        new AirbyteConnectionStatus().withStatus(Status.FAILED);
+    // the message includes the random file path, so just verify it exists and then remove it when
+    // we do
     // rest of the comparison.
     assertNotNull(actual.getMessage());
     actual.setMessage(null);
@@ -141,7 +173,8 @@ class LocalJsonDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final AirbyteMessageConsumer consumer = getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer =
+        getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -180,20 +213,22 @@ class LocalJsonDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final AirbyteMessageConsumer consumer = spy(getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector));
+    final AirbyteMessageConsumer consumer = spy(
+        getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
     assertThrows(IOException.class, consumer::close);
 
     // verify tmp files are cleaned up and no files are output at all
-    final Set<String> actualFilenames = Files.list(destinationPath).map(Path::getFileName).map(Path::toString).collect(Collectors.toSet());
+    final Set<String> actualFilenames = Files.list(destinationPath)
+        .map(Path::getFileName)
+        .map(Path::toString)
+        .collect(Collectors.toSet());
     assertEquals(Collections.emptySet(), actualFilenames);
   }
 
   private Stream<JsonNode> toJson(final Path path) throws IOException {
-    return Files.readAllLines(path).stream()
-        .map(Jsons::deserialize);
+    return Files.readAllLines(path).stream().map(Jsons::deserialize);
   }
-
 }

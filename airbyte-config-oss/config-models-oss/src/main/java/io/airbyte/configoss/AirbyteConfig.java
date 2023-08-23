@@ -29,5 +29,4 @@ public interface AirbyteConfig {
   File getConfigSchemaFile();
 
   <T> Class<T> getClassName();
-
 }

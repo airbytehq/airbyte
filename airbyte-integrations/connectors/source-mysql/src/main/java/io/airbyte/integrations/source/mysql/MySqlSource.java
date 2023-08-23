@@ -96,8 +96,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       """
       SELECT (EXISTS (SELECT * from %s where `%s` IS NULL LIMIT 1)) AS %s
       """;
-  public static final String DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY =
-      """
+  public static final String DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY = """
       DESCRIBE %s
       """;
   public static final String DESCRIBE_TABLE_WITH_SCHEMA_QUERY =
@@ -109,14 +108,13 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
   public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
-  public static final List<String> SSL_PARAMETERS = List.of(
-      "useSSL=true",
-      "requireSSL=true");
+  public static final List<String> SSL_PARAMETERS = List.of("useSSL=true", "requireSSL=true");
 
   private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedSource(
+        new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MySqlSource() {
@@ -125,7 +123,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    return stream.withSupportedSyncModes(
+        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
   private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
@@ -161,7 +160,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
+    final JsonNode airbyteIntegerType =
+        Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
@@ -173,8 +173,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
+      throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations =
+        new ArrayList<>(super.getCheckOperations(config));
     if (isCdc(config)) {
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
 
@@ -206,14 +208,15 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
-                                                                       final ConfiguredAirbyteCatalog catalog,
-                                                                       final JsonNode state)
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
-    final StateManager stateManager =
-        StateManagerFactory.createStateManager(supportedStateType,
-            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+    final StateManager stateManager = StateManagerFactory.createStateManager(
+        supportedStateType,
+        StateGeneratorUtils.deserializeInitialState(
+            state, featureFlags.useStreamCapableState(), supportedStateType),
+        catalog);
     final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);
@@ -221,24 +224,23 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     logPreSyncDebugData(database, catalog);
 
     final Map<String, TableInfo<CommonField<MysqlType>>> fullyQualifiedTableNameToInfo =
-        discoverWithoutSystemTables(database)
-            .stream()
-            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()),
-                Function
-                    .identity()));
+        discoverWithoutSystemTables(database).stream()
+            .collect(Collectors.toMap(
+                t -> String.format("%s.%s", t.getNameSpace(), t.getName()), Function.identity()));
 
     validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
 
-    DbSourceDiscoverUtil.logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog, this::getAirbyteType);
+    DbSourceDiscoverUtil.logSourceSchemaChange(
+        fullyQualifiedTableNameToInfo, catalog, this::getAirbyteType);
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
-        getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
-            emittedAt);
+        getIncrementalIterators(
+            database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
-        getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
-            emittedAt);
-    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream
-        .of(incrementalIterators, fullRefreshIterators)
+        getFullRefreshIterators(
+            database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream.of(
+            incrementalIterators, fullRefreshIterators)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
 
@@ -247,8 +249,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
+    final String encodedDatabaseName =
+        HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(
+        "jdbc:mysql://%s:%s/%s",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
         encodedDatabaseName));
@@ -264,8 +268,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     // ensure the return year value is a Date; see the rationale
     // in the setJsonField method in MySqlSourceOperations.java
     jdbcUrl.append("&yearIsDateType=false");
-    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null
+        && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      jdbcUrl
+          .append(JdbcUtils.AMPERSAND)
+          .append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
     final Map<String, String> sslParameters = JdbcSSLConnectionUtils.parseSSLConfig(config);
     jdbcUrl.append(JdbcUtils.AMPERSAND).append(toJDBCQueryParams(sslParameters));
@@ -277,7 +284,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     configBuilder.putAll(sslParameters);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
     return Jsons.jsonNode(configBuilder.build());
   }
@@ -290,9 +298,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
    * @return SSL portion of JDBC question params or and empty string
    */
   private String toJDBCQueryParams(final Map<String, String> sslParams) {
-    return Objects.isNull(sslParams) ? ""
-        : sslParams.entrySet()
-            .stream()
+    return Objects.isNull(sslParams)
+        ? ""
+        : sslParams.entrySet().stream()
             .map((entry) -> {
               if (entry.getKey().equals(SSL_MODE)) {
                 return entry.getKey() + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
@@ -309,7 +317,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         return ReplicationMethod.valueOf(config.get("replication_method").asText())
             .equals(ReplicationMethod.CDC);
       } else if (config.get("replication_method").isObject()) {
-        return config.get("replication_method").get("method").asText()
+        return config
+            .get("replication_method")
+            .get("method")
+            .asText()
             .equals(ReplicationMethod.CDC.name());
       }
     }
@@ -326,36 +337,48 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final MySqlFeatureFlags featureFlags = new MySqlFeatureFlags(sourceConfig);
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       if (featureFlags.isCdcInitialSyncViaPkEnabled()) {
         LOGGER.info("Using PK + CDC");
-        return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
+        return MySqlInitialReadUtil.getCdcReadIterators(
+            database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
       }
-      final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+      final Duration firstRecordWaitTime =
+          FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
-      final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
-          new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime, OptionalInt.empty());
+      final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<>(
+          sourceConfig,
+          MySqlCdcTargetPosition.targetPosition(database),
+          true,
+          firstRecordWaitTime,
+          OptionalInt.empty());
 
       final MySqlCdcStateHandler mySqlCdcStateHandler = new MySqlCdcStateHandler(stateManager);
-      final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+      final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector =
+          MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
-      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
-      final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
+      final List<ConfiguredAirbyteStream> streamsToSnapshot =
+          identifyStreamsToSnapshot(catalog, stateManager);
+      final Optional<CdcState> cdcState =
+          Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-          new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
-          new MySqlCdcStateHandler(stateManager),
-          mySqlCdcConnectorMetadataInjector,
-          MySqlCdcProperties.getDebeziumProperties(database),
-          emittedAt,
-          false);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier =
+          () -> handler.getIncrementalIterators(
+              catalog,
+              new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
+              new MySqlCdcStateHandler(stateManager),
+              mySqlCdcConnectorMetadataInjector,
+              MySqlCdcProperties.getDebeziumProperties(database),
+              emittedAt,
+              false);
 
       if (streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
@@ -368,45 +391,48 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           mySqlCdcStateHandler,
           emittedAt);
 
-      return Collections.singletonList(
-          AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
-              AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
+      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(
+          AirbyteTraceMessageUtility::emitStreamStatusTrace,
+          snapshotIterator,
+          AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
-          emittedAt);
+      return super.getIncrementalIterators(
+          database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Set.of(
-        "information_schema",
-        "mysql",
-        "performance_schema",
-        "sys");
+    return Set.of("information_schema", "mysql", "performance_schema", "sys");
   }
 
   @Override
-  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+  protected boolean verifyCursorColumnValues(
+      final JdbcDatabase database,
+      final String schema,
+      final String tableName,
+      final String columnName)
       throws SQLException {
     final boolean nullValExist;
     final String resultColName = "nullValue";
     final String descQuery = schema == null || schema.isBlank()
         ? String.format(DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY, tableName)
         : String.format(DESCRIBE_TABLE_WITH_SCHEMA_QUERY, schema, tableName);
-    final List<JsonNode> tableRows = database.bufferedResultSetQuery(conn -> conn.createStatement()
-        .executeQuery(descQuery),
+    final List<JsonNode> tableRows = database.bufferedResultSetQuery(
+        conn -> conn.createStatement().executeQuery(descQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
 
     Optional<JsonNode> field = Optional.empty();
     String nullableColumnName = "";
     for (final JsonNode tableRow : tableRows) {
       LOGGER.info("MySQL Table Structure {}, {}, {}", tableRow.toString(), schema, tableName);
-      if (tableRow.get("Field") != null && tableRow.get("Field").asText().equalsIgnoreCase(columnName)) {
+      if (tableRow.get("Field") != null
+          && tableRow.get("Field").asText().equalsIgnoreCase(columnName)) {
         field = Optional.of(tableRow);
         nullableColumnName = "Null";
-      } else if (tableRow.get("COLUMN_NAME") != null && tableRow.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName)) {
+      } else if (tableRow.get("COLUMN_NAME") != null
+          && tableRow.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName)) {
         field = Optional.of(tableRow);
         nullableColumnName = "IS_NULLABLE";
       }
@@ -417,17 +443,26 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       if (isNullable != null) {
         if (isNullable.asText().equalsIgnoreCase("YES")) {
           final String query = schema == null || schema.isBlank()
-              ? String.format(NULL_CURSOR_VALUE_WITHOUT_SCHEMA_QUERY,
-                  tableName, columnName, resultColName)
-              : String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
-                  schema, tableName, columnName, resultColName);
+              ? String.format(
+                  NULL_CURSOR_VALUE_WITHOUT_SCHEMA_QUERY, tableName, columnName, resultColName)
+              : String.format(
+                  NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
+                  schema,
+                  tableName,
+                  columnName,
+                  resultColName);
 
           LOGGER.debug("null value query: {}", query);
-          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+              conn -> conn.createStatement().executeQuery(query),
               resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
           Preconditions.checkState(jsonNodes.size() == 1);
           nullValExist = convertToBoolean(jsonNodes.get(0).get(resultColName).toString());
-          LOGGER.info("null cursor value for MySQL source : {}, shema {} , tableName {}, columnName {} ", nullValExist, schema, tableName,
+          LOGGER.info(
+              "null cursor value for MySQL source : {}, shema {} , tableName {}, columnName {} ",
+              nullValExist,
+              schema,
+              tableName,
               columnName);
         }
       }
@@ -451,10 +486,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   protected static String toSslJdbcParamInternal(final SslMode sslMode) {
-    final var result = switch (sslMode) {
-      case DISABLED, PREFERRED, REQUIRED, VERIFY_CA, VERIFY_IDENTITY -> sslMode.name();
-      default -> throw new IllegalArgumentException("unexpected ssl mode");
-    };
+    final var result =
+        switch (sslMode) {
+          case DISABLED, PREFERRED, REQUIRED, VERIFY_CA, VERIFY_IDENTITY -> sslMode.name();
+          default -> throw new IllegalArgumentException("unexpected ssl mode");
+        };
     return result;
   }
 
@@ -464,36 +500,41 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.USERNAME_KEY)
+            ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()
+            : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY)
+            ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
+            : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         this.getConnectionProperties(sourceConfig));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
-    final JdbcDatabase database = new StreamingJdbcDatabase(
-        dataSource,
-        sourceOperations,
-        streamingQueryConfigProvider);
+    final JdbcDatabase database =
+        new StreamingJdbcDatabase(dataSource, sourceOperations, streamingQueryConfigProvider);
 
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    quoteString =
+        (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
     return database;
   }
 
   public Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties =
-        config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
-            ? parseJdbcParameters(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), DEFAULT_JDBC_PARAMETERS_DELIMITER)
-            : new HashMap<>();
-    final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
+    final Map<String, String> customProperties = config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
+        ? parseJdbcParameters(
+            config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), DEFAULT_JDBC_PARAMETERS_DELIMITER)
+        : new HashMap<>();
+    final Map<String, String> defaultProperties =
+        JdbcDataSourceUtils.getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);
   }
 
-  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
+  public static Map<String, String> parseJdbcParameters(
+      final String jdbcPropertiesString, final String delimiter) {
     final Map<String, String> parameters = new HashMap<>();
     if (!jdbcPropertiesString.isBlank()) {
       final String[] keyValuePairs = jdbcPropertiesString.split(delimiter);
@@ -524,5 +565,4 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     STANDARD,
     CDC
   }
-
 }

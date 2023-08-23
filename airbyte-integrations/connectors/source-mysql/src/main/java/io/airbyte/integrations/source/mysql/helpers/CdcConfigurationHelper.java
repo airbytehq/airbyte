@@ -40,14 +40,15 @@ public class CdcConfigurationHelper {
    * @return list of List<CheckedConsumer<JdbcDatabase, Exception>>
    */
   public static List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations() {
-    return List.of(getMasterStatusOperation(),
+    return List.of(
+        getMasterStatusOperation(),
         getCheckOperation(LOG_BIN, "ON"),
         getCheckOperation(BINLOG_FORMAT, "ROW"),
         getCheckOperation(BINLOG_ROW_IMAGE, "FULL"));
-
   }
 
-  // Checks whether the user has REPLICATION CLIENT privilege needed to query status information about
+  // Checks whether the user has REPLICATION CLIENT privilege needed to query status information
+  // about
   // the binary log files, which are needed for CDC.
   private static CheckedConsumer<JdbcDatabase, Exception> getMasterStatusOperation() {
     return database -> {
@@ -56,16 +57,20 @@ public class CdcConfigurationHelper {
             connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
             resultSet -> resultSet);
       } catch (final SQLException e) {
-        throw new ConfigErrorException("Please grant REPLICATION CLIENT privilege, so that binary log files are available"
-            + " for CDC mode.");
+        throw new ConfigErrorException(
+            "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+                + " for CDC mode.");
       }
     };
   }
 
-  private static CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(final String name, final String value) {
+  private static CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(
+      final String name, final String value) {
     return database -> {
       final List<String> result = database.queryStrings(
-          connection -> connection.createStatement().executeQuery(String.format("show variables where Variable_name = '%s'", name)),
+          connection -> connection
+              .createStatement()
+              .executeQuery(String.format("show variables where Variable_name = '%s'", name)),
           resultSet -> resultSet.getString("Value"));
 
       if (result.size() != 1) {
@@ -74,7 +79,9 @@ public class CdcConfigurationHelper {
 
       final String resultValue = result.get(0);
       if (!resultValue.equalsIgnoreCase(value)) {
-        throw new RuntimeException(String.format("The variable \"%s\" should be set to \"%s\", but it is \"%s\"", name, value, resultValue));
+        throw new RuntimeException(String.format(
+            "The variable \"%s\" should be set to \"%s\", but it is \"%s\"",
+            name, value, resultValue));
       }
     };
   }
@@ -82,7 +89,8 @@ public class CdcConfigurationHelper {
   private static Optional<String> getCdcServerTimezone(final JsonNode config) {
     final JsonNode replicationMethod = config.get("replication_method");
     if (replicationMethod != null && replicationMethod.has("server_time_zone")) {
-      final String serverTimeZone = config.get("replication_method").get("server_time_zone").asText();
+      final String serverTimeZone =
+          config.get("replication_method").get("server_time_zone").asText();
       return Optional.of(serverTimeZone);
     }
     return Optional.empty();
@@ -93,10 +101,11 @@ public class CdcConfigurationHelper {
     if (serverTimeZone.isPresent()) {
       final String timeZone = serverTimeZone.get();
       if (!timeZone.isEmpty() && !ZoneId.getAvailableZoneIds().contains((timeZone))) {
-        throw new IllegalArgumentException(String.format("Given timezone %s is not valid. The given timezone must conform to the IANNA standard. "
-            + "See https://www.iana.org/time-zones for more details", serverTimeZone.get()));
+        throw new IllegalArgumentException(String.format(
+            "Given timezone %s is not valid. The given timezone must conform to the IANNA standard. "
+                + "See https://www.iana.org/time-zones for more details",
+            serverTimeZone.get()));
       }
     }
   }
-
 }

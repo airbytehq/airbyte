@@ -20,5 +20,4 @@ public class R2Destination extends BaseS3Destination {
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
-
 }

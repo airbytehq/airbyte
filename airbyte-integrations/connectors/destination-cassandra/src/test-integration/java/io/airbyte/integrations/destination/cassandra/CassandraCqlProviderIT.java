@@ -53,7 +53,8 @@ class CassandraCqlProviderIT {
   @Test
   void testCreateTableIfNotExists() {
     String table = nameTransformer.outputTable("test_stream");
-    assertDoesNotThrow(() -> cassandraCqlProvider.createTableIfNotExists(CASSANDRA_KEYSPACE, table));
+    assertDoesNotThrow(
+        () -> cassandraCqlProvider.createTableIfNotExists(CASSANDRA_KEYSPACE, table));
   }
 
   @Test
@@ -73,7 +74,6 @@ class CassandraCqlProviderIT {
         .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
         .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"))
         .anyMatch(r -> r.getData().equals("{\"property\":\"data3\"}"));
-
   }
 
   @Test
@@ -88,9 +88,7 @@ class CassandraCqlProviderIT {
     var resultSet = cassandraCqlProvider.select(CASSANDRA_KEYSPACE, CASSANDRA_TABLE);
 
     // then
-    assertThat(resultSet)
-        .isNotNull()
-        .isEmpty();
+    assertThat(resultSet).isNotNull().isEmpty();
   }
 
   @Test
@@ -103,7 +101,8 @@ class CassandraCqlProviderIT {
     cassandraCqlProvider.dropTableIfExists(CASSANDRA_KEYSPACE, table);
 
     // then
-    assertThrows(InvalidQueryException.class, () -> cassandraCqlProvider.select(CASSANDRA_KEYSPACE, table));
+    assertThrows(
+        InvalidQueryException.class, () -> cassandraCqlProvider.select(CASSANDRA_KEYSPACE, table));
   }
 
   @Test
@@ -129,7 +128,5 @@ class CassandraCqlProviderIT {
         .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
         .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"))
         .anyMatch(r -> r.getData().equals("{\"property\":\"data3\"}"));
-
   }
-
 }

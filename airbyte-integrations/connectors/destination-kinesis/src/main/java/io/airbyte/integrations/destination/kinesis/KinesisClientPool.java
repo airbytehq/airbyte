@@ -13,15 +13,14 @@ import software.amazon.awssdk.services.kinesis.KinesisClient;
  */
 public class KinesisClientPool {
 
-  private static final ConcurrentHashMap<KinesisConfig, Tuple<KinesisClient, AtomicInteger>> clients;
+  private static final ConcurrentHashMap<KinesisConfig, Tuple<KinesisClient, AtomicInteger>>
+      clients;
 
   static {
     clients = new ConcurrentHashMap<>();
   }
 
-  private KinesisClientPool() {
-
-  }
+  private KinesisClientPool() {}
 
   /**
    * Initializes a Kinesis client for accessing Kinesis. If there is already an existing client with
@@ -61,5 +60,4 @@ public class KinesisClientPool {
       clients.remove(kinesisConfig);
     }
   }
-
 }

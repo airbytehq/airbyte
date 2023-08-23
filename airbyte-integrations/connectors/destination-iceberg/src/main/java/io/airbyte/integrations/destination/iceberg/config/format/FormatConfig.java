@@ -40,25 +40,27 @@ public class FormatConfig {
 
     // flushBatchSize
     if (formatConfigJson.has(FLUSH_BATCH_SIZE_CONFIG_KEY)) {
-      this.flushBatchSize = formatConfigJson.get(FLUSH_BATCH_SIZE_CONFIG_KEY).asInt(DEFAULT_FLUSH_BATCH_SIZE);
+      this.flushBatchSize =
+          formatConfigJson.get(FLUSH_BATCH_SIZE_CONFIG_KEY).asInt(DEFAULT_FLUSH_BATCH_SIZE);
     } else {
       this.flushBatchSize = DEFAULT_FLUSH_BATCH_SIZE;
     }
 
     // autoCompact
     if (formatConfigJson.has(AUTO_COMPACT_CONFIG_KEY)) {
-      this.autoCompact = formatConfigJson.get(AUTO_COMPACT_CONFIG_KEY).asBoolean(DEFAULT_AUTO_COMPACT);
+      this.autoCompact =
+          formatConfigJson.get(AUTO_COMPACT_CONFIG_KEY).asBoolean(DEFAULT_AUTO_COMPACT);
     } else {
       this.autoCompact = DEFAULT_AUTO_COMPACT;
     }
 
     // compactTargetFileSizeInMb
     if (formatConfigJson.has(COMPACT_TARGET_FILE_SIZE_IN_MB_CONFIG_KEY)) {
-      this.compactTargetFileSizeInMb = formatConfigJson.get(COMPACT_TARGET_FILE_SIZE_IN_MB_CONFIG_KEY)
+      this.compactTargetFileSizeInMb = formatConfigJson
+          .get(COMPACT_TARGET_FILE_SIZE_IN_MB_CONFIG_KEY)
           .asInt(DEFAULT_COMPACT_TARGET_FILE_SIZE_IN_MB);
     } else {
       this.compactTargetFileSizeInMb = DEFAULT_COMPACT_TARGET_FILE_SIZE_IN_MB;
     }
   }
-
 }

@@ -44,7 +44,8 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   private EnvironmentVariables environmentVariables;
 
   @Override
-  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog)
+      throws Exception {
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync is null");
     }
@@ -71,7 +72,8 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
     if (stateAfterFirstBatch == null || stateAfterFirstBatch.isEmpty()) {
       throw new RuntimeException("stateAfterFirstBatch should not be null or empty");
     }
-    stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
+    stateAfterFirstSync = Jsons.jsonNode(
+        Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync should not be null");
     }
@@ -87,7 +89,8 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   protected Database setupDatabase() throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>("postgres:14-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
@@ -119,7 +122,8 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -158,61 +162,67 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
 
   @Override
   protected void addMoneyTest() {
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("money")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .addInsertValues(
-                "null",
-                "'999.99'", "'1,001.01'", "'-1,000'",
-                "'$999.99'", "'$1001.01'", "'-$1,000'"
+    addDataTypeTestData(TestDataHolder.builder()
+        .sourceType("money")
+        .airbyteType(JsonSchemaType.NUMBER)
+        .addInsertValues(
+            "null", "'999.99'", "'1,001.01'", "'-1,000'", "'$999.99'", "'$1001.01'", "'-$1,000'"
             // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
-            // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+            // Debezium has wrong parsing for values more than 999999999999999 and less than
+            // -999999999999999
             // https://github.com/airbytehq/airbyte/issues/7338
-            /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
-            .addExpectedValues(
-                null,
-                "999.99", "1001.01", "-1000.00",
-                "999.99", "1001.01", "-1000.00"
-            /* "-92233720368547758.08", "92233720368547758.07" */)
-            .build());
+            /* "'-92233720368547758.08'", "'92233720368547758.07'" */ )
+        .addExpectedValues(
+            null, "999.99", "1001.01", "-1000.00", "999.99", "1001.01", "-1000.00"
+            /* "-92233720368547758.08", "92233720368547758.07" */ )
+        .build());
   }
 
   @Override
   protected void addTimeWithTimeZoneTest() {
     // time with time zone
     for (final String fullSourceType : Set.of("timetz", "time with time zone")) {
-      addDataTypeTestData(
-          TestDataHolder.builder()
-              .sourceType("timetz")
-              .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
-              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
-              // A time value without time zone will use the time zone set on the database, which is Z-7,
-              // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "20:00:01Z", "05:00:00.000000Z", "21:00:03Z", "13:00:04Z", "21:00:05.012345Z",
-                  "05:00:06Z")
-              .build());
+      addDataTypeTestData(TestDataHolder.builder()
+          .sourceType("timetz")
+          .fullSourceDataType(fullSourceType)
+          .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+          .addInsertValues(
+              "null",
+              "'13:00:01'",
+              "'13:00:00+8'",
+              "'13:00:03-8'",
+              "'13:00:04Z'",
+              "'13:00:05.012345Z+8'",
+              "'13:00:06.00000Z-8'")
+          // A time value without time zone will use the time zone set on the database, which is
+          // Z-7,
+          // so 13:00:01 is returned as 13:00:01-07.
+          .addExpectedValues(
+              null,
+              "20:00:01Z",
+              "05:00:00.000000Z",
+              "21:00:03Z",
+              "13:00:04Z",
+              "21:00:05.012345Z",
+              "05:00:06Z")
+          .build());
     }
   }
 
   @Override
   protected void addTimestampWithInfinityValuesTest() {
     // timestamp without time zone
-    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
-      addDataTypeTestData(
-          TestDataHolder.builder()
-              .sourceType("timestamp")
-              .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues(
-                  "'infinity'",
-                  "'-infinity'")
-              .addExpectedValues(
-                  "+294247-01-10T04:00:25.200000",
-                  "+290309-12-21T19:59:27.600000 BC")
-              .build());
+    for (final String fullSourceType : Set.of(
+        "timestamp",
+        "timestamp without time zone",
+        "timestamp without time zone not null default now()")) {
+      addDataTypeTestData(TestDataHolder.builder()
+          .sourceType("timestamp")
+          .fullSourceDataType(fullSourceType)
+          .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+          .addInsertValues("'infinity'", "'-infinity'")
+          .addExpectedValues("+294247-01-10T04:00:25.200000", "+290309-12-21T19:59:27.600000 BC")
+          .build());
     }
   }
-
 }

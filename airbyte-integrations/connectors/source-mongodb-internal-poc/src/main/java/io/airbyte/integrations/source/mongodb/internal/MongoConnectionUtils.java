@@ -33,11 +33,11 @@ public class MongoConnectionUtils {
   public static MongoClient createMongoClient(final JsonNode config) {
     final String authSource = config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText();
 
-    final ConnectionString mongoConnectionString = new ConnectionString(buildConnectionString(config));
+    final ConnectionString mongoConnectionString =
+        new ConnectionString(buildConnectionString(config));
 
-    final MongoDriverInformation mongoDriverInformation = MongoDriverInformation.builder()
-        .driverName("Airbyte")
-        .build();
+    final MongoDriverInformation mongoDriverInformation =
+        MongoDriverInformation.builder().driverName("Airbyte").build();
 
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
         .applyConnectionString(mongoConnectionString)
@@ -46,14 +46,16 @@ public class MongoConnectionUtils {
     if (config.has(USER_CONFIGURATION_KEY) && config.has(PASSWORD_CONFIGURATION_KEY)) {
       final String user = config.get(USER_CONFIGURATION_KEY).asText();
       final String password = config.get(PASSWORD_CONFIGURATION_KEY).asText();
-      mongoClientSettingsBuilder.credential(MongoCredential.createCredential(user, authSource, password.toCharArray()));
+      mongoClientSettingsBuilder.credential(
+          MongoCredential.createCredential(user, authSource, password.toCharArray()));
     }
 
     return MongoClients.create(mongoClientSettingsBuilder.build(), mongoDriverInformation);
   }
 
   private static String buildConnectionString(final JsonNode config) {
-    final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText();
+    final String connectionString =
+        config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText();
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
     final StringBuilder builder = new StringBuilder();
     builder.append(connectionString);
@@ -64,5 +66,4 @@ public class MongoConnectionUtils {
     builder.append("&tls=true");
     return builder.toString();
   }
-
 }

@@ -60,7 +60,9 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       LOGGER.error("Exception attempting to access the staging persistence: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the staging persistence with the provided configuration. \n" + e.getMessage());
+          .withMessage(
+              "Could not connect to the staging persistence with the provided configuration. \n"
+                  + e.getMessage());
     }
 
     final DataSource dataSource = getDataSource(config);
@@ -68,13 +70,15 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final var nameTransformer = getNameTransformer();
-      final var outputSchema = nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
+      final var outputSchema =
+          nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
       performCreateInsertTestOnDestination(outputSchema, database, nameTransformer);
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       LOGGER.info("Exception while checking connection: ", ex);
-      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      final String message =
+          getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -83,7 +87,8 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       LOGGER.error("Exception attempting to connect to the warehouse: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the warehouse with the provided configuration. \n" + e.getMessage());
+          .withMessage("Could not connect to the warehouse with the provided configuration. \n"
+              + e.getMessage());
     } finally {
       try {
         DataSourceFactory.close(dataSource);
@@ -93,11 +98,12 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
     }
   }
 
-  protected void performCreateInsertTestOnDestination(final String outputSchema,
-                                                      final JdbcDatabase database,
-                                                      final NamingConventionTransformer nameTransformer)
+  protected void performCreateInsertTestOnDestination(
+      final String outputSchema,
+      final JdbcDatabase database,
+      final NamingConventionTransformer nameTransformer)
       throws Exception {
-    AbstractJdbcDestination.attemptTableOperations(outputSchema, database, nameTransformer, getSqlOperations(), true);
+    AbstractJdbcDestination.attemptTableOperations(
+        outputSchema, database, nameTransformer, getSqlOperations(), true);
   }
-
 }

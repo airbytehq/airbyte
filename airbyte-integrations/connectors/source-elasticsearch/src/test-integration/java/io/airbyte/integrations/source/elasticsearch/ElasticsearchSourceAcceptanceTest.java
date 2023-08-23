@@ -32,7 +32,8 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchSourceAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ElasticsearchSourceAcceptanceTest.class);
   private static final ObjectMapper mapper = MoreMappers.initMapper();
   private static final String index = "sample";
   private static ElasticsearchContainer container;
@@ -47,7 +48,9 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getConfig() {
     var configJson = mapper.createObjectNode();
-    configJson.put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
+    configJson.put(
+        "endpoint",
+        String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
     return configJson;
   }
 
@@ -82,7 +85,8 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws IOException {
-    return Jsons.deserialize(MoreResources.readResource("configured_catalog.json"), ConfiguredAirbyteCatalog.class);
+    return Jsons.deserialize(
+        MoreResources.readResource("configured_catalog.json"), ConfiguredAirbyteCatalog.class);
   }
 
   @Override
@@ -91,14 +95,16 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void getRestHighLevelClient(ElasticsearchContainer container) {
-    RestClientBuilder restClientBuilder =
-        RestClient.builder(HttpHost.create(container.getHttpHostAddress())).setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder);
+    RestClientBuilder restClientBuilder = RestClient.builder(
+            HttpHost.create(container.getHttpHostAddress()))
+        .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder);
     client = new RestHighLevelClient(restClientBuilder);
   }
 
   private void createIndex(final RestHighLevelClient client) throws IOException {
     CreateIndexRequest request = new CreateIndexRequest(index);
-    CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
+    CreateIndexResponse createIndexResponse =
+        client.indices().create(request, RequestOptions.DEFAULT);
     if (createIndexResponse.isAcknowledged()) {
       LOGGER.info("Successfully created index: {}", index);
     }
@@ -107,11 +113,8 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
   private void addDocument(final RestHighLevelClient client) throws IOException {
     IndexRequest indexRequest = new IndexRequest(index)
         .id("1")
-        .source("user", "kimchy",
-            "postDate", new Date(),
-            "message", "trying out Elasticsearch");
+        .source("user", "kimchy", "postDate", new Date(), "message", "trying out Elasticsearch");
     IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
     LOGGER.info("Index response status: {}", indexResponse.status());
   }
-
 }

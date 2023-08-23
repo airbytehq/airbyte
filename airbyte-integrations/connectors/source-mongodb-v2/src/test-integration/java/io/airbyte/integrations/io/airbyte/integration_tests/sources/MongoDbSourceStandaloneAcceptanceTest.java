@@ -34,14 +34,19 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
 
   private MongoDBContainer mongoDBContainer;
 
-  private static final List<Field> SUB_FIELDS = List.of(
-      Field.of("testObject", JsonSchemaType.OBJECT, List.of(
+  private static final List<Field> SUB_FIELDS = List.of(Field.of(
+      "testObject",
+      JsonSchemaType.OBJECT,
+      List.of(
           Field.of("name", JsonSchemaType.STRING),
           Field.of("testField1", JsonSchemaType.STRING),
           Field.of("testInt", JsonSchemaType.NUMBER),
-          Field.of("thirdLevelDocument", JsonSchemaType.OBJECT, List.of(
-              Field.of("data", JsonSchemaType.STRING),
-              Field.of("intData", JsonSchemaType.NUMBER))))));
+          Field.of(
+              "thirdLevelDocument",
+              JsonSchemaType.OBJECT,
+              List.of(
+                  Field.of("data", JsonSchemaType.STRING),
+                  Field.of("intData", JsonSchemaType.NUMBER))))));
 
   private static final List<Field> FIELDS = List.of(
       Field.of("id", JsonSchemaType.STRING),
@@ -71,22 +76,37 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("auth_source", "admin")
         .build());
 
-    final var connectionString = String.format("mongodb://%s:%s/",
-        mongoDBContainer.getHost(),
-        mongoDBContainer.getFirstMappedPort());
+    final var connectionString = String.format(
+        "mongodb://%s:%s/", mongoDBContainer.getHost(), mongoDBContainer.getFirstMappedPort());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
-    final var objectDocument = new Document("testObject", new Document("name", "subName").append("testField1", "testField1").append("testInt", 10)
-        .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
-    final var doc1 = new Document("id", "0001").append("name", "Test")
-        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
-        .append("double_test", 100.12).append("int_test", 100).append("object_test", objectDocument);
-    final var doc2 =
-        new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201).append("object_test", objectDocument);
-    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
-        .append("double_test", 212.11).append("int_test", 302).append("object_test", objectDocument);
+    final var objectDocument = new Document(
+        "testObject",
+        new Document("name", "subName")
+            .append("testField1", "testField1")
+            .append("testInt", 10)
+            .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
+    final var doc1 = new Document("id", "0001")
+        .append("name", "Test")
+        .append("test", 10)
+        .append(
+            "test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12)
+        .append("int_test", 100)
+        .append("object_test", objectDocument);
+    final var doc2 = new Document("id", "0002")
+        .append("name", "Mongo")
+        .append("test", "test_value")
+        .append("int_test", 201)
+        .append("object_test", objectDocument);
+    final var doc3 = new Document("id", "0003")
+        .append("name", "Source")
+        .append("test", null)
+        .append("double_test", 212.11)
+        .append("int_test", 302)
+        .append("object_test", objectDocument);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
@@ -144,5 +164,4 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: -3"));
   }
-
 }

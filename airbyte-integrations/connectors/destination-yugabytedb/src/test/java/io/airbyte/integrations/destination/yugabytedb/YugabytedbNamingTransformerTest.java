@@ -24,7 +24,5 @@ class YugabytedbNamingTransformerTest {
     var defaultCase = yugabytedbNamingTransformer.applyDefaultCase("DEFAULT_CASE");
 
     assertThat(defaultCase).isEqualTo("default_case");
-
   }
-
 }

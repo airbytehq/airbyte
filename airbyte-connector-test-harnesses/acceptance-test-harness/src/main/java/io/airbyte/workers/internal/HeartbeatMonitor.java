@@ -27,7 +27,8 @@ public class HeartbeatMonitor {
   }
 
   @VisibleForTesting
-  public HeartbeatMonitor(final Duration heartBeatFreshDuration, final Supplier<Instant> nowSupplier) {
+  public HeartbeatMonitor(
+      final Duration heartBeatFreshDuration, final Supplier<Instant> nowSupplier) {
     this.heartBeatFreshDuration = heartBeatFreshDuration;
     this.nowSupplier = nowSupplier;
     this.lastBeat = new AtomicReference<>(null);
@@ -50,5 +51,4 @@ public class HeartbeatMonitor {
     final Instant now = nowSupplier.get();
     return instantFetched != null && instantFetched.plus(heartBeatFreshDuration).isAfter(now);
   }
-
 }

@@ -12,5 +12,4 @@ public class ClickhouseSQLNameTransformer extends StandardNameTransformer {
   public String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
-
 }

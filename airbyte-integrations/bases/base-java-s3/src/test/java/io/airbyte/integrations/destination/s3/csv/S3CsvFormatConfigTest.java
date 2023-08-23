@@ -46,18 +46,19 @@ public class S3CsvFormatConfigTest {
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
 
-    final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
-        .getS3DestinationConfig(config);
+    final S3DestinationConfig s3DestinationConfig =
+        S3DestinationConfig.getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
     final S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
     assertEquals("CSV", formatConfig.getFormat().name());
     // Assert that is set properly in config
-    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
-        .create(s3DestinationConfig.getBucketName(), "objectKey", null)
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory.create(
+            s3DestinationConfig.getBucketName(), "objectKey", null)
         .get();
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
@@ -69,38 +70,38 @@ public class S3CsvFormatConfigTest {
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
 
-    final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
-        .getS3DestinationConfig(config);
+    final S3DestinationConfig s3DestinationConfig =
+        S3DestinationConfig.getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
-    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
-        .create(s3DestinationConfig.getBucketName(), "objectKey", null)
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory.create(
+            s3DestinationConfig.getBucketName(), "objectKey", null)
         .get();
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
   @Test
   public void testGzipCompressionConfig() {
     // without gzip compression config
-    final JsonNode configWithoutGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"CSV\"\n"
-        + "}"));
-    final S3DestinationConfig s3ConfigWithoutGzipCompression = S3DestinationConfig.getS3DestinationConfig(configWithoutGzipCompression);
+    final JsonNode configWithoutGzipCompression = ConfigTestUtils.getBaseConfig(
+        Jsons.deserialize("{\n" + "  \"format_type\": \"CSV\"\n" + "}"));
+    final S3DestinationConfig s3ConfigWithoutGzipCompression =
+        S3DestinationConfig.getS3DestinationConfig(configWithoutGzipCompression);
     assertEquals(
         S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
-        ((S3CsvFormatConfig) s3ConfigWithoutGzipCompression.getFormatConfig()).getCompressionType());
+        ((S3CsvFormatConfig) s3ConfigWithoutGzipCompression.getFormatConfig())
+            .getCompressionType());
 
     // with gzip compression config
-    final JsonNode configWithGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"CSV\",\n"
-        + "  \"gzip_compression\": false\n"
-        + "}"));
-    final S3DestinationConfig gcsConfigWithGzipCompression = S3DestinationConfig.getS3DestinationConfig(configWithGzipCompression);
+    final JsonNode configWithGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize(
+        "{\n" + "  \"format_type\": \"CSV\",\n" + "  \"gzip_compression\": false\n" + "}"));
+    final S3DestinationConfig gcsConfigWithGzipCompression =
+        S3DestinationConfig.getS3DestinationConfig(configWithGzipCompression);
     assertEquals(
         CompressionType.GZIP,
         ((S3CsvFormatConfig) gcsConfigWithGzipCompression.getFormatConfig()).getCompressionType());
   }
-
 }

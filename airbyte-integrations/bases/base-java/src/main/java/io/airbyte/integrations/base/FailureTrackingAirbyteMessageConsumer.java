@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingAirbyteMessageConsumer.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(FailureTrackingAirbyteMessageConsumer.class);
 
   private boolean hasFailed = false;
 
@@ -81,5 +82,4 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     }
     close(hasFailed);
   }
-
 }

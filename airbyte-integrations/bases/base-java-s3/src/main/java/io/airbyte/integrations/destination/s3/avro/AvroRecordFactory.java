@@ -31,7 +31,8 @@ public class AvroRecordFactory {
     this.converter = converter;
   }
 
-  public GenericData.Record getAvroRecord(final UUID id, final AirbyteRecordMessage recordMessage) throws JsonProcessingException {
+  public GenericData.Record getAvroRecord(final UUID id, final AirbyteRecordMessage recordMessage)
+      throws JsonProcessingException {
     final ObjectNode jsonRecord = MAPPER.createObjectNode();
     if (TypingAndDedupingFlag.isDestinationV2()) {
       jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, id.toString());
@@ -50,5 +51,4 @@ public class AvroRecordFactory {
     var bytes = WRITER.writeValueAsBytes(formattedData);
     return converter.convertToGenericDataRecord(bytes, schema);
   }
-
 }

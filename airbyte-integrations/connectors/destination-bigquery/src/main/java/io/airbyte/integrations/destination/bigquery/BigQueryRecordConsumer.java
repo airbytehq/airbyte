@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Record Consumer used for STANDARD INSERTS
  */
-public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
+public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer
+    implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
 
@@ -46,8 +47,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final boolean use1s1t;
   private final TyperDeduper typerDeduper;
 
-
-  public BigQueryRecordConsumer(final BigQuery bigquery,
+  public BigQueryRecordConsumer(
+      final BigQuery bigquery,
       final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
       final Consumer<AirbyteMessage> outputRecordCollector,
       final String defaultDatasetId,
@@ -75,19 +76,20 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         StreamConfig stream = catalog.getStream(streamId);
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
           // For streams in overwrite mode, truncate the raw table.
-          // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
+          // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do
+          // this in
           // 1s1t mode.
-          final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+          final TableId rawTableId =
+              TableId.of(stream.id().rawNamespace(), stream.id().rawName());
           bigquery.delete(rawTableId);
-          BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+          BigQueryUtils.createPartitionedTableIfNotExists(
+              bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
         } else {
           uploader.createRawTable();
         }
       });
     }
   }
-
-
 
   /**
    * Processes STATE and RECORD {@link AirbyteMessage} with all else logged as unexpected
@@ -141,8 +143,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     });
     typerDeduper.commitFinalTables();
     if (!exceptionsThrown.isEmpty()) {
-      throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
+      throw new RuntimeException(String.format(
+          "Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
     }
   }
-
 }

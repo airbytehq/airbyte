@@ -18,7 +18,5 @@ class RedpandaNameTransformerTest {
     String topicName = redpandaNameTransformer.topicName("namespace", "stream");
 
     assertThat(topicName).isEqualTo("namespace_stream");
-
   }
-
 }

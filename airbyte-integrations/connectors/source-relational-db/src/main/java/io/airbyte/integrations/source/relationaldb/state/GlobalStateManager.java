@@ -35,7 +35,8 @@ import java.util.stream.Collectors;
  * This implementation generates a single, global state object for the state tracked by this
  * manager.
  */
-public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
+public class GlobalStateManager
+    extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
 
   /**
    * Legacy {@link CdcStateManager} used to manage state for connectors that support Change Data
@@ -51,8 +52,10 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
    * @param catalog The {@link ConfiguredAirbyteCatalog} for the connector associated with this state
    *        manager.
    */
-  public GlobalStateManager(final AirbyteStateMessage airbyteStateMessage, final ConfiguredAirbyteCatalog catalog) {
-    super(catalog,
+  public GlobalStateManager(
+      final AirbyteStateMessage airbyteStateMessage, final ConfiguredAirbyteCatalog catalog) {
+    super(
+        catalog,
         getStreamsSupplier(airbyteStateMessage),
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
@@ -60,7 +63,10 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
         NAME_NAMESPACE_PAIR_FUNCTION,
         true);
 
-    this.cdcStateManager = new CdcStateManager(extractCdcState(airbyteStateMessage), extractStreams(airbyteStateMessage), airbyteStateMessage);
+    this.cdcStateManager = new CdcStateManager(
+        extractCdcState(airbyteStateMessage),
+        extractStreams(airbyteStateMessage),
+        airbyteStateMessage);
   }
 
   @Override
@@ -70,7 +76,8 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
 
   @Override
   public List<AirbyteStateMessage> getRawStateMessages() {
-    throw new UnsupportedOperationException("Raw state retrieval not supported by global state manager.");
+    throw new UnsupportedOperationException(
+        "Raw state retrieval not supported by global state manager.");
   }
 
   @Override
@@ -78,7 +85,8 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
     // Populate global state
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(getCdcStateManager().getCdcState()));
-    globalState.setStreamStates(StateGeneratorUtils.generateStreamStateList(getPairToCursorInfoMap()));
+    globalState.setStreamStates(
+        StateGeneratorUtils.generateStreamStateList(getPairToCursorInfoMap()));
 
     // Generate the legacy state for backwards compatibility
     final DbState dbState = StateGeneratorUtils.generateDbState(getPairToCursorInfoMap())
@@ -110,24 +118,34 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
     }
   }
 
-  private Set<AirbyteStreamNameNamespacePair> extractStreams(final AirbyteStateMessage airbyteStateMessage) {
+  private Set<AirbyteStreamNameNamespacePair> extractStreams(
+      final AirbyteStateMessage airbyteStateMessage) {
     if (airbyteStateMessage.getType() == AirbyteStateType.GLOBAL) {
       return airbyteStateMessage.getGlobal().getStreamStates().stream()
           .map(streamState -> {
             final AirbyteStreamState cloned = Jsons.clone(streamState);
-            return new AirbyteStreamNameNamespacePair(cloned.getStreamDescriptor().getName(), cloned.getStreamDescriptor().getNamespace());
-          }).collect(Collectors.toSet());
+            return new AirbyteStreamNameNamespacePair(
+                cloned.getStreamDescriptor().getName(),
+                cloned.getStreamDescriptor().getNamespace());
+          })
+          .collect(Collectors.toSet());
     } else {
       final DbState legacyState = Jsons.object(airbyteStateMessage.getData(), DbState.class);
-      return legacyState != null ? extractNamespacePairsFromDbStreamState(legacyState.getStreams()) : Collections.emptySet();
+      return legacyState != null
+          ? extractNamespacePairsFromDbStreamState(legacyState.getStreams())
+          : Collections.emptySet();
     }
   }
 
-  private Set<AirbyteStreamNameNamespacePair> extractNamespacePairsFromDbStreamState(final List<DbStreamState> streams) {
-    return streams.stream().map(stream -> {
-      final DbStreamState cloned = Jsons.clone(stream);
-      return new AirbyteStreamNameNamespacePair(cloned.getStreamName(), cloned.getStreamNamespace());
-    }).collect(Collectors.toSet());
+  private Set<AirbyteStreamNameNamespacePair> extractNamespacePairsFromDbStreamState(
+      final List<DbStreamState> streams) {
+    return streams.stream()
+        .map(stream -> {
+          final DbStreamState cloned = Jsons.clone(stream);
+          return new AirbyteStreamNameNamespacePair(
+              cloned.getStreamName(), cloned.getStreamNamespace());
+        })
+        .collect(Collectors.toSet());
   }
 
   /**
@@ -138,7 +156,8 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
    *        the initial state.
    * @return A {@link Supplier} that will be used to fetch the streams present in the initial state.
    */
-  private static Supplier<Collection<AirbyteStreamState>> getStreamsSupplier(final AirbyteStateMessage airbyteStateMessage) {
+  private static Supplier<Collection<AirbyteStreamState>> getStreamsSupplier(
+      final AirbyteStateMessage airbyteStateMessage) {
     /*
      * If the incoming message has the state type set to GLOBAL, it is using the new format. Therefore,
      * we can look for streams in the "global" field of the message. Otherwise, the message is still
@@ -149,14 +168,15 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
         return airbyteStateMessage.getGlobal().getStreamStates();
       } else if (airbyteStateMessage.getData() != null) {
         return Jsons.object(airbyteStateMessage.getData(), DbState.class).getStreams().stream()
-            .map(s -> new AirbyteStreamState().withStreamState(Jsons.jsonNode(s))
-                .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName())))
-            .collect(
-                Collectors.toList());
+            .map(s -> new AirbyteStreamState()
+                .withStreamState(Jsons.jsonNode(s))
+                .withStreamDescriptor(new StreamDescriptor()
+                    .withNamespace(s.getStreamNamespace())
+                    .withName(s.getStreamName())))
+            .collect(Collectors.toList());
       } else {
         return List.of();
       }
     };
   }
-
 }

@@ -38,7 +38,9 @@ public class RedshiftSpecTest {
   static void init() throws IOException {
     configText = MoreResources.readResource("config-test.json");
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec).toFile();
+    final File schemaFile = IOs.writeFile(
+            Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec)
+        .toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
@@ -100,5 +102,4 @@ public class RedshiftSpecTest {
     final ConnectorSpecification spec = new RedshiftSource().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
-
 }

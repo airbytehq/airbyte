@@ -23,16 +23,24 @@ public class DataTypeTestArgumentProvider implements ArgumentsProvider {
   public static final String NAN_TYPE_MESSAGE = "nan_type_test_message.txt";
   public static final String INFINITY_TYPE_MESSAGE = "nan_type_test_message.txt";
   public static final CatalogMessageTestConfigWithCompatibility BASIC_TEST =
-      new CatalogMessageTestConfigWithCompatibility("data_type_basic_test_catalog.json", "data_type_basic_test_messages.txt",
+      new CatalogMessageTestConfigWithCompatibility(
+          "data_type_basic_test_catalog.json",
+          "data_type_basic_test_messages.txt",
           new TestCompatibility(true, false, false));
   public static final CatalogMessageTestConfigWithCompatibility ARRAY_TEST =
-      new CatalogMessageTestConfigWithCompatibility("data_type_array_test_catalog.json", "data_type_array_test_messages.txt",
+      new CatalogMessageTestConfigWithCompatibility(
+          "data_type_array_test_catalog.json",
+          "data_type_array_test_messages.txt",
           new TestCompatibility(true, true, false));
   public static final CatalogMessageTestConfigWithCompatibility OBJECT_TEST =
-      new CatalogMessageTestConfigWithCompatibility("data_type_object_test_catalog.json", "data_type_object_test_messages.txt",
+      new CatalogMessageTestConfigWithCompatibility(
+          "data_type_object_test_catalog.json",
+          "data_type_object_test_messages.txt",
           new TestCompatibility(true, false, true));
   public static final CatalogMessageTestConfigWithCompatibility OBJECT_WITH_ARRAY_TEST =
-      new CatalogMessageTestConfigWithCompatibility("data_type_array_object_test_catalog.json", "data_type_array_object_test_messages.txt",
+      new CatalogMessageTestConfigWithCompatibility(
+          "data_type_array_object_test_catalog.json",
+          "data_type_array_object_test_messages.txt",
           new TestCompatibility(true, true, true));
   private ProtocolVersion protocolVersion;
 
@@ -47,52 +55,66 @@ public class DataTypeTestArgumentProvider implements ArgumentsProvider {
   }
 
   private Arguments getArguments(CatalogMessageTestConfigWithCompatibility testConfig) {
-    return Arguments.of(testConfig.getMessageFileVersion(protocolVersion), testConfig.getCatalogFileVersion(protocolVersion),
+    return Arguments.of(
+        testConfig.getMessageFileVersion(protocolVersion),
+        testConfig.getCatalogFileVersion(protocolVersion),
         testConfig.testCompatibility);
   }
 
-  public record TestCompatibility(boolean requireBasicCompatibility,
-                                  boolean requireArrayCompatibility,
-                                  boolean requireObjectCompatibility) {
+  public record TestCompatibility(
+      boolean requireBasicCompatibility,
+      boolean requireArrayCompatibility,
+      boolean requireObjectCompatibility) {
 
-    public boolean isTestCompatible(boolean supportBasicDataTypeTest, boolean supportArrayDataTypeTest, boolean supportObjectDataTypeTest) {
+    public boolean isTestCompatible(
+        boolean supportBasicDataTypeTest,
+        boolean supportArrayDataTypeTest,
+        boolean supportObjectDataTypeTest) {
       LOGGER.info("---- Data type test compatibility ----");
       LOGGER.info("| Data type test | Require | Support |");
-      LOGGER.info("| Basic test     | {}   | {}   |", (requireBasicCompatibility ? "true " : "false"),
+      LOGGER.info(
+          "| Basic test     | {}   | {}   |",
+          (requireBasicCompatibility ? "true " : "false"),
           (supportBasicDataTypeTest ? "true " : "false"));
-      LOGGER.info("| Array test     | {}   | {}   |", (requireArrayCompatibility ? "true " : "false"),
+      LOGGER.info(
+          "| Array test     | {}   | {}   |",
+          (requireArrayCompatibility ? "true " : "false"),
           (supportArrayDataTypeTest ? "true " : "false"));
-      LOGGER.info("| Object test    | {}   | {}   |", (requireObjectCompatibility ? "true " : "false"),
+      LOGGER.info(
+          "| Object test    | {}   | {}   |",
+          (requireObjectCompatibility ? "true " : "false"),
           (supportObjectDataTypeTest ? "true " : "false"));
       LOGGER.info("--------------------------------------");
 
       if (requireBasicCompatibility && !supportBasicDataTypeTest) {
-        LOGGER.warn("The destination doesn't support required Basic data type test. The test is skipped!");
+        LOGGER.warn(
+            "The destination doesn't support required Basic data type test. The test is skipped!");
         return false;
       }
       if (requireArrayCompatibility && !supportArrayDataTypeTest) {
-        LOGGER.warn("The destination doesn't support required Array data type test. The test is skipped!");
+        LOGGER.warn(
+            "The destination doesn't support required Array data type test. The test is skipped!");
         return false;
       }
       if (requireObjectCompatibility && !supportObjectDataTypeTest) {
-        LOGGER.warn("The destination doesn't support required Object data type test. The test is skipped!");
+        LOGGER.warn(
+            "The destination doesn't support required Object data type test. The test is skipped!");
         return false;
       }
 
       return true;
     }
-
   }
 
-  public static class CatalogMessageTestConfigWithCompatibility extends DataArgumentsProvider.CatalogMessageTestConfigPair {
+  public static class CatalogMessageTestConfigWithCompatibility
+      extends DataArgumentsProvider.CatalogMessageTestConfigPair {
 
     final TestCompatibility testCompatibility;
 
-    public CatalogMessageTestConfigWithCompatibility(String catalogFile, String messageFile, TestCompatibility testCompatibility) {
+    public CatalogMessageTestConfigWithCompatibility(
+        String catalogFile, String messageFile, TestCompatibility testCompatibility) {
       super(catalogFile, messageFile);
       this.testCompatibility = testCompatibility;
     }
-
   }
-
 }

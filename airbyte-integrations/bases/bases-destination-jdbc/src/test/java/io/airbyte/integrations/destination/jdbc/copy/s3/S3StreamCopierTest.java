@@ -48,9 +48,7 @@ public class S3StreamCopierTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopierTest.class);
 
   private static final S3DestinationConfig S3_CONFIG = S3DestinationConfig.create(
-      "fake-bucket",
-      "fake-bucketPath",
-      "fake-region")
+          "fake-bucket", "fake-bucketPath", "fake-region")
       .withEndpoint("fake-endpoint")
       .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
       .get();
@@ -76,24 +74,22 @@ public class S3StreamCopierTest {
 
   private List<CopyArguments> copyArguments;
 
-  private record S3CsvWriterArguments(S3DestinationConfig config,
-                                      ConfiguredAirbyteStream stream,
-                                      Timestamp uploadTime,
-                                      int uploadThreads,
-                                      int queueCapacity,
-                                      boolean writeHeader,
-                                      CSVFormat csvSettings,
-                                      CsvSheetGenerator csvSheetGenerator) {
+  private record S3CsvWriterArguments(
+      S3DestinationConfig config,
+      ConfiguredAirbyteStream stream,
+      Timestamp uploadTime,
+      int uploadThreads,
+      int queueCapacity,
+      boolean writeHeader,
+      CSVFormat csvSettings,
+      CsvSheetGenerator csvSheetGenerator) {}
 
-  }
-
-  private record CopyArguments(JdbcDatabase database,
-                               String s3FileLocation,
-                               String schema,
-                               String tableName,
-                               S3DestinationConfig s3Config) {
-
-  }
+  private record CopyArguments(
+      JdbcDatabase database,
+      String s3FileLocation,
+      String schema,
+      String tableName,
+      S3DestinationConfig s3Config) {}
 
   @BeforeEach
   public void setup() {
@@ -108,52 +104,55 @@ public class S3StreamCopierTest {
 
     // This is basically RETURNS_SELF, except with getMultiPartOutputStreams configured correctly.
     // Other non-void methods (e.g. toString()) will return null.
-    csvWriterMockedConstruction = mockConstruction(
-        S3CsvWriter.class,
-        (mock, context) -> {
-          // Normally, the S3CsvWriter would return a path that ends in a UUID, but this mock will generate an
-          // int ID to make our asserts easier.
-          doReturn(String.format("fakeOutputPath-%05d", csvWriterConstructorArguments.size())).when(mock).getOutputPath();
+    csvWriterMockedConstruction = mockConstruction(S3CsvWriter.class, (mock, context) -> {
+      // Normally, the S3CsvWriter would return a path that ends in a UUID, but this mock will
+      // generate an
+      // int ID to make our asserts easier.
+      doReturn(String.format("fakeOutputPath-%05d", csvWriterConstructorArguments.size()))
+          .when(mock)
+          .getOutputPath();
 
-          // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so
-          // manually store them on construction.
-          // _PowerMockito_ does, but I didn't want to set up that additional dependency.
-          final List<?> arguments = context.arguments();
-          csvWriterConstructorArguments.add(new S3CsvWriterArguments(
-              (S3DestinationConfig) arguments.get(0),
-              (ConfiguredAirbyteStream) arguments.get(2),
-              (Timestamp) arguments.get(3),
-              (int) arguments.get(4),
-              (int) arguments.get(5),
-              (boolean) arguments.get(6),
-              (CSVFormat) arguments.get(7),
-              (CsvSheetGenerator) arguments.get(8)));
-        });
+      // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on,
+      // so
+      // manually store them on construction.
+      // _PowerMockito_ does, but I didn't want to set up that additional dependency.
+      final List<?> arguments = context.arguments();
+      csvWriterConstructorArguments.add(new S3CsvWriterArguments(
+          (S3DestinationConfig) arguments.get(0),
+          (ConfiguredAirbyteStream) arguments.get(2),
+          (Timestamp) arguments.get(3),
+          (int) arguments.get(4),
+          (int) arguments.get(5),
+          (boolean) arguments.get(6),
+          (CSVFormat) arguments.get(7),
+          (CsvSheetGenerator) arguments.get(8)));
+    });
 
-    copier = new S3StreamCopier(
-        // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
-        "fake-staging-folder",
-        "fake-schema",
-        s3Client,
-        db,
-        new S3CopyConfig(true, S3_CONFIG),
-        new StandardNameTransformer(),
-        sqlOperations,
-        CONFIGURED_STREAM,
-        UPLOAD_TIME,
-        MAX_PARTS_PER_FILE) {
+    copier =
+        new S3StreamCopier(
+            // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
+            "fake-staging-folder",
+            "fake-schema",
+            s3Client,
+            db,
+            new S3CopyConfig(true, S3_CONFIG),
+            new StandardNameTransformer(),
+            sqlOperations,
+            CONFIGURED_STREAM,
+            UPLOAD_TIME,
+            MAX_PARTS_PER_FILE) {
 
-      @Override
-      public void copyS3CsvFileIntoTable(
-                                         final JdbcDatabase database,
-                                         final String s3FileLocation,
-                                         final String schema,
-                                         final String tableName,
-                                         final S3DestinationConfig s3Config) {
-        copyArguments.add(new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
-      }
-
-    };
+          @Override
+          public void copyS3CsvFileIntoTable(
+              final JdbcDatabase database,
+              final String s3FileLocation,
+              final String schema,
+              final String tableName,
+              final S3DestinationConfig s3Config) {
+            copyArguments.add(
+                new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
+          }
+        };
   }
 
   @AfterEach
@@ -163,7 +162,8 @@ public class S3StreamCopierTest {
 
   @Test
   public void createSequentialStagingFiles_when_multipleFilesRequested() {
-    // When we call prepareStagingFile() the first time, it should create exactly one S3CsvWriter. The
+    // When we call prepareStagingFile() the first time, it should create exactly one S3CsvWriter.
+    // The
     // next (MAX_PARTS_PER_FILE - 1) invocations
     // should reuse that same writer.
     for (var i = 0; i < MAX_PARTS_PER_FILE; i++) {
@@ -231,30 +231,31 @@ public class S3StreamCopierTest {
 
   @Test
   public void doesNotDeleteStagingFiles_if_purgeStagingDataDisabled() throws Exception {
-    copier = new S3StreamCopier(
-        "fake-staging-folder",
-        "fake-schema",
-        s3Client,
-        db,
-        // Explicitly disable purgeStagingData
-        new S3CopyConfig(false, S3_CONFIG),
-        new StandardNameTransformer(),
-        sqlOperations,
-        CONFIGURED_STREAM,
-        UPLOAD_TIME,
-        MAX_PARTS_PER_FILE) {
+    copier =
+        new S3StreamCopier(
+            "fake-staging-folder",
+            "fake-schema",
+            s3Client,
+            db,
+            // Explicitly disable purgeStagingData
+            new S3CopyConfig(false, S3_CONFIG),
+            new StandardNameTransformer(),
+            sqlOperations,
+            CONFIGURED_STREAM,
+            UPLOAD_TIME,
+            MAX_PARTS_PER_FILE) {
 
-      @Override
-      public void copyS3CsvFileIntoTable(
-                                         final JdbcDatabase database,
-                                         final String s3FileLocation,
-                                         final String schema,
-                                         final String tableName,
-                                         final S3DestinationConfig s3Config) {
-        copyArguments.add(new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
-      }
-
-    };
+          @Override
+          public void copyS3CsvFileIntoTable(
+              final JdbcDatabase database,
+              final String s3FileLocation,
+              final String schema,
+              final String tableName,
+              final S3DestinationConfig s3Config) {
+            copyArguments.add(
+                new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
+          }
+        };
 
     copier.prepareStagingFile();
     doReturn(true).when(s3Client).doesObjectExist("fake-bucket", "fakeOutputPath-00000");
@@ -273,18 +274,24 @@ public class S3StreamCopierTest {
 
     copier.copyStagingFileToTemporaryTable();
 
-    assertEquals(2, copyArguments.size(), "Number of invocations was actually " + copyArguments.size() + ". Arguments were " + copyArguments);
+    assertEquals(
+        2,
+        copyArguments.size(),
+        "Number of invocations was actually " + copyArguments.size() + ". Arguments were "
+            + copyArguments);
 
     // S3StreamCopier operates on these from a HashMap, so need to sort them in order to assert in a
     // sane way.
-    final List<CopyArguments> sortedArgs = copyArguments.stream().sorted(Comparator.comparing(arg -> arg.s3FileLocation)).toList();
+    final List<CopyArguments> sortedArgs = copyArguments.stream()
+        .sorted(Comparator.comparing(arg -> arg.s3FileLocation))
+        .toList();
     for (int i = 0; i < sortedArgs.size(); i++) {
       LOGGER.info("Checking arguments for index {}", i);
       final CopyArguments args = sortedArgs.get(i);
       assertEquals(String.format("s3://fake-bucket/fakeOutputPath-%05d", i), args.s3FileLocation);
       assertEquals("fake-schema", args.schema);
-      assertTrue(args.tableName.endsWith("fake_stream"), "Table name was actually " + args.tableName);
+      assertTrue(
+          args.tableName.endsWith("fake_stream"), "Table name was actually " + args.tableName);
     }
   }
-
 }

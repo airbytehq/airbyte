@@ -42,7 +42,6 @@ public class MssqlCdcHelper {
    * https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
    */
   public enum SnapshotIsolation {
-
     SNAPSHOT("Snapshot", "snapshot"),
     READ_COMMITTED("Read Committed", "read_committed");
 
@@ -66,12 +65,10 @@ public class MssqlCdcHelper {
       }
       throw new IllegalArgumentException("Unexpected snapshot isolation level: " + jsonValue);
     }
-
   }
 
   // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-snapshot-mode
   public enum DataToSync {
-
     EXISTING_AND_NEW("Existing and New", "initial"),
     NEW_CHANGES_ONLY("New Changes Only", "schema_only");
 
@@ -95,23 +92,28 @@ public class MssqlCdcHelper {
       }
       throw new IllegalArgumentException("Unexpected data to sync setting: " + value);
     }
-
   }
 
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)
+        && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
       final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
-      return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.CDC;
+      return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText())
+          == ReplicationMethod.CDC;
     }
     // legacy replication method config before version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
-      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)
+        && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
+      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText())
+          == ReplicationMethod.CDC;
     }
     if (config.hasNonNull(REPLICATION_FIELD)) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
-      return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
+      return ReplicationMethod.valueOf(
+              replicationConfig.get(REPLICATION_TYPE_FIELD).asText())
+          == ReplicationMethod.CDC;
     }
 
     return false;
@@ -120,7 +122,8 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)
+        && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
       final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
       return SnapshotIsolation.from(snapshotIsolation.asText());
@@ -131,7 +134,8 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static DataToSync getDataToSyncConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)
+        && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
       final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
       return DataToSync.from(dataToSync.asText());
@@ -139,7 +143,8 @@ public class MssqlCdcHelper {
     return DataToSync.EXISTING_AND_NEW;
   }
 
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+  static Properties getDebeziumProperties(
+      final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
     final JsonNode config = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
 
@@ -155,7 +160,8 @@ public class MssqlCdcHelper {
     props.setProperty("mssql_converter.type", MSSQLConverter.class.getName());
 
     props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
-    props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
+    props.setProperty(
+        "snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
 
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
@@ -171,15 +177,22 @@ public class MssqlCdcHelper {
       } else if ("encrypted_verify_certificate".equals(sslMethod)) {
         props.setProperty("driver.encrypt", "true");
         if (dbConfig.has("trustStore") && !dbConfig.get("trustStore").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore", dbConfig.get("trustStore").asText());
+          props.setProperty(
+              "database.ssl.truststore", dbConfig.get("trustStore").asText());
         }
 
-        if (dbConfig.has("trustStorePassword") && !dbConfig.get("trustStorePassword").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore.password", dbConfig.get("trustStorePassword").asText());
+        if (dbConfig.has("trustStorePassword")
+            && !dbConfig.get("trustStorePassword").asText().isEmpty()) {
+          props.setProperty(
+              "database.ssl.truststore.password",
+              dbConfig.get("trustStorePassword").asText());
         }
 
-        if (dbConfig.has("hostNameInCertificate") && !dbConfig.get("hostNameInCertificate").asText().isEmpty()) {
-          props.setProperty("driver.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
+        if (dbConfig.has("hostNameInCertificate")
+            && !dbConfig.get("hostNameInCertificate").asText().isEmpty()) {
+          props.setProperty(
+              "driver.hostNameInCertificate",
+              dbConfig.get("hostNameInCertificate").asText());
         }
       }
     }
@@ -196,5 +209,4 @@ public class MssqlCdcHelper {
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
   }
-
 }

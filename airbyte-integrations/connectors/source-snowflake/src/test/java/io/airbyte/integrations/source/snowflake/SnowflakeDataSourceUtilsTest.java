@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 
 class SnowflakeDataSourceUtilsTest {
 
-  private final String config = """
+  private final String config =
+      """
                                 {
                                   "host": "host",
                                   "role": "role",
@@ -38,7 +39,8 @@ class SnowflakeDataSourceUtilsTest {
   void testBuildJDBCUrl() {
     final JsonNode expectedConfig = Jsons.deserialize(config);
 
-    final String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig, SnowflakeDataSourceUtils.AIRBYTE_OSS);
+    final String jdbcURL =
+        SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig, SnowflakeDataSourceUtils.AIRBYTE_OSS);
 
     assertEquals(expectedJdbcUrl, jdbcURL);
   }
@@ -49,9 +51,9 @@ class SnowflakeDataSourceUtilsTest {
     final String params = "someParameter1&param2=someParameter2";
     ((ObjectNode) expectedConfig).put("jdbc_url_params", params);
 
-    final String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig, SnowflakeDataSourceUtils.AIRBYTE_OSS);
+    final String jdbcURL =
+        SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig, SnowflakeDataSourceUtils.AIRBYTE_OSS);
 
     assertEquals(expectedJdbcUrl + "&" + params, jdbcURL);
   }
-
 }

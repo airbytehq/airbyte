@@ -38,8 +38,8 @@ class NoFlatteningSheetGeneratorTest {
     json.put("Field 2", true);
 
     assertLinesMatch(
-        Collections.singletonList("{\"Field 4\":{\"Field 41\":15},\"Field 1\":\"A\",\"Field 3\":71,\"Field 2\":true}"),
+        Collections.singletonList(
+            "{\"Field 4\":{\"Field 41\":15},\"Field 1\":\"A\",\"Field 3\":71,\"Field 2\":true}"),
         sheetGenerator.getRecordColumns(json));
   }
-
 }

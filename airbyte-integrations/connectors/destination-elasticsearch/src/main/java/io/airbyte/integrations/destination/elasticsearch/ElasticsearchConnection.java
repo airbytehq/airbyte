@@ -53,8 +53,7 @@ public class ElasticsearchConnection {
    * @param config Configuration parameters for connecting to the Elasticsearch host
    */
   public ElasticsearchConnection(ConnectorConfiguration config) {
-    log.info(String.format(
-        "creating ElasticsearchConnection: %s", config.getEndpoint()));
+    log.info(String.format("creating ElasticsearchConnection: %s", config.getEndpoint()));
 
     // Create the low-level client
     httpHost = HttpHost.create(config.getEndpoint());
@@ -63,7 +62,8 @@ public class ElasticsearchConnection {
     // Set custom user's certificate if provided
     if (config.getCaCertificate() != null && !config.getCaCertificate().isEmpty()) {
       builder.setHttpClientConfigCallback(clientBuilder -> {
-        clientBuilder.setSSLContext(SSLCertificateUtils.createContextFromCaCert(config.getCaCertificate()));
+        clientBuilder.setSSLContext(
+            SSLCertificateUtils.createContextFromCaCert(config.getCaCertificate()));
         return clientBuilder;
       });
     }
@@ -84,7 +84,6 @@ public class ElasticsearchConnection {
     public void onFailure(Node node) {
       log.error("RestClient failure: {}", node);
     }
-
   }
 
   /**
@@ -99,12 +98,14 @@ public class ElasticsearchConnection {
     final var auth = config.getAuthenticationMethod();
     switch (auth.getMethod()) {
       case secret -> {
-        var bytes = (auth.getApiKeyId() + ":" + auth.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
+        var bytes =
+            (auth.getApiKeyId() + ":" + auth.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
         var header = "ApiKey " + Base64.getEncoder().encodeToString(bytes);
         headerList.add(new BasicHeader("Authorization", header));
       }
       case basic -> {
-        var basicBytes = (auth.getUsername() + ":" + auth.getPassword()).getBytes(StandardCharsets.UTF_8);
+        var basicBytes =
+            (auth.getUsername() + ":" + auth.getPassword()).getBytes(StandardCharsets.UTF_8);
         var basicHeader = "Basic " + Base64.getEncoder().encodeToString(basicBytes);
         headerList.add(new BasicHeader("Authorization", basicHeader));
       }
@@ -121,7 +122,8 @@ public class ElasticsearchConnection {
     log.info("checking elasticsearch connection");
     try {
       final var info = client.info();
-      log.info("checked elasticsearch connection: {}, version: {}", info.clusterName(), info.version());
+      log.info(
+          "checked elasticsearch connection: {}, version: {}", info.clusterName(), info.version());
       return true;
     } catch (ApiException e) {
       log.error("failed to ping elasticsearch", unwrappedApiException("failed write operation", e));
@@ -142,7 +144,8 @@ public class ElasticsearchConnection {
    * @throws Exception if an error is encountered
    */
   public CreateResponse createDocument(String index, String id, JsonNode data) throws Exception {
-    CreateResponse createResponse = client.create(builder -> builder.id(id).document(data).index(index));
+    CreateResponse createResponse =
+        client.create(builder -> builder.id(id).document(data).index(index));
     log.debug("wrote record: {}", createResponse.result());
     return createResponse;
   }
@@ -156,14 +159,16 @@ public class ElasticsearchConnection {
    * @throws IOException if there is server connection problem, or a non-successful operation on the
    *         server
    */
-  public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, ElasticsearchWriteConfig config) throws IOException {
+  public BulkResponse indexDocuments(
+      String index, List<AirbyteRecordMessage> records, ElasticsearchWriteConfig config)
+      throws IOException {
     var bulkRequest = new BulkRequest.Builder<>();
     for (var doc : records) {
       log.debug("adding record to bulk create: {}", doc.getData());
-      bulkRequest.addOperation(
-          b -> b.index(
-              c -> c.index(index).id(extractPrimaryKey(doc, config))))
-          .addDocument(doc.getData()).refresh(JsonValue.TRUE);
+      bulkRequest
+          .addOperation(b -> b.index(c -> c.index(index).id(extractPrimaryKey(doc, config))))
+          .addDocument(doc.getData())
+          .refresh(JsonValue.TRUE);
     }
 
     try {
@@ -204,7 +209,8 @@ public class ElasticsearchConnection {
    */
   public List<JsonNode> getRecords(String index) throws IOException {
     log.info("getting records for index: {}", index);
-    SearchResponse<JsonNode> search = client.search(s -> s.index(index).size(MAX_HITS), JsonNode.class);
+    SearchResponse<JsonNode> search =
+        client.search(s -> s.index(index).size(MAX_HITS), JsonNode.class);
     HitsMetadata<JsonNode> hitMeta = search.hits();
     return hitMeta.hits().stream().map(Hit::source).collect(Collectors.toList());
   }
@@ -242,7 +248,8 @@ public class ElasticsearchConnection {
         return;
       }
       log.info("creating index: {}, info: {}", index, client.info());
-      final co.elastic.clients.elasticsearch.indices.CreateResponse createResponse = client.indices().create(b -> b.index(index));
+      final co.elastic.clients.elasticsearch.indices.CreateResponse createResponse =
+          client.indices().create(b -> b.index(index));
       if (createResponse.acknowledged() && createResponse.shardsAcknowledged()) {
         log.info("created index: {}", index);
       } else {
@@ -285,9 +292,9 @@ public class ElasticsearchConnection {
     try {
       var sourceExists = client.indices().exists(i -> i.index(sourceIndexName));
       if (!sourceExists.value()) {
-        throw new RuntimeException(
-            String.format("the source index does not exist. unable to replace the destination index. source: %s, destination: %s", sourceIndexName,
-                destinationIndexName));
+        throw new RuntimeException(String.format(
+            "the source index does not exist. unable to replace the destination index. source: %s, destination: %s",
+            sourceIndexName, destinationIndexName));
       }
 
       // delete the destination if it exists
@@ -302,13 +309,15 @@ public class ElasticsearchConnection {
       // https://github.com/elastic/elasticsearch-java/issues/37
       // client.indices().addBlock(b -> b.index(sourceIndexName).block(IndicesBlockOptions.Write));
       // so we need to do it a different way
-      client.indices().putSettings(b -> b.index(sourceIndexName).settings(s -> s.blocks(w -> w.write(true))));
+      client.indices().putSettings(b -> b.index(sourceIndexName)
+          .settings(s -> s.blocks(w -> w.write(true))));
 
       // clone to the destination
       client.indices().clone(c -> c.index(sourceIndexName).target(destinationIndexName));
 
       // enable writing on new index
-      client.indices().putSettings(b -> b.index(destinationIndexName).settings(s -> s.blocks(w -> w.write(false))));
+      client.indices().putSettings(b -> b.index(destinationIndexName)
+          .settings(s -> s.blocks(w -> w.write(false))));
     } catch (ApiException e) {
       throw unwrappedApiException("failed to delete index", e);
     } catch (IOException e) {
@@ -331,10 +340,11 @@ public class ElasticsearchConnection {
     }
     if (ElasticsearchError.class.isAssignableFrom(e.error().getClass())) {
       ElasticsearchError esException = ((ElasticsearchError) e.error());
-      String errorMessage = String.format("ElasticsearchError: status:%s, error:%s", esException.status(), esException.error().toString());
+      String errorMessage = String.format(
+          "ElasticsearchError: status:%s, error:%s",
+          esException.status(), esException.error().toString());
       return new RuntimeException(errorMessage);
     }
     return new RuntimeException(e);
   }
-
 }

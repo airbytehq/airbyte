@@ -12,5 +12,4 @@ public class SshKeyMySQLDestinationAcceptanceTest extends SshMySQLDestinationAcc
   public Path getConfigFilePath() {
     return Path.of("secrets/ssh-key-config.json");
   }
-
 }

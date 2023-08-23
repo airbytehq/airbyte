@@ -17,10 +17,11 @@ public class RandomSamplingLogger extends BaseLogger implements TestingLogger {
   private final double samplingRatio;
   private final Random random;
 
-  public RandomSamplingLogger(final AirbyteStreamNameNamespacePair streamNamePair,
-                              final double samplingRatio,
-                              final long seed,
-                              final int maxEntryCount) {
+  public RandomSamplingLogger(
+      final AirbyteStreamNameNamespacePair streamNamePair,
+      final double samplingRatio,
+      final long seed,
+      final int maxEntryCount) {
     super(streamNamePair, maxEntryCount);
     this.samplingRatio = samplingRatio;
     this.random = new Random(seed);
@@ -37,5 +38,4 @@ public class RandomSamplingLogger extends BaseLogger implements TestingLogger {
       LOGGER.info(entryMessage(recordMessage));
     }
   }
-
 }

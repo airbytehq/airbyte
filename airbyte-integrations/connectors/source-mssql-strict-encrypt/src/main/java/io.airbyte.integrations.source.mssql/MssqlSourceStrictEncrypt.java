@@ -22,9 +22,14 @@ public class MssqlSourceStrictEncrypt extends SpecModifyingSource implements Sou
   }
 
   @Override
-  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) throws Exception {
+  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec)
+      throws Exception {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ArrayNode) spec.getConnectionSpecification().get("properties").get("ssl_method").get("oneOf")).remove(0);
+    ((ArrayNode) spec.getConnectionSpecification()
+            .get("properties")
+            .get("ssl_method")
+            .get("oneOf"))
+        .remove(0);
     return spec;
   }
 
@@ -34,5 +39,4 @@ public class MssqlSourceStrictEncrypt extends SpecModifyingSource implements Sou
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSourceStrictEncrypt.class);
   }
-
 }

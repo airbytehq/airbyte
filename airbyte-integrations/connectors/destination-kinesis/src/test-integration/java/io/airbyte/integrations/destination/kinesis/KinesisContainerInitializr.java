@@ -12,9 +12,7 @@ public class KinesisContainerInitializr {
 
   private static KinesisContainer kinesisContainer;
 
-  private KinesisContainerInitializr() {
-
-  }
+  private KinesisContainerInitializr() {}
 
   static KinesisContainer initContainer() {
     if (kinesisContainer == null) {
@@ -42,7 +40,5 @@ public class KinesisContainerInitializr {
     URI getEndpointOverride() {
       return super.getEndpointOverride(LocalStackContainer.Service.KINESIS);
     }
-
   }
-
 }

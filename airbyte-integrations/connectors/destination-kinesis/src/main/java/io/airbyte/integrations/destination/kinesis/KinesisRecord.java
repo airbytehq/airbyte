@@ -26,9 +26,7 @@ public class KinesisRecord {
   @JsonProperty(COLUMN_NAME_EMITTED_AT)
   private Instant timestamp;
 
-  public KinesisRecord() {
-
-  }
+  public KinesisRecord() {}
 
   public KinesisRecord(UUID id, String data, Instant timestamp) {
     this.id = id;
@@ -54,11 +52,9 @@ public class KinesisRecord {
 
   @Override
   public String toString() {
-    return "KinesisRecord{" +
-        "id=" + id +
-        ", data='" + data + '\'' +
-        ", timestamp=" + timestamp +
-        '}';
+    return "KinesisRecord{" + "id="
+        + id + ", data='"
+        + data + '\'' + ", timestamp="
+        + timestamp + '}';
   }
-
 }

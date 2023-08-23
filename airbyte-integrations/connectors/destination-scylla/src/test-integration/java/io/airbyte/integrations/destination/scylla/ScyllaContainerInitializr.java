@@ -10,9 +10,7 @@ class ScyllaContainerInitializr {
 
   private static ScyllaContainer scyllaContainer;
 
-  private ScyllaContainerInitializr() {
-
-  }
+  private ScyllaContainerInitializr() {}
 
   public static ScyllaContainer initContainer() {
     if (scyllaContainer == null) {
@@ -30,7 +28,5 @@ class ScyllaContainerInitializr {
     public ScyllaContainer() {
       super("scylladb/scylla:4.5.0");
     }
-
   }
-
 }

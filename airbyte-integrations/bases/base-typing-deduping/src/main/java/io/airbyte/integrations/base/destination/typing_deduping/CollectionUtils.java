@@ -21,7 +21,8 @@ public class CollectionUtils {
    * @param search the value to look for
    * @return whether the value matches anything in the collection
    */
-  public static boolean containsIgnoreCase(final Collection<String> collection, final String search) {
+  public static boolean containsIgnoreCase(
+      final Collection<String> collection, final String search) {
     return matchingKey(collection, search).isPresent();
   }
 
@@ -33,9 +34,11 @@ public class CollectionUtils {
    * @param searchTerms the keys you're looking for
    * @return whether all searchTerms are in the searchCollection
    */
-  public static boolean containsAllIgnoreCase(final Collection<String> searchCollection, final Collection<String> searchTerms) {
+  public static boolean containsAllIgnoreCase(
+      final Collection<String> searchCollection, final Collection<String> searchTerms) {
     if (searchTerms.isEmpty()) {
-      // There isn't a good behavior for an empty collection. Without this check, an empty collection
+      // There isn't a good behavior for an empty collection. Without this check, an empty
+      // collection
       // would always return
       // true, but it feels misleading to say that the searchCollection does "contain all" when
       // searchTerms is empty
@@ -51,11 +54,11 @@ public class CollectionUtils {
    * @param search the key you're looking for
    * @return an Optional value which might contain the key that matches the search
    */
-  public static Optional<String> matchingKey(final Collection<String> collection, final String search) {
+  public static Optional<String> matchingKey(
+      final Collection<String> collection, final String search) {
     if (collection.contains(search)) {
       return Optional.of(search);
     }
     return collection.stream().filter(s -> s.equalsIgnoreCase(search)).findFirst();
   }
-
 }

@@ -64,25 +64,30 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME),
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME2),
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("id"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        String.format(
+                            "%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME),
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("id"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        String.format(
+                            "%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME2),
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -93,9 +98,9 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, "default"), false);
+    config = bastion.getTunnelConfig(
+        getTunnelMethod(), bastion.getBasicDbConfigBuider(db, "default"), false);
     populateDatabaseTestData();
-
   }
 
   private void startTestContainers() {
@@ -106,8 +111,10 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   private void initAndStartJdbcContainer() {
     db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
         .withNetwork(network)
-        .waitingFor(Wait.forHttp("/ping").forPort(8123)
-            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+        .waitingFor(Wait.forHttp("/ping")
+            .forPort(8123)
+            .forStatusCode(200)
+            .withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
   }
 
@@ -116,7 +123,8 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
-        String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
             ClickHouseSource.HTTP_PROTOCOL,
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
@@ -126,18 +134,23 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
       final String table1 = JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME, STREAM_NAME);
-      final String createTable1 =
-          String.format("CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n", table1);
+      final String createTable1 = String.format(
+          "CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n",
+          table1);
       final String table2 = JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME, STREAM_NAME2);
-      final String createTable2 =
-          String.format("CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n", table2);
+      final String createTable2 = String.format(
+          "CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n",
+          table2);
       database.execute(connection -> {
         connection.createStatement().execute(createTable1);
         connection.createStatement().execute(createTable2);
       });
 
-      final String insertTestData = String.format("INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
-      final String insertTestData2 = String.format("INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n", table2);
+      final String insertTestData = String.format(
+          "INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
+      final String insertTestData2 = String.format(
+          "INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n",
+          table2);
       database.execute(connection -> {
         connection.createStatement().execute(insertTestData);
         connection.createStatement().execute(insertTestData2);
@@ -151,5 +164,4 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
   }
-
 }

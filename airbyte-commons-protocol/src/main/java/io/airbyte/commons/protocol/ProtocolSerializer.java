@@ -9,5 +9,4 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 public interface ProtocolSerializer {
 
   String serialize(final ConfiguredAirbyteCatalog configuredAirbyteCatalog);
-
 }

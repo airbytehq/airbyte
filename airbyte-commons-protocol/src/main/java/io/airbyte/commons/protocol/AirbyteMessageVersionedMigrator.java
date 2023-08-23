@@ -17,21 +17,25 @@ public class AirbyteMessageVersionedMigrator<OriginalMessageType> {
   private final AirbyteMessageMigrator migrator;
   private final Version version;
 
-  public AirbyteMessageVersionedMigrator(final AirbyteMessageMigrator migrator, final Version version) {
+  public AirbyteMessageVersionedMigrator(
+      final AirbyteMessageMigrator migrator, final Version version) {
     this.migrator = migrator;
     this.version = version;
   }
 
-  public OriginalMessageType downgrade(final AirbyteMessage message, final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+  public OriginalMessageType downgrade(
+      final AirbyteMessage message,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     return migrator.downgrade(message, version, configuredAirbyteCatalog);
   }
 
-  public AirbyteMessage upgrade(final OriginalMessageType message, final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+  public AirbyteMessage upgrade(
+      final OriginalMessageType message,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     return migrator.upgrade(message, version, configuredAirbyteCatalog);
   }
 
   public Version getVersion() {
     return version;
   }
-
 }

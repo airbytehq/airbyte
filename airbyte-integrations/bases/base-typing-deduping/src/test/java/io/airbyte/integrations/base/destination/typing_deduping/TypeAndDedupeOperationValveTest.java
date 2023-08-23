@@ -14,8 +14,10 @@ import org.junit.jupiter.api.Test;
 
 public class TypeAndDedupeOperationValveTest {
 
-  private static final AirbyteStreamNameNamespacePair STREAM_A = new AirbyteStreamNameNamespacePair("a", "a");
-  private static final AirbyteStreamNameNamespacePair STREAM_B = new AirbyteStreamNameNamespacePair("b", "b");
+  private static final AirbyteStreamNameNamespacePair STREAM_A =
+      new AirbyteStreamNameNamespacePair("a", "a");
+  private static final AirbyteStreamNameNamespacePair STREAM_B =
+      new AirbyteStreamNameNamespacePair("b", "b");
   private static final Supplier<Long> ALWAYS_ZERO = () -> 0l;
 
   private Supplier<Long> minuteUpdates;
@@ -54,8 +56,7 @@ public class TypeAndDedupeOperationValveTest {
     elapseTime(minuteUpdates, 1);
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_B));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    Assertions.assertEquals(1000 * 60 * 15,
-        valve.getIncrementInterval(STREAM_A));
+    Assertions.assertEquals(1000 * 60 * 15, valve.getIncrementInterval(STREAM_A));
     // method call increments time
     Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A));
     // More than enough time has passed now
@@ -80,23 +81,29 @@ public class TypeAndDedupeOperationValveTest {
   public void testUpdateTimeAndIncreaseInterval() {
     final var valve = new TypeAndDedupeOperationValve(minuteUpdates);
     valve.addStream(STREAM_A);
-    IntStream.range(0, 1).forEach(__ -> Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A))); // start ready to T&D
+    IntStream.range(0, 1)
+        .forEach(__ ->
+            Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A))); // start ready to T&D
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 15).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 15)
+        .forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 60).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 60)
+        .forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 120).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 120)
+        .forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 240).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 240)
+        .forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 240).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 240)
+        .forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
   }
-
 }

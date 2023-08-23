@@ -16,5 +16,4 @@ public class MoreBooleans {
   public static boolean isTruthy(final Boolean bool) {
     return bool != null && bool;
   }
-
 }

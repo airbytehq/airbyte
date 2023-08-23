@@ -47,8 +47,10 @@ public class TypeConversionTest {
 
   private static JsonNode getTestDataFromResourceJson(String fileName) {
     try {
-      String fileContent = Files.readString(Path.of(requireNonNull(TypeConversionTest.class.getClassLoader()
-          .getResource(INPUT_FILES_BASE_LOCATION + fileName)).getPath()));
+      String fileContent = Files.readString(Path.of(requireNonNull(TypeConversionTest.class
+              .getClassLoader()
+              .getResource(INPUT_FILES_BASE_LOCATION + fileName))
+          .getPath()));
       return deserialize(fileContent);
     } catch (final IOException e) {
       throw new RuntimeException(e);
@@ -61,8 +63,8 @@ public class TypeConversionTest {
     assertEquals(galaxySchema.columns().size(), expectedIcebergGalaxySchema.size());
     for (ColumnMetadata columnMetadata : galaxySchema.columns()) {
       JsonNode expectedIcebergType = expectedIcebergGalaxySchema.get(columnMetadata.name());
-      assertEquals(expectedIcebergType.textValue(), columnMetadata.galaxyIcebergType().getDisplayName());
+      assertEquals(
+          expectedIcebergType.textValue(), columnMetadata.galaxyIcebergType().getDisplayName());
     }
   }
-
 }

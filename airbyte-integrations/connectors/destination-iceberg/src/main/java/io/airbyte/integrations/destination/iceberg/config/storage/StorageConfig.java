@@ -36,5 +36,4 @@ public interface StorageConfig {
    * @return a configuration Map to build Catalog(org.apache.iceberg.catalog.Catalog)
    */
   Map<String, String> catalogInitializeProperties();
-
 }

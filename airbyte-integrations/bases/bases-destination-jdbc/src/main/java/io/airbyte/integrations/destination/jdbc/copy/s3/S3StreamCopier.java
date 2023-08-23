@@ -63,16 +63,17 @@ public abstract class S3StreamCopier implements StreamCopier {
   private int partsAddedToCurrentFile;
   private String currentFile;
 
-  public S3StreamCopier(final String stagingFolder,
-                        final String schema,
-                        final AmazonS3 client,
-                        final JdbcDatabase db,
-                        final S3CopyConfig config,
-                        final StandardNameTransformer nameTransformer,
-                        final SqlOperations sqlOperations,
-                        final ConfiguredAirbyteStream configuredAirbyteStream,
-                        final Timestamp uploadTime,
-                        final int maxPartsPerFile) {
+  public S3StreamCopier(
+      final String stagingFolder,
+      final String schema,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3CopyConfig config,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final ConfiguredAirbyteStream configuredAirbyteStream,
+      final Timestamp uploadTime,
+      final int maxPartsPerFile) {
     this.destSyncMode = configuredAirbyteStream.getDestinationSyncMode();
     this.schemaName = schema;
     this.streamName = configuredAirbyteStream.getStream().getName();
@@ -96,21 +97,22 @@ public abstract class S3StreamCopier implements StreamCopier {
     if (partsAddedToCurrentFile == 0) {
 
       try {
-        // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
+        // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator.
+        // So just
         // pass in null.
-        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, CompressionType.NO_COMPRESSION);
-        final S3DestinationConfig writerS3Config = S3DestinationConfig.create(s3Config).withFormatConfig(csvFormatConfig).get();
+        final S3FormatConfig csvFormatConfig =
+            new S3CsvFormatConfig(null, CompressionType.NO_COMPRESSION);
+        final S3DestinationConfig writerS3Config = S3DestinationConfig.create(s3Config)
+            .withFormatConfig(csvFormatConfig)
+            .get();
         final S3CsvWriter writer = new S3CsvWriter.Builder(
-            writerS3Config,
-            s3Client,
-            configuredAirbyteStream,
-            uploadTime)
-                .uploadThreads(DEFAULT_UPLOAD_THREADS)
-                .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-                .csvSettings(CSVFormat.DEFAULT)
-                .withHeader(false)
-                .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
-                .build();
+                writerS3Config, s3Client, configuredAirbyteStream, uploadTime)
+            .uploadThreads(DEFAULT_UPLOAD_THREADS)
+            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+            .csvSettings(CSVFormat.DEFAULT)
+            .withHeader(false)
+            .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
+            .build();
         currentFile = writer.getOutputPath();
         stagingWritersByFile.put(currentFile, writer);
         activeStagingWriterFileNames.add(currentFile);
@@ -124,7 +126,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String filename) throws Exception {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String filename)
+      throws Exception {
     if (stagingWritersByFile.containsKey(filename)) {
       stagingWritersByFile.get(filename).write(id, recordMessage);
     }
@@ -158,17 +161,31 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void createTemporaryTable() throws Exception {
-    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
+    LOGGER.info(
+        "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
+        streamName,
+        schemaName,
+        tmpTableName);
     sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
   }
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
+    LOGGER.info(
+        "Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .",
+        tmpTableName,
+        streamName,
+        schemaName);
     for (final String fileName : stagingFileNames) {
-      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), fileName), schemaName, tmpTableName, s3Config);
+      copyS3CsvFileIntoTable(
+          db,
+          getFullS3Path(s3Config.getBucketName(), fileName),
+          schemaName,
+          tmpTableName,
+          s3Config);
     }
-    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+    LOGGER.info(
+        "Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
   @Override
@@ -183,11 +200,18 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public String generateMergeStatement(final String destTableName) {
-    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
+    LOGGER.info(
+        "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
+        tmpTableName,
+        destTableName,
+        schemaName);
     final var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
+      LOGGER.info(
+          "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.",
+          destTableName,
+          schemaName);
     }
     queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
@@ -231,11 +255,11 @@ public abstract class S3StreamCopier implements StreamCopier {
     return stagingFileNames;
   }
 
-  public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
-                                              String s3FileLocation,
-                                              String schema,
-                                              String tableName,
-                                              S3DestinationConfig s3Config)
+  public abstract void copyS3CsvFileIntoTable(
+      JdbcDatabase database,
+      String s3FileLocation,
+      String schema,
+      String tableName,
+      S3DestinationConfig s3Config)
       throws SQLException;
-
 }

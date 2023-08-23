@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
  * Mapping of JsonSchema formats to BigQuery Standard SQL types.
  */
 public enum JsonSchemaFormat {
-
   DATE("date", null, StandardSQLTypeName.DATE),
   DATETIME("date-time", null, StandardSQLTypeName.DATETIME),
   DATETIME_WITH_TZ("date-time", "timestamp_with_timezone", StandardSQLTypeName.TIMESTAMP),
@@ -28,32 +27,40 @@ public enum JsonSchemaFormat {
   private final String jsonSchemaAirbyteType;
   private final StandardSQLTypeName bigQueryType;
 
-  JsonSchemaFormat(final String jsonSchemaFormat, final String jsonSchemaAirbyteType, final StandardSQLTypeName bigQueryType) {
+  JsonSchemaFormat(
+      final String jsonSchemaFormat,
+      final String jsonSchemaAirbyteType,
+      final StandardSQLTypeName bigQueryType) {
     this.jsonSchemaAirbyteType = jsonSchemaAirbyteType;
     this.jsonSchemaFormat = jsonSchemaFormat;
     this.bigQueryType = bigQueryType;
   }
 
-  public static JsonSchemaFormat fromJsonSchemaFormat(final @Nonnull String jsonSchemaFormat, final @Nullable String jsonSchemaAirbyteType) {
+  public static JsonSchemaFormat fromJsonSchemaFormat(
+      final @Nonnull String jsonSchemaFormat, final @Nullable String jsonSchemaAirbyteType) {
     List<JsonSchemaFormat> matchFormats = null;
     // Match by Format + Type
     if (jsonSchemaAirbyteType != null) {
       matchFormats = Arrays.stream(values())
-          .filter(format -> jsonSchemaFormat.equals(format.jsonSchemaFormat) && jsonSchemaAirbyteType.equals(format.jsonSchemaAirbyteType)).toList();
+          .filter(format -> jsonSchemaFormat.equals(format.jsonSchemaFormat)
+              && jsonSchemaAirbyteType.equals(format.jsonSchemaAirbyteType))
+          .toList();
     }
 
     // Match by Format are no results already
     if (matchFormats == null || matchFormats.isEmpty()) {
-      matchFormats =
-          Arrays.stream(values()).filter(format -> jsonSchemaFormat.equals(format.jsonSchemaFormat) && format.jsonSchemaAirbyteType == null).toList();
+      matchFormats = Arrays.stream(values())
+          .filter(format -> jsonSchemaFormat.equals(format.jsonSchemaFormat)
+              && format.jsonSchemaAirbyteType == null)
+          .toList();
     }
 
     if (matchFormats.isEmpty()) {
       return null;
     } else if (matchFormats.size() > 1) {
-      throw new RuntimeException(
-          "Match with more than one json format! Matched formats : " + matchFormats + ", Inputs jsonSchemaFormat : " + jsonSchemaFormat
-              + ", jsonSchemaAirbyteType : " + jsonSchemaAirbyteType);
+      throw new RuntimeException("Match with more than one json format! Matched formats : "
+          + matchFormats + ", Inputs jsonSchemaFormat : " + jsonSchemaFormat
+          + ", jsonSchemaAirbyteType : " + jsonSchemaAirbyteType);
     } else {
       return matchFormats.get(0);
     }
@@ -67,5 +74,4 @@ public enum JsonSchemaFormat {
   public String toString() {
     return jsonSchemaFormat;
   }
-
 }

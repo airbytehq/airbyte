@@ -57,13 +57,22 @@ public class AvroFormat extends AbstractFormat {
     Map<String, Object> props = super.getKafkaConfig();
     final JsonNode avro_config = config.get("MessageFormat");
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
+    props.put(
+        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
     props.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO");
-    props.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,
-        String.format("%s:%s", avro_config.get("schema_registry_username").asText(), avro_config.get("schema_registry_password").asText()));
-    props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, avro_config.get("schema_registry_url").asText());
-    props.put(KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY,
-        KafkaStrategy.getStrategyName(avro_config.get("deserialization_strategy").asText()));
+    props.put(
+        SchemaRegistryClientConfig.USER_INFO_CONFIG,
+        String.format(
+            "%s:%s",
+            avro_config.get("schema_registry_username").asText(),
+            avro_config.get("schema_registry_password").asText()));
+    props.put(
+        KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
+        avro_config.get("schema_registry_url").asText());
+    props.put(
+        KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY,
+        KafkaStrategy.getStrategyName(
+            avro_config.get("deserialization_strategy").asText()));
     return props;
   }
 
@@ -89,12 +98,15 @@ public class AvroFormat extends AbstractFormat {
       case "assign" -> {
         topicsToSubscribe = new HashSet<>();
         final String topicPartitions = subscription.get("topic_partitions").asText();
-        final String[] topicPartitionsStr = topicPartitions.replaceAll("\\s+", "").split(",");
-        final List<TopicPartition> topicPartitionList = Arrays.stream(topicPartitionsStr).map(topicPartition -> {
-          final String[] pair = topicPartition.split(":");
-          topicsToSubscribe.add(pair[0]);
-          return new TopicPartition(pair[0], Integer.parseInt(pair[1]));
-        }).collect(Collectors.toList());
+        final String[] topicPartitionsStr =
+            topicPartitions.replaceAll("\\s+", "").split(",");
+        final List<TopicPartition> topicPartitionList = Arrays.stream(topicPartitionsStr)
+            .map(topicPartition -> {
+              final String[] pair = topicPartition.split(":");
+              topicsToSubscribe.add(pair[0]);
+              return new TopicPartition(pair[0], Integer.parseInt(pair[1]));
+            })
+            .collect(Collectors.toList());
         LOGGER.info("Topic-partition list: {}", topicPartitionList);
         consumer.assign(topicPartitionList);
       }
@@ -113,13 +125,16 @@ public class AvroFormat extends AbstractFormat {
   @Override
   public boolean isAccessible() {
     try {
-      final String testTopic = config.has("test_topic") ? config.get("test_topic").asText() : "";
+      final String testTopic =
+          config.has("test_topic") ? config.get("test_topic").asText() : "";
       if (!testTopic.isBlank()) {
         final KafkaConsumer<String, GenericRecord> consumer = getConsumer();
         consumer.subscribe(Pattern.compile(testTopic));
         consumer.listTopics();
         consumer.close();
-        LOGGER.info("Successfully connected to Kafka brokers for topic '{}'.", config.get("test_topic").asText());
+        LOGGER.info(
+            "Successfully connected to Kafka brokers for topic '{}'.",
+            config.get("test_topic").asText());
       }
       return true;
     } catch (final Exception e) {
@@ -131,9 +146,11 @@ public class AvroFormat extends AbstractFormat {
   @Override
   public List<AirbyteStream> getStreams() {
     final Set<String> topicsToSubscribe = getTopicsToSubscribe();
-    final List<AirbyteStream> streams = topicsToSubscribe.stream().map(topic -> CatalogHelpers
-        .createAirbyteStream(topic, Field.of("value", JsonSchemaType.STRING))
-        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
+    final List<AirbyteStream> streams = topicsToSubscribe.stream()
+        .map(topic -> CatalogHelpers.createAirbyteStream(
+                topic, Field.of("value", JsonSchemaType.STRING))
+            .withSupportedSyncModes(
+                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
         .collect(Collectors.toList());
     return streams;
   }
@@ -143,14 +160,18 @@ public class AvroFormat extends AbstractFormat {
 
     final KafkaConsumer<String, GenericRecord> consumer = getConsumer();
     final List<ConsumerRecord<String, GenericRecord>> recordsList = new ArrayList<>();
-    final int retry = config.has("repeated_calls") ? config.get("repeated_calls").intValue() : 0;
-    final int polling_time = config.has("polling_time") ? config.get("polling_time").intValue() : 100;
-    final int max_records = config.has("max_records_process") ? config.get("max_records_process").intValue() : 100000;
+    final int retry =
+        config.has("repeated_calls") ? config.get("repeated_calls").intValue() : 0;
+    final int polling_time =
+        config.has("polling_time") ? config.get("polling_time").intValue() : 100;
+    final int max_records =
+        config.has("max_records_process") ? config.get("max_records_process").intValue() : 100000;
     AtomicInteger record_count = new AtomicInteger();
     final Map<String, Integer> poll_lookup = new HashMap<>();
     getTopicsToSubscribe().forEach(topic -> poll_lookup.put(topic, 0));
     while (true) {
-      final ConsumerRecords<String, GenericRecord> consumerRecords = consumer.poll(Duration.of(polling_time, ChronoUnit.MILLIS));
+      final ConsumerRecords<String, GenericRecord> consumerRecords =
+          consumer.poll(Duration.of(polling_time, ChronoUnit.MILLIS));
       consumerRecords.forEach(record -> {
         record_count.getAndIncrement();
         recordsList.add(record);
@@ -158,12 +179,10 @@ public class AvroFormat extends AbstractFormat {
       consumer.commitAsync();
 
       if (consumerRecords.count() == 0) {
-        consumer.assignment().stream().map(record -> record.topic()).distinct().forEach(
-            topic -> {
-              poll_lookup.put(topic, poll_lookup.get(topic) + 1);
-            });
-        boolean is_complete = poll_lookup.entrySet().stream().allMatch(
-            e -> e.getValue() > retry);
+        consumer.assignment().stream().map(record -> record.topic()).distinct().forEach(topic -> {
+          poll_lookup.put(topic, poll_lookup.get(topic) + 1);
+        });
+        boolean is_complete = poll_lookup.entrySet().stream().allMatch(e -> e.getValue() > retry);
         if (is_complete) {
           LOGGER.info("There is no new data in the queue!!");
           break;
@@ -187,9 +206,11 @@ public class AvroFormat extends AbstractFormat {
           String name = avro_data.getSchema().getName();
           JsonNode output;
           try {
-            // Todo dynamic namespace is not supported now hence, adding avro schema name in the message
+            // Todo dynamic namespace is not supported now hence, adding avro schema name in the
+            // message
             if (StringUtils.isNoneEmpty(namespace) && StringUtils.isNoneEmpty(name)) {
-              String newString = String.format("{\"avro_schema\": \"%s\",\"name\":\"%s\"}", namespace, name);
+              String newString =
+                  String.format("{\"avro_schema\": \"%s\",\"name\":\"%s\"}", namespace, name);
               JsonNode newNode = mapper.readTree(newString);
               output = mapper.readTree(avro_data.toString());
               ((ObjectNode) output).set("_namespace_", newNode);
@@ -210,8 +231,6 @@ public class AvroFormat extends AbstractFormat {
 
         return endOfData();
       }
-
     });
   }
-
 }

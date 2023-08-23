@@ -20,34 +20,39 @@ public interface IntegrationLauncher {
 
   Process spec(final Path jobRoot) throws TestHarnessException;
 
-  Process check(final Path jobRoot, final String configFilename, final String configContents) throws TestHarnessException;
-
-  Process discover(final Path jobRoot, final String configFilename, final String configContents) throws TestHarnessException;
-
-  Process read(final Path jobRoot,
-               final String configFilename,
-               final String configContents,
-               final String catalogFilename,
-               final String catalogContents,
-               final String stateFilename,
-               final String stateContents)
+  Process check(final Path jobRoot, final String configFilename, final String configContents)
       throws TestHarnessException;
 
-  default Process read(final Path jobRoot,
-                       final String configFilename,
-                       final String configContents,
-                       final String catalogFilename,
-                       final String catalogContents)
+  Process discover(final Path jobRoot, final String configFilename, final String configContents)
+      throws TestHarnessException;
+
+  Process read(
+      final Path jobRoot,
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents,
+      final String stateFilename,
+      final String stateContents)
+      throws TestHarnessException;
+
+  default Process read(
+      final Path jobRoot,
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents)
       throws TestHarnessException {
-    return read(jobRoot, configFilename, configContents, catalogFilename, catalogContents, null, null);
+    return read(
+        jobRoot, configFilename, configContents, catalogFilename, catalogContents, null, null);
   }
 
-  Process write(final Path jobRoot,
-                final String configFilename,
-                final String configContents,
-                final String catalogFilename,
-                final String catalogContents,
-                final Map<String, String> additionalEnvironmentVariables)
+  Process write(
+      final Path jobRoot,
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents,
+      final Map<String, String> additionalEnvironmentVariables)
       throws TestHarnessException;
-
 }

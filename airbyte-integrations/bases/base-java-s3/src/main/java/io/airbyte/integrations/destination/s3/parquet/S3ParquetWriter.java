@@ -47,17 +47,17 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   // full file path = s3://<bucket>/<path>/<output-filename>
   private final String fullFilePath;
 
-  public S3ParquetWriter(final S3DestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream,
-                         final Timestamp uploadTimestamp,
-                         final Schema schema,
-                         final JsonAvroConverter converter)
+  public S3ParquetWriter(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final Schema schema,
+      final JsonAvroConverter converter)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
-    outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
-        .builder()
+    outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject.builder()
         .s3Format(S3Format.PARQUET)
         .timestamp(uploadTimestamp)
         .fileExtension(S3Format.PARQUET.getFileExtension())
@@ -72,8 +72,11 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     final Configuration hadoopConfig = getHadoopConfig(config);
     hadoopConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
-    this.parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
-        .withConf(hadoopConfig) // yes, this should be here despite the fact we pass this config above in path
+    this.parquetWriter = AvroParquetWriter.<Record>builder(
+            HadoopOutputFile.fromPath(path, hadoopConfig))
+        .withConf(
+            hadoopConfig) // yes, this should be here despite the fact we pass this config above in
+        // path
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())
@@ -88,16 +91,19 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
 
   public static Configuration getHadoopConfig(final S3DestinationConfig config) {
     final Configuration hadoopConfig = new Configuration();
-    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) config.getS3CredentialConfig();
+    final S3AccessKeyCredentialConfig credentialConfig =
+        (S3AccessKeyCredentialConfig) config.getS3CredentialConfig();
     hadoopConfig.set(Constants.ACCESS_KEY, credentialConfig.getAccessKeyId());
     hadoopConfig.set(Constants.SECRET_KEY, credentialConfig.getSecretAccessKey());
     if (config.getEndpoint().isEmpty()) {
-      hadoopConfig.set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
+      hadoopConfig.set(
+          Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
     } else {
       hadoopConfig.set(Constants.ENDPOINT, config.getEndpoint());
       hadoopConfig.set(Constants.PATH_STYLE_ACCESS, "true");
     }
-    hadoopConfig.set(Constants.AWS_CREDENTIALS_PROVIDER,
+    hadoopConfig.set(
+        Constants.AWS_CREDENTIALS_PROVIDER,
         "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     return hadoopConfig;
   }
@@ -151,5 +157,4 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   public void write(final JsonNode formattedData) throws IOException {
     parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
   }
-
 }

@@ -10,12 +10,14 @@ import io.airbyte.integrations.destination.databricks.DatabricksStorageConfigPro
 import io.airbyte.integrations.destination.databricks.DatabricksStreamCopierFactory;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 
-public class DatabricksAzureBlobStorageDestination extends DatabricksExternalStorageBaseDestination {
+public class DatabricksAzureBlobStorageDestination
+    extends DatabricksExternalStorageBaseDestination {
 
   @Override
   protected void checkPersistence(DatabricksStorageConfigProvider databricksConfig) {
     AzureBlobStorageConfig azureConfig = databricksConfig.getAzureBlobStorageConfigOrThrow();
-    final AzureBlobStorageConnectionChecker client = new AzureBlobStorageConnectionChecker(azureConfig);
+    final AzureBlobStorageConnectionChecker client =
+        new AzureBlobStorageConnectionChecker(azureConfig);
     client.attemptWriteAndDelete();
   }
 
@@ -23,5 +25,4 @@ public class DatabricksAzureBlobStorageDestination extends DatabricksExternalSto
   protected DatabricksStreamCopierFactory getStreamCopierFactory() {
     return new DatabricksAzureBlobStorageStreamCopierFactory();
   }
-
 }

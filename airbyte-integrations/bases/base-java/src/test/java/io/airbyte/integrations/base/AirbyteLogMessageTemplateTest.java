@@ -54,7 +54,11 @@ public class AirbyteLogMessageTemplateTest {
 
     outputStreamAppender = OutputStreamAppender.createAppender(
         rootLoggerConfig.getAppenders().get(CONSOLE_JSON_APPENDER).getLayout(),
-        null, outputContent, OUTPUT_STREAM_APPENDER, false, true);
+        null,
+        outputContent,
+        OUTPUT_STREAM_APPENDER,
+        false,
+        true);
     outputStreamAppender.start();
 
     rootLoggerConfig.addAppender(outputStreamAppender, Level.ALL, null);
@@ -106,5 +110,4 @@ public class AirbyteLogMessageTemplateTest {
     assertFalse(StringUtils.isBlank(airbyteMessage.getLog().getMessage()));
     return airbyteMessage.getLog();
   }
-
 }

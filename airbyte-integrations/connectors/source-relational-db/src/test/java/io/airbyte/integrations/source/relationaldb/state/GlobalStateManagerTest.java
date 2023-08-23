@@ -45,16 +45,24 @@ public class GlobalStateManagerTest {
   @Test
   void testCdcStateManager() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final CdcState cdcState = new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
-    final AirbyteGlobalState globalState = new AirbyteGlobalState().withSharedState(Jsons.jsonNode(cdcState))
-        .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace("namespace").withName("name"))
+    final CdcState cdcState =
+        new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
+    final AirbyteGlobalState globalState = new AirbyteGlobalState()
+        .withSharedState(Jsons.jsonNode(cdcState))
+        .withStreamStates(List.of(new AirbyteStreamState()
+            .withStreamDescriptor(
+                new StreamDescriptor().withNamespace("namespace").withName("name"))
             .withStreamState(Jsons.jsonNode(new DbStreamState()))));
-    final StateManager stateManager =
-        new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
+    final StateManager stateManager = new GlobalStateManager(
+        new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState),
+        catalog);
     assertNotNull(stateManager.getCdcStateManager());
     assertEquals(cdcState, stateManager.getCdcStateManager().getCdcState());
     assertEquals(1, stateManager.getCdcStateManager().getInitialStreamsSynced().size());
-    assertTrue(stateManager.getCdcStateManager().getInitialStreamsSynced().contains(new AirbyteStreamNameNamespacePair("name", "namespace")));
+    assertTrue(stateManager
+        .getCdcStateManager()
+        .getInitialStreamsSynced()
+        .contains(new AirbyteStreamNameNamespacePair("name", "namespace")));
   }
 
   @Test
@@ -70,75 +78,83 @@ public class GlobalStateManagerTest {
             new ConfiguredAirbyteStream()
                 .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE))));
 
-    final CdcState cdcState = new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
+    final CdcState cdcState =
+        new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
     final DbState dbState = new DbState()
         .withCdc(true)
         .withCdcState(cdcState)
         .withStreams(List.of(
-            new DbStreamState()
-                .withStreamName(STREAM_NAME1)
-                .withStreamNamespace(NAMESPACE)
-                .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a"),
-            new DbStreamState()
-                .withStreamName(STREAM_NAME2)
-                .withStreamNamespace(NAMESPACE)
-                .withCursorField(List.of(CURSOR_FIELD2)),
-            new DbStreamState()
-                .withStreamName(STREAM_NAME3)
-                .withStreamNamespace(NAMESPACE))
-            .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
-    final StateManager stateManager = new GlobalStateManager(new AirbyteStateMessage().withData(Jsons.jsonNode(dbState)), catalog);
+                new DbStreamState()
+                    .withStreamName(STREAM_NAME1)
+                    .withStreamNamespace(NAMESPACE)
+                    .withCursorField(List.of(CURSOR_FIELD1))
+                    .withCursor("a"),
+                new DbStreamState()
+                    .withStreamName(STREAM_NAME2)
+                    .withStreamNamespace(NAMESPACE)
+                    .withCursorField(List.of(CURSOR_FIELD2)),
+                new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
+            .stream()
+            .sorted(Comparator.comparing(DbStreamState::getStreamName))
+            .collect(Collectors.toList()));
+    final StateManager stateManager = new GlobalStateManager(
+        new AirbyteStateMessage().withData(Jsons.jsonNode(dbState)), catalog);
 
     final long expectedRecordCount = 19L;
     final DbState expectedDbState = new DbState()
         .withCdc(true)
         .withCdcState(cdcState)
         .withStreams(List.of(
-            new DbStreamState()
-                .withStreamName(STREAM_NAME1)
-                .withStreamNamespace(NAMESPACE)
-                .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a")
-                .withCursorRecordCount(expectedRecordCount),
-            new DbStreamState()
-                .withStreamName(STREAM_NAME2)
-                .withStreamNamespace(NAMESPACE)
-                .withCursorField(List.of(CURSOR_FIELD2)),
-            new DbStreamState()
-                .withStreamName(STREAM_NAME3)
-                .withStreamNamespace(NAMESPACE))
-            .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
-
-    final AirbyteGlobalState expectedGlobalState = new AirbyteGlobalState()
-        .withSharedState(Jsons.jsonNode(cdcState))
-        .withStreamStates(List.of(
-            new AirbyteStreamState()
-                .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME1).withNamespace(NAMESPACE))
-                .withStreamState(Jsons.jsonNode(new DbStreamState()
+                new DbStreamState()
                     .withStreamName(STREAM_NAME1)
                     .withStreamNamespace(NAMESPACE)
                     .withCursorField(List.of(CURSOR_FIELD1))
                     .withCursor("a")
-                    .withCursorRecordCount(expectedRecordCount))),
-            new AirbyteStreamState()
-                .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
-                .withStreamState(Jsons.jsonNode(new DbStreamState()
+                    .withCursorRecordCount(expectedRecordCount),
+                new DbStreamState()
                     .withStreamName(STREAM_NAME2)
                     .withStreamNamespace(NAMESPACE)
-                    .withCursorField(List.of(CURSOR_FIELD2)))),
-            new AirbyteStreamState()
-                .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME3).withNamespace(NAMESPACE))
-                .withStreamState(Jsons.jsonNode(new DbStreamState()
-                    .withStreamName(STREAM_NAME3)
-                    .withStreamNamespace(NAMESPACE))))
-            .stream().sorted(Comparator.comparing(o -> o.getStreamDescriptor().getName())).collect(Collectors.toList()));
+                    .withCursorField(List.of(CURSOR_FIELD2)),
+                new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
+            .stream()
+            .sorted(Comparator.comparing(DbStreamState::getStreamName))
+            .collect(Collectors.toList()));
+
+    final AirbyteGlobalState expectedGlobalState = new AirbyteGlobalState()
+        .withSharedState(Jsons.jsonNode(cdcState))
+        .withStreamStates(List.of(
+                new AirbyteStreamState()
+                    .withStreamDescriptor(
+                        new StreamDescriptor().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+                    .withStreamState(Jsons.jsonNode(new DbStreamState()
+                        .withStreamName(STREAM_NAME1)
+                        .withStreamNamespace(NAMESPACE)
+                        .withCursorField(List.of(CURSOR_FIELD1))
+                        .withCursor("a")
+                        .withCursorRecordCount(expectedRecordCount))),
+                new AirbyteStreamState()
+                    .withStreamDescriptor(
+                        new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
+                    .withStreamState(Jsons.jsonNode(new DbStreamState()
+                        .withStreamName(STREAM_NAME2)
+                        .withStreamNamespace(NAMESPACE)
+                        .withCursorField(List.of(CURSOR_FIELD2)))),
+                new AirbyteStreamState()
+                    .withStreamDescriptor(
+                        new StreamDescriptor().withName(STREAM_NAME3).withNamespace(NAMESPACE))
+                    .withStreamState(Jsons.jsonNode(new DbStreamState()
+                        .withStreamName(STREAM_NAME3)
+                        .withStreamNamespace(NAMESPACE))))
+            .stream()
+            .sorted(Comparator.comparing(o -> o.getStreamDescriptor().getName()))
+            .collect(Collectors.toList()));
     final AirbyteStateMessage expected = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(expectedDbState))
         .withGlobal(expectedGlobalState)
         .withType(AirbyteStateType.GLOBAL);
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", expectedRecordCount);
+    final AirbyteStateMessage actualFirstEmission =
+        stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", expectedRecordCount);
     assertEquals(expected, actualFirstEmission);
   }
 
@@ -155,69 +171,79 @@ public class GlobalStateManagerTest {
             new ConfiguredAirbyteStream()
                 .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE))));
 
-    final CdcState cdcState = new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
-    final AirbyteGlobalState globalState = new AirbyteGlobalState().withSharedState(Jsons.jsonNode(new DbState())).withStreamStates(
-        List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor()).withStreamState(Jsons.jsonNode(new DbStreamState()))));
-    final StateManager stateManager =
-        new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
+    final CdcState cdcState =
+        new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
+    final AirbyteGlobalState globalState = new AirbyteGlobalState()
+        .withSharedState(Jsons.jsonNode(new DbState()))
+        .withStreamStates(List.of(new AirbyteStreamState()
+            .withStreamDescriptor(new StreamDescriptor())
+            .withStreamState(Jsons.jsonNode(new DbStreamState()))));
+    final StateManager stateManager = new GlobalStateManager(
+        new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState),
+        catalog);
     stateManager.getCdcStateManager().setCdcState(cdcState);
 
     final DbState expectedDbState = new DbState()
         .withCdc(true)
         .withCdcState(cdcState)
         .withStreams(List.of(
-            new DbStreamState()
-                .withStreamName(STREAM_NAME1)
-                .withStreamNamespace(NAMESPACE)
-                .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a")
-                .withCursorRecordCount(1L),
-            new DbStreamState()
-                .withStreamName(STREAM_NAME2)
-                .withStreamNamespace(NAMESPACE)
-                .withCursorField(List.of(CURSOR_FIELD2)),
-            new DbStreamState()
-                .withStreamName(STREAM_NAME3)
-                .withStreamNamespace(NAMESPACE))
-            .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
-
-    final AirbyteGlobalState expectedGlobalState = new AirbyteGlobalState()
-        .withSharedState(Jsons.jsonNode(cdcState))
-        .withStreamStates(List.of(
-            new AirbyteStreamState()
-                .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME1).withNamespace(NAMESPACE))
-                .withStreamState(Jsons.jsonNode(new DbStreamState()
+                new DbStreamState()
                     .withStreamName(STREAM_NAME1)
                     .withStreamNamespace(NAMESPACE)
                     .withCursorField(List.of(CURSOR_FIELD1))
                     .withCursor("a")
-                    .withCursorRecordCount(1L))),
-            new AirbyteStreamState()
-                .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
-                .withStreamState(Jsons.jsonNode(new DbStreamState()
+                    .withCursorRecordCount(1L),
+                new DbStreamState()
                     .withStreamName(STREAM_NAME2)
                     .withStreamNamespace(NAMESPACE)
-                    .withCursorField(List.of(CURSOR_FIELD2)))),
-            new AirbyteStreamState()
-                .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME3).withNamespace(NAMESPACE))
-                .withStreamState(Jsons.jsonNode(new DbStreamState()
-                    .withStreamName(STREAM_NAME3)
-                    .withStreamNamespace(NAMESPACE))))
-            .stream().sorted(Comparator.comparing(o -> o.getStreamDescriptor().getName())).collect(Collectors.toList()));
+                    .withCursorField(List.of(CURSOR_FIELD2)),
+                new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
+            .stream()
+            .sorted(Comparator.comparing(DbStreamState::getStreamName))
+            .collect(Collectors.toList()));
+
+    final AirbyteGlobalState expectedGlobalState = new AirbyteGlobalState()
+        .withSharedState(Jsons.jsonNode(cdcState))
+        .withStreamStates(List.of(
+                new AirbyteStreamState()
+                    .withStreamDescriptor(
+                        new StreamDescriptor().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+                    .withStreamState(Jsons.jsonNode(new DbStreamState()
+                        .withStreamName(STREAM_NAME1)
+                        .withStreamNamespace(NAMESPACE)
+                        .withCursorField(List.of(CURSOR_FIELD1))
+                        .withCursor("a")
+                        .withCursorRecordCount(1L))),
+                new AirbyteStreamState()
+                    .withStreamDescriptor(
+                        new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
+                    .withStreamState(Jsons.jsonNode(new DbStreamState()
+                        .withStreamName(STREAM_NAME2)
+                        .withStreamNamespace(NAMESPACE)
+                        .withCursorField(List.of(CURSOR_FIELD2)))),
+                new AirbyteStreamState()
+                    .withStreamDescriptor(
+                        new StreamDescriptor().withName(STREAM_NAME3).withNamespace(NAMESPACE))
+                    .withStreamState(Jsons.jsonNode(new DbStreamState()
+                        .withStreamName(STREAM_NAME3)
+                        .withStreamNamespace(NAMESPACE))))
+            .stream()
+            .sorted(Comparator.comparing(o -> o.getStreamDescriptor().getName()))
+            .collect(Collectors.toList()));
     final AirbyteStateMessage expected = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(expectedDbState))
         .withGlobal(expectedGlobalState)
         .withType(AirbyteStateType.GLOBAL);
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1L);
+    final AirbyteStateMessage actualFirstEmission =
+        stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1L);
     assertEquals(expected, actualFirstEmission);
   }
 
   @Test
   void testToStateWithNoState() {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog();
-    final StateManager stateManager =
-        new GlobalStateManager(new AirbyteStateMessage(), catalog);
+    final StateManager stateManager = new GlobalStateManager(new AirbyteStateMessage(), catalog);
 
     final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.empty());
     assertNotNull(airbyteStateMessage);
@@ -228,16 +254,26 @@ public class GlobalStateManagerTest {
   @Test
   void testCdcStateManagerLegacyState() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final CdcState cdcState = new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
-    final DbState dbState = new DbState().withCdcState(new CdcState().withState(Jsons.jsonNode(cdcState)))
-        .withStreams(List
-            .of(new DbStreamState().withStreamName("name").withStreamNamespace("namespace").withCursor("").withCursorField(Collections.emptyList())))
+    final CdcState cdcState =
+        new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
+    final DbState dbState = new DbState()
+        .withCdcState(new CdcState().withState(Jsons.jsonNode(cdcState)))
+        .withStreams(List.of(new DbStreamState()
+            .withStreamName("name")
+            .withStreamNamespace("namespace")
+            .withCursor("")
+            .withCursorField(Collections.emptyList())))
         .withCdc(true);
-    final StateManager stateManager =
-        new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState)), catalog);
+    final StateManager stateManager = new GlobalStateManager(
+        new AirbyteStateMessage()
+            .withType(AirbyteStateType.LEGACY)
+            .withData(Jsons.jsonNode(dbState)),
+        catalog);
     assertNotNull(stateManager.getCdcStateManager());
     assertEquals(1, stateManager.getCdcStateManager().getInitialStreamsSynced().size());
-    assertTrue(stateManager.getCdcStateManager().getInitialStreamsSynced().contains(new AirbyteStreamNameNamespacePair("name", "namespace")));
+    assertTrue(stateManager
+        .getCdcStateManager()
+        .getInitialStreamsSynced()
+        .contains(new AirbyteStreamNameNamespacePair("name", "namespace")));
   }
-
 }

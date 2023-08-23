@@ -33,5 +33,4 @@ public class AbstractDatabase {
   public void setDatabaseConfig(final JsonNode databaseConfig) {
     this.databaseConfig = databaseConfig;
   }
-
 }

@@ -43,5 +43,4 @@ public class ExasolSQLNameTransformer extends StandardNameTransformer {
     }
     return result;
   }
-
 }

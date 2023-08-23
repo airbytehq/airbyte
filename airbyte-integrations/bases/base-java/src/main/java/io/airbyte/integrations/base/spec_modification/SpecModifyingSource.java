@@ -27,7 +27,8 @@ public abstract class SpecModifyingSource implements Source {
     this.source = source;
   }
 
-  public abstract ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) throws Exception;
+  public abstract ConnectorSpecification modifySpec(ConnectorSpecification originalSpec)
+      throws Exception;
 
   @Override
   public ConnectorSpecification spec() throws Exception {
@@ -45,15 +46,15 @@ public abstract class SpecModifyingSource implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     return source.read(config, catalog, state);
   }
 
   @Override
-  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
-      throws Exception {
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(
+      JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     return source.readStreams(config, catalog, state);
   }
-
 }

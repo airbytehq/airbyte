@@ -28,5 +28,4 @@ public class PostgresCustomLoader extends Loader {
   public Map<String, ?> getRawOffset() {
     return Collections.unmodifiableMap(offset);
   }
-
 }

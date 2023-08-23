@@ -21,7 +21,8 @@ public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector
   }
 
   @Override
-  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final Long lsn) {
+  public void addMetaDataToRowsFetchedOutsideDebezium(
+      final ObjectNode record, final String transactionTimestamp, final Long lsn) {
     record.put(CDC_UPDATED_AT, transactionTimestamp);
     record.put(CDC_LSN, lsn);
     record.put(CDC_DELETED_AT, (String) null);
@@ -31,5 +32,4 @@ public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector
   public String namespace(final JsonNode source) {
     return source.get("schema").asText();
   }
-
 }

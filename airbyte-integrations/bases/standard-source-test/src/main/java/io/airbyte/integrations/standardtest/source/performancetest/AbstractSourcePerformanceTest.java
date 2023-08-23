@@ -73,23 +73,23 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
 
   @ParameterizedTest
   @MethodSource("provideParameters")
-  public void testPerformance(final String dbName,
-                              final String schemaName,
-                              final int numberOfDummyRecords,
-                              final int numberOfColumns,
-                              final int numberOfStreams)
+  public void testPerformance(
+      final String dbName,
+      final String schemaName,
+      final int numberOfDummyRecords,
+      final int numberOfColumns,
+      final int numberOfStreams)
       throws Exception {
 
     setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
-        numberOfColumns);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap = runReadVerifyNumberOfReceivedMsgs(catalog, null,
-        mapOfExpectedRecordsCount);
+    final ConfiguredAirbyteCatalog catalog =
+        getConfiguredCatalog(schemaName, numberOfStreams, numberOfColumns);
+    final Map<String, Integer> mapOfExpectedRecordsCount =
+        prepareMapWithExpectedRecords(numberOfStreams, numberOfDummyRecords);
+    final Map<String, Integer> checkStatusMap =
+        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
     validateNumberOfReceivedMsgs(checkStatusMap);
-
   }
 
   /**
@@ -105,7 +105,8 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
   protected void validateNumberOfReceivedMsgs(final Map<String, Integer> checkStatusMap) {
     // Iterate through all streams map and check for streams where
     final Map<String, Integer> failedStreamsMap = checkStatusMap.entrySet().stream()
-        .filter(el -> el.getValue() != 0).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+        .filter(el -> el.getValue() != 0)
+        .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
     if (!failedStreamsMap.isEmpty()) {
       fail("Non all messages were delivered. " + failedStreamsMap.toString());
@@ -113,8 +114,8 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
     c.info("Finished all checks, no issues found for {} of streams", checkStatusMap.size());
   }
 
-  protected Map<String, Integer> prepareMapWithExpectedRecords(final int streamNumber,
-                                                               final int expectedRecordsNumberInEachStream) {
+  protected Map<String, Integer> prepareMapWithExpectedRecords(
+      final int streamNumber, final int expectedRecordsNumberInEachStream) {
     final Map<String, Integer> resultMap = new HashMap<>(); // streamName&expected records in stream
 
     for (int currentStream = 0; currentStream < streamNumber; currentStream++) {
@@ -129,9 +130,8 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
    *
    * @return configured catalog
    */
-  protected ConfiguredAirbyteCatalog getConfiguredCatalog(final String nameSpace,
-                                                          final int numberOfStreams,
-                                                          final int numberOfColumns) {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog(
+      final String nameSpace, final int numberOfStreams, final int numberOfColumns) {
     final List<ConfiguredAirbyteStream> streams = new ArrayList<>();
 
     for (int currentStream = 0; currentStream < numberOfStreams; currentStream++) {
@@ -146,13 +146,11 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
         fields.add(Field.of(getTestColumnName() + currentColumnNumber, JsonSchemaType.STRING));
       }
 
-      final AirbyteStream airbyteStream = CatalogHelpers
-          .createAirbyteStream(String.format(getTestStreamNameTemplate(), currentStream),
-              nameSpace, fields)
+      final AirbyteStream airbyteStream = CatalogHelpers.createAirbyteStream(
+              String.format(getTestStreamNameTemplate(), currentStream), nameSpace, fields)
           .withSourceDefinedCursor(true)
           .withSourceDefinedPrimaryKey(List.of(List.of(getIdColumnName())))
-          .withSupportedSyncModes(
-              Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
 
       final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream()
           .withSyncMode(SyncMode.INCREMENTAL)
@@ -161,10 +159,8 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
           .withStream(airbyteStream);
 
       streams.add(configuredAirbyteStream);
-
     }
 
     return new ConfiguredAirbyteCatalog().withStreams(streams);
   }
-
 }

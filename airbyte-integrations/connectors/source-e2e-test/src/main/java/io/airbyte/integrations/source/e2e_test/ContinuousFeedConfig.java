@@ -66,7 +66,8 @@ public class ContinuousFeedConfig {
 
   static AirbyteCatalog parseMockCatalog(final JsonNode config) throws JsonValidationException {
     final JsonNode mockCatalogConfig = config.get("mock_catalog");
-    final MockCatalogType mockCatalogType = MockCatalogType.valueOf(mockCatalogConfig.get("type").asText());
+    final MockCatalogType mockCatalogType =
+        MockCatalogType.valueOf(mockCatalogConfig.get("type").asText());
     switch (mockCatalogType) {
       case SINGLE_STREAM -> {
         final String streamName = mockCatalogConfig.get("stream_name").asText();
@@ -76,12 +77,15 @@ public class ContinuousFeedConfig {
             : 1;
         final Optional<JsonNode> streamSchema = Jsons.tryDeserialize(streamSchemaText);
         if (streamSchema.isEmpty()) {
-          throw new JsonValidationException(String.format("Stream \"%s\" has invalid schema: %s", streamName, streamSchemaText));
+          throw new JsonValidationException(
+              String.format("Stream \"%s\" has invalid schema: %s", streamName, streamSchemaText));
         }
         checkSchema(streamName, streamSchema.get());
 
         if (streamDuplication == 1) {
-          final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get())
+          final AirbyteStream stream = new AirbyteStream()
+              .withName(streamName)
+              .withJsonSchema(streamSchema.get())
               .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
           return new AirbyteCatalog().withStreams(Collections.singletonList(stream));
         } else {
@@ -99,35 +103,40 @@ public class ContinuousFeedConfig {
         final String streamSchemasText = mockCatalogConfig.get("stream_schemas").asText();
         final Optional<JsonNode> streamSchemas = Jsons.tryDeserialize(streamSchemasText);
         if (streamSchemas.isEmpty()) {
-          throw new JsonValidationException("Input stream schemas are invalid: %s" + streamSchemasText);
+          throw new JsonValidationException(
+              "Input stream schemas are invalid: %s" + streamSchemasText);
         }
 
-        final List<Entry<String, JsonNode>> streamEntries = MoreIterators.toList(streamSchemas.get().fields());
+        final List<Entry<String, JsonNode>> streamEntries =
+            MoreIterators.toList(streamSchemas.get().fields());
         final List<AirbyteStream> streams = new ArrayList<>(streamEntries.size());
         for (final Map.Entry<String, JsonNode> entry : streamEntries) {
           final String streamName = entry.getKey();
           final JsonNode streamSchema = entry.getValue();
           checkSchema(streamName, streamSchema);
-          streams.add(new AirbyteStream().withName(streamName).withJsonSchema(streamSchema)
+          streams.add(new AirbyteStream()
+              .withName(streamName)
+              .withJsonSchema(streamSchema)
               .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)));
         }
         return new AirbyteCatalog().withStreams(streams);
       }
-      default -> throw new IllegalArgumentException("Unsupported mock catalog type: " + mockCatalogType);
+      default -> throw new IllegalArgumentException(
+          "Unsupported mock catalog type: " + mockCatalogType);
     }
   }
 
   /**
    * Validate the stream schema against Json schema draft 07.
    */
-  private static void checkSchema(final String streamName, final JsonNode streamSchema) throws JsonValidationException {
-    final Set<String> validationMessages = SCHEMA_VALIDATOR.validate(JSON_SCHEMA_DRAFT_07, streamSchema);
+  private static void checkSchema(final String streamName, final JsonNode streamSchema)
+      throws JsonValidationException {
+    final Set<String> validationMessages =
+        SCHEMA_VALIDATOR.validate(JSON_SCHEMA_DRAFT_07, streamSchema);
     if (!validationMessages.isEmpty()) {
       throw new JsonValidationException(String.format(
           "Stream \"%s\" has invalid schema.\n- Errors: %s\n- Schema: %s",
-          streamName,
-          Strings.join(validationMessages, "; "),
-          streamSchema.toString()));
+          streamName, Strings.join(validationMessages, "; "), streamSchema.toString()));
     }
   }
 
@@ -163,7 +172,8 @@ public class ContinuousFeedConfig {
 
   @Override
   public String toString() {
-    return String.format("%s{maxMessages=%d, seed=%d, messageIntervalMs=%s, mockCatalog=%s}",
+    return String.format(
+        "%s{maxMessages=%d, seed=%d, messageIntervalMs=%s, mockCatalog=%s}",
         ContinuousFeedConfig.class.getSimpleName(),
         maxMessages,
         seed,
@@ -186,5 +196,4 @@ public class ContinuousFeedConfig {
   public int hashCode() {
     return Objects.hash(seed, maxMessages, messageIntervalMs, mockCatalog);
   }
-
 }

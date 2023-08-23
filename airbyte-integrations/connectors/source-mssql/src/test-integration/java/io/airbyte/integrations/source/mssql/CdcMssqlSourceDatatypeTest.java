@@ -25,8 +25,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest")
-        .acceptLicense();
+    container =
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
 
@@ -46,14 +46,17 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 
-    dslContext = DSLContextFactory.create(DataSourceFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false")), null);
+    dslContext = DSLContextFactory.create(
+        DataSourceFactory.create(
+            container.getUsername(),
+            container.getPassword(),
+            container.getDriverClassName(),
+            String.format(
+                "jdbc:sqlserver://%s:%d;",
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt()),
+            Map.of("encrypt", "false")),
+        null);
     final Database database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");
@@ -66,9 +69,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
   private void executeQuery(final String query) {
     try {
       final Database database = new Database(dslContext);
-      database.query(
-          ctx -> ctx
-              .execute(query));
+      database.query(ctx -> ctx.execute(query));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -115,5 +116,4 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         + "CLOSE CDC_Cursor\n"
         + "DEALLOCATE CDC_Cursor");
   }
-
 }

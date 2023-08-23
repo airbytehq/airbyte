@@ -31,6 +31,7 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
 
   @Mock
   private Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
+
   @Mock
   private Consumer<AirbyteMessage> outputRecordCollector;
 
@@ -48,8 +49,7 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
         outputRecordCollector,
         "test-dataset-id",
         new NoopTyperDeduper(),
-        parsedCatalog
-    );
+        parsedCatalog);
   }
 
   @Override
@@ -61,5 +61,4 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return bigQueryRecordConsumer;
   }
-
 }

@@ -66,19 +66,12 @@ class IOsTest {
   void testGetTailExists() throws IOException {
     final Path stdoutFile = Files.createTempFile("job-history-handler-test", "stdout");
 
-    final List<String> head = List.of(
-        "line1",
-        "line2",
-        "line3",
-        "line4");
+    final List<String> head = List.of("line1", "line2", "line3", "line4");
 
-    final List<String> expectedTail = List.of(
-        "line5",
-        "line6",
-        "line7",
-        "line8");
+    final List<String> expectedTail = List.of("line5", "line6", "line7", "line8");
 
-    final Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), StandardCharsets.UTF_8, true));
+    final Writer writer =
+        new BufferedWriter(new FileWriter(stdoutFile.toString(), StandardCharsets.UTF_8, true));
 
     for (final String line : Iterables.concat(head, expectedTail)) {
       writer.write(line + "\n");
@@ -106,5 +99,4 @@ class IOsTest {
     Mockito.doThrow(new IOException()).when(closeable).close();
     assertThrows(RuntimeException.class, () -> IOs.silentClose(closeable));
   }
-
 }

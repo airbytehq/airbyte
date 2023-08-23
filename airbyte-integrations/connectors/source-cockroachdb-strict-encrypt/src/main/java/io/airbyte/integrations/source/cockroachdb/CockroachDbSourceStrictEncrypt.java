@@ -16,14 +16,16 @@ import org.slf4j.LoggerFactory;
 
 public class CockroachDbSourceStrictEncrypt extends SpecModifyingSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSourceStrictEncrypt.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(CockroachDbSourceStrictEncrypt.class);
 
   public CockroachDbSourceStrictEncrypt() {
     super(CockroachDbSource.sshWrappedSource());
   }
 
   @Override
-  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) throws Exception {
+  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec)
+      throws Exception {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
     return spec;
@@ -35,5 +37,4 @@ public class CockroachDbSourceStrictEncrypt extends SpecModifyingSource implemen
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", CockroachDbSourceStrictEncrypt.class);
   }
-
 }

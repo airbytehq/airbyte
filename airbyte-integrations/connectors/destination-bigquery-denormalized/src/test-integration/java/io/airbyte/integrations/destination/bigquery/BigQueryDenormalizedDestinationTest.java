@@ -77,22 +77,37 @@ import org.slf4j.LoggerFactory;
 
 class BigQueryDenormalizedDestinationTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BigQueryDenormalizedDestinationTest.class);
   protected static final Instant NOW = Instant.now();
-  protected static final AirbyteMessage MESSAGE_USERS1 = createRecordMessage(USERS_STREAM_NAME, getData());
-  protected static final AirbyteMessage MESSAGE_USERS2 = createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
-  protected static final AirbyteMessage MESSAGE_USERS3 = createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
-  protected static final AirbyteMessage MESSAGE_USERS4 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONDateTimeFormats());
-  protected static final AirbyteMessage MESSAGE_USERS5 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
-  protected static final AirbyteMessage MESSAGE_USERS6 = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
-  protected static final AirbyteMessage MESSAGE_USERS7 = createRecordMessage(USERS_STREAM_NAME, getDataWithNestedDatetimeInsideNullObject());
-  protected static final AirbyteMessage MESSAGE_USERS8 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormats());
-  protected static final AirbyteMessage MESSAGE_USERS9 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithNull());
-  protected static final AirbyteMessage MESSAGE_USERS10 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
-  protected static final AirbyteMessage MESSAGE_USERS11 = createRecordMessage(USERS_STREAM_NAME, getDataArrays());
-  protected static final AirbyteMessage MESSAGE_USERS12 = createRecordMessage(USERS_STREAM_NAME, getDataTooDeepNestedDepth());
-  protected static final AirbyteMessage MESSAGE_USERS13 = createRecordMessage(USERS_STREAM_NAME, getDataMaxNestedDepth());
-  protected static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
+  protected static final AirbyteMessage MESSAGE_USERS1 =
+      createRecordMessage(USERS_STREAM_NAME, getData());
+  protected static final AirbyteMessage MESSAGE_USERS2 =
+      createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
+  protected static final AirbyteMessage MESSAGE_USERS3 =
+      createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
+  protected static final AirbyteMessage MESSAGE_USERS4 =
+      createRecordMessage(USERS_STREAM_NAME, getDataWithJSONDateTimeFormats());
+  protected static final AirbyteMessage MESSAGE_USERS5 =
+      createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
+  protected static final AirbyteMessage MESSAGE_USERS6 =
+      createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
+  protected static final AirbyteMessage MESSAGE_USERS7 =
+      createRecordMessage(USERS_STREAM_NAME, getDataWithNestedDatetimeInsideNullObject());
+  protected static final AirbyteMessage MESSAGE_USERS8 =
+      createRecordMessage(USERS_STREAM_NAME, getAnyOfFormats());
+  protected static final AirbyteMessage MESSAGE_USERS9 =
+      createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithNull());
+  protected static final AirbyteMessage MESSAGE_USERS10 =
+      createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
+  protected static final AirbyteMessage MESSAGE_USERS11 =
+      createRecordMessage(USERS_STREAM_NAME, getDataArrays());
+  protected static final AirbyteMessage MESSAGE_USERS12 =
+      createRecordMessage(USERS_STREAM_NAME, getDataTooDeepNestedDepth());
+  protected static final AirbyteMessage MESSAGE_USERS13 =
+      createRecordMessage(USERS_STREAM_NAME, getDataMaxNestedDepth());
+  protected static final AirbyteMessage EMPTY_MESSAGE =
+      createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
 
   protected JsonNode config;
   protected BigQuery bigquery;
@@ -128,7 +143,6 @@ class BigQueryDenormalizedDestinationTest {
     MESSAGE_USERS12.getRecord().setNamespace(datasetId);
     MESSAGE_USERS13.getRecord().setNamespace(datasetId);
     EMPTY_MESSAGE.getRecord().setNamespace(datasetId);
-
   }
 
   @AfterEach
@@ -149,21 +163,30 @@ class BigQueryDenormalizedDestinationTest {
     final JsonNode expectedUsersJson = message.getRecord().getData();
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "grants"), extractJsonValues(expectedUsersJson, "grants"));
-    assertEquals(extractJsonValues(resultJson, "domain"), extractJsonValues(expectedUsersJson, "domain"));
+    assertEquals(
+        extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
+    assertEquals(
+        extractJsonValues(resultJson, "grants"), extractJsonValues(expectedUsersJson, "grants"));
+    assertEquals(
+        extractJsonValues(resultJson, "domain"), extractJsonValues(expectedUsersJson, "domain"));
   }
 
   @Test
   void testNestedDataTimeInsideNullObject() throws Exception {
-    runDestinationWrite(getCommonCatalog(getSchemaWithNestedDatetimeInsideNullObject(), datasetId), config, MESSAGE_USERS7);
+    runDestinationWrite(
+        getCommonCatalog(getSchemaWithNestedDatetimeInsideNullObject(), datasetId),
+        config,
+        MESSAGE_USERS7);
 
     final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
     final JsonNode expectedUsersJson = MESSAGE_USERS7.getRecord().getData();
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "appointment"), extractJsonValues(expectedUsersJson, "appointment"));
+    assertEquals(
+        extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
+    assertEquals(
+        extractJsonValues(resultJson, "appointment"),
+        extractJsonValues(expectedUsersJson, "appointment"));
   }
 
   protected Schema getExpectedSchemaForWriteWithFormatTest() {
@@ -177,25 +200,33 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void testWriteWithFormat() throws Exception {
-    runDestinationWrite(getCommonCatalog(getSchemaWithFormats(), datasetId), config, MESSAGE_USERS3);
+    runDestinationWrite(
+        getCommonCatalog(getSchemaWithFormats(), datasetId), config, MESSAGE_USERS3);
 
     final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
     final JsonNode expectedUsersJson = MESSAGE_USERS3.getRecord().getData();
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "date_of_birth"), extractJsonValues(expectedUsersJson, "date_of_birth"));
+    assertEquals(
+        extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
+    assertEquals(
+        extractJsonValues(resultJson, "date_of_birth"),
+        extractJsonValues(expectedUsersJson, "date_of_birth"));
 
-    // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
+    // Bigquery's datetime type accepts multiple input format but always outputs the same, so we
+    // can't
     // expect to receive the value we sent.
-    var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
+    var expectedValue = LocalDate.parse(
+        extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
         DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
-    var actualValue =
-        LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(),
-            DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
+    var actualValue = LocalDate.parse(
+        extractJsonValues(resultJson, "updated_at").stream().findFirst().get(),
+        DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
     assertEquals(expectedValue, actualValue);
 
-    assertEquals(BigQueryUtils.getTableDefinition(bigquery, datasetId, USERS_STREAM_NAME).getSchema(), getExpectedSchemaForWriteWithFormatTest());
+    assertEquals(
+        BigQueryUtils.getTableDefinition(bigquery, datasetId, USERS_STREAM_NAME).getSchema(),
+        getExpectedSchemaForWriteWithFormatTest());
   }
 
   @Test
@@ -208,17 +239,35 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
     assertEquals(extractJsonValues(resultJson, "id"), extractJsonValues(expectedUsersJson, "id"));
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "type"), extractJsonValues(expectedUsersJson, "type"));
-    assertEquals(extractJsonValues(resultJson, "email"), extractJsonValues(expectedUsersJson, "email"));
-    assertEquals(extractJsonValues(resultJson, "avatar"), extractJsonValues(expectedUsersJson, "avatar"));
-    assertEquals(extractJsonValues(resultJson, "team_ids"), extractJsonValues(expectedUsersJson, "team_ids"));
-    assertEquals(extractJsonValues(resultJson, "admin_ids"), extractJsonValues(expectedUsersJson, "admin_ids"));
-    assertEquals(extractJsonValues(resultJson, "all_of_field"), extractJsonValues(expectedUsersJson, "all_of_field"));
-    assertEquals(extractJsonValues(resultJson, "job_title"), extractJsonValues(expectedUsersJson, "job_title"));
-    assertEquals(extractJsonValues(resultJson, "has_inbox_seat"), extractJsonValues(expectedUsersJson, "has_inbox_seat"));
-    assertEquals(extractJsonValues(resultJson, "away_mode_enabled"), extractJsonValues(expectedUsersJson, "away_mode_enabled"));
-    assertEquals(extractJsonValues(resultJson, "away_mode_reassign"), extractJsonValues(expectedUsersJson, "away_mode_reassign"));
+    assertEquals(
+        extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
+    assertEquals(
+        extractJsonValues(resultJson, "type"), extractJsonValues(expectedUsersJson, "type"));
+    assertEquals(
+        extractJsonValues(resultJson, "email"), extractJsonValues(expectedUsersJson, "email"));
+    assertEquals(
+        extractJsonValues(resultJson, "avatar"), extractJsonValues(expectedUsersJson, "avatar"));
+    assertEquals(
+        extractJsonValues(resultJson, "team_ids"),
+        extractJsonValues(expectedUsersJson, "team_ids"));
+    assertEquals(
+        extractJsonValues(resultJson, "admin_ids"),
+        extractJsonValues(expectedUsersJson, "admin_ids"));
+    assertEquals(
+        extractJsonValues(resultJson, "all_of_field"),
+        extractJsonValues(expectedUsersJson, "all_of_field"));
+    assertEquals(
+        extractJsonValues(resultJson, "job_title"),
+        extractJsonValues(expectedUsersJson, "job_title"));
+    assertEquals(
+        extractJsonValues(resultJson, "has_inbox_seat"),
+        extractJsonValues(expectedUsersJson, "has_inbox_seat"));
+    assertEquals(
+        extractJsonValues(resultJson, "away_mode_enabled"),
+        extractJsonValues(expectedUsersJson, "away_mode_enabled"));
+    assertEquals(
+        extractJsonValues(resultJson, "away_mode_reassign"),
+        extractJsonValues(expectedUsersJson, "away_mode_reassign"));
   }
 
   @Test
@@ -230,10 +279,16 @@ class BigQueryDenormalizedDestinationTest {
     final JsonNode expectedUsersJson = MESSAGE_USERS9.getRecord().getData();
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "team_ids"), extractJsonValues(expectedUsersJson, "team_ids"));
-    assertEquals(extractJsonValues(resultJson, "all_of_field"), extractJsonValues(expectedUsersJson, "all_of_field"));
-    assertEquals(extractJsonValues(resultJson, "avatar"), extractJsonValues(expectedUsersJson, "avatar"));
+    assertEquals(
+        extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
+    assertEquals(
+        extractJsonValues(resultJson, "team_ids"),
+        extractJsonValues(expectedUsersJson, "team_ids"));
+    assertEquals(
+        extractJsonValues(resultJson, "all_of_field"),
+        extractJsonValues(expectedUsersJson, "all_of_field"));
+    assertEquals(
+        extractJsonValues(resultJson, "avatar"), extractJsonValues(expectedUsersJson, "avatar"));
   }
 
   @Test
@@ -245,14 +300,20 @@ class BigQueryDenormalizedDestinationTest {
     final JsonNode expectedUsersJson = MESSAGE_USERS10.getRecord().getData();
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "team_ids"), extractJsonValues(expectedUsersJson, "team_ids"));
-    assertEquals(extractJsonValues(resultJson, "all_of_field"), extractJsonValues(expectedUsersJson, "all_of_field"));
+    assertEquals(
+        extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
+    assertEquals(
+        extractJsonValues(resultJson, "team_ids"),
+        extractJsonValues(expectedUsersJson, "team_ids"));
+    assertEquals(
+        extractJsonValues(resultJson, "all_of_field"),
+        extractJsonValues(expectedUsersJson, "all_of_field"));
   }
 
   @Test
   void testIfJSONDateTimeWasConvertedToBigQueryFormat() throws Exception {
-    runDestinationWrite(getCommonCatalog(getSchemaWithDateTime(), datasetId), config, MESSAGE_USERS4);
+    runDestinationWrite(
+        getCommonCatalog(getSchemaWithDateTime(), datasetId), config, MESSAGE_USERS4);
 
     final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
     assertEquals(usersActual.size(), 1);
@@ -260,26 +321,38 @@ class BigQueryDenormalizedDestinationTest {
 
     // BigQuery Accepts "YYYY-MM-DD HH:MM:SS[.SSSSSS]" format
     Set<String> actualValues = extractJsonValues(resultJson, "updated_at");
-    assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString(BIGQUERY_DATETIME_FORMAT)),
+    assertEquals(
+        Set.of(new DateTime("2021-10-11T06:36:53+00:00")
+            .withZone(DateTimeZone.UTC)
+            .toString(BIGQUERY_DATETIME_FORMAT)),
         actualValues);
 
     // check nested datetime
     actualValues = extractJsonValues(resultJson.get("items"), "nested_datetime");
-    assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString(BIGQUERY_DATETIME_FORMAT)),
+    assertEquals(
+        Set.of(new DateTime("2021-11-11T06:36:53+00:00")
+            .withZone(DateTimeZone.UTC)
+            .toString(BIGQUERY_DATETIME_FORMAT)),
         actualValues);
   }
 
   @Test
   void testJsonReferenceDefinition() throws Exception {
-    runDestinationWrite(getCommonCatalog(getSchemaWithReferenceDefinition(), datasetId), config, MESSAGE_USERS5, MESSAGE_USERS6, EMPTY_MESSAGE);
+    runDestinationWrite(
+        getCommonCatalog(getSchemaWithReferenceDefinition(), datasetId),
+        config,
+        MESSAGE_USERS5,
+        MESSAGE_USERS6,
+        EMPTY_MESSAGE);
 
-    final Set<String> actual =
-        retrieveRecordsAsJson(USERS_STREAM_NAME).stream().flatMap(x -> extractJsonValues(x, "users").stream()).collect(Collectors.toSet());
+    final Set<String> actual = retrieveRecordsAsJson(USERS_STREAM_NAME).stream()
+        .flatMap(x -> extractJsonValues(x, "users").stream())
+        .collect(Collectors.toSet());
 
     final Set<String> expected = Sets.set(
         "\"{\\\"name\\\":\\\"John\\\",\\\"surname\\\":\\\"Adams\\\"}\"",
         null // we expect one record to have not had the users field set
-    );
+        );
 
     assertEquals(2, actual.size());
     assertEquals(expected, actual);
@@ -289,14 +362,16 @@ class BigQueryDenormalizedDestinationTest {
   void testArrays() throws Exception {
     runDestinationWrite(getCommonCatalog(getSchemaArrays(), datasetId), config, MESSAGE_USERS11);
 
-    assertEquals(getExpectedDataArrays(), retrieveRecordsAsJson(USERS_STREAM_NAME).get(0));
+    assertEquals(
+        getExpectedDataArrays(), retrieveRecordsAsJson(USERS_STREAM_NAME).get(0));
   }
 
   // Issue #14668
   @Test
   void testTooDeepNestedDepth() {
     try {
-      runDestinationWrite(getCommonCatalog(getSchemaTooDeepNestedDepth(), datasetId), config, MESSAGE_USERS12);
+      runDestinationWrite(
+          getCommonCatalog(getSchemaTooDeepNestedDepth(), datasetId), config, MESSAGE_USERS12);
     } catch (Exception e) {
       assert (e.getCause().getMessage().contains("nested too deeply"));
     }
@@ -305,9 +380,11 @@ class BigQueryDenormalizedDestinationTest {
   // Issue #14668
   @Test
   void testMaxNestedDepth() throws Exception {
-    runDestinationWrite(getCommonCatalog(getSchemaMaxNestedDepth(), datasetId), config, MESSAGE_USERS13);
+    runDestinationWrite(
+        getCommonCatalog(getSchemaMaxNestedDepth(), datasetId), config, MESSAGE_USERS13);
 
-    assertEquals(getDataMaxNestedDepth().findValue("str_value").asText(),
+    assertEquals(
+        getDataMaxNestedDepth().findValue("str_value").asText(),
         retrieveRecordsAsJson(USERS_STREAM_NAME).get(0).findValue("str_value").asText());
   }
 
@@ -335,15 +412,20 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   private List<JsonNode> retrieveRecordsAsJson(final String tableName) throws Exception {
-    final QueryJobConfiguration queryConfig =
-        QueryJobConfiguration
-            .newBuilder(
-                String.format("select TO_JSON_STRING(t) as jsonValue from %s.%s t;", datasetId, tableName.toLowerCase()))
-            .setUseLegacySql(false).build();
+    final QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(String.format(
+            "select TO_JSON_STRING(t) as jsonValue from %s.%s t;",
+            datasetId, tableName.toLowerCase()))
+        .setUseLegacySql(false)
+        .build();
     BigQueryUtils.executeQuery(bigquery, queryConfig);
 
-    var valuesStream = StreamSupport
-        .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+    var valuesStream = StreamSupport.stream(
+            BigQueryUtils.executeQuery(bigquery, queryConfig)
+                .getLeft()
+                .getQueryResults()
+                .iterateAll()
+                .spliterator(),
+            false)
         .map(v -> v.get("jsonValue").getStringValue());
     return formatDateValues(valuesStream)
         .map(Jsons::deserialize)
@@ -358,7 +440,8 @@ class BigQueryDenormalizedDestinationTest {
    * This method formats all values as Airbite format to simplify test result validation.
    */
   private Stream<String> formatDateValues(Stream<String> values) {
-    return values.map(s -> s.replaceAll("(\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})(Z)(\")", "$1$3"));
+    return values.map(
+        s -> s.replaceAll("(\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})(Z)(\")", "$1$3"));
   }
 
   private static Stream<Arguments> schemaAndDataProvider() {
@@ -369,10 +452,11 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   private static AirbyteMessage createRecordMessage(final String stream, final JsonNode data) {
-    return new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(stream)
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(stream)
             .withData(data)
             .withEmittedAt(NOW.toEpochMilli()));
   }
-
 }

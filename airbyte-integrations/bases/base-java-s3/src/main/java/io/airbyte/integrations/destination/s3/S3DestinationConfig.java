@@ -57,14 +57,15 @@ public class S3DestinationConfig {
 
   private int uploadThreadsCount = S3StorageOperations.DEFAULT_UPLOAD_THREADS;
 
-  public S3DestinationConfig(final String endpoint,
-                             final String bucketName,
-                             final String bucketPath,
-                             final String bucketRegion,
-                             final String pathFormat,
-                             final S3CredentialConfig credentialConfig,
-                             final S3FormatConfig formatConfig,
-                             final AmazonS3 s3Client) {
+  public S3DestinationConfig(
+      final String endpoint,
+      final String bucketName,
+      final String bucketPath,
+      final String bucketRegion,
+      final String pathFormat,
+      final S3CredentialConfig credentialConfig,
+      final S3FormatConfig formatConfig,
+      final AmazonS3 s3Client) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -75,17 +76,18 @@ public class S3DestinationConfig {
     this.s3Client = s3Client;
   }
 
-  public S3DestinationConfig(final String endpoint,
-                             final String bucketName,
-                             final String bucketPath,
-                             final String bucketRegion,
-                             final String pathFormat,
-                             final S3CredentialConfig credentialConfig,
-                             final S3FormatConfig formatConfig,
-                             final AmazonS3 s3Client,
-                             final String fileNamePattern,
-                             final boolean checkIntegrity,
-                             final int uploadThreadsCount) {
+  public S3DestinationConfig(
+      final String endpoint,
+      final String bucketName,
+      final String bucketPath,
+      final String bucketRegion,
+      final String pathFormat,
+      final S3CredentialConfig credentialConfig,
+      final S3FormatConfig formatConfig,
+      final AmazonS3 s3Client,
+      final String fileNamePattern,
+      final boolean checkIntegrity,
+      final int uploadThreadsCount) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -99,7 +101,8 @@ public class S3DestinationConfig {
     this.uploadThreadsCount = uploadThreadsCount;
   }
 
-  public static Builder create(final String bucketName, final String bucketPath, final String bucketRegion) {
+  public static Builder create(
+      final String bucketName, final String bucketPath, final String bucketRegion) {
     return new Builder(bucketName, bucketPath, bucketRegion);
   }
 
@@ -114,11 +117,10 @@ public class S3DestinationConfig {
     return getS3DestinationConfig(config, StorageProvider.AWS_S3);
   }
 
-  public static S3DestinationConfig getS3DestinationConfig(@Nonnull final JsonNode config, @Nonnull final StorageProvider storageProvider) {
-    Builder builder = create(
-        getProperty(config, S_3_BUCKET_NAME),
-        "",
-        getProperty(config, S_3_BUCKET_REGION));
+  public static S3DestinationConfig getS3DestinationConfig(
+      @Nonnull final JsonNode config, @Nonnull final StorageProvider storageProvider) {
+    Builder builder =
+        create(getProperty(config, S_3_BUCKET_NAME), "", getProperty(config, S_3_BUCKET_REGION));
 
     if (config.has(S_3_BUCKET_PATH)) {
       builder = builder.withBucketPath(config.get(S_3_BUCKET_PATH).asText());
@@ -138,7 +140,8 @@ public class S3DestinationConfig {
           final String endpoint = String.format(R2_INSTANCE_URL, getProperty(config, ACCOUNT_ID));
           builder = builder.withEndpoint(endpoint);
         }
-        builder = builder.withCheckIntegrity(false)
+        builder = builder
+            .withCheckIntegrity(false)
             // https://developers.cloudflare.com/r2/platform/s3-compatibility/api/#implemented-object-level-operations
             // 3 or less
             .withUploadThreadsCount(S3StorageOperations.R2_UPLOAD_THREADS);
@@ -152,7 +155,8 @@ public class S3DestinationConfig {
 
     final S3CredentialConfig credentialConfig;
     if (config.has(ACCESS_KEY_ID)) {
-      credentialConfig = new S3AccessKeyCredentialConfig(getProperty(config, ACCESS_KEY_ID), getProperty(config, SECRET_ACCESS_KEY));
+      credentialConfig = new S3AccessKeyCredentialConfig(
+          getProperty(config, ACCESS_KEY_ID), getProperty(config, SECRET_ACCESS_KEY));
     } else {
       credentialConfig = new S3AWSDefaultProfileCredentialConfig();
     }
@@ -247,7 +251,8 @@ public class S3DestinationConfig {
           .withCredentials(credentialsProvider)
           // the SDK defaults to RetryMode.LEGACY
           // (https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html)
-          // this _can_ be configured via environment variable, but it seems more reliable to configure it
+          // this _can_ be configured via environment variable, but it seems more reliable to
+          // configure it
           // programmatically
           .withClientConfiguration(new ClientConfiguration().withRetryMode(RetryMode.STANDARD))
           .build();
@@ -260,11 +265,13 @@ public class S3DestinationConfig {
           .build();
     }
 
-    final ClientConfiguration clientConfiguration = new ClientConfiguration().withProtocol(Protocol.HTTPS);
+    final ClientConfiguration clientConfiguration =
+        new ClientConfiguration().withProtocol(Protocol.HTTPS);
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
     return AmazonS3ClientBuilder.standard()
-        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
+        .withEndpointConfiguration(
+            new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
         .withPathStyleAccessEnabled(true)
         .withClientConfiguration(clientConfiguration)
         .withCredentials(credentialsProvider)
@@ -280,15 +287,18 @@ public class S3DestinationConfig {
       return false;
     }
     final S3DestinationConfig that = (S3DestinationConfig) o;
-    return Objects.equals(endpoint, that.endpoint) && Objects.equals(bucketName, that.bucketName) && Objects.equals(
-        bucketPath, that.bucketPath) && Objects.equals(bucketRegion, that.bucketRegion)
+    return Objects.equals(endpoint, that.endpoint)
+        && Objects.equals(bucketName, that.bucketName)
+        && Objects.equals(bucketPath, that.bucketPath)
+        && Objects.equals(bucketRegion, that.bucketRegion)
         && Objects.equals(credentialConfig, that.credentialConfig)
         && Objects.equals(formatConfig, that.formatConfig);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, credentialConfig, formatConfig);
+    return Objects.hash(
+        endpoint, bucketName, bucketPath, bucketRegion, credentialConfig, formatConfig);
   }
 
   public static class Builder {
@@ -388,7 +398,5 @@ public class S3DestinationConfig {
           checkIntegrity,
           uploadThreadsCount);
     }
-
   }
-
 }

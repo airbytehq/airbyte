@@ -40,17 +40,26 @@ import org.junit.jupiter.api.Test;
 class OracleSourceTest {
 
   private static final String STREAM_NAME = "TEST.ID_AND_NAME";
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createAirbyteStream(
-          STREAM_NAME,
-          Field.of("ID", JsonSchemaType.NUMBER),
-          Field.of("NAME", JsonSchemaType.STRING),
-          Field.of("IMAGE", JsonSchemaType.STRING))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
+      .withStreams(List.of(CatalogHelpers.createAirbyteStream(
+              STREAM_NAME,
+              Field.of("ID", JsonSchemaType.NUMBER),
+              Field.of("NAME", JsonSchemaType.STRING),
+              Field.of("IMAGE", JsonSchemaType.STRING))
+          .withSupportedSyncModes(
+              Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
 
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
-  private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(createRecord(STREAM_NAME,
-      map("ID", new BigDecimal("1.0"), "NAME", "user", "IMAGE", "last_summer.png".getBytes(StandardCharsets.UTF_8))));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG =
+      CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(createRecord(
+      STREAM_NAME,
+      map(
+          "ID",
+          new BigDecimal("1.0"),
+          "NAME",
+          "user",
+          "IMAGE",
+          "last_summer.png".getBytes(StandardCharsets.UTF_8))));
 
   private static AirbyteOracleTestContainer ORACLE_DB;
 
@@ -82,7 +91,8 @@ class OracleSourceTest {
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.ORACLE.getDriverClassName(),
-        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
             config.get("sid").asText()));
@@ -91,10 +101,18 @@ class OracleSourceTest {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
       database.execute(connection -> {
-        connection.createStatement().execute("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
-        connection.createStatement().execute("CREATE TABLE TEST.id_and_name(id NUMERIC(4, 0), name VARCHAR(200), image BLOB)");
-        connection.createStatement()
-            .execute("INSERT INTO TEST.id_and_name(id, name, image) VALUES (1, 'user', utl_raw.cast_to_raw('last_summer.png'))");
+        connection
+            .createStatement()
+            .execute(
+                "CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
+        connection
+            .createStatement()
+            .execute(
+                "CREATE TABLE TEST.id_and_name(id NUMERIC(4, 0), name VARCHAR(200), image BLOB)");
+        connection
+            .createStatement()
+            .execute(
+                "INSERT INTO TEST.id_and_name(id, name, image) VALUES (1, 'user', utl_raw.cast_to_raw('last_summer.png'))");
       });
     } finally {
       DataSourceFactory.close(dataSource);
@@ -116,14 +134,17 @@ class OracleSourceTest {
 
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(config, CONFIGURED_CATALOG, null));
+    final Set<AirbyteMessage> actualMessages =
+        MoreIterators.toSet(new OracleSource().read(config, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
   }
 
   private static AirbyteMessage createRecord(final String stream, final Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream));
+    return new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream));
   }
 
   private static Map<Object, Object> map(final Object... entries) {
@@ -138,8 +159,6 @@ class OracleSourceTest {
           put(entries[i++], entries[i]);
         }
       }
-
     };
   }
-
 }

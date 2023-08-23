@@ -37,8 +37,8 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
       throws SQLException {
 
-    final SQLServerResultSetMetaData metadata = (SQLServerResultSetMetaData) resultSet
-        .getMetaData();
+    final SQLServerResultSetMetaData metadata =
+        (SQLServerResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
     final String columnTypeName = metadata.getColumnTypeName(colIndex);
     final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
@@ -54,11 +54,12 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     }
   }
 
-  private void putValue(final JDBCType columnType,
-                        final ResultSet resultSet,
-                        final String columnName,
-                        final int colIndex,
-                        final ObjectNode json)
+  private void putValue(
+      final JDBCType columnType,
+      final ResultSet resultSet,
+      final String columnName,
+      final int colIndex,
+      final ObjectNode json)
       throws SQLException {
     switch (columnType) {
       case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -72,8 +73,8 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       case DATE -> putDate(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet,
-          colIndex);
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(
+          json, columnName, resultSet, colIndex);
       case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
     }
@@ -90,7 +91,8 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       }
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
-      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+      LOGGER.warn(String.format(
+          "Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
           field.get(INTERNAL_COLUMN_NAME),
           field.get(INTERNAL_SCHEMA_NAME),
           field.get(INTERNAL_TABLE_NAME),
@@ -100,30 +102,23 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putBinary(final ObjectNode node,
-                           final String columnName,
-                           final ResultSet resultSet,
-                           final int index)
+  protected void putBinary(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
     final byte[] bytes = resultSet.getBytes(index);
     final String value = new String(bytes, Charset.defaultCharset());
     node.put(columnName, value);
   }
 
-  protected void putGeometry(final ObjectNode node,
-                             final String columnName,
-                             final ResultSet resultSet,
-                             final int index)
+  protected void putGeometry(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
     node.put(columnName, Geometry.deserialize(resultSet.getBytes(index)).toString());
   }
 
-  protected void putGeography(final ObjectNode node,
-                              final String columnName,
-                              final ResultSet resultSet,
-                              final int index)
+  protected void putGeography(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
     node.put(columnName, Geography.deserialize(resultSet.getBytes(index)).toString());
   }
-
 }

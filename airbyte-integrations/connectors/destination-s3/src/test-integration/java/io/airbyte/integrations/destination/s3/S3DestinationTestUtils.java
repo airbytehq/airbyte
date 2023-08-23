@@ -16,5 +16,4 @@ public class S3DestinationTestUtils {
   public static JsonNode getBaseConfigJsonFilePath() {
     return Jsons.deserialize(IOs.readFile(Path.of(SECRET_PATH)));
   }
-
 }

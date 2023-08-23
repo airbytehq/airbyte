@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
@@ -22,7 +26,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
+public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest {
 
   @BeforeAll
   static void init() {
@@ -36,21 +40,25 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
     // Perform an initial sync with the configured catalog, which is set up to use xmin_replication.
     // All of the records in the configured stream should be emitted.
     final ConfiguredAirbyteCatalog configuredCatalog =
-        CONFIGURED_XMIN_CATALOG
-            .withStreams(CONFIGURED_XMIN_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
-                Collectors.toList()));
-    final List<AirbyteMessage> recordsFromFirstSync =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog, null));
+        CONFIGURED_XMIN_CATALOG.withStreams(CONFIGURED_XMIN_CATALOG.getStreams().stream()
+            .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+            .collect(Collectors.toList()));
+    final List<AirbyteMessage> recordsFromFirstSync = MoreIterators.toList(
+        new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog, null));
     setEmittedAtToNull(recordsFromFirstSync);
-    assertThat(filterRecords(recordsFromFirstSync)).containsExactlyElementsOf(INITIAL_RECORD_MESSAGES);
+    assertThat(filterRecords(recordsFromFirstSync))
+        .containsExactlyElementsOf(INITIAL_RECORD_MESSAGES);
 
-    // Extract the state message and assert that it exists. It contains the xmin value, so validating
+    // Extract the state message and assert that it exists. It contains the xmin value, so
+    // validating
     // the actual value isn't useful right now.
-    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(recordsFromFirstSync);
+    final List<AirbyteStateMessage> stateAfterFirstBatch =
+        extractStateMessage(recordsFromFirstSync);
     assertEquals(1, stateAfterFirstBatch.size());
 
     final AirbyteStateMessage firstSyncStateMessage = stateAfterFirstBatch.get(0);
-    final String stateTypeFromFirstStateMessage = firstSyncStateMessage.getStream().getStreamState().get("state_type").asText();
+    final String stateTypeFromFirstStateMessage =
+        firstSyncStateMessage.getStream().getStreamState().get("state_type").asText();
 
     // Since the flow reclassified the stream to do initial load using xmin
     // It should only contain a single final state of xmin type.
@@ -58,14 +66,14 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
     assertFalse(firstSyncStateMessage.getStream().getStreamState().has("ctid"));
     assertFalse(firstSyncStateMessage.getStream().getStreamState().has("incremental_state"));
 
-
-
     // Assert that the last message in the sequence is a state message
     assertMessageSequence(recordsFromFirstSync);
 
     // Read with the final xmin state message should return no data
-    final List<AirbyteMessage> syncWithXminStateType =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog,
+    final List<AirbyteMessage> syncWithXminStateType = MoreIterators.toList(new PostgresSource()
+        .read(
+            getXminConfig(PSQL_DB, dbName),
+            configuredCatalog,
             Jsons.jsonNode(Collections.singletonList(firstSyncStateMessage))));
     setEmittedAtToNull(syncWithXminStateType);
     assertEquals(0, filterRecords(syncWithXminStateType).size());
@@ -76,7 +84,8 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
     // Since no records were returned so the state should be the same as before
     assertEquals(firstSyncStateMessage, stateAfterXminSync.get(0));
 
-    // We add some data and perform a third read. We should verify that (i) a delete is not captured and
+    // We add some data and perform a third read. We should verify that (i) a delete is not captured
+    // and
     // (ii) the new record that is inserted into the
     // table is read.
     try (final DSLContext dslContext = getDslContext(getXminConfig(PSQL_DB, dbName))) {
@@ -88,8 +97,10 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
       });
     }
 
-    final List<AirbyteMessage> recordsAfterLastSync =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog,
+    final List<AirbyteMessage> recordsAfterLastSync = MoreIterators.toList(new PostgresSource()
+        .read(
+            getXminConfig(PSQL_DB, dbName),
+            configuredCatalog,
             Jsons.jsonNode(Collections.singletonList(stateAfterXminSync.get(0)))));
     setEmittedAtToNull(recordsAfterLastSync);
     assertThat(filterRecords(recordsAfterLastSync)).containsExactlyElementsOf(NEXT_RECORD_MESSAGES);
@@ -98,11 +109,22 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
     assertEquals(1, stateAfterLastSync.size());
 
     final AirbyteStateMessage finalStateMesssage = stateAfterLastSync.get(0);
-    final String stateTypeFromFinalStateMessage = finalStateMesssage.getStream().getStreamState().get("state_type").asText();
+    final String stateTypeFromFinalStateMessage =
+        finalStateMesssage.getStream().getStreamState().get("state_type").asText();
     assertEquals("xmin", stateTypeFromFinalStateMessage);
-    assertTrue(finalStateMesssage.getStream().getStreamState().get("xmin_xid_value").asLong() > firstSyncStateMessage.getStream().getStreamState()
-        .get("xmin_xid_value").asLong());
-    assertTrue(finalStateMesssage.getStream().getStreamState().get("xmin_raw_value").asLong() > firstSyncStateMessage.getStream().getStreamState()
-        .get("xmin_raw_value").asLong());
+    assertTrue(
+        finalStateMesssage.getStream().getStreamState().get("xmin_xid_value").asLong()
+            > firstSyncStateMessage
+                .getStream()
+                .getStreamState()
+                .get("xmin_xid_value")
+                .asLong());
+    assertTrue(
+        finalStateMesssage.getStream().getStreamState().get("xmin_raw_value").asLong()
+            > firstSyncStateMessage
+                .getStream()
+                .getStreamState()
+                .get("xmin_raw_value")
+                .asLong());
   }
 }

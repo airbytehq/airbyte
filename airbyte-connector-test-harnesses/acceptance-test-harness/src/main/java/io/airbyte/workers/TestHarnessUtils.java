@@ -44,14 +44,18 @@ public class TestHarnessUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestHarnessUtils.class);
 
-  public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
+  public static void gentleClose(
+      final Process process, final long timeout, final TimeUnit timeUnit) {
 
     if (process == null) {
       return;
     }
 
     if (process.info() != null) {
-      process.info().commandLine().ifPresent(commandLine -> LOGGER.debug("Gently closing process {}", commandLine));
+      process
+          .info()
+          .commandLine()
+          .ifPresent(commandLine -> LOGGER.debug("Gently closing process {}", commandLine));
     }
 
     try {
@@ -75,7 +79,8 @@ public class TestHarnessUtils {
       process.destroy();
       process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
       if (process.isAlive()) {
-        LOGGER.warn("Process is still alive after calling destroy. Attempting to destroy forcibly...");
+        LOGGER.warn(
+            "Process is still alive after calling destroy. Attempting to destroy forcibly...");
         process.destroyForcibly();
       }
     } catch (final InterruptedException e) {
@@ -111,7 +116,8 @@ public class TestHarnessUtils {
    * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a
    * subset of StandardSyncInput.
    */
-  public static WorkerDestinationConfig syncToWorkerDestinationConfig(final StandardSyncInput sync) {
+  public static WorkerDestinationConfig syncToWorkerDestinationConfig(
+      final StandardSyncInput sync) {
     return new WorkerDestinationConfig()
         .withDestinationId(sync.getDestinationId())
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
@@ -127,7 +133,8 @@ public class TestHarnessUtils {
     };
   }
 
-  public static Optional<AirbyteControlConnectorConfigMessage> getMostRecentConfigControlMessage(final Map<Type, List<AirbyteMessage>> messagesByType) {
+  public static Optional<AirbyteControlConnectorConfigMessage> getMostRecentConfigControlMessage(
+      final Map<Type, List<AirbyteMessage>> messagesByType) {
     return messagesByType.getOrDefault(Type.CONTROL, new ArrayList<>()).stream()
         .map(AirbyteMessage::getControl)
         .filter(control -> control.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG)
@@ -135,24 +142,28 @@ public class TestHarnessUtils {
         .reduce((first, second) -> second);
   }
 
-  private static Optional<AirbyteTraceMessage> getTraceMessageFromMessagesByType(final Map<Type, List<AirbyteMessage>> messagesByType) {
+  private static Optional<AirbyteTraceMessage> getTraceMessageFromMessagesByType(
+      final Map<Type, List<AirbyteMessage>> messagesByType) {
     return messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
         .map(AirbyteMessage::getTrace)
         .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
         .findFirst();
   }
 
-  public static Boolean getDidControlMessageChangeConfig(final JsonNode initialConfigJson, final AirbyteControlConnectorConfigMessage configMessage) {
+  public static Boolean getDidControlMessageChangeConfig(
+      final JsonNode initialConfigJson, final AirbyteControlConnectorConfigMessage configMessage) {
     final Config newConfig = configMessage.getConfig();
     final JsonNode newConfigJson = Jsons.jsonNode(newConfig);
     return !initialConfigJson.equals(newConfigJson);
   }
 
-  public static Map<Type, List<AirbyteMessage>> getMessagesByType(final Process process, final AirbyteStreamFactory streamFactory, final int timeOut)
+  public static Map<Type, List<AirbyteMessage>> getMessagesByType(
+      final Process process, final AirbyteStreamFactory streamFactory, final int timeOut)
       throws IOException {
     final Map<Type, List<AirbyteMessage>> messagesByType;
     try (final InputStream stdout = process.getInputStream()) {
-      messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+      messagesByType = streamFactory
+          .create(IOs.newBufferedReader(stdout))
           .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
       TestHarnessUtils.gentleClose(process, timeOut, TimeUnit.MINUTES);
@@ -160,28 +171,30 @@ public class TestHarnessUtils {
     }
   }
 
-  public static Optional<FailureReason> getJobFailureReasonFromMessages(final OutputType outputType,
-                                                                        final Map<Type, List<AirbyteMessage>> messagesByType) {
-    final Optional<AirbyteTraceMessage> traceMessage = getTraceMessageFromMessagesByType(messagesByType);
+  public static Optional<FailureReason> getJobFailureReasonFromMessages(
+      final OutputType outputType, final Map<Type, List<AirbyteMessage>> messagesByType) {
+    final Optional<AirbyteTraceMessage> traceMessage =
+        getTraceMessageFromMessagesByType(messagesByType);
     if (traceMessage.isPresent()) {
       final ConnectorCommand connectorCommand = getConnectorCommandFromOutputType(outputType);
-      return Optional.of(FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand));
+      return Optional.of(
+          FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand));
     } else {
       return Optional.empty();
     }
-
   }
 
-  public static Map<AirbyteStreamNameNamespacePair, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
-    return syncInput.getCatalog().getStreams().stream().collect(
-        Collectors.toMap(
+  public static Map<AirbyteStreamNameNamespacePair, JsonNode> mapStreamNamesToSchemas(
+      final StandardSyncInput syncInput) {
+    return syncInput.getCatalog().getStreams().stream()
+        .collect(Collectors.toMap(
             k -> AirbyteStreamNameNamespacePair.fromAirbyteStream(k.getStream()),
             v -> v.getStream().getJsonSchema()));
-
   }
 
   public static String getStdErrFromErrorStream(final InputStream errorStream) throws IOException {
-    final BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8));
+    final BufferedReader reader =
+        new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8));
     final StringBuilder errorOutput = new StringBuilder();
     String line;
     while ((line = reader.readLine()) != null) {
@@ -200,5 +213,4 @@ public class TestHarnessUtils {
       throw new TestHarnessException(errorMessage + ": \n" + stderr);
     }
   }
-
 }

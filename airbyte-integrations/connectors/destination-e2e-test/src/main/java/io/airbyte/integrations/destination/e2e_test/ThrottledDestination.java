@@ -33,10 +33,12 @@ public class ThrottledDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new ThrottledConsumer(config.get("test_destination").get("millis_per_record").asLong(), outputRecordCollector);
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    return new ThrottledConsumer(
+        config.get("test_destination").get("millis_per_record").asLong(), outputRecordCollector);
   }
 
   public static class ThrottledConsumer implements AirbyteMessageConsumer {
@@ -44,7 +46,8 @@ public class ThrottledDestination extends BaseConnector implements Destination {
     private final Consumer<AirbyteMessage> outputRecordCollector;
     private final long millisPerRecord;
 
-    public ThrottledConsumer(final long millisPerRecord, final Consumer<AirbyteMessage> outputRecordCollector) {
+    public ThrottledConsumer(
+        final long millisPerRecord, final Consumer<AirbyteMessage> outputRecordCollector) {
       this.millisPerRecord = millisPerRecord;
       this.outputRecordCollector = outputRecordCollector;
       LOGGER.info("Will sleep {} millis before processing every record", millisPerRecord);
@@ -65,7 +68,5 @@ public class ThrottledDestination extends BaseConnector implements Destination {
 
     @Override
     public void close() {}
-
   }
-
 }

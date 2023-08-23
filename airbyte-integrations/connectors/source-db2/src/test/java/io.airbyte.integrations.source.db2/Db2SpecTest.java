@@ -31,7 +31,8 @@ public class Db2SpecTest {
 
   @BeforeAll
   static void init() throws IOException {
-    configText = """
+    configText =
+        """
                  {
                    "host": "localhost",
                    "port": 1521,
@@ -42,7 +43,9 @@ public class Db2SpecTest {
                  }
                  """;
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec).toFile();
+    final File schemaFile = IOs.writeFile(
+            Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec)
+        .toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
@@ -87,5 +90,4 @@ public class Db2SpecTest {
     final ConnectorSpecification spec = new Db2Source().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
-
 }

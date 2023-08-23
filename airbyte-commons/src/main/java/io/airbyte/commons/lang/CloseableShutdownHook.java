@@ -57,5 +57,4 @@ public class CloseableShutdownHook {
       log.error("Unable to close object {}.", autoCloseable.getClass().getName(), e);
     }
   }
-
 }

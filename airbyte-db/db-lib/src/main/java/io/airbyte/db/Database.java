@@ -26,5 +26,4 @@ public class Database {
   public <T> T transaction(final ContextQueryFunction<T> transform) throws SQLException {
     return dslContext.transactionResult(configuration -> transform.query(DSL.using(configuration)));
   }
-
 }

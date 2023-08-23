@@ -65,7 +65,9 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final String schema = config.get(JdbcUtils.DATABASE_KEY).asText();
 
-    final String host = config.has(JdbcUtils.PORT_KEY) ? config.get(JdbcUtils.HOST_KEY).asText() + ":" + config.get(JdbcUtils.PORT_KEY).asInt()
+    final String host = config.has(JdbcUtils.PORT_KEY)
+        ? config.get(JdbcUtils.HOST_KEY).asText() + ":"
+            + config.get(JdbcUtils.PORT_KEY).asInt()
         : config.get(JdbcUtils.HOST_KEY).asText();
 
     final String jdbcUrl = String.format("jdbc:teradata://%s/", host);
@@ -76,11 +78,14 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
         .put(JdbcUtils.SCHEMA_KEY, schema);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.JDBC_URL_PARAMS_KEY,
+          config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -98,34 +103,43 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
-    return discoverInternal(database,
-        database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database)
+      throws Exception {
+    return discoverInternal(
+        database,
+        database.getSourceConfig().has(JdbcUtils.DATABASE_KEY)
+            ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()
+            : null);
   }
 
   @Override
   public JdbcDatabase createDatabase(JsonNode sourceConfig) throws SQLException {
-    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(sourceConfig, JdbcUtils.JDBC_URL_PARAMS_KEY);
+    final Map<String, String> customProperties =
+        JdbcUtils.parseJdbcParameters(sourceConfig, JdbcUtils.JDBC_URL_PARAMS_KEY);
     final Map<String, String> sslConnectionProperties = getSslConnectionProperties(sourceConfig);
-    JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(customProperties, sslConnectionProperties);
+    JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(
+        customProperties, sslConnectionProperties);
 
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.USERNAME_KEY)
+            ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()
+            : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY)
+            ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
+            : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         MoreMaps.merge(customProperties, sslConnectionProperties));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
-    final JdbcDatabase database = new StreamingJdbcDatabase(
-        dataSource,
-        sourceOperations,
-        streamingQueryConfigProvider);
+    final JdbcDatabase database =
+        new StreamingJdbcDatabase(dataSource, sourceOperations, streamingQueryConfigProvider);
 
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    quoteString =
+        (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
     return database;
@@ -136,7 +150,8 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
     if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
       LOGGER.debug("SSL Enabled");
       if (config.has(PARAM_SSL_MODE)) {
-        LOGGER.debug("Selected SSL Mode : {}", config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText());
+        LOGGER.debug(
+            "Selected SSL Mode : {}", config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText());
         additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
       } else {
         additionalParameters.put(PARAM_SSLMODE, REQUIRE);
@@ -153,7 +168,8 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
         case "verify-ca", "verify-full" -> {
           additionalParameters.put(PARAM_SSLMODE, method);
           try {
-            createCertificateFile(CA_CERTIFICATE, encryption.get("ssl_ca_certificate").asText());
+            createCertificateFile(
+                CA_CERTIFICATE, encryption.get("ssl_ca_certificate").asText());
           } catch (final IOException ioe) {
             throw new UncheckedIOException(ioe);
           }
@@ -170,5 +186,4 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
       out.print(fileValue);
     }
   }
-
 }

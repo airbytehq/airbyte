@@ -149,19 +149,24 @@ public interface StateManager<T, S> {
    * @return An {@link AirbyteStateMessage} that represents the current state maintained by the state
    *         manager.
    */
-  default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
+  default AirbyteStateMessage updateAndEmit(
+      final AirbyteStreamNameNamespacePair pair, final String cursor) {
     return updateAndEmit(pair, cursor, 0L);
   }
 
-  default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final long cursorRecordCount) {
+  default AirbyteStateMessage updateAndEmit(
+      final AirbyteStreamNameNamespacePair pair,
+      final String cursor,
+      final long cursorRecordCount) {
     final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
-    Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
+    Preconditions.checkState(
+        cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
     cursorInfo.get().setCursor(cursor);
     if (cursorRecordCount > 0L) {
       cursorInfo.get().setCursorRecordCount(cursorRecordCount);
     }
-    LOGGER.debug("Updating cursor value for {} to {} (count {})...", pair, cursor, cursorRecordCount);
+    LOGGER.debug(
+        "Updating cursor value for {} to {} (count {})...", pair, cursor, cursorRecordCount);
     return emit(Optional.ofNullable(pair));
   }
-
 }

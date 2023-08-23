@@ -21,11 +21,12 @@ class CompressionTypeHelperTest {
 
     assertEquals(
         CompressionType.NO_COMPRESSION,
-        CompressionTypeHelper.parseCompressionType(Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
+        CompressionTypeHelper.parseCompressionType(
+            Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
 
     assertEquals(
         CompressionType.GZIP,
-        CompressionTypeHelper.parseCompressionType(Jsons.jsonNode(Map.of("compression_type", "GZIP"))));
+        CompressionTypeHelper.parseCompressionType(
+            Jsons.jsonNode(Map.of("compression_type", "GZIP"))));
   }
-
 }

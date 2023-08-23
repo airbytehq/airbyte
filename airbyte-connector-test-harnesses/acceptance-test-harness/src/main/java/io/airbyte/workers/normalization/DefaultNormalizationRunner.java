@@ -44,81 +44,113 @@ import org.slf4j.LoggerFactory;
 public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
-  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
-      .setLogPrefix("normalization")
-      .setPrefixColor(Color.GREEN_BACKGROUND);
+  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER =
+      new Builder().setLogPrefix("normalization").setPrefixColor(Color.GREEN_BACKGROUND);
 
   private final String normalizationIntegrationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
-  private final NormalizationAirbyteStreamFactory streamFactory = new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
+  private final NormalizationAirbyteStreamFactory streamFactory =
+      new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
   private Map<Type, List<AirbyteMessage>> airbyteMessagesByType;
   private String dbtErrorStack;
 
   private Process process = null;
 
-  public DefaultNormalizationRunner(final ProcessFactory processFactory,
-                                    final String normalizationImage,
-                                    final String normalizationIntegrationType) {
+  public DefaultNormalizationRunner(
+      final ProcessFactory processFactory,
+      final String normalizationImage,
+      final String normalizationIntegrationType) {
     this.processFactory = processFactory;
     normalizationImageName = normalizationImage;
     this.normalizationIntegrationType = normalizationIntegrationType;
   }
 
   @Override
-  public boolean configureDbt(final String jobId,
-                              final int attempt,
-                              final Path jobRoot,
-                              final JsonNode config,
-                              final ResourceRequirements resourceRequirements,
-                              final OperatorDbt dbtConfig)
+  public boolean configureDbt(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final JsonNode config,
+      final ResourceRequirements resourceRequirements,
+      final OperatorDbt dbtConfig)
       throws Exception {
-    final Map<String, String> files = ImmutableMap.of(
-        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
+    final Map<String, String> files =
+        ImmutableMap.of(WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
     final String gitRepoUrl = dbtConfig.getGitRepoUrl();
     if (Strings.isNullOrEmpty(gitRepoUrl)) {
       throw new TestHarnessException("Git Repo Url is required");
     }
     final String gitRepoBranch = dbtConfig.getGitRepoBranch();
     if (Strings.isNullOrEmpty(gitRepoBranch)) {
-      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", normalizationIntegrationType.toLowerCase(),
-          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-          "--git-repo", gitRepoUrl);
+      return runProcess(
+          jobId,
+          attempt,
+          jobRoot,
+          files,
+          resourceRequirements,
+          "configure-dbt",
+          "--integration-type",
+          normalizationIntegrationType.toLowerCase(),
+          "--config",
+          WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+          "--git-repo",
+          gitRepoUrl);
     } else {
-      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", normalizationIntegrationType.toLowerCase(),
-          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-          "--git-repo", gitRepoUrl,
-          "--git-branch", gitRepoBranch);
+      return runProcess(
+          jobId,
+          attempt,
+          jobRoot,
+          files,
+          resourceRequirements,
+          "configure-dbt",
+          "--integration-type",
+          normalizationIntegrationType.toLowerCase(),
+          "--config",
+          WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+          "--git-repo",
+          gitRepoUrl,
+          "--git-branch",
+          gitRepoBranch);
     }
   }
 
   @Override
-  public boolean normalize(final String jobId,
-                           final int attempt,
-                           final Path jobRoot,
-                           final JsonNode config,
-                           final ConfiguredAirbyteCatalog catalog,
-                           final ResourceRequirements resourceRequirements)
+  public boolean normalize(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final ResourceRequirements resourceRequirements)
       throws Exception {
     final Map<String, String> files = ImmutableMap.of(
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
-        "--integration-type", normalizationIntegrationType.toLowerCase(),
-        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
+    return runProcess(
+        jobId,
+        attempt,
+        jobRoot,
+        files,
+        resourceRequirements,
+        "run",
+        "--integration-type",
+        normalizationIntegrationType.toLowerCase(),
+        "--config",
+        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+        "--catalog",
+        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  private boolean runProcess(final String jobId,
-                             final int attempt,
-                             final Path jobRoot,
-                             final Map<String, String> files,
-                             final ResourceRequirements resourceRequirements,
-                             final String... args)
+  private boolean runProcess(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final Map<String, String> files,
+      final ResourceRequirements resourceRequirements,
+      final String... args)
       throws Exception {
     try {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
@@ -130,7 +162,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           normalizationImageName,
           // custom connector does not use normalization
           false,
-          false, files,
+          false,
+          files,
           null,
           resourceRequirements,
           null,
@@ -143,7 +176,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       try (final InputStream stdout = process.getInputStream()) {
         // finds and collects any AirbyteMessages from stdout
         // also builds a list of raw dbt errors and stores in streamFactory
-        airbyteMessagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+        airbyteMessagesByType = streamFactory
+            .create(IOs.newBufferedReader(stdout))
             .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
         // picks up error logs from dbt
@@ -156,11 +190,16 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                   .withType(AirbyteTraceMessage.Type.ERROR)
                   .withEmittedAt((double) System.currentTimeMillis())
                   .withError(new AirbyteErrorTraceMessage()
-                      .withFailureType(FailureType.SYSTEM_ERROR) // TODO: decide on best FailureType for this
-                      .withMessage("Normalization failed during the dbt run. This may indicate a problem with the data itself.")
-                      // due to the lack of consistent defining features in dbt errors we're injecting a breadcrumb to the
-                      // stacktrace so we can confidently identify all dbt errors when parsing and sending to Sentry
-                      // see dbt error examples: https://docs.getdbt.com/guides/legacy/debugging-errors for more context
+                      .withFailureType(
+                          FailureType.SYSTEM_ERROR) // TODO: decide on best FailureType for this
+                      .withMessage(
+                          "Normalization failed during the dbt run. This may indicate a problem with the data itself.")
+                      // due to the lack of consistent defining features in dbt errors we're
+                      // injecting a breadcrumb to the
+                      // stacktrace so we can confidently identify all dbt errors when parsing and
+                      // sending to Sentry
+                      // see dbt error examples:
+                      // https://docs.getdbt.com/guides/legacy/debugging-errors for more context
                       .withStackTrace("AirbyteDbtError: \n".concat(dbtErrorStack))));
 
           airbyteMessagesByType.putIfAbsent(Type.TRACE, List.of(dbtTraceMessage));
@@ -197,7 +236,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     if (process.isAlive()) {
       throw new TestHarnessException("Normalization process did not terminate after 1 minute.");
     } else if (process.exitValue() != 0) {
-      throw new TestHarnessException("Normalization process did not terminate normally (exit code: " + process.exitValue() + ")");
+      throw new TestHarnessException("Normalization process did not terminate normally (exit code: "
+          + process.exitValue() + ")");
     } else {
       LOGGER.info("Normalization process successfully terminated.");
     }
@@ -210,5 +250,4 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     }
     return Stream.empty();
   }
-
 }

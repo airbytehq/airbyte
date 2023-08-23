@@ -13,39 +13,51 @@ import java.util.function.Function;
 public enum ConfigSchema implements AirbyteConfig {
 
   // workspace
-  WORKSPACE_WEBHOOK_OPERATION_CONFIGS("WebhookOperationConfigs.yaml",
-      WebhookOperationConfigs.class),
+  WORKSPACE_WEBHOOK_OPERATION_CONFIGS(
+      "WebhookOperationConfigs.yaml", WebhookOperationConfigs.class),
 
   // source
-  STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml",
+  STANDARD_SOURCE_DEFINITION(
+      "StandardSourceDefinition.yaml",
       StandardSourceDefinition.class,
-      standardSourceDefinition -> standardSourceDefinition.getSourceDefinitionId().toString(),
+      standardSourceDefinition ->
+          standardSourceDefinition.getSourceDefinitionId().toString(),
       "sourceDefinitionId"),
-  SOURCE_CONNECTION("SourceConnection.yaml",
+  SOURCE_CONNECTION(
+      "SourceConnection.yaml",
       SourceConnection.class,
       sourceConnection -> sourceConnection.getSourceId().toString(),
       "sourceId"),
 
   // destination
-  STANDARD_DESTINATION_DEFINITION("StandardDestinationDefinition.yaml",
+  STANDARD_DESTINATION_DEFINITION(
+      "StandardDestinationDefinition.yaml",
       StandardDestinationDefinition.class,
-      standardDestinationDefinition -> standardDestinationDefinition.getDestinationDefinitionId().toString(),
+      standardDestinationDefinition ->
+          standardDestinationDefinition.getDestinationDefinitionId().toString(),
       "destinationDefinitionId"),
-  DESTINATION_CONNECTION("DestinationConnection.yaml",
+  DESTINATION_CONNECTION(
+      "DestinationConnection.yaml",
       DestinationConnection.class,
       destinationConnection -> destinationConnection.getDestinationId().toString(),
       "destinationId"),
 
-  STANDARD_SYNC_OPERATION("StandardSyncOperation.yaml",
+  STANDARD_SYNC_OPERATION(
+      "StandardSyncOperation.yaml",
       StandardSyncOperation.class,
       standardSyncOperation -> standardSyncOperation.getOperationId().toString(),
       "operationId"),
 
-  SOURCE_OAUTH_PARAM("SourceOAuthParameter.yaml", SourceOAuthParameter.class,
+  SOURCE_OAUTH_PARAM(
+      "SourceOAuthParameter.yaml",
+      SourceOAuthParameter.class,
       sourceOAuthParameter -> sourceOAuthParameter.getOauthParameterId().toString(),
       "oauthParameterId"),
-  DESTINATION_OAUTH_PARAM("DestinationOAuthParameter.yaml", DestinationOAuthParameter.class,
-      destinationOAuthParameter -> destinationOAuthParameter.getOauthParameterId().toString(),
+  DESTINATION_OAUTH_PARAM(
+      "DestinationOAuthParameter.yaml",
+      DestinationOAuthParameter.class,
+      destinationOAuthParameter ->
+          destinationOAuthParameter.getOauthParameterId().toString(),
       "oauthParameterId"),
 
   // worker
@@ -59,18 +71,18 @@ public enum ConfigSchema implements AirbyteConfig {
   private final Function<?, String> extractId;
   private final String idFieldName;
 
-  <T> ConfigSchema(final String schemaFilename,
-                   final Class<T> className,
-                   final Function<T, String> extractId,
-                   final String idFieldName) {
+  <T> ConfigSchema(
+      final String schemaFilename,
+      final Class<T> className,
+      final Function<T, String> extractId,
+      final String idFieldName) {
     this.schemaFilename = schemaFilename;
     this.className = className;
     this.extractId = extractId;
     this.idFieldName = idFieldName;
   }
 
-  <T> ConfigSchema(final String schemaFilename,
-                   final Class<T> className) {
+  <T> ConfigSchema(final String schemaFilename, final Class<T> className) {
     this.schemaFilename = schemaFilename;
     this.className = className;
     extractId = object -> {
@@ -94,12 +106,12 @@ public enum ConfigSchema implements AirbyteConfig {
     if (getClassName().isInstance(object)) {
       return ((Function<T, String>) extractId).apply(object);
     }
-    throw new RuntimeException("Object: " + object + " is not instance of class " + getClassName().getName());
+    throw new RuntimeException(
+        "Object: " + object + " is not instance of class " + getClassName().getName());
   }
 
   @Override
   public String getIdFieldName() {
     return idFieldName;
   }
-
 }

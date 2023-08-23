@@ -25,27 +25,39 @@ public class FirstRecordWaitTimeUtilTest {
     final JsonNode emptyConfig = Jsons.jsonNode(Collections.emptyMap());
     assertDoesNotThrow(() -> FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(emptyConfig));
     assertEquals(Optional.empty(), FirstRecordWaitTimeUtil.getFirstRecordWaitSeconds(emptyConfig));
-    assertEquals(FirstRecordWaitTimeUtil.DEFAULT_FIRST_RECORD_WAIT_TIME, FirstRecordWaitTimeUtil.getFirstRecordWaitTime(emptyConfig));
+    assertEquals(
+        FirstRecordWaitTimeUtil.DEFAULT_FIRST_RECORD_WAIT_TIME,
+        FirstRecordWaitTimeUtil.getFirstRecordWaitTime(emptyConfig));
 
-    final JsonNode normalConfig = Jsons.jsonNode(Map.of("replication_method",
-        Map.of("method", "CDC", "initial_waiting_seconds", 500)));
+    final JsonNode normalConfig = Jsons.jsonNode(
+        Map.of("replication_method", Map.of("method", "CDC", "initial_waiting_seconds", 500)));
     assertDoesNotThrow(() -> FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(normalConfig));
     assertEquals(Optional.of(500), FirstRecordWaitTimeUtil.getFirstRecordWaitSeconds(normalConfig));
-    assertEquals(Duration.ofSeconds(500), FirstRecordWaitTimeUtil.getFirstRecordWaitTime(normalConfig));
+    assertEquals(
+        Duration.ofSeconds(500), FirstRecordWaitTimeUtil.getFirstRecordWaitTime(normalConfig));
 
     final int tooShortTimeout = (int) MIN_FIRST_RECORD_WAIT_TIME.getSeconds() - 1;
-    final JsonNode tooShortConfig = Jsons.jsonNode(Map.of("replication_method",
-        Map.of("method", "CDC", "initial_waiting_seconds", tooShortTimeout)));
-    assertThrows(IllegalArgumentException.class, () -> FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(tooShortConfig));
-    assertEquals(Optional.of(tooShortTimeout), FirstRecordWaitTimeUtil.getFirstRecordWaitSeconds(tooShortConfig));
-    assertEquals(MIN_FIRST_RECORD_WAIT_TIME, FirstRecordWaitTimeUtil.getFirstRecordWaitTime(tooShortConfig));
+    final JsonNode tooShortConfig = Jsons.jsonNode(Map.of(
+        "replication_method", Map.of("method", "CDC", "initial_waiting_seconds", tooShortTimeout)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(tooShortConfig));
+    assertEquals(
+        Optional.of(tooShortTimeout),
+        FirstRecordWaitTimeUtil.getFirstRecordWaitSeconds(tooShortConfig));
+    assertEquals(
+        MIN_FIRST_RECORD_WAIT_TIME, FirstRecordWaitTimeUtil.getFirstRecordWaitTime(tooShortConfig));
 
     final int tooLongTimeout = (int) MAX_FIRST_RECORD_WAIT_TIME.getSeconds() + 1;
-    final JsonNode tooLongConfig = Jsons.jsonNode(Map.of("replication_method",
-        Map.of("method", "CDC", "initial_waiting_seconds", tooLongTimeout)));
-    assertThrows(IllegalArgumentException.class, () -> FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(tooLongConfig));
-    assertEquals(Optional.of(tooLongTimeout), FirstRecordWaitTimeUtil.getFirstRecordWaitSeconds(tooLongConfig));
-    assertEquals(MAX_FIRST_RECORD_WAIT_TIME, FirstRecordWaitTimeUtil.getFirstRecordWaitTime(tooLongConfig));
+    final JsonNode tooLongConfig = Jsons.jsonNode(Map.of(
+        "replication_method", Map.of("method", "CDC", "initial_waiting_seconds", tooLongTimeout)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(tooLongConfig));
+    assertEquals(
+        Optional.of(tooLongTimeout),
+        FirstRecordWaitTimeUtil.getFirstRecordWaitSeconds(tooLongConfig));
+    assertEquals(
+        MAX_FIRST_RECORD_WAIT_TIME, FirstRecordWaitTimeUtil.getFirstRecordWaitTime(tooLongConfig));
   }
-
 }

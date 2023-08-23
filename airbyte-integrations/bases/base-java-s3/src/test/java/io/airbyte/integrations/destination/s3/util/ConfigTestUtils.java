@@ -30,9 +30,9 @@ public class ConfigTestUtils {
     assertEquals("test-bucket-name", s3DestinationConfig.getBucketName());
     assertEquals("test_path", s3DestinationConfig.getBucketPath());
     assertEquals("us-east-2", s3DestinationConfig.getBucketRegion());
-    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3DestinationConfig.getS3CredentialConfig();
+    final S3AccessKeyCredentialConfig credentialConfig =
+        (S3AccessKeyCredentialConfig) s3DestinationConfig.getS3CredentialConfig();
     assertEquals("some-test-key-id", credentialConfig.getAccessKeyId());
     assertEquals("some-test-access-key", credentialConfig.getSecretAccessKey());
   }
-
 }

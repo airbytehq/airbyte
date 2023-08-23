@@ -13,7 +13,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 public class DynamodbAttributeSerializer extends JsonSerializer<AttributeValue> {
 
   @Override
-  public void serialize(AttributeValue value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+  public void serialize(AttributeValue value, JsonGenerator gen, SerializerProvider serializers)
+      throws IOException {
     switch (value.type()) {
       case S -> gen.writeString(value.s());
       case N -> {
@@ -68,5 +69,4 @@ public class DynamodbAttributeSerializer extends JsonSerializer<AttributeValue> 
       }
     }
   }
-
 }

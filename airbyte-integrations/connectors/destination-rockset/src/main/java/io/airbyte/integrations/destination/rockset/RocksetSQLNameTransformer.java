@@ -17,5 +17,4 @@ public class RocksetSQLNameTransformer extends StandardNameTransformer {
   public String applyDefaultCase(String input) {
     return input.toLowerCase();
   }
-
 }

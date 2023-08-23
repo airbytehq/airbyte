@@ -41,29 +41,35 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
   private final String objectKey;
   private final String gcsFileLocation;
 
-  public S3JsonlWriter(final S3DestinationConfig config,
-                       final AmazonS3 s3Client,
-                       final ConfiguredAirbyteStream configuredStream,
-                       final Timestamp uploadTimestamp)
+  public S3JsonlWriter(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
-        .builder()
-        .timestamp(uploadTimestamp)
-        .s3Format(S3Format.JSONL)
-        .fileExtension(S3Format.JSONL.getFileExtension())
-        .fileNamePattern(config.getFileNamePattern())
-        .build());
+    final String outputFilename =
+        determineOutputFilename(S3FilenameTemplateParameterObject.builder()
+            .timestamp(uploadTimestamp)
+            .s3Format(S3Format.JSONL)
+            .fileExtension(S3Format.JSONL.getFileExtension())
+            .fileNamePattern(config.getFileNamePattern())
+            .build());
     objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
+    LOGGER.info(
+        "Full S3 path for stream '{}': s3://{}/{}",
+        stream.getName(),
+        config.getBucketName(),
+        objectKey);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
-    this.uploadManager = StreamTransferManagerFactory
-        .create(config.getBucketName(), objectKey, s3Client)
+    this.uploadManager = StreamTransferManagerFactory.create(
+            config.getBucketName(), objectKey, s3Client)
         .get();
-    // We only need one output stream as we only have one input stream. This is reasonably performant.
+    // We only need one output stream as we only have one input stream. This is reasonably
+    // performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.printWriter = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
   }
@@ -110,5 +116,4 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
   public void write(final JsonNode formattedData) throws IOException {
     printWriter.println(Jsons.serialize(formattedData));
   }
-
 }

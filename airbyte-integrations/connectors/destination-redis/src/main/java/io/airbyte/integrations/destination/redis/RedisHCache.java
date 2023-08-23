@@ -79,5 +79,4 @@ public class RedisHCache implements RedisCache {
   private String generateIndexKey(String key, Long id) {
     return key + ":" + id;
   }
-
 }

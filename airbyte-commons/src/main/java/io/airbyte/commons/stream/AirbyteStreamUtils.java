@@ -19,8 +19,10 @@ public class AirbyteStreamUtils {
    * @param airbyteStream The {@link AirbyteStream} to convert.
    * @return The {@link AirbyteStreamNameNamespacePair}.
    */
-  public static AirbyteStreamNameNamespacePair convertFromAirbyteStream(final AirbyteStream airbyteStream) {
-    return new AirbyteStreamNameNamespacePair(airbyteStream.getName(), airbyteStream.getNamespace());
+  public static AirbyteStreamNameNamespacePair convertFromAirbyteStream(
+      final AirbyteStream airbyteStream) {
+    return new AirbyteStreamNameNamespacePair(
+        airbyteStream.getName(), airbyteStream.getNamespace());
   }
 
   /**
@@ -30,8 +32,8 @@ public class AirbyteStreamUtils {
    * @param namespace The namespace of the stream.
    * @return The {@link AirbyteStreamNameNamespacePair}.
    */
-  public static AirbyteStreamNameNamespacePair convertFromNameAndNamespace(final String name, final String namespace) {
+  public static AirbyteStreamNameNamespacePair convertFromNameAndNamespace(
+      final String name, final String namespace) {
     return new AirbyteStreamNameNamespacePair(name, namespace);
   }
-
 }

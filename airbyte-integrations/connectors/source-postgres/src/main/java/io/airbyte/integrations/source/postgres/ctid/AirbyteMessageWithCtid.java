@@ -14,6 +14,4 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
  * @param recordMessage row fields to emit
  * @param ctid ctid
  */
-public record AirbyteMessageWithCtid(AirbyteMessage recordMessage, String ctid) {
-
-}
+public record AirbyteMessageWithCtid(AirbyteMessage recordMessage, String ctid) {}

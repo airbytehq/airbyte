@@ -10,9 +10,7 @@ import io.airbyte.commons.json.Jsons;
 
 public class RedisDataFactory {
 
-  private RedisDataFactory() {
-
-  }
+  private RedisDataFactory() {}
 
   static JsonNode jsonConfig(String host, int port) {
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -22,10 +20,7 @@ public class RedisDataFactory {
         .put("password", "pw")
         .put("cache_type", "hash")
         .put("ssl", "false")
-        .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "disable")
-            .build())
+        .put("ssl_mode", ImmutableMap.builder().put("mode", "disable").build())
         .build());
   }
-
 }

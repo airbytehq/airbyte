@@ -18,5 +18,4 @@ public class S3AWSDefaultProfileCredentialConfig implements S3CredentialConfig {
   public AWSCredentialsProvider getS3CredentialsProvider() {
     return new DefaultAWSCredentialsProviderChain();
   }
-
 }

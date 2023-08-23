@@ -31,22 +31,27 @@ public class DatabricksUtilTest {
   private static final Map<String, String> DEFAULT_PROPERTY = Map.of("EnableArrow", "0");
 
   protected static DSLContext getDslContext(final DatabricksDestinationConfig databricksConfig) {
-    return DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME,
-        databricksConfig.personalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
-        DatabricksDatabaseUtil.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT, DEFAULT_PROPERTY);
+    return DSLContextFactory.create(
+        DatabricksConstants.DATABRICKS_USERNAME,
+        databricksConfig.personalAccessToken(),
+        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        DatabricksDatabaseUtil.getDatabricksConnectionString(databricksConfig),
+        SQLDialect.DEFAULT,
+        DEFAULT_PROPERTY);
   }
 
-  protected static void cleanUpData(final DatabricksDestinationConfig databricksConfig) throws SQLException {
+  protected static void cleanUpData(final DatabricksDestinationConfig databricksConfig)
+      throws SQLException {
     LOGGER.info("Dropping database schema {}", databricksConfig.schema());
     try (final DSLContext dslContext = DatabricksUtilTest.getDslContext(databricksConfig)) {
       final Database database = new Database(dslContext);
       // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
       // Databricks, and it incorrectly quotes the schema name
-      database
-          .query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s.%s CASCADE;", databricksConfig.catalog(), databricksConfig.schema())));
+      database.query(ctx -> ctx.execute(String.format(
+          "DROP SCHEMA IF EXISTS %s.%s CASCADE;",
+          databricksConfig.catalog(), databricksConfig.schema())));
     } catch (final Exception e) {
       throw new SQLException(e);
     }
   }
-
 }

@@ -38,7 +38,8 @@ public class AbstractJdbcDestinationTest {
 
   @Test
   void testNoExtraParamsNoDefault() {
-    final Map<String, String> connectionProperties = new TestJdbcDestination().getConnectionProperties(buildConfigNoJdbcParameters());
+    final Map<String, String> connectionProperties =
+        new TestJdbcDestination().getConnectionProperties(buildConfigNoJdbcParameters());
 
     final Map<String, String> expectedProperties = ImmutableMap.of();
     assertEquals(expectedProperties, connectionProperties);
@@ -48,8 +49,8 @@ public class AbstractJdbcDestinationTest {
   void testNoExtraParamsWithDefault() {
     final Map<String, String> defaultProperties = ImmutableMap.of("A_PARAMETER", "A_VALUE");
 
-    final Map<String, String> connectionProperties = new TestJdbcDestination(defaultProperties).getConnectionProperties(
-        buildConfigNoJdbcParameters());
+    final Map<String, String> connectionProperties = new TestJdbcDestination(defaultProperties)
+        .getConnectionProperties(buildConfigNoJdbcParameters());
 
     assertEquals(defaultProperties, connectionProperties);
   }
@@ -57,8 +58,8 @@ public class AbstractJdbcDestinationTest {
   @Test
   void testExtraParamNoDefault() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
-    final Map<String, String> connectionProperties = new TestJdbcDestination().getConnectionProperties(
-        buildConfigWithExtraJdbcParameters(extraParam));
+    final Map<String, String> connectionProperties = new TestJdbcDestination()
+        .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam));
     final Map<String, String> expectedProperties = ImmutableMap.of(
         "key1", "value1",
         "key2", "value2",
@@ -70,8 +71,8 @@ public class AbstractJdbcDestinationTest {
   void testExtraParamWithDefault() {
     final Map<String, String> defaultProperties = ImmutableMap.of("A_PARAMETER", "A_VALUE");
     final String extraParam = "key1=value1&key2=value2&key3=value3";
-    final Map<String, String> connectionProperties = new TestJdbcDestination(defaultProperties).getConnectionProperties(
-        buildConfigWithExtraJdbcParameters(extraParam));
+    final Map<String, String> connectionProperties = new TestJdbcDestination(defaultProperties)
+        .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam));
     final Map<String, String> expectedProperties = ImmutableMap.of(
         "A_PARAMETER", "A_VALUE",
         "key1", "value1",
@@ -84,8 +85,8 @@ public class AbstractJdbcDestinationTest {
   void testExtraParameterEqualToDefault() {
     final Map<String, String> defaultProperties = ImmutableMap.of("key1", "value1");
     final String extraParam = "key1=value1&key2=value2&key3=value3";
-    final Map<String, String> connectionProperties = new TestJdbcDestination(defaultProperties).getConnectionProperties(
-        buildConfigWithExtraJdbcParameters(extraParam));
+    final Map<String, String> connectionProperties = new TestJdbcDestination(defaultProperties)
+        .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam));
     final Map<String, String> expectedProperties = ImmutableMap.of(
         "key1", "value1",
         "key2", "value2",
@@ -98,15 +99,15 @@ public class AbstractJdbcDestinationTest {
     final Map<String, String> defaultProperties = ImmutableMap.of("key1", "value0");
     final String extraParam = "key1=value1&key2=value2&key3=value3";
 
-    assertThrows(IllegalArgumentException.class, () -> new TestJdbcDestination(defaultProperties).getConnectionProperties(
-        buildConfigWithExtraJdbcParameters(extraParam)));
+    assertThrows(IllegalArgumentException.class, () -> new TestJdbcDestination(defaultProperties)
+        .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam)));
   }
 
   @Test
   void testInvalidExtraParam() {
     final String extraParam = "key1=value1&sdf&";
-    assertThrows(ConfigErrorException.class,
-        () -> new TestJdbcDestination().getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam)));
+    assertThrows(ConfigErrorException.class, () -> new TestJdbcDestination()
+        .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam)));
   }
 
   static class TestJdbcDestination extends AbstractJdbcDestination {
@@ -131,7 +132,5 @@ public class AbstractJdbcDestinationTest {
     public JsonNode toJdbcConfig(final JsonNode config) {
       return config;
     }
-
   }
-
 }

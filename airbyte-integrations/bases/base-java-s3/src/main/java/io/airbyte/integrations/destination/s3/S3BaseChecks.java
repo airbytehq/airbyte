@@ -30,14 +30,17 @@ public final class S3BaseChecks {
    * Note that this method completely ignores s3Config.getBucketPath(), in favor of the bucketPath
    * parameter.
    */
-  public static void attemptS3WriteAndDelete(final S3StorageOperations storageOperations,
-                                             final S3DestinationConfig s3Config,
-                                             final String bucketPath) {
+  public static void attemptS3WriteAndDelete(
+      final S3StorageOperations storageOperations,
+      final S3DestinationConfig s3Config,
+      final String bucketPath) {
     attemptS3WriteAndDelete(storageOperations, s3Config, bucketPath, s3Config.getS3Client());
   }
 
-  public static void testSingleUpload(final AmazonS3 s3Client, final String bucketName, final String bucketPath) {
-    LOGGER.info("Started testing if all required credentials assigned to user for single file uploading");
+  public static void testSingleUpload(
+      final AmazonS3 s3Client, final String bucketName, final String bucketPath) {
+    LOGGER.info(
+        "Started testing if all required credentials assigned to user for single file uploading");
     final var prefix = bucketPath.endsWith("/") ? bucketPath : bucketPath + "/";
     final String testFile = prefix + "test_" + System.currentTimeMillis();
     try {
@@ -48,16 +51,23 @@ public final class S3BaseChecks {
     LOGGER.info("Finished checking for normal upload mode");
   }
 
-  public static void testMultipartUpload(final AmazonS3 s3Client, final String bucketName, final String bucketPath) throws IOException {
-    LOGGER.info("Started testing if all required credentials assigned to user for multipart upload");
+  public static void testMultipartUpload(
+      final AmazonS3 s3Client, final String bucketName, final String bucketPath)
+      throws IOException {
+    LOGGER.info(
+        "Started testing if all required credentials assigned to user for multipart upload");
     final var prefix = bucketPath.endsWith("/") ? bucketPath : bucketPath + "/";
     final String testFile = prefix + "test_" + System.currentTimeMillis();
-    final StreamTransferManager manager = StreamTransferManagerFactory.create(bucketName, testFile, s3Client).get();
+    final StreamTransferManager manager =
+        StreamTransferManagerFactory.create(bucketName, testFile, s3Client).get();
     boolean success = false;
-    try (final MultiPartOutputStream outputStream = manager.getMultiPartOutputStreams().get(0);
-        final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
+    try (final MultiPartOutputStream outputStream =
+            manager.getMultiPartOutputStreams().get(0);
+        final CSVPrinter csvPrinter = new CSVPrinter(
+            new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
       final String oneMegaByteString = "a".repeat(500_000);
-      // write a file larger than the 5 MB, which is the default part size, to make sure it is a multipart
+      // write a file larger than the 5 MB, which is the default part size, to make sure it is a
+      // multipart
       // upload
       for (int i = 0; i < 7; ++i) {
         csvPrinter.printRecord(System.currentTimeMillis(), oneMegaByteString);
@@ -89,10 +99,11 @@ public final class S3BaseChecks {
   }
 
   @VisibleForTesting
-  static void attemptS3WriteAndDelete(final S3StorageOperations storageOperations,
-                                      final S3DestinationConfig s3Config,
-                                      final String bucketPath,
-                                      final AmazonS3 s3) {
+  static void attemptS3WriteAndDelete(
+      final S3StorageOperations storageOperations,
+      final S3DestinationConfig s3Config,
+      final String bucketPath,
+      final AmazonS3 s3) {
     final String prefix;
     if (Strings.isNullOrEmpty(bucketPath)) {
       prefix = "";
@@ -102,7 +113,8 @@ public final class S3BaseChecks {
       prefix = bucketPath + "/";
     }
 
-    final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+    final String outputTableName =
+        prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteS3Object(storageOperations, s3Config, outputTableName, s3);
   }
 
@@ -112,10 +124,11 @@ public final class S3BaseChecks {
    * bucketPath is null/empty-string, then skip this step) 3. Attempt to create and delete
    * s3://bucketName/outputTableName 4. Attempt to list all objects in the bucket
    */
-  private static void attemptWriteAndDeleteS3Object(final S3StorageOperations storageOperations,
-                                                    final S3DestinationConfig s3Config,
-                                                    final String outputTableName,
-                                                    final AmazonS3 s3) {
+  private static void attemptWriteAndDeleteS3Object(
+      final S3StorageOperations storageOperations,
+      final S3DestinationConfig s3Config,
+      final String outputTableName,
+      final AmazonS3 s3) {
     final var s3Bucket = s3Config.getBucketName();
     final var bucketPath = s3Config.getBucketPath();
 
@@ -127,11 +140,12 @@ public final class S3BaseChecks {
     s3.deleteObject(s3Bucket, outputTableName);
   }
 
-  public static void testIAMUserHasListObjectPermission(final AmazonS3 s3, final String bucketName) {
+  public static void testIAMUserHasListObjectPermission(
+      final AmazonS3 s3, final String bucketName) {
     LOGGER.info("Started testing if IAM user can call listObjects on the destination bucket");
-    final ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucketName).withMaxKeys(1);
+    final ListObjectsRequest request =
+        new ListObjectsRequest().withBucketName(bucketName).withMaxKeys(1);
     s3.listObjects(request);
     LOGGER.info("Finished checking for listObjects permission");
   }
-
 }

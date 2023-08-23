@@ -58,7 +58,8 @@ public class Main {
     final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(connector, dataset));
 
     if (!Files.exists(credsPath)) {
-      throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a source-harness credentials file.");
+      throw new IllegalStateException("{module-root}/" + credsPath
+          + " not found. Must provide path to a source-harness credentials file.");
     }
 
     final JsonNode config = Jsons.deserialize(IOs.readFile(credsPath));
@@ -71,20 +72,19 @@ public class Main {
     }
 
     if (StringUtils.isAnyBlank(config.toString(), catalog.toString(), image)) {
-      throw new IllegalStateException("Missing harness configuration: config [%s] catalog [%s] image [%s]".formatted(config, catalog, image));
+      throw new IllegalStateException(
+          "Missing harness configuration: config [%s] catalog [%s] image [%s]"
+              .formatted(config, catalog, image));
     }
 
     log.info("Starting performance harness for {} ({})", image, dataset);
     try {
-      final PerformanceTest test = new PerformanceTest(
-          image,
-          config.toString(),
-          catalog.toString());
+      final PerformanceTest test =
+          new PerformanceTest(image, config.toString(), catalog.toString());
       test.runTest();
     } catch (final Exception e) {
       log.error("Test failed", e);
       System.exit(1);
-
     }
     System.exit(0);
   }
@@ -92,8 +92,8 @@ public class Main {
   static JsonNode getCatalog(final String dataset, final String connector) throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
-    final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
+    final InputStream is =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
     return objectMapper.readTree(is);
   }
-
 }

@@ -20,5 +20,4 @@ public class CollectionUtilsTest {
     final var expected = Optional.ofNullable(output);
     Assertions.assertEquals(CollectionUtils.matchingKey(TEST_COLLECTION, input), expected);
   }
-
 }

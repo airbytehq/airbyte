@@ -59,11 +59,13 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, DATABASE_FAIL_NAME)
-        .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
-            .put("authorization", "login/password")
-            .put(JdbcUtils.USERNAME_KEY, "user")
-            .put(JdbcUtils.PASSWORD_KEY, "pass")
-            .build()))
+        .put(
+            AUTH_TYPE,
+            Jsons.jsonNode(ImmutableMap.builder()
+                .put("authorization", "login/password")
+                .put(JdbcUtils.USERNAME_KEY, "user")
+                .put(JdbcUtils.PASSWORD_KEY, "pass")
+                .build()))
         .build());
   }
 
@@ -88,15 +90,18 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
-    final MongoDatabase database = getMongoDatabase(container.getHost(),
-        container.getFirstMappedPort(), DATABASE_NAME);
-    final var collection = database.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
+    final MongoDatabase database =
+        getMongoDatabase(container.getHost(), container.getFirstMappedPort(), DATABASE_NAME);
+    final var collection =
+        database.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
     final List<JsonNode> result = new ArrayList<>();
-    try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
+    try (final MongoCursor<Document> cursor =
+        collection.find().projection(excludeId()).iterator()) {
       while (cursor.hasNext()) {
         result.add(Jsons.jsonNode(cursor.next().get(AIRBYTE_DATA)));
       }
@@ -136,7 +141,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     } catch (final Exception e) {
       assertTrue(e instanceof IOException);
     }
-
   }
 
   @Test
@@ -150,7 +154,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     } catch (final Exception e) {
       assertTrue(e instanceof IOException);
     }
-
   }
 
   @Test
@@ -164,7 +167,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     } catch (final Exception e) {
       assertTrue(e instanceof IOException);
     }
-
   }
 
   @Test
@@ -195,12 +197,11 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   /* Helpers */
 
   protected JsonNode getAuthTypeConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"authorization\": \"none\"\n"
-        + "}");
+    return Jsons.deserialize("{\n" + "  \"authorization\": \"none\"\n" + "}");
   }
 
-  protected MongoDatabase getMongoDatabase(final String host, final int port, final String databaseName) {
+  protected MongoDatabase getMongoDatabase(
+      final String host, final int port, final String databaseName) {
     try {
       final String connectionString = String.format("mongodb://%s:%s/", host, port);
       return new MongoDatabase(connectionString, databaseName);
@@ -208,5 +209,4 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
       throw new RuntimeException(e);
     }
   }
-
 }

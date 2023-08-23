@@ -33,16 +33,18 @@ public abstract class S3BaseJsonlDestinationAcceptanceTest extends S3Destination
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      final S3Object object =
+          s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
       try (final BufferedReader reader = getReader(object)) {
         String line;
         while ((line = reader.readLine()) != null) {
@@ -55,7 +57,7 @@ public abstract class S3BaseJsonlDestinationAcceptanceTest extends S3Destination
   }
 
   protected BufferedReader getReader(final S3Object s3Object) throws IOException {
-    return new BufferedReader(new InputStreamReader(s3Object.getObjectContent(), StandardCharsets.UTF_8));
+    return new BufferedReader(
+        new InputStreamReader(s3Object.getObjectContent(), StandardCharsets.UTF_8));
   }
-
 }

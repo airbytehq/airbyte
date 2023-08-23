@@ -34,15 +34,16 @@ public class RedpandaConfig {
 
   private final int socketConnectionSetupTimeoutMaxMs;
 
-  private RedpandaConfig(String bootstrapServers,
-                         long bufferMemory,
-                         String compressionType,
-                         int retries,
-                         int batchSize,
-                         Optional<Integer> topicNumPartitions,
-                         Optional<Short> topicReplicationFactor,
-                         int socketConnectionSetupTimeoutMs,
-                         int socketConnectionSetupTimeoutMaxMs) {
+  private RedpandaConfig(
+      String bootstrapServers,
+      long bufferMemory,
+      String compressionType,
+      int retries,
+      int batchSize,
+      Optional<Integer> topicNumPartitions,
+      Optional<Short> topicReplicationFactor,
+      int socketConnectionSetupTimeoutMs,
+      int socketConnectionSetupTimeoutMaxMs) {
     this.bootstrapServers = bootstrapServers;
     this.bufferMemory = bufferMemory;
     this.compressionType = compressionType;
@@ -70,15 +71,17 @@ public class RedpandaConfig {
   public KafkaProducer<String, JsonNode> createKafkaProducer() {
     return new KafkaProducer<>(Map.of(
         ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
-        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer",
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.connect.json.JsonSerializer",
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+            "org.apache.kafka.common.serialization.StringSerializer",
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+            "org.apache.kafka.connect.json.JsonSerializer",
         ProducerConfig.BUFFER_MEMORY_CONFIG, bufferMemory,
         ProducerConfig.COMPRESSION_TYPE_CONFIG, compressionType,
         ProducerConfig.RETRIES_CONFIG, retries,
         ProducerConfig.BATCH_SIZE_CONFIG, batchSize,
         ProducerConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MS_CONFIG, socketConnectionSetupTimeoutMs,
-        ProducerConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MAX_MS_CONFIG, socketConnectionSetupTimeoutMaxMs));
-
+        ProducerConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MAX_MS_CONFIG,
+            socketConnectionSetupTimeoutMaxMs));
   }
 
   public Admin createAdminClient() {
@@ -86,7 +89,8 @@ public class RedpandaConfig {
         AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
         AdminClientConfig.RETRIES_CONFIG, retries,
         AdminClientConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MS_CONFIG, socketConnectionSetupTimeoutMs,
-        AdminClientConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MAX_MS_CONFIG, socketConnectionSetupTimeoutMaxMs));
+        AdminClientConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MAX_MS_CONFIG,
+            socketConnectionSetupTimeoutMaxMs));
   }
 
   public Optional<Integer> topicNumPartitions() {
@@ -96,5 +100,4 @@ public class RedpandaConfig {
   public Optional<Short> topicReplicationFactor() {
     return topicReplicationFactor;
   }
-
 }

@@ -15,11 +15,11 @@ import java.util.List;
 public class DatabricksSqlOperations extends JdbcSqlOperations {
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     for (final String query : queries) {
       for (String q : query.split(";")) {
-        if (q.isBlank())
-          continue;
+        if (q.isBlank()) continue;
 
         database.execute(q);
       }
@@ -31,17 +31,21 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
    * Reference: https://spark.apache.org/docs/latest/sql-ref-datatypes.html
    */
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s (%s STRING, %s STRING, %s TIMESTAMP);",
-        schemaName, tableName,
+        schemaName,
+        tableName,
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
-  public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
+  public void dropTableIfExists(
+      final JdbcDatabase database, final String schemaName, final String tableName)
+      throws SQLException {
     try {
       database.execute(String.format("DROP TABLE IF EXISTS %s.%s;", schemaName, tableName));
     } catch (SQLException e) {
@@ -50,10 +54,11 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
     final String insertQueryComponent = String.format(
@@ -64,7 +69,7 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, ?, ?),\n";
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
+    SqlOperationsUtils.insertRawRecordsInSingleQuery(
+        insertQueryComponent, recordQueryComponent, database, records);
   }
-
 }

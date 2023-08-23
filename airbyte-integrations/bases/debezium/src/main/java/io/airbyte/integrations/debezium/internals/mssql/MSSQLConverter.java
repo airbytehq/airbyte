@@ -42,8 +42,8 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   public void configure(Properties props) {}
 
   @Override
-  public void converterFor(final RelationalColumn field,
-                           final ConverterRegistration<SchemaBuilder> registration) {
+  public void converterFor(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     if (DATE_TYPES.contains(field.typeName().toUpperCase())) {
       registerDate(field, registration);
     } else if (SMALLMONEY_TYPE.equalsIgnoreCase(field.typeName())) {
@@ -61,8 +61,8 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
     }
   }
 
-  private void registerGeometry(final RelationalColumn field,
-                                final ConverterRegistration<SchemaBuilder> registration) {
+  private void registerGeometry(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -76,14 +76,15 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
         }
       }
 
-      LOGGER.warn("Uncovered Geometry class type '{}'. Use default converter",
+      LOGGER.warn(
+          "Uncovered Geometry class type '{}'. Use default converter",
           input.getClass().getName());
       return input.toString();
     });
   }
 
-  private void registerGeography(final RelationalColumn field,
-                                 final ConverterRegistration<SchemaBuilder> registration) {
+  private void registerGeography(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -97,14 +98,15 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
         }
       }
 
-      LOGGER.warn("Uncovered Geography class type '{}'. Use default converter",
+      LOGGER.warn(
+          "Uncovered Geography class type '{}'. Use default converter",
           input.getClass().getName());
       return input.toString();
     });
   }
 
-  private void registerDate(final RelationalColumn field,
-                            final ConverterRegistration<SchemaBuilder> registration) {
+  private void registerDate(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -116,27 +118,27 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
     });
   }
 
-  private void registerDateTimeOffSet(final RelationalColumn field,
-                                      final ConverterRegistration<SchemaBuilder> registration) {
+  private void registerDateTimeOffSet(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
 
       if (input instanceof DateTimeOffset) {
-        return DataTypeUtils.toISO8601String(
-            OffsetDateTime.parse(input.toString(),
-                DateTimeFormatter.ofPattern(DEBEZIUM_DATETIMEOFFSET_FORMAT)));
+        return DataTypeUtils.toISO8601String(OffsetDateTime.parse(
+            input.toString(), DateTimeFormatter.ofPattern(DEBEZIUM_DATETIMEOFFSET_FORMAT)));
       }
 
-      LOGGER.warn("Uncovered DateTimeOffSet class type '{}'. Use default converter",
+      LOGGER.warn(
+          "Uncovered DateTimeOffSet class type '{}'. Use default converter",
           input.getClass().getName());
       return input.toString();
     });
   }
 
-  private void registerTime(final RelationalColumn field,
-                            final ConverterRegistration<SchemaBuilder> registration) {
+  private void registerTime(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -146,14 +148,15 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
         return DataTypeUtils.toISOTimeString(((Timestamp) input).toLocalDateTime());
       }
 
-      LOGGER.warn("Uncovered time class type '{}'. Use default converter",
+      LOGGER.warn(
+          "Uncovered time class type '{}'. Use default converter",
           input.getClass().getName());
       return input.toString();
     });
   }
 
-  private void registerMoney(final RelationalColumn field,
-                             final ConverterRegistration<SchemaBuilder> registration) {
+  private void registerMoney(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.float64(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -163,14 +166,15 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
         return ((BigDecimal) input).doubleValue();
       }
 
-      LOGGER.warn("Uncovered money class type '{}'. Use default converter",
+      LOGGER.warn(
+          "Uncovered money class type '{}'. Use default converter",
           input.getClass().getName());
       return input.toString();
     });
   }
 
-  private void registerBinary(final RelationalColumn field,
-                              final ConverterRegistration<SchemaBuilder> registration) {
+  private void registerBinary(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -180,10 +184,10 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
         return new String((byte[]) input, Charset.defaultCharset());
       }
 
-      LOGGER.warn("Uncovered binary class type '{}'. Use default converter",
+      LOGGER.warn(
+          "Uncovered binary class type '{}'. Use default converter",
           input.getClass().getName());
       return input.toString();
     });
   }
-
 }

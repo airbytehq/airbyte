@@ -50,7 +50,8 @@ class ExasolDestinationTest {
     assertAll(
         () -> assertThat(result.size(), equalTo(3)),
         () -> assertThat(result.get(JdbcUtils.USERNAME_KEY).asText(), equalTo("sys")),
-        () -> assertThat(result.get(JdbcUtils.JDBC_URL_KEY).asText(), equalTo("jdbc:exa:localhost:8563")),
+        () -> assertThat(
+            result.get(JdbcUtils.JDBC_URL_KEY).asText(), equalTo("jdbc:exa:localhost:8563")),
         () -> assertThat(result.get(JdbcUtils.SCHEMA_KEY).asText(), equalTo("mySchema")));
   }
 
@@ -64,10 +65,12 @@ class ExasolDestinationTest {
 
   @Test
   void toJdbcConfigWithJdbcUrlParameters() {
-    var result = destination.toJdbcConfig(createConfig(Map.of(JdbcUtils.JDBC_URL_PARAMS_KEY, "param=value")));
+    var result = destination.toJdbcConfig(
+        createConfig(Map.of(JdbcUtils.JDBC_URL_PARAMS_KEY, "param=value")));
     assertAll(
         () -> assertThat(result.size(), equalTo(4)),
-        () -> assertThat(result.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), equalTo("param=value")));
+        () ->
+            assertThat(result.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), equalTo("param=value")));
   }
 
   @Test
@@ -78,8 +81,8 @@ class ExasolDestinationTest {
 
   @Test
   void getDefaultConnectionPropertiesWithFingerprint() {
-    var result = destination.getDefaultConnectionProperties(createConfig(Map.of("certificateFingerprint", "ABC")));
+    var result = destination.getDefaultConnectionProperties(
+        createConfig(Map.of("certificateFingerprint", "ABC")));
     assertThat(result, equalTo(Map.of("fingerprint", "ABC", "autocommit", "0")));
   }
-
 }

@@ -71,12 +71,14 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(PSQL_DB.getContainerInfo()
-            .getNetworkSettings()
-            .getNetworks()
-            .entrySet().stream()
-            .findFirst()
-            .get().getValue().getIpAddress()))
+        .put(
+            JdbcUtils.HOST_KEY,
+            Objects.requireNonNull(
+                PSQL_DB.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream()
+                    .findFirst()
+                    .get()
+                    .getValue()
+                    .getIpAddress()))
         .put(JdbcUtils.PORT_KEY, PSQL_DB.getExposedPorts().get(1))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
@@ -88,21 +90,28 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) clone).put("database", PSQL_DB.getDatabaseName());
     final JsonNode jdbcConfig = getToDatabaseConfigFunction().apply(clone);
 
-    database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-            jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-            getDriverClass(),
-            jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-            JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY)));
-    database.execute(connection -> connection.createStatement().execute("CREATE DATABASE " + dbName + ";"));
+    database = new DefaultJdbcDatabase(DataSourceFactory.create(
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY)
+            ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
+            : null,
+        getDriverClass(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY)));
+    database.execute(
+        connection -> connection.createStatement().execute("CREATE DATABASE " + dbName + ";"));
     super.setup();
   }
 
   @Override
-  protected String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
-    return String.format("CREATE TABLE " + dbName + ".%s(%s %s %s)",
-        tableName, columnClause, primaryKeyClause.equals("") ? "" : ",", primaryKeyClause);
+  protected String createTableQuery(
+      final String tableName, final String columnClause, final String primaryKeyClause) {
+    return String.format(
+        "CREATE TABLE " + dbName + ".%s(%s %s %s)",
+        tableName,
+        columnClause,
+        primaryKeyClause.equals("") ? "" : ",",
+        primaryKeyClause);
   }
 
   @Override
@@ -132,60 +141,67 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
-    return new AirbyteCatalog().withStreams(Lists.newArrayList(
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_WITHOUT_PK,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
-            Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_COMPOSITE_PK,
-            defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(
-                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+    return new AirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME,
+                    defaultNamespace,
+                    Field.of(COL_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME_WITHOUT_PK,
+                    defaultNamespace,
+                    Field.of(COL_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                    Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME_COMPOSITE_PK,
+                    defaultNamespace,
+                    Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(
+                    List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
   @Override
   protected List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
-        new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName)
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
                 .withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_1,
-                        COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19")))),
-        new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName)
+                .withData(Jsons.jsonNode(ImmutableMap.of(
+                    COL_ID, ID_VALUE_1,
+                    COL_NAME, "picard",
+                    COL_UPDATED_AT, "2004-10-19")))),
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
                 .withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_2,
-                        COL_NAME, "crusher",
-                        COL_UPDATED_AT,
-                        "2005-10-19")))),
-        new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName)
+                .withData(Jsons.jsonNode(ImmutableMap.of(
+                    COL_ID, ID_VALUE_2, COL_NAME, "crusher", COL_UPDATED_AT, "2005-10-19")))),
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
                 .withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_3,
-                        COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19")))));
+                .withData(Jsons.jsonNode(ImmutableMap.of(
+                    COL_ID, ID_VALUE_3,
+                    COL_NAME, "vash",
+                    COL_UPDATED_AT, "2006-10-19")))));
   }
 
   @Test
@@ -218,11 +234,10 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testReadOneColumn() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = CatalogHelpers
-        .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(),
-            Field.of(COL_ID, JsonSchemaType.NUMBER));
-    final List<AirbyteMessage> actualMessages = MoreIterators
-        .toList(source.read(config, catalog, null));
+    final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(
+        streamName, getDefaultNamespace(), Field.of(COL_ID, JsonSchemaType.NUMBER));
+    final List<AirbyteMessage> actualMessages =
+        MoreIterators.toList(source.read(config, catalog, null));
 
     setEmittedAtToNull(actualMessages);
 
@@ -231,8 +246,9 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .peek(m -> {
           ((ObjectNode) m.getRecord().getData()).remove(COL_NAME);
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
-          ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asLong()));
+          ((ObjectNode) m.getRecord().getData())
+              .replace(
+                  COL_ID, Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asLong()));
         })
         .collect(Collectors.toList());
     assertTrue(expectedMessages.size() == actualMessages.size());
@@ -246,23 +262,27 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(Lists.newArrayList(
-            getConfiguredCatalogWithOneStream(getDefaultNamespace()).getStreams().get(0),
+            getConfiguredCatalogWithOneStream(getDefaultNamespace())
+                .getStreams()
+                .get(0),
             streamForTableWithSpaces));
-    final List<AirbyteMessage> actualMessages = MoreIterators
-        .toList(source.read(config, catalog, null));
+    final List<AirbyteMessage> actualMessages =
+        MoreIterators.toList(source.read(config, catalog, null));
 
     setEmittedAtToNull(actualMessages);
 
-    final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
-        .stream()
+    final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages().stream()
         .map(Jsons::clone)
         .peek(m -> {
           m.getRecord().setStream(streamForTableWithSpaces.getStream().getName());
-          ((ObjectNode) m.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
-              ((ObjectNode) m.getRecord().getData()).remove(COL_NAME));
+          ((ObjectNode) m.getRecord().getData())
+              .set(
+                  COL_LAST_NAME_WITH_SPACE,
+                  ((ObjectNode) m.getRecord().getData()).remove(COL_NAME));
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
-          ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asLong()));
+          ((ObjectNode) m.getRecord().getData())
+              .replace(
+                  COL_ID, Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asLong()));
         })
         .collect(Collectors.toList());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
@@ -286,41 +306,53 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final DbState state = new DbState()
         .withStreams(Lists.newArrayList(
             new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
-    final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
+    final List<AirbyteMessage> actualMessagesFirstSync =
+        MoreIterators.toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
-    final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
-        .filter(r -> r.getType() == Type.STATE).findFirst();
+    final Optional<AirbyteMessage> stateAfterFirstSyncOptional =
+        actualMessagesFirstSync.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(stateAfterFirstSyncOptional.isPresent());
 
     database.execute(connection -> {
-      connection.createStatement().execute(
-          String.format("INSERT INTO " + dbName + ".%s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "INSERT INTO " + dbName
+                  + ".%s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
               getFullyQualifiedTableName(TABLE_NAME)));
-      connection.createStatement().execute(
-          String.format("INSERT INTO " + dbName + ".%s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "INSERT INTO " + dbName
+                  + ".%s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
               getFullyQualifiedTableName(TABLE_NAME)));
     });
 
-    final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
-        .toList(source.read(config, configuredCatalog,
-            stateAfterFirstSyncOptional.get().getState().getData()));
+    final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators.toList(source.read(
+        config, configuredCatalog, stateAfterFirstSyncOptional.get().getState().getData()));
 
-    assertEquals(2,
-        (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
+    assertEquals(2, (int) actualMessagesSecondSync.stream()
+        .filter(r -> r.getType() == Type.RECORD)
+        .count());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
-    expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, ID_VALUE_4,
-                    COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, ID_VALUE_5,
-                    COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19")))));
+    expectedMessages.add(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(streamName)
+            .withNamespace(namespace)
+            .withData(Jsons.jsonNode(ImmutableMap.of(
+                COL_ID, ID_VALUE_4,
+                COL_NAME, "riker",
+                COL_UPDATED_AT, "2006-10-19")))));
+    expectedMessages.add(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(streamName)
+            .withNamespace(namespace)
+            .withData(Jsons.jsonNode(ImmutableMap.of(
+                COL_ID, ID_VALUE_5,
+                COL_NAME, "data",
+                COL_UPDATED_AT, "2006-10-19")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
@@ -343,50 +375,60 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testReadMultipleTables() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
-        getDefaultNamespace());
+    final ConfiguredAirbyteCatalog catalog =
+        getConfiguredCatalogWithOneStream(getDefaultNamespace());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
 
     for (int i = 2; i < 10; i++) {
       final int iFinal = i;
       final String streamName2 = streamName + i;
       database.execute(connection -> {
-        connection.createStatement()
-            .execute(
-                createTableQuery(getFullyQualifiedTableName(TABLE_NAME + iFinal),
-                    "id INTEGER, name VARCHAR(200)", ""));
-        connection.createStatement()
-            .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (1,'picard')",
+        connection
+            .createStatement()
+            .execute(createTableQuery(
+                getFullyQualifiedTableName(TABLE_NAME + iFinal),
+                "id INTEGER, name VARCHAR(200)",
+                ""));
+        connection
+            .createStatement()
+            .execute(String.format(
+                "INSERT INTO " + dbName + ".%s(id, name) VALUES (1,'picard')",
                 getFullyQualifiedTableName(TABLE_NAME + iFinal)));
-        connection.createStatement()
-            .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (2, 'crusher')",
+        connection
+            .createStatement()
+            .execute(String.format(
+                "INSERT INTO " + dbName + ".%s(id, name) VALUES (2, 'crusher')",
                 getFullyQualifiedTableName(TABLE_NAME + iFinal)));
-        connection.createStatement()
-            .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (3, 'vash')",
+        connection
+            .createStatement()
+            .execute(String.format(
+                "INSERT INTO " + dbName + ".%s(id, name) VALUES (3, 'vash')",
                 getFullyQualifiedTableName(TABLE_NAME + iFinal)));
       });
-      catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
-          streamName2,
-          getDefaultNamespace(),
-          Field.of(COL_ID, JsonSchemaType.NUMBER),
-          Field.of(COL_NAME, JsonSchemaType.STRING)));
+      catalog
+          .getStreams()
+          .add(CatalogHelpers.createConfiguredAirbyteStream(
+              streamName2,
+              getDefaultNamespace(),
+              Field.of(COL_ID, JsonSchemaType.NUMBER),
+              Field.of(COL_NAME, JsonSchemaType.STRING)));
 
-      final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
-          .stream()
+      final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages().stream()
           .map(Jsons::clone)
           .peek(m -> {
             m.getRecord().setStream(streamName2);
             m.getRecord().setNamespace(getDefaultNamespace());
             ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
-            ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-                Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asLong()));
+            ((ObjectNode) m.getRecord().getData())
+                .replace(
+                    COL_ID, Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asLong()));
           })
           .collect(Collectors.toList());
       expectedMessages.addAll(secondStreamExpectedMessages);
     }
 
-    final List<AirbyteMessage> actualMessages = MoreIterators
-        .toList(source.read(config, catalog, null));
+    final List<AirbyteMessage> actualMessages =
+        MoreIterators.toList(source.read(config, catalog, null));
 
     setEmittedAtToNull(actualMessages);
 
@@ -400,28 +442,32 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final String tableName2 = TABLE_NAME + 2;
     final String streamName2 = streamName + 2;
     database.execute(ctx -> {
-      ctx.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(tableName2), "id INTEGER, name VARCHAR(200)",
-              ""));
-      ctx.createStatement().execute(
-          String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (1,'picard')",
+      ctx.createStatement()
+          .execute(createTableQuery(
+              getFullyQualifiedTableName(tableName2), "id INTEGER, name VARCHAR(200)", ""));
+      ctx.createStatement()
+          .execute(String.format(
+              "INSERT INTO " + dbName + ".%s(id, name) VALUES (1,'picard')",
               getFullyQualifiedTableName(tableName2)));
-      ctx.createStatement().execute(
-          String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (2, 'crusher')",
+      ctx.createStatement()
+          .execute(String.format(
+              "INSERT INTO " + dbName + ".%s(id, name) VALUES (2, 'crusher')",
               getFullyQualifiedTableName(tableName2)));
-      ctx.createStatement().execute(
-          String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (3, 'vash')",
+      ctx.createStatement()
+          .execute(String.format(
+              "INSERT INTO " + dbName + ".%s(id, name) VALUES (3, 'vash')",
               getFullyQualifiedTableName(tableName2)));
     });
 
     final String namespace = getDefaultNamespace();
-    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(
-        namespace);
-    configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
-        streamName2,
-        namespace,
-        Field.of(COL_ID, JsonSchemaType.NUMBER),
-        Field.of(COL_NAME, JsonSchemaType.STRING)));
+    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(namespace);
+    configuredCatalog
+        .getStreams()
+        .add(CatalogHelpers.createConfiguredAirbyteStream(
+            streamName2,
+            namespace,
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING)));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(Lists.newArrayList(COL_ID));
@@ -431,8 +477,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final DbState state = new DbState()
         .withStreams(Lists.newArrayList(
             new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
-    final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
+    final List<AirbyteMessage> actualMessagesFirstSync =
+        MoreIterators.toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
     // get last state message.
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
@@ -440,16 +486,17 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .reduce((first, second) -> second);
     assertTrue(stateAfterFirstSyncOptional.isPresent());
 
-    // we know the second streams messages are the same as the first minus the updated at column. so we
+    // we know the second streams messages are the same as the first minus the updated at column. so
+    // we
     // cheat and generate the expected messages off of the first expected messages.
-    final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
-        .stream()
+    final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages().stream()
         .map(Jsons::clone)
         .peek(m -> {
           m.getRecord().setStream(streamName2);
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
-          ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asLong()));
+          ((ObjectNode) m.getRecord().getData())
+              .replace(
+                  COL_ID, Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asLong()));
         })
         .collect(Collectors.toList());
     final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
@@ -501,46 +548,56 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testDiscoverWithMultipleSchemas() throws Exception {
-    // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
-    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase()
-        .contains("clickhouse")) {
+    // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for
+    // them.
+    if (getDriverClass().toLowerCase().contains("mysql")
+        || getDriverClass().toLowerCase().contains("clickhouse")) {
       return;
     }
 
     // add table and data to a separate schema.
     database.execute(connection -> {
-      connection.createStatement().execute(
-          String.format("CREATE TABLE " + dbName + ".%s(id VARCHAR(200), name VARCHAR(200))",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "CREATE TABLE " + dbName + ".%s(id VARCHAR(200), name VARCHAR(200))",
               JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('1','picard')",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "INSERT INTO " + dbName + ".%s(id, name) VALUES ('1','picard')",
               JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('2', 'crusher')",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "INSERT INTO " + dbName + ".%s(id, name) VALUES ('2', 'crusher')",
               JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('3', 'vash')",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "INSERT INTO " + dbName + ".%s(id, name) VALUES ('3', 'vash')",
               JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);
 
     final AirbyteCatalog expected = getCatalog(getDefaultNamespace());
-    expected.getStreams().add(CatalogHelpers
-        .createAirbyteStream(TABLE_NAME,
-            SCHEMA_NAME2,
-            Field.of(COL_ID, JsonSchemaType.STRING),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
-        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-        .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))));
+    expected
+        .getStreams()
+        .add(CatalogHelpers.createAirbyteStream(
+                TABLE_NAME,
+                SCHEMA_NAME2,
+                Field.of(COL_ID, JsonSchemaType.STRING),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))));
 
     // sort streams by name so that we are comparing lists with the same order.
-    final Comparator<AirbyteStream> schemaTableCompare = Comparator
-        .comparing(stream -> stream.getNamespace() + "." + stream.getName());
+    final Comparator<AirbyteStream> schemaTableCompare =
+        Comparator.comparing(stream -> stream.getNamespace() + "." + stream.getName());
     expected.getStreams().sort(schemaTableCompare);
     actual.getStreams().sort(schemaTableCompare);
     assertEquals(expected, filterOutOtherSchemas(actual));
   }
-
 }

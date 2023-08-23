@@ -71,7 +71,5 @@ public class ScyllaRecordConsumerTest extends PerStreamStateMessageTest {
     public ScyllaContainer() {
       super("scylladb/scylla:4.5.0");
     }
-
   }
-
 }

@@ -13,5 +13,4 @@ public class TestHarnessException extends Exception {
   public TestHarnessException(final String message, final Throwable cause) {
     super(message, cause);
   }
-
 }

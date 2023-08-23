@@ -23,10 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @TestInstance(PER_CLASS)
-public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestinationAcceptanceTest {
+public class BigQueryGcsDestinationAcceptanceTest
+    extends AbstractBigQueryDestinationAcceptanceTest {
 
   private AmazonS3 s3Client;
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   /**
    * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This function will be called before EACH test.
@@ -37,7 +39,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
    * @see DestinationAcceptanceTest#setUpInternal()
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     // use secrets file with GCS staging config
     secretsFile = Path.of("secrets/credentials-gcs-staging.json");
     setUpBigQuery();
@@ -45,8 +48,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
     DestinationConfig.initialize(config);
 
     // the setup steps below are specific to GCS staging use case
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
+    final GcsDestinationConfig gcsDestinationConfig =
+        GcsDestinationConfig.getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
     this.s3Client = gcsDestinationConfig.getS3Client();
   }
 
@@ -73,26 +76,32 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   @Test
   public void testGetFileBufferDefault() {
     final BigQueryDestination destination = new BigQueryDestination();
-    assertEquals(destination.getNumberOfFileBuffers(config),
+    assertEquals(
+        destination.getNumberOfFileBuffers(config),
         FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   @Test
   public void testGetFileBufferMaxLimited() {
     final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD))
+        .put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
     final BigQueryDestination destination = new BigQueryDestination();
-    assertEquals(FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER, destination.getNumberOfFileBuffers(defaultConfig));
+    assertEquals(
+        FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER,
+        destination.getNumberOfFileBuffers(defaultConfig));
   }
 
   @Test
   public void testGetMinimumFileBufferCount() {
     final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
+    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD))
+        .put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
     final BigQueryDestination destination = new BigQueryDestination();
     // User cannot set number of file counts below the default file buffer count, which is existing
     // behavior
-    assertEquals(FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER, destination.getNumberOfFileBuffers(defaultConfig));
+    assertEquals(
+        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER,
+        destination.getNumberOfFileBuffers(defaultConfig));
   }
-
 }

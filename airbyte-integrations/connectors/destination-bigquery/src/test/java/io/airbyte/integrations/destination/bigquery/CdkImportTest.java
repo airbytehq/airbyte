@@ -1,12 +1,13 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
+
 package io.airbyte.integrations.destination.bigquery;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.cdk.CDKConstants;
+import org.junit.jupiter.api.Test;
 
 class CdkImportTest {
 
@@ -17,5 +18,4 @@ class CdkImportTest {
   void cdkVersionShouldMatch() {
     assertEquals("0.0.1", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
   }
-
 }

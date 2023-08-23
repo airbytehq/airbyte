@@ -36,5 +36,4 @@ public class GcsConfig {
         config.get("loading_method").get("bucket_name").asText(),
         config.get("loading_method").get("credentials_json").asText());
   }
-
 }

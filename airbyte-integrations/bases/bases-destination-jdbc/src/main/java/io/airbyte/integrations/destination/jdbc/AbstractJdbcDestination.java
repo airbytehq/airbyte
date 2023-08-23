@@ -50,9 +50,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     return sqlOperations;
   }
 
-  public AbstractJdbcDestination(final String driverClass,
-                                 final NamingConventionTransformer namingResolver,
-                                 final SqlOperations sqlOperations) {
+  public AbstractJdbcDestination(
+      final String driverClass,
+      final NamingConventionTransformer namingResolver,
+      final SqlOperations sqlOperations) {
     this.driverClass = driverClass;
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
@@ -64,15 +65,15 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
     try {
       final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
+      final String outputSchema =
+          namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
-      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      final String message =
+          getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage(message);
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(message);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
@@ -92,10 +93,11 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
    * table. Use attemptTableOperations with the attemptInsert argument instead.
    */
   @Deprecated
-  public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
-                                                            final JdbcDatabase database,
-                                                            final NamingConventionTransformer namingResolver,
-                                                            final SqlOperations sqlOps)
+  public static void attemptSQLCreateAndDropTableOperations(
+      final String outputSchema,
+      final JdbcDatabase database,
+      final NamingConventionTransformer namingResolver,
+      final SqlOperations sqlOps)
       throws Exception {
     attemptTableOperations(outputSchema, database, namingResolver, sqlOps, false);
   }
@@ -113,21 +115,26 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
    *        table. Set false to skip insert step.
    * @throws Exception
    */
-  public static void attemptTableOperations(final String outputSchema,
-                                            final JdbcDatabase database,
-                                            final NamingConventionTransformer namingResolver,
-                                            final SqlOperations sqlOps,
-                                            final boolean attemptInsert)
+  public static void attemptTableOperations(
+      final String outputSchema,
+      final JdbcDatabase database,
+      final NamingConventionTransformer namingResolver,
+      final SqlOperations sqlOps,
+      final boolean attemptInsert)
       throws Exception {
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
     try {
       // Get metadata from the database to see whether connection is possible
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
+      database.bufferedResultSetQuery(
+          conn -> conn.getMetaData().getCatalogs(),
+          JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
-      // verify we have write permissions on the target schema by creating a table with a random name,
+      // verify we have write permissions on the target schema by creating a table with a random
+      // name,
       // then dropping that table
-      final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
+      final String outputTableName = namingResolver.getIdentifier(
+          "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
       sqlOps.createSchemaIfNotExists(database, outputSchema);
       sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
       // verify if user has permission to make SQL INSERT queries
@@ -143,7 +150,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
       } else {
         final SQLException cause = (SQLException) e.getCause();
-        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
+        throw new ConnectionErrorException(
+            e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
       }
     } catch (final Exception e) {
       throw new Exception(e);
@@ -167,7 +175,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     final JsonNode jdbcConfig = toJdbcConfig(config);
     return DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY)
+            ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
+            : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         getConnectionProperties(config));
@@ -178,16 +188,18 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   protected Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
+    final Map<String, String> customProperties =
+        JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
     final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);
   }
 
-  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-                                                                    final Map<String, String> defaultParameters) {
+  private void assertCustomParametersDontOverwriteDefaultParameters(
+      final Map<String, String> customParameters, final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
-      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
+      if (customParameters.containsKey(key)
+          && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
       }
     }
@@ -198,11 +210,16 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    return JdbcBufferedConsumerFactory.create(
+        outputRecordCollector,
+        getDatabase(getDataSource(config)),
+        sqlOperations,
+        namingResolver,
+        config,
         catalog);
   }
-
 }

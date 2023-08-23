@@ -72,34 +72,36 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, userName)
         .put(JdbcUtils.PASSWORD_KEY, password)
-        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "unencrypted")
-            .build()))
+        .put(
+            JdbcUtils.ENCRYPTION_KEY,
+            Jsons.jsonNode(
+                ImmutableMap.builder().put("encryption_method", "unencrypted").build()))
         .build());
   }
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("ID"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
-                Field.of("ID", JsonSchemaType.NUMBER),
-                Field.of("NAME", JsonSchemaType.STRING))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
-                Field.of("ID", JsonSchemaType.NUMBER),
-                Field.of("NAME", JsonSchemaType.STRING))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("ID"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
+                        Field.of("ID", JsonSchemaType.NUMBER),
+                        Field.of("NAME", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.FULL_REFRESH)
+                .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
+                        Field.of("ID", JsonSchemaType.NUMBER),
+                        Field.of("NAME", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -118,7 +120,8 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         Db2Source.DRIVER_CLASS,
-        String.format(DatabaseDriver.DB2.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.DB2.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("db").asText()));
@@ -127,24 +130,22 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
       final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
-      final String createTableQuery1 = String
-          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
-      final String createTableQuery2 = String
-          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
-      final String createTableQuery3 = String
-          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME3);
-      final String insertIntoTableQuery1 = String
-          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-              SCHEMA_NAME, STREAM_NAME1);
-      final String insertIntoTableQuery2 = String
-          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-              SCHEMA_NAME, STREAM_NAME2);
-      final String grantSelect1 = String
-          .format("GRANT SELECT ON TABLE %s.%s TO %s",
-              SCHEMA_NAME, STREAM_NAME1, LESS_PERMITTED_USER);
-      final String grantSelect2 = String
-          .format("GRANT SELECT ON TABLE %s.%s TO %s",
-              SCHEMA_NAME, STREAM_NAME3, LESS_PERMITTED_USER);
+      final String createTableQuery1 = String.format(
+          "CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
+      final String createTableQuery2 = String.format(
+          "CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
+      final String createTableQuery3 = String.format(
+          "CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME3);
+      final String insertIntoTableQuery1 = String.format(
+          "INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+          SCHEMA_NAME, STREAM_NAME1);
+      final String insertIntoTableQuery2 = String.format(
+          "INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+          SCHEMA_NAME, STREAM_NAME2);
+      final String grantSelect1 = String.format(
+          "GRANT SELECT ON TABLE %s.%s TO %s", SCHEMA_NAME, STREAM_NAME1, LESS_PERMITTED_USER);
+      final String grantSelect2 = String.format(
+          "GRANT SELECT ON TABLE %s.%s TO %s", SCHEMA_NAME, STREAM_NAME3, LESS_PERMITTED_USER);
 
       database.execute(createSchemaQuery);
       database.execute(createTableQuery1);
@@ -188,17 +189,14 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void createUser(final String lessPermittedUser) throws IOException, InterruptedException {
-    final String encryptedPassword = db.execInContainer("openssl", "passwd", JdbcUtils.PASSWORD_KEY).getStdout().replaceAll("\n", "");
+    final String encryptedPassword = db.execInContainer("openssl", "passwd", JdbcUtils.PASSWORD_KEY)
+        .getStdout()
+        .replaceAll("\n", "");
     db.execInContainer("useradd", lessPermittedUser, "-p", encryptedPassword);
   }
 
   private List<String> getActualNamesWithPermission(final JsonNode config) throws Exception {
     final AirbyteCatalog airbyteCatalog = new Db2Source().discover(config);
-    return airbyteCatalog
-        .getStreams()
-        .stream()
-        .map(AirbyteStream::getName)
-        .toList();
+    return airbyteCatalog.getStreams().stream().map(AirbyteStream::getName).toList();
   }
-
 }

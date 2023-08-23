@@ -22,15 +22,17 @@ import java.util.stream.Collectors;
 /**
  * This provider contains all definitions according to the local catalog json files.
  */
-final public class LocalDefinitionsProvider implements DefinitionsProvider {
+public final class LocalDefinitionsProvider implements DefinitionsProvider {
 
-  private static final String LOCAL_CONNECTOR_REGISTRY_PATH = CatalogDefinitionsConfig.getLocalConnectorCatalogPath();
+  private static final String LOCAL_CONNECTOR_REGISTRY_PATH =
+      CatalogDefinitionsConfig.getLocalConnectorCatalogPath();
 
   public CombinedConnectorCatalog getLocalDefinitionCatalog() {
     try {
       final URL url = Resources.getResource(LOCAL_CONNECTOR_REGISTRY_PATH);
       final String jsonString = Resources.toString(url, StandardCharsets.UTF_8);
-      final CombinedConnectorCatalog catalog = Jsons.deserialize(jsonString, CombinedConnectorCatalog.class);
+      final CombinedConnectorCatalog catalog =
+          Jsons.deserialize(jsonString, CombinedConnectorCatalog.class);
       return catalog;
 
     } catch (final Exception e) {
@@ -40,27 +42,29 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   public Map<UUID, StandardSourceDefinition> getSourceDefinitionsMap() {
     final CombinedConnectorCatalog catalog = getLocalDefinitionCatalog();
-    return catalog.getSources().stream().collect(Collectors.toMap(
-        StandardSourceDefinition::getSourceDefinitionId,
-        source -> source.withProtocolVersion(
-            AirbyteProtocolVersion.getWithDefault(source.getSpec() != null ? source.getSpec().getProtocolVersion() : null).serialize())));
+    return catalog.getSources().stream()
+        .collect(Collectors.toMap(
+            StandardSourceDefinition::getSourceDefinitionId,
+            source -> source.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(
+                    source.getSpec() != null ? source.getSpec().getProtocolVersion() : null)
+                .serialize())));
   }
 
   public Map<UUID, StandardDestinationDefinition> getDestinationDefinitionsMap() {
     final CombinedConnectorCatalog catalog = getLocalDefinitionCatalog();
-    return catalog.getDestinations().stream().collect(
-        Collectors.toMap(
+    return catalog.getDestinations().stream()
+        .collect(Collectors.toMap(
             StandardDestinationDefinition::getDestinationDefinitionId,
-            destination -> destination.withProtocolVersion(
-                AirbyteProtocolVersion.getWithDefault(
+            destination -> destination.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(
                     destination.getSpec() != null
                         ? destination.getSpec().getProtocolVersion()
                         : null)
-                    .serialize())));
+                .serialize())));
   }
 
   @Override
-  public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
+  public StandardSourceDefinition getSourceDefinition(final UUID definitionId)
+      throws ConfigNotFoundException {
     final StandardSourceDefinition definition = getSourceDefinitionsMap().get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException("local_registry:source_def", definitionId.toString());
@@ -74,8 +78,10 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
   }
 
   @Override
-  public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    final StandardDestinationDefinition definition = getDestinationDefinitionsMap().get(definitionId);
+  public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId)
+      throws ConfigNotFoundException {
+    final StandardDestinationDefinition definition =
+        getDestinationDefinitionsMap().get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException("local_registry:destination_def", definitionId.toString());
     }
@@ -86,5 +92,4 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
   public List<StandardDestinationDefinition> getDestinationDefinitions() {
     return new ArrayList<>(getDestinationDefinitionsMap().values());
   }
-
 }

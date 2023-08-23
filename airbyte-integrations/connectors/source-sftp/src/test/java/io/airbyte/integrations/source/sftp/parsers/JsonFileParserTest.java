@@ -35,17 +35,16 @@ class JsonFileParserTest {
         .put("log", "text2")
         .put("created_at", "04202022")
         .build());
-    expectedNode = Jsons.arrayNode()
-        .add(row1)
-        .add(row2);
+    expectedNode = Jsons.arrayNode().add(row1).add(row2);
   }
 
   @Test
   void parseFileTest() throws Exception {
-    InputStream stream = Thread.currentThread().getContextClassLoader()
-        .getResourceAsStream(LOG_FILE_JSON);
+    InputStream stream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(LOG_FILE_JSON);
 
-    List<JsonNode> jsonNodes = jsonFileParser.parseFile(new ByteArrayInputStream(stream.readAllBytes()));
+    List<JsonNode> jsonNodes =
+        jsonFileParser.parseFile(new ByteArrayInputStream(stream.readAllBytes()));
     assertNotNull(jsonNodes);
     assertEquals(1, jsonNodes.size());
     assertEquals(expectedNode, jsonNodes.get(0));
@@ -53,12 +52,12 @@ class JsonFileParserTest {
 
   @Test
   void parseFileFirstLineTest() throws Exception {
-    InputStream stream = Thread.currentThread().getContextClassLoader()
-        .getResourceAsStream(LOG_FILE_JSON);
+    InputStream stream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(LOG_FILE_JSON);
 
-    JsonNode jsonNode = jsonFileParser.parseFileFirstEntity(new ByteArrayInputStream(stream.readAllBytes()));
+    JsonNode jsonNode =
+        jsonFileParser.parseFileFirstEntity(new ByteArrayInputStream(stream.readAllBytes()));
     assertNotNull(jsonNode);
     assertEquals(expectedNode, jsonNode);
   }
-
 }

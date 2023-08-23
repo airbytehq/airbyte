@@ -44,8 +44,8 @@ public class CockroachDbSpecTest {
   @BeforeAll
   static void init() throws IOException {
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs
-        .writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec)
+    final File schemaFile = IOs.writeFile(
+            Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec)
         .toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
@@ -118,5 +118,4 @@ public class CockroachDbSpecTest {
     final ConnectorSpecification spec = new CockroachDbSource().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
-
 }

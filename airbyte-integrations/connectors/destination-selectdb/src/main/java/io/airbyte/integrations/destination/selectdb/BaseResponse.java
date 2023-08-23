@@ -25,5 +25,4 @@ public class BaseResponse<T> {
   public T getData() {
     return data;
   }
-
 }

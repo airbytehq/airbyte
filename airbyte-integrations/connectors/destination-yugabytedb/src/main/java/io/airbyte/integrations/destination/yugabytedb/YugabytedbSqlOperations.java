@@ -21,10 +21,11 @@ import java.util.List;
 public class YugabytedbSqlOperations extends JdbcSqlOperations {
 
   @Override
-  protected void insertRecordsInternal(JdbcDatabase database,
-                                       List<AirbyteRecordMessage> records,
-                                       String schemaName,
-                                       String tableName)
+  protected void insertRecordsInternal(
+      JdbcDatabase database,
+      List<AirbyteRecordMessage> records,
+      String schemaName,
+      String tableName)
       throws Exception {
 
     if (records.isEmpty()) {
@@ -38,11 +39,11 @@ public class YugabytedbSqlOperations extends JdbcSqlOperations {
 
       File finalTempFile = tempFile;
       database.execute(connection -> {
-
         var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
         var sql = String.format("COPY %s.%s FROM STDIN DELIMITER ',' CSV", schemaName, tableName);
 
-        try (var bufferedReader = new BufferedReader(new FileReader(finalTempFile, StandardCharsets.UTF_8))) {
+        try (var bufferedReader =
+            new BufferedReader(new FileReader(finalTempFile, StandardCharsets.UTF_8))) {
           copyManager.copyIn(sql, bufferedReader);
         } catch (IOException e) {
           throw new UncheckedIOException(e);
@@ -54,5 +55,4 @@ public class YugabytedbSqlOperations extends JdbcSqlOperations {
       }
     }
   }
-
 }

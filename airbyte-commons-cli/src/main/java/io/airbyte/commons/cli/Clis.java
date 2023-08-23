@@ -22,7 +22,11 @@ public class Clis {
    * @param options - expected options
    * @return object with parsed values.
    */
-  public static CommandLine parse(final String[] args, final Options options, final CommandLineParser parser, final String commandLineSyntax) {
+  public static CommandLine parse(
+      final String[] args,
+      final Options options,
+      final CommandLineParser parser,
+      final String commandLineSyntax) {
     final HelpFormatter helpFormatter = new HelpFormatter();
 
     try {
@@ -35,11 +39,13 @@ public class Clis {
     }
   }
 
-  public static CommandLine parse(final String[] args, final Options options, final String commandLineSyntax) {
+  public static CommandLine parse(
+      final String[] args, final Options options, final String commandLineSyntax) {
     return parse(args, options, new DefaultParser(), commandLineSyntax);
   }
 
-  public static CommandLine parse(final String[] args, final Options options, final CommandLineParser parser) {
+  public static CommandLine parse(
+      final String[] args, final Options options, final CommandLineParser parser) {
     return parse(args, options, parser, null);
   }
 
@@ -55,7 +61,8 @@ public class Clis {
   private static class RelaxedParser extends DefaultParser {
 
     @Override
-    public CommandLine parse(final Options options, final String[] arguments) throws ParseException {
+    public CommandLine parse(final Options options, final String[] arguments)
+        throws ParseException {
       final List<String> knownArgs = new ArrayList<>();
       for (int i = 0; i < arguments.length; i++) {
         if (options.hasOption(arguments[i])) {
@@ -67,7 +74,5 @@ public class Clis {
       }
       return super.parse(options, knownArgs.toArray(new String[0]));
     }
-
   }
-
 }

@@ -24,26 +24,27 @@ import org.slf4j.LoggerFactory;
  * @param stagedFiles collection of staged files to copy data from
  */
 public record BigQueryWriteConfig(
-                                  String streamName,
-                                  String namespace,
-                                  String datasetId,
-                                  String datasetLocation,
-                                  TableId tmpTableId,
-                                  TableId targetTableId,
-                                  Schema tableSchema,
-                                  DestinationSyncMode syncMode,
-                                  List<String> stagedFiles) {
+    String streamName,
+    String namespace,
+    String datasetId,
+    String datasetLocation,
+    TableId tmpTableId,
+    TableId targetTableId,
+    Schema tableSchema,
+    DestinationSyncMode syncMode,
+    List<String> stagedFiles) {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryWriteConfig.class);
 
-  public BigQueryWriteConfig(final String streamName,
-                             final String namespace,
-                             final String datasetId,
-                             final String datasetLocation,
-                             final String tmpTableName,
-                             final String targetTableName,
-                             final Schema tableSchema,
-                             final DestinationSyncMode syncMode) {
+  public BigQueryWriteConfig(
+      final String streamName,
+      final String namespace,
+      final String datasetId,
+      final String datasetLocation,
+      final String tmpTableName,
+      final String targetTableName,
+      final Schema tableSchema,
+      final DestinationSyncMode syncMode) {
     this(
         streamName,
         namespace,
@@ -64,5 +65,4 @@ public record BigQueryWriteConfig(
   public void clearStagedFiles() {
     this.stagedFiles.clear();
   }
-
 }

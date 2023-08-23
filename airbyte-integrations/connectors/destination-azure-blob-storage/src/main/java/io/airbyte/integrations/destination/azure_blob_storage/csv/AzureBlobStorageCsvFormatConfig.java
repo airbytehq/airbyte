@@ -36,7 +36,6 @@ public class AzureBlobStorageCsvFormatConfig implements AzureBlobStorageFormatCo
     public String getValue() {
       return value;
     }
-
   }
 
   private final Flattening flattening;
@@ -56,9 +55,6 @@ public class AzureBlobStorageCsvFormatConfig implements AzureBlobStorageFormatCo
 
   @Override
   public String toString() {
-    return "AzureBlobStorageCsvFormatConfig{" +
-        "flattening=" + flattening +
-        '}';
+    return "AzureBlobStorageCsvFormatConfig{" + "flattening=" + flattening + '}';
   }
-
 }

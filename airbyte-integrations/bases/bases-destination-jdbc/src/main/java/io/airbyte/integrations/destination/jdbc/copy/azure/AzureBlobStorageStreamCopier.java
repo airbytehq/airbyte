@@ -55,15 +55,16 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   private final HashMap<String, AppendBlobClient> blobClients = new HashMap<>();
   private String currentFile;
 
-  public AzureBlobStorageStreamCopier(final String stagingFolder,
-                                      final DestinationSyncMode destSyncMode,
-                                      final String schema,
-                                      final String streamName,
-                                      final SpecializedBlobClientBuilder specializedBlobClientBuilder,
-                                      final JdbcDatabase db,
-                                      final AzureBlobStorageConfig azureBlobConfig,
-                                      final StandardNameTransformer nameTransformer,
-                                      final SqlOperations sqlOperations) {
+  public AzureBlobStorageStreamCopier(
+      final String stagingFolder,
+      final DestinationSyncMode destSyncMode,
+      final String schema,
+      final String streamName,
+      final SpecializedBlobClientBuilder specializedBlobClientBuilder,
+      final JdbcDatabase db,
+      final AzureBlobStorageConfig azureBlobConfig,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
     this.stagingFolder = stagingFolder;
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
@@ -74,7 +75,8 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.specializedBlobClientBuilder = specializedBlobClientBuilder;
     this.azureBlobConfig = azureBlobConfig;
-    this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
+    this.filenameGenerator = new StagingFilenameGenerator(
+        streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
 
   public static void attemptAzureBlobWriteAndDelete(final AzureBlobStorageConfig config) {
@@ -96,11 +98,13 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
         appendBlobClient.delete();
       }
     }
-
   }
 
   private static void listCreatedBlob(final BlobContainerClient containerClient) {
-    containerClient.listBlobs().forEach(blobItem -> LOGGER.info("Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
+    containerClient
+        .listBlobs()
+        .forEach(blobItem -> LOGGER.info(
+            "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
   }
 
   private static void writeTestDataIntoBlob(final AppendBlobClient appendBlobClient) {
@@ -108,13 +112,14 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
     LOGGER.info("Writing test data to Azure Blob storage: " + test);
     final InputStream dataStream = new ByteArrayInputStream(test.getBytes(StandardCharsets.UTF_8));
 
-    final Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, test.length())
-        .getBlobCommittedBlockCount();
+    final Integer blobCommittedBlockCount =
+        appendBlobClient.appendBlock(dataStream, test.length()).getBlobCommittedBlockCount();
 
     LOGGER.info("blobCommittedBlockCount: " + blobCommittedBlockCount);
   }
 
-  private static BlobContainerClient getBlobContainerClient(final AppendBlobClient appendBlobClient) {
+  private static BlobContainerClient getBlobContainerClient(
+      final AppendBlobClient appendBlobClient) {
     final BlobContainerClient containerClient = appendBlobClient.getContainerClient();
     if (!containerClient.exists()) {
       containerClient.create();
@@ -134,11 +139,16 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String azureFileName) throws Exception {
+  public void write(
+      final UUID id, final AirbyteRecordMessage recordMessage, final String azureFileName)
+      throws Exception {
     if (csvPrinters.containsKey(azureFileName)) {
-      csvPrinters.get(azureFileName).printRecord(id,
-          Jsons.serialize(recordMessage.getData()),
-          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+      csvPrinters
+          .get(azureFileName)
+          .printRecord(
+              id,
+              Jsons.serialize(recordMessage.getData()),
+              Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }
 
@@ -150,14 +160,14 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
       azureStagingFiles.add(currentFile);
       activeStagingWriterFileNames.add(currentFile);
 
-      final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
-          .blobName(currentFile)
-          .buildAppendBlobClient();
+      final AppendBlobClient appendBlobClient =
+          specializedBlobClientBuilder.blobName(currentFile).buildAppendBlobClient();
       blobClients.put(currentFile, appendBlobClient);
       appendBlobClient.create(true);
 
-      final BufferedOutputStream bufferedOutputStream =
-          new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE));
+      final BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
+          appendBlobClient.getBlobOutputStream(),
+          Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE));
       final var writer = new PrintWriter(bufferedOutputStream, true, StandardCharsets.UTF_8);
       try {
         csvPrinters.put(currentFile, new CSVPrinter(writer, CSVFormat.DEFAULT));
@@ -189,22 +199,33 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
 
   @Override
   public void createTemporaryTable() throws Exception {
-    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
+    LOGGER.info(
+        "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
+        streamName,
+        schemaName,
+        tmpTableName);
     sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
   }
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}.", tmpTableName, streamName, schemaName);
+    LOGGER.info(
+        "Starting copy to tmp table: {} in destination for stream: {}, schema: {}.",
+        tmpTableName,
+        streamName,
+        schemaName);
     for (final var azureStagingFile : azureStagingFiles) {
-      copyAzureBlobCsvFileIntoTable(db, getFullAzurePath(azureStagingFile), schemaName, tmpTableName, azureBlobConfig);
+      copyAzureBlobCsvFileIntoTable(
+          db, getFullAzurePath(azureStagingFile), schemaName, tmpTableName, azureBlobConfig);
     }
-    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+    LOGGER.info(
+        "Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
   private String getFullAzurePath(final String azureStagingFile) {
-    return "azure://" + azureBlobConfig.getAccountName() + "." + azureBlobConfig.getEndpointDomainName()
-        + "/" + azureBlobConfig.getContainerName() + "/" + azureStagingFile;
+    return "azure://" + azureBlobConfig.getAccountName() + "."
+        + azureBlobConfig.getEndpointDomainName() + "/" + azureBlobConfig.getContainerName() + "/"
+        + azureStagingFile;
   }
 
   @Override
@@ -219,11 +240,18 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
 
   @Override
   public String generateMergeStatement(final String destTableName) throws Exception {
-    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
+    LOGGER.info(
+        "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
+        tmpTableName,
+        destTableName,
+        schemaName);
     final var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
+      LOGGER.info(
+          "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.",
+          destTableName,
+          schemaName);
     }
     queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
@@ -266,11 +294,11 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
     return tmpTableName;
   }
 
-  public abstract void copyAzureBlobCsvFileIntoTable(JdbcDatabase database,
-                                                     String snowflakeAzureExternalStageName,
-                                                     String schema,
-                                                     String tableName,
-                                                     AzureBlobStorageConfig config)
+  public abstract void copyAzureBlobCsvFileIntoTable(
+      JdbcDatabase database,
+      String snowflakeAzureExternalStageName,
+      String schema,
+      String tableName,
+      AzureBlobStorageConfig config)
       throws SQLException;
-
 }

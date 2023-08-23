@@ -21,27 +21,39 @@ import java.sql.Timestamp;
 public class DatabricksS3StreamCopierFactory implements DatabricksStreamCopierFactory {
 
   @Override
-  public StreamCopier create(final String configuredSchema,
-                             final DatabricksDestinationConfig databricksConfig,
-                             final String stagingFolder,
-                             final ConfiguredAirbyteStream configuredStream,
-                             final StandardNameTransformer nameTransformer,
-                             final JdbcDatabase database,
-                             final SqlOperations sqlOperations) {
+  public StreamCopier create(
+      final String configuredSchema,
+      final DatabricksDestinationConfig databricksConfig,
+      final String stagingFolder,
+      final ConfiguredAirbyteStream configuredStream,
+      final StandardNameTransformer nameTransformer,
+      final JdbcDatabase database,
+      final SqlOperations sqlOperations) {
     try {
       final AirbyteStream stream = configuredStream.getStream();
       final String catalogName = databricksConfig.catalog();
-      final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final String schema =
+          StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
 
-      S3DestinationConfig s3Config = databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
+      S3DestinationConfig s3Config =
+          databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
       final AmazonS3 s3Client = s3Config.getS3Client();
       final ProductionWriterFactory writerFactory = new ProductionWriterFactory();
       final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
-      return new DatabricksS3StreamCopier(stagingFolder, catalogName, schema, configuredStream, s3Client, database,
-          databricksConfig, nameTransformer, sqlOperations, writerFactory, uploadTimestamp);
+      return new DatabricksS3StreamCopier(
+          stagingFolder,
+          catalogName,
+          schema,
+          configuredStream,
+          s3Client,
+          database,
+          databricksConfig,
+          nameTransformer,
+          sqlOperations,
+          writerFactory,
+          uploadTimestamp);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
-
 }

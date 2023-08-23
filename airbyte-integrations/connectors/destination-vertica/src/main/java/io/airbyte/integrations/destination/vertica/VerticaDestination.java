@@ -35,10 +35,8 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
 
   public static final String DRIVER_CLASS = DatabaseDriver.VERTICA.getDriverClassName();
 
-  public static final String COLUMN_NAME_AB_ID =
-      "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID + "\"";
-  public static final String COLUMN_NAME_DATA =
-      "\"" + JavaBaseConstants.COLUMN_NAME_DATA + "\"";
+  public static final String COLUMN_NAME_AB_ID = "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID + "\"";
+  public static final String COLUMN_NAME_DATA = "\"" + JavaBaseConstants.COLUMN_NAME_DATA + "\"";
   public static final String COLUMN_NAME_EMITTED_AT =
       "\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "\"";
   private final NamingConventionTransformer namingResolver;
@@ -50,19 +48,22 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
       "zeroDateTimeBehavior", "convertToNull",
       "allowLoadLocalInfile", "true");
 
-  public VerticaDestination(final String driverClass,
-                            final NamingConventionTransformer namingResolver,
-                            final VerticaSqlOperations verticaSqlOperations) {
+  public VerticaDestination(
+      final String driverClass,
+      final NamingConventionTransformer namingResolver,
+      final VerticaSqlOperations verticaSqlOperations) {
     super(DRIVER_CLASS, namingResolver, verticaSqlOperations);
     this.verticaSqlOperations = verticaSqlOperations;
     this.namingResolver = namingResolver;
     this.driverClass = driverClass;
-
   }
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new VerticaDestination(DRIVER_CLASS, new VerticaNameTransformer(), new VerticaSqlOperations()),
-        JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedDestination(
+        new VerticaDestination(
+            DRIVER_CLASS, new VerticaNameTransformer(), new VerticaSqlOperations()),
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY);
   }
 
   public static void main(String[] args) throws Exception {
@@ -78,12 +79,14 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final VerticaSqlOperations mySQLSqlOperations = (VerticaSqlOperations) getSqlOperations();
-      final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
-          mySQLSqlOperations);
+      final String outputSchema =
+          getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
+      attemptSQLCreateAndDropTableOperations(
+          outputSchema, database, getNamingResolver(), mySQLSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      final String message =
+          getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -102,10 +105,11 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
     }
   }
 
-  static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(ImmutableMap.of(
-      "useSSL", "false",
-      "requireSSL", "fase",
-      "verifyServerCertificate", "false"),
+  static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(
+      ImmutableMap.of(
+          "useSSL", "false",
+          "requireSSL", "fase",
+          "verifyServerCertificate", "false"),
       DEFAULT_JDBC_PARAMETERS);
 
   @Override
@@ -119,7 +123,8 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
-    final String jdbcUrl = String.format("jdbc:vertica://%s:%s/%s",
+    final String jdbcUrl = String.format(
+        "jdbc:vertica://%s:%s/%s",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
@@ -129,7 +134,8 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
@@ -138,11 +144,16 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), verticaSqlOperations, namingResolver, config,
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    return JdbcBufferedConsumerFactory.create(
+        outputRecordCollector,
+        getDatabase(getDataSource(config)),
+        verticaSqlOperations,
+        namingResolver,
+        config,
         catalog);
   }
-
 }

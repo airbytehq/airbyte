@@ -19,17 +19,17 @@ public class AirbyteDebeziumHandlerTest {
 
   @Test
   public void shouldUseCdcTestShouldReturnTrue() {
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createAirbyteStream(
-            "MODELS_STREAM_NAME",
-            "MODELS_SCHEMA",
-            Field.of("COL_ID", JsonSchemaType.NUMBER),
-            Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
-            Field.of("COL_MODEL", JsonSchemaType.STRING))
+    final AirbyteCatalog catalog = new AirbyteCatalog()
+        .withStreams(List.of(CatalogHelpers.createAirbyteStream(
+                "MODELS_STREAM_NAME",
+                "MODELS_SCHEMA",
+                Field.of("COL_ID", JsonSchemaType.NUMBER),
+                Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
+                Field.of("COL_MODEL", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID")))));
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
-        .toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     // set all streams to incremental.
     configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
 
@@ -38,19 +38,18 @@ public class AirbyteDebeziumHandlerTest {
 
   @Test
   public void shouldUseCdcTestShouldReturnFalse() {
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createAirbyteStream(
-            "MODELS_STREAM_NAME",
-            "MODELS_SCHEMA",
-            Field.of("COL_ID", JsonSchemaType.NUMBER),
-            Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
-            Field.of("COL_MODEL", JsonSchemaType.STRING))
+    final AirbyteCatalog catalog = new AirbyteCatalog()
+        .withStreams(List.of(CatalogHelpers.createAirbyteStream(
+                "MODELS_STREAM_NAME",
+                "MODELS_SCHEMA",
+                Field.of("COL_ID", JsonSchemaType.NUMBER),
+                Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
+                Field.of("COL_MODEL", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID")))));
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
-        .toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
 
     Assertions.assertFalse(AirbyteDebeziumHandler.shouldUseCDC(configuredCatalog));
   }
-
 }

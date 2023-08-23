@@ -19,9 +19,10 @@ public class GcsStorageOperations extends S3StorageOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStorageOperations.class);
 
-  public GcsStorageOperations(final NamingConventionTransformer nameTransformer,
-                              final AmazonS3 s3Client,
-                              final S3DestinationConfig s3Config) {
+  public GcsStorageOperations(
+      final NamingConventionTransformer nameTransformer,
+      final AmazonS3 s3Client,
+      final S3DestinationConfig s3Config) {
     super(nameTransformer, s3Client, s3Config);
   }
 
@@ -49,5 +50,4 @@ public class GcsStorageOperations extends S3StorageOperations {
   protected Map<String, String> getMetadataMapping() {
     return new HashMap<>();
   }
-
 }

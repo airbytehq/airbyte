@@ -17,23 +17,28 @@ import java.util.List;
 
 public class ElasticsearchUtils {
 
-  public static AutoCloseableIterator<JsonNode> getDataIterator(final ElasticsearchConnection connection,
-                                                                final AirbyteStream stream) {
-    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromAirbyteStream(stream);
-    return AutoCloseableIterators.lazyIterator(() -> {
-      try {
-        List<JsonNode> data = connection.getRecords(stream.getName());
-        return AutoCloseableIterators.fromIterator(data.iterator(), airbyteStream);
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      }
-    }, airbyteStream);
+  public static AutoCloseableIterator<JsonNode> getDataIterator(
+      final ElasticsearchConnection connection, final AirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair airbyteStream =
+        AirbyteStreamUtils.convertFromAirbyteStream(stream);
+    return AutoCloseableIterators.lazyIterator(
+        () -> {
+          try {
+            List<JsonNode> data = connection.getRecords(stream.getName());
+            return AutoCloseableIterators.fromIterator(data.iterator(), airbyteStream);
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          }
+        },
+        airbyteStream);
   }
 
-  public static AutoCloseableIterator<AirbyteMessage> getMessageIterator(final AutoCloseableIterator<JsonNode> recordIterator,
-                                                                         final String streamName,
-                                                                         final String streamNamespace) {
-    return AutoCloseableIterators.transform(recordIterator,
+  public static AutoCloseableIterator<AirbyteMessage> getMessageIterator(
+      final AutoCloseableIterator<JsonNode> recordIterator,
+      final String streamName,
+      final String streamNamespace) {
+    return AutoCloseableIterators.transform(
+        recordIterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(streamName, streamNamespace),
         r -> new AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
@@ -42,5 +47,4 @@ public class ElasticsearchUtils {
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(r)));
   }
-
 }

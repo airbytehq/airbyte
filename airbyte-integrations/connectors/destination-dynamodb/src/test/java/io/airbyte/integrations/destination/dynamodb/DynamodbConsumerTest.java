@@ -44,5 +44,4 @@ class DynamodbConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return consumer;
   }
-
 }

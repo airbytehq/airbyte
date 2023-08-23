@@ -18,9 +18,11 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination implements Destination {
+public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination
+    implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestinationStrictEncrypt.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(MongodbDestinationStrictEncrypt.class);
 
   public MongodbDestinationStrictEncrypt() {
     super(MongodbDestination.sshWrappedDestination());
@@ -29,21 +31,30 @@ public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination im
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+    final MongoInstanceType instance =
+        MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
     // If the MongoDb destination connector is not set up to use a TLS connection, then check should
     // fail
-    if (instance.equals(MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
+    if (instance.equals(MongoInstanceType.STANDALONE)
+        && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
       throw new ConfigErrorException("TLS connection must be used to read from MongoDB.");
     }
     return super.check(config);
   }
 
   @Override
-  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) throws Exception {
+  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec)
+      throws Exception {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     // removing tls property for a standalone instance to disable possibility to switch off a tls
     // connection
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("instance_type").get("oneOf").get(0).get("properties")).remove("tls");
+    ((ObjectNode) spec.getConnectionSpecification()
+            .get("properties")
+            .get("instance_type")
+            .get("oneOf")
+            .get(0)
+            .get("properties"))
+        .remove("tls");
     return spec;
   }
 
@@ -53,5 +64,4 @@ public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination im
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MongodbDestinationStrictEncrypt.class);
   }
-
 }

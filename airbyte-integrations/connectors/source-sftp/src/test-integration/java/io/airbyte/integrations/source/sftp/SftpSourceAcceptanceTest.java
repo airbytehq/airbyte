@@ -62,14 +62,16 @@ public class SftpSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     network = Network.SHARED;
-    sftp = new GenericContainer(
-        new ImageFromDockerfile("sftp-test")
+    sftp = new GenericContainer(new ImageFromDockerfile("sftp-test")
             .withFileFromClasspath("Dockerfile", "sftp/Dockerfile"))
-                .withNetwork(network)
-                .withExposedPorts(22)
-                .withClasspathResourceMapping("sftp/" + CSV_FILE_NAME, FOLDER_PATH + CSV_FILE_NAME, BindMode.READ_ONLY)
-                .withClasspathResourceMapping("sftp/" + JSON_FILE_NAME, FOLDER_PATH + JSON_FILE_NAME, BindMode.READ_ONLY)
-                .withClasspathResourceMapping("sftp/" + CSV_ERROR_FILE_NAME, FOLDER_PATH + CSV_ERROR_FILE_NAME, BindMode.READ_ONLY);
+        .withNetwork(network)
+        .withExposedPorts(22)
+        .withClasspathResourceMapping(
+            "sftp/" + CSV_FILE_NAME, FOLDER_PATH + CSV_FILE_NAME, BindMode.READ_ONLY)
+        .withClasspathResourceMapping(
+            "sftp/" + JSON_FILE_NAME, FOLDER_PATH + JSON_FILE_NAME, BindMode.READ_ONLY)
+        .withClasspathResourceMapping(
+            "sftp/" + CSV_ERROR_FILE_NAME, FOLDER_PATH + CSV_ERROR_FILE_NAME, BindMode.READ_ONLY);
     sftp.start();
   }
 
@@ -86,8 +88,8 @@ public class SftpSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    final ConfiguredAirbyteStream streams =
-        CatalogHelpers.createConfiguredAirbyteStream(CSV_FILE_NAME, null, Field.of("value", JsonSchemaType.STRING));
+    final ConfiguredAirbyteStream streams = CatalogHelpers.createConfiguredAirbyteStream(
+        CSV_FILE_NAME, null, Field.of("value", JsonSchemaType.STRING));
     streams.setSyncMode(SyncMode.FULL_REFRESH);
     return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(streams));
   }
@@ -96,5 +98,4 @@ public class SftpSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

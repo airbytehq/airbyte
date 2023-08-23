@@ -63,11 +63,15 @@ public class TwoStageSizeEstimator implements FetchSizeEstimator {
   @VisibleForTesting
   static long getTargetBufferByteSize(final Long maxMemory) {
     if (maxMemory == null || maxMemory == Long.MAX_VALUE) {
-      LOGGER.info("No max memory limit found, use min JDBC buffer size: {}", FetchSizeConstants.MIN_BUFFER_BYTE_SIZE);
+      LOGGER.info(
+          "No max memory limit found, use min JDBC buffer size: {}",
+          FetchSizeConstants.MIN_BUFFER_BYTE_SIZE);
       return FetchSizeConstants.MIN_BUFFER_BYTE_SIZE;
     }
-    final long targetBufferByteSize = Math.round(maxMemory * FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO);
-    final long finalBufferByteSize = Math.max(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE, targetBufferByteSize);
+    final long targetBufferByteSize =
+        Math.round(maxMemory * FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO);
+    final long finalBufferByteSize =
+        Math.max(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE, targetBufferByteSize);
     LOGGER.info("Max memory limit: {}, JDBC buffer size: {}", maxMemory, finalBufferByteSize);
     return finalBufferByteSize;
   }
@@ -76,5 +80,4 @@ public class TwoStageSizeEstimator implements FetchSizeEstimator {
   BaseSizeEstimator getDelegate() {
     return delegate;
   }
-
 }

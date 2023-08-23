@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.teradata.envclient.dto;
 
 public enum Region {
-
   US_CENTRAL("us-central"),
 
   US_EAST("us-east"),
@@ -33,5 +32,4 @@ public enum Region {
   public String getRegionName() {
     return regionName;
   }
-
 }

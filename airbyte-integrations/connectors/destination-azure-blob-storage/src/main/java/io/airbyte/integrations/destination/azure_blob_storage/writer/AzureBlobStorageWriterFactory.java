@@ -14,9 +14,9 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
  */
 public interface AzureBlobStorageWriterFactory {
 
-  AzureBlobStorageWriter create(AzureBlobStorageDestinationConfig config,
-                                AppendBlobClient appendBlobClient,
-                                ConfiguredAirbyteStream configuredStream)
+  AzureBlobStorageWriter create(
+      AzureBlobStorageDestinationConfig config,
+      AppendBlobClient appendBlobClient,
+      ConfiguredAirbyteStream configuredStream)
       throws Exception;
-
 }

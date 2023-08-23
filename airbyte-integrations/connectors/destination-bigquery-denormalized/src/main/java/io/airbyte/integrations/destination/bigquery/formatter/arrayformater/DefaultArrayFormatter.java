@@ -32,26 +32,27 @@ public class DefaultArrayFormatter implements ArrayFormatter {
 
   @Override
   public void surroundArraysByObjects(final JsonNode node) {
-    findArrays(node).forEach(
-        jsonNode -> {
-          if (FormatterUtil.isAirbyteArray(jsonNode.get(ARRAY_ITEMS_FIELD))) {
-            final ObjectNode arrayNode = jsonNode.get(ARRAY_ITEMS_FIELD).deepCopy();
-            final ObjectNode originalNode = (ObjectNode) jsonNode;
+    findArrays(node).forEach(jsonNode -> {
+      if (FormatterUtil.isAirbyteArray(jsonNode.get(ARRAY_ITEMS_FIELD))) {
+        final ObjectNode arrayNode = jsonNode.get(ARRAY_ITEMS_FIELD).deepCopy();
+        final ObjectNode originalNode = (ObjectNode) jsonNode;
 
-            originalNode.remove(ARRAY_ITEMS_FIELD);
-            final ObjectNode itemsNode = originalNode.putObject(ARRAY_ITEMS_FIELD);
-            itemsNode.putArray(TYPE_FIELD).add("object");
-            itemsNode.putObject(PROPERTIES_FIELD).putObject(NESTED_ARRAY_FIELD).setAll(arrayNode);
+        originalNode.remove(ARRAY_ITEMS_FIELD);
+        final ObjectNode itemsNode = originalNode.putObject(ARRAY_ITEMS_FIELD);
+        itemsNode.putArray(TYPE_FIELD).add("object");
+        itemsNode.putObject(PROPERTIES_FIELD).putObject(NESTED_ARRAY_FIELD).setAll(arrayNode);
 
-            surroundArraysByObjects(originalNode.get(ARRAY_ITEMS_FIELD));
-          }
-        });
+        surroundArraysByObjects(originalNode.get(ARRAY_ITEMS_FIELD));
+      }
+    });
   }
 
   @Override
   public JsonNode formatArrayItems(List<JsonNode> arrayItems) {
-    return Jsons
-        .jsonNode(arrayItems.stream().map(node -> (node.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, node)) : node)).toList());
+    return Jsons.jsonNode(arrayItems.stream()
+        .map(node ->
+            (node.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, node)) : node))
+        .toList());
   }
 
   protected List<JsonNode> findArrays(final JsonNode node) {
@@ -63,5 +64,4 @@ public class DefaultArrayFormatter implements ArrayFormatter {
       return Collections.emptyList();
     }
   }
-
 }

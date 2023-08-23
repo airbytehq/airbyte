@@ -53,7 +53,8 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new OracleDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedDestination(
+        new OracleDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   @Override
@@ -63,9 +64,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
       final JsonNode encryption = config.get(JdbcUtils.ENCRYPTION_KEY);
       final String encryptionMethod = encryption.get(ENCRYPTION_METHOD_KEY).asText();
       switch (encryptionMethod) {
-        case "unencrypted" -> {
-
-        }
+        case "unencrypted" -> {}
         case "client_nne" -> {
           final String algorithm = encryption.get("encryption_algorithm").asText();
           properties.put("oracle.net.encryption_client", "REQUIRED");
@@ -77,9 +76,9 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
           properties.put("javax.net.ssl.trustStoreType", "JKS");
           properties.put("javax.net.ssl.trustStorePassword", KEY_STORE_PASS);
         }
-        default -> throw new RuntimeException("Failed to obtain connection protocol from config " + encryption.asText());
+        default -> throw new RuntimeException(
+            "Failed to obtain connection protocol from config " + encryption.asText());
       }
-
     }
     return properties;
   }
@@ -99,7 +98,8 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
         .put(JdbcUtils.JDBC_URL_KEY, connectionString);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
     if (config.has(JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));
@@ -141,11 +141,14 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
-    runProcess("keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH
-        + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt", run);
+    runProcess(
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH
+            + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt",
+        run);
   }
 
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+  private static void runProcess(final String cmd, final Runtime run)
+      throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
@@ -159,5 +162,4 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", OracleDestination.class);
   }
-
 }

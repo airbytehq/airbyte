@@ -9,10 +9,10 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import jakarta.inject.Singleton;
 
 @Singleton
-public class AirbyteMessageV1Deserializer extends AirbyteMessageGenericDeserializer<AirbyteMessage> {
+public class AirbyteMessageV1Deserializer
+    extends AirbyteMessageGenericDeserializer<AirbyteMessage> {
 
   public AirbyteMessageV1Deserializer() {
     super(AirbyteProtocolVersion.V1, AirbyteMessage.class);
   }
-
 }

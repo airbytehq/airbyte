@@ -79,7 +79,6 @@ public class JsonPaths {
          */
         return EnumSet.of(Option.ALWAYS_RETURN_LIST);
       }
-
     });
   }
 
@@ -104,7 +103,9 @@ public class JsonPaths {
   public static String mapJsonSchemaPathToJsonPath(final List<FieldNameOrList> jsonSchemaPath) {
     String jsonPath = empty();
     for (final FieldNameOrList fieldNameOrList : jsonSchemaPath) {
-      jsonPath = fieldNameOrList.isList() ? appendAppendListSplat(jsonPath) : appendField(jsonPath, fieldNameOrList.getFieldName());
+      jsonPath = fieldNameOrList.isList()
+          ? appendAppendListSplat(jsonPath)
+          : appendField(jsonPath, fieldNameOrList.getFieldName());
     }
     return jsonPath;
   }
@@ -113,7 +114,8 @@ public class JsonPaths {
    * This version of the JsonPath Configuration object allows queries to return to the path of values
    * instead of the values that were found.
    */
-  private static final Configuration GET_PATHS_CONFIGURATION = Configuration.defaultConfiguration().addOptions(Option.AS_PATH_LIST);
+  private static final Configuration GET_PATHS_CONFIGURATION =
+      Configuration.defaultConfiguration().addOptions(Option.AS_PATH_LIST);
 
   /**
    * Attempt to validate if a string is a valid JSONPath string. This assertion does NOT handle all
@@ -132,7 +134,9 @@ public class JsonPaths {
    * @param jsonPath - path to validate
    */
   public static void assertIsSingleReturnQuery(final String jsonPath) {
-    Preconditions.checkArgument(JsonPath.isPathDefinite(jsonPath), "Cannot accept paths with wildcards because they may return more than one item.");
+    Preconditions.checkArgument(
+        JsonPath.isPathDefinite(jsonPath),
+        "Cannot accept paths with wildcards because they may return more than one item.");
   }
 
   /**
@@ -166,8 +170,7 @@ public class JsonPaths {
    *         list.
    */
   public static List<String> getPaths(final JsonNode json, final String jsonPath) {
-    return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath)
-        .stream()
+    return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath).stream()
         .map(JsonNode::asText)
         .collect(Collectors.toList());
   }
@@ -188,7 +191,9 @@ public class JsonPaths {
 
     final List<JsonNode> jsonNodes = getValues(json, jsonPath);
 
-    Preconditions.checkState(jsonNodes.size() <= 1, String.format("Path returned more than one item. path: %s items: %s", jsonPath, jsonNodes));
+    Preconditions.checkState(
+        jsonNodes.size() <= 1,
+        String.format("Path returned more than one item. path: %s items: %s", jsonPath, jsonNodes));
     return jsonNodes.isEmpty() ? Optional.empty() : Optional.of(jsonNodes.get(0));
   }
 
@@ -208,7 +213,10 @@ public class JsonPaths {
 
     final List<String> foundPaths = getPaths(json, jsonPath);
 
-    Preconditions.checkState(foundPaths.size() <= 1, String.format("Path returned more than one item. path: %s items: %s", jsonPath, foundPaths));
+    Preconditions.checkState(
+        foundPaths.size() <= 1,
+        String.format(
+            "Path returned more than one item. path: %s items: %s", jsonPath, foundPaths));
     return !foundPaths.isEmpty();
   }
 
@@ -221,7 +229,8 @@ public class JsonPaths {
    * @param replacement - a string value to replace the current value at the jsonPath
    * @throws PathNotFoundException throws if the path is not present in the object
    */
-  public static JsonNode replaceAtStringLoud(final JsonNode json, final String jsonPath, final String replacement) {
+  public static JsonNode replaceAtStringLoud(
+      final JsonNode json, final String jsonPath, final String replacement) {
     return replaceAtJsonNodeLoud(json, jsonPath, Jsons.jsonNode(replacement));
   }
 
@@ -233,7 +242,8 @@ public class JsonPaths {
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
    * @param replacement - a string value to replace the current value at the jsonPath
    */
-  public static JsonNode replaceAtString(final JsonNode json, final String jsonPath, final String replacement) {
+  public static JsonNode replaceAtString(
+      final JsonNode json, final String jsonPath, final String replacement) {
     return replaceAtJsonNode(json, jsonPath, Jsons.jsonNode(replacement));
   }
 
@@ -245,7 +255,8 @@ public class JsonPaths {
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
    * @param replacement - a json node to replace the current value at the jsonPath
    */
-  public static JsonNode replaceAtJsonNodeLoud(final JsonNode json, final String jsonPath, final JsonNode replacement) {
+  public static JsonNode replaceAtJsonNodeLoud(
+      final JsonNode json, final String jsonPath, final JsonNode replacement) {
     assertIsJsonPath(jsonPath);
     return JsonPath.parse(Jsons.clone(json)).set(jsonPath, replacement).json();
   }
@@ -258,7 +269,8 @@ public class JsonPaths {
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
    * @param replacement - a json node to replace the current value at the jsonPath
    */
-  public static JsonNode replaceAtJsonNode(final JsonNode json, final String jsonPath, final JsonNode replacement) {
+  public static JsonNode replaceAtJsonNode(
+      final JsonNode json, final String jsonPath, final JsonNode replacement) {
     try {
       return replaceAtJsonNodeLoud(json, jsonPath, replacement);
     } catch (final PathNotFoundException e) {
@@ -276,7 +288,10 @@ public class JsonPaths {
    * @param replacementFunction - a function that takes in a node that matches the path as well as the
    *        path to the node itself. the return of this function will replace the current node.
    */
-  public static JsonNode replaceAt(final JsonNode json, final String jsonPath, final BiFunction<JsonNode, String, JsonNode> replacementFunction) {
+  public static JsonNode replaceAt(
+      final JsonNode json,
+      final String jsonPath,
+      final BiFunction<JsonNode, String, JsonNode> replacementFunction) {
     JsonNode clone = Jsons.clone(json);
     assertIsJsonPath(jsonPath);
     final List<String> foundPaths = getPaths(clone, jsonPath);
@@ -299,13 +314,14 @@ public class JsonPaths {
    * @return all values that match the input query (whether the values are paths or actual values in
    *         the json object is determined by the conf)
    */
-  private static List<JsonNode> getInternal(final Configuration conf, final JsonNode json, final String jsonPath) {
+  private static List<JsonNode> getInternal(
+      final Configuration conf, final JsonNode json, final String jsonPath) {
     assertIsJsonPath(jsonPath);
     try {
-      return MoreIterators.toList(JsonPath.using(conf).parse(json).read(jsonPath, ArrayNode.class).iterator());
+      return MoreIterators.toList(
+          JsonPath.using(conf).parse(json).read(jsonPath, ArrayNode.class).iterator());
     } catch (final PathNotFoundException e) {
       return Collections.emptyList();
     }
   }
-
 }

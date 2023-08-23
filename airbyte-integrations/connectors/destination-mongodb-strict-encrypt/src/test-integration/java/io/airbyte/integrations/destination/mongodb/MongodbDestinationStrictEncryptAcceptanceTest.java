@@ -47,7 +47,8 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   static void setupConfig() throws IOException {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a MongoDB credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
     final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
@@ -72,9 +73,9 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
 
     failCheckConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.DATABASE_KEY, credentialsJson.get(JdbcUtils.DATABASE_KEY).asText())
-        .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
-            .put("authorization", "none")
-            .build()))
+        .put(
+            AUTH_TYPE,
+            Jsons.jsonNode(ImmutableMap.builder().put("authorization", "none").build()))
         .put(INSTANCE_TYPE, instanceConfig)
         .build());
   }
@@ -95,13 +96,16 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
-    final var collection = mongoDatabase.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
+    final var collection =
+        mongoDatabase.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
     final List<JsonNode> result = new ArrayList<>();
-    try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
+    try (final MongoCursor<Document> cursor =
+        collection.find().projection(excludeId()).iterator()) {
       while (cursor.hasNext()) {
         result.add(Jsons.jsonNode(cursor.next().get(AIRBYTE_DATA)));
       }
@@ -120,7 +124,8 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
 
     ((ObjectNode) invalidStandaloneConfig).put(MongoUtils.INSTANCE_TYPE, instanceConfig);
 
-    final Throwable throwable = catchThrowable(() -> new MongodbDestinationStrictEncrypt().check(invalidStandaloneConfig));
+    final Throwable throwable =
+        catchThrowable(() -> new MongodbDestinationStrictEncrypt().check(invalidStandaloneConfig));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class);
     assertThat(((ConfigErrorException) throwable)
         .getDisplayMessage()
@@ -129,14 +134,18 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
 
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
-    final var credentials = String.format("%s:%s@", config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
+    final var credentials = String.format(
+        "%s:%s@",
+        config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText());
-    final String connectionString = String.format("mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true",
+    final String connectionString = String.format(
+        "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true",
         credentials,
         config.get(INSTANCE_TYPE).get("cluster_url").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
-    mongoDatabase = new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());
+    mongoDatabase =
+        new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());
   }
 
   @Override
@@ -146,5 +155,4 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
     }
     mongoDatabase.close();
   }
-
 }

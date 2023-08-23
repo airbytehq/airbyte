@@ -57,7 +57,8 @@ public class ApmTraceUtils {
    * @param tags A map of tags to be added to the currently active span.
    * @param tagPrefix The prefix to be added to each custom tag name.
    */
-  public static void addTagsToTrace(final Span span, final Map<String, Object> tags, final String tagPrefix) {
+  public static void addTagsToTrace(
+      final Span span, final Map<String, Object> tags, final String tagPrefix) {
     if (span != null) {
       tags.entrySet().forEach(entry -> {
         span.setTag(formatTag(entry.getKey(), tagPrefix), entry.getValue().toString());
@@ -97,7 +98,8 @@ public class ApmTraceUtils {
     if (activeSpan instanceof MutableSpan) {
       final MutableSpan localRootSpan = ((MutableSpan) activeSpan).getLocalRootSpan();
       tags.entrySet().forEach(entry -> {
-        localRootSpan.setTag(formatTag(entry.getKey(), TAG_PREFIX), entry.getValue().toString());
+        localRootSpan.setTag(
+            formatTag(entry.getKey(), TAG_PREFIX), entry.getValue().toString());
       });
     }
   }
@@ -146,5 +148,4 @@ public class ApmTraceUtils {
   public static String formatTag(final String tagKey, final String tagPrefix) {
     return String.format(TAG_FORMAT, tagPrefix, tagKey);
   }
-
 }

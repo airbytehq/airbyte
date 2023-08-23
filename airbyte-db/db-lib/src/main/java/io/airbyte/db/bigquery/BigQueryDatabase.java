@@ -52,21 +52,27 @@ public class BigQueryDatabase extends SqlDatabase {
     this(projectId, jsonCreds, new BigQuerySourceOperations());
   }
 
-  public BigQueryDatabase(final String projectId, final String jsonCreds, final BigQuerySourceOperations sourceOperations) {
+  public BigQueryDatabase(
+      final String projectId,
+      final String jsonCreds,
+      final BigQuerySourceOperations sourceOperations) {
     try {
       this.sourceOperations = sourceOperations;
       final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
       ServiceAccountCredentials credentials = null;
       if (jsonCreds != null && !jsonCreds.isEmpty()) {
-        credentials = ServiceAccountCredentials
-            .fromStream(new ByteArrayInputStream(jsonCreds.getBytes(Charsets.UTF_8)));
+        credentials = ServiceAccountCredentials.fromStream(
+            new ByteArrayInputStream(jsonCreds.getBytes(Charsets.UTF_8)));
       }
       bigQuery = bigQueryBuilder
           .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
-          .setHeaderProvider(() -> ImmutableMap.of("user-agent", getUserAgentHeader(getConnectorVersion())))
-          .setRetrySettings(RetrySettings
-              .newBuilder()
+          .setCredentials(
+              !isNull(credentials)
+                  ? credentials
+                  : ServiceAccountCredentials.getApplicationDefault())
+          .setHeaderProvider(
+              () -> ImmutableMap.of("user-agent", getUserAgentHeader(getConnectorVersion())))
+          .setRetrySettings(RetrySettings.newBuilder()
               .setMaxAttempts(10)
               .setRetryDelayMultiplier(1.5)
               .setTotalTimeout(Duration.ofMinutes(60))
@@ -85,14 +91,17 @@ public class BigQueryDatabase extends SqlDatabase {
   private String getConnectorVersion() {
     return Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .orElse(EMPTY)
-        .replace("airbyte/", EMPTY).replace(":", "/");
+        .replace("airbyte/", EMPTY)
+        .replace(":", "/");
   }
 
   @Override
   public void execute(final String sql) throws SQLException {
-    final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, Collections.emptyList()));
+    final ImmutablePair<Job, String> result =
+        executeQuery(bigQuery, getQueryConfig(sql, Collections.emptyList()));
     if (result.getLeft() == null) {
-      throw new SQLException("BigQuery request is failed with error: " + result.getRight() + ". SQL: " + sql);
+      throw new SQLException(
+          "BigQuery request is failed with error: " + result.getRight() + ". SQL: " + sql);
     }
     LOGGER.info("BigQuery successfully finished execution SQL: " + sql);
   }
@@ -101,45 +110,54 @@ public class BigQueryDatabase extends SqlDatabase {
     return query(sql, Collections.emptyList());
   }
 
-  public Stream<JsonNode> query(final String sql, final QueryParameterValue... params) throws Exception {
+  public Stream<JsonNode> query(final String sql, final QueryParameterValue... params)
+      throws Exception {
     return query(sql, (params == null ? Collections.emptyList() : Arrays.asList(params)));
   }
 
   @Override
   public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws Exception {
     final List<QueryParameterValue> parameterValueList;
-    if (params == null)
-      parameterValueList = Collections.emptyList();
+    if (params == null) parameterValueList = Collections.emptyList();
     else
-      parameterValueList = Arrays.stream(params).map(param -> QueryParameterValue.newBuilder().setValue(param).setType(
-          StandardSQLTypeName.STRING).build()).collect(Collectors.toList());
+      parameterValueList = Arrays.stream(params)
+          .map(param -> QueryParameterValue.newBuilder()
+              .setValue(param)
+              .setType(StandardSQLTypeName.STRING)
+              .build())
+          .collect(Collectors.toList());
 
     return query(sql, parameterValueList);
   }
 
-  public Stream<JsonNode> query(final String sql, final List<QueryParameterValue> params) throws Exception {
+  public Stream<JsonNode> query(final String sql, final List<QueryParameterValue> params)
+      throws Exception {
     final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, params));
 
     if (result.getLeft() != null) {
       final FieldList fieldList = result.getLeft().getQueryResults().getSchema().getFields();
       return Streams.stream(result.getLeft().getQueryResults().iterateAll())
-          .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fieldList)));
+          .map(fieldValues ->
+              sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fieldList)));
     } else
-      throw new Exception(
-          "Failed to execute query " + sql + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: " + result.getRight());
+      throw new Exception("Failed to execute query " + sql
+          + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: "
+          + result.getRight());
   }
 
-  public QueryJobConfiguration getQueryConfig(final String sql, final List<QueryParameterValue> params) {
-    return QueryJobConfiguration
-        .newBuilder(sql)
+  public QueryJobConfiguration getQueryConfig(
+      final String sql, final List<QueryParameterValue> params) {
+    return QueryJobConfiguration.newBuilder(sql)
         .setUseLegacySql(false)
         .setPositionalParameters(params)
         .build();
   }
 
-  public ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
+  public ImmutablePair<Job, String> executeQuery(
+      final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
-    final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
+    final Job queryJob =
+        bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
@@ -151,11 +169,10 @@ public class BigQueryDatabase extends SqlDatabase {
    */
   public List<Table> getProjectTables(final String projectId) {
     final List<Table> tableList = new ArrayList<>();
-    bigQuery.listDatasets(projectId)
+    bigQuery.listDatasets(projectId).iterateAll().forEach(dataset -> bigQuery
+        .listTables(dataset.getDatasetId())
         .iterateAll()
-        .forEach(dataset -> bigQuery.listTables(dataset.getDatasetId())
-            .iterateAll()
-            .forEach(table -> tableList.add(bigQuery.getTable(table.getTableId()))));
+        .forEach(table -> tableList.add(bigQuery.getTable(table.getTableId()))));
     return tableList;
   }
 
@@ -167,7 +184,8 @@ public class BigQueryDatabase extends SqlDatabase {
    */
   public List<Table> getDatasetTables(final String datasetId) {
     final List<Table> tableList = new ArrayList<>();
-    bigQuery.listTables(datasetId)
+    bigQuery
+        .listTables(datasetId)
         .iterateAll()
         .forEach(table -> tableList.add(bigQuery.getTable(table.getTableId())));
     return tableList;
@@ -209,5 +227,4 @@ public class BigQueryDatabase extends SqlDatabase {
       throw new RuntimeException(e);
     }
   }
-
 }

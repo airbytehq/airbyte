@@ -20,7 +20,8 @@ public class DatabricksS3StorageConfigTest {
 
   @BeforeEach
   public void setup() {
-    final ObjectNode dataSourceConfig = OBJECT_MAPPER.createObjectNode()
+    final ObjectNode dataSourceConfig = OBJECT_MAPPER
+        .createObjectNode()
         .put("data_source_type", "S3_STORAGE")
         .put("s3_bucket_name", "bucket_name")
         .put("s3_bucket_path", "bucket_path")
@@ -38,7 +39,8 @@ public class DatabricksS3StorageConfigTest {
 
   @Test
   public void testCannotRetrieveAzureConfig() {
-    assertThrows(UnsupportedOperationException.class, () -> storageConfig.getAzureBlobStorageConfigOrThrow());
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> storageConfig.getAzureBlobStorageConfigOrThrow());
   }
-
 }

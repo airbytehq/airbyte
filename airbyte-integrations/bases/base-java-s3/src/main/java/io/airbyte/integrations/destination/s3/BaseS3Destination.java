@@ -40,37 +40,42 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final S3DestinationConfig destinationConfig = configFactory.getS3DestinationConfig(config, storageProvider());
+      final S3DestinationConfig destinationConfig =
+          configFactory.getS3DestinationConfig(config, storageProvider());
       final AmazonS3 s3Client = destinationConfig.getS3Client();
 
       S3BaseChecks.testIAMUserHasListObjectPermission(s3Client, destinationConfig.getBucketName());
-      S3BaseChecks.testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
-      S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
+      S3BaseChecks.testSingleUpload(
+          s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
+      S3BaseChecks.testMultipartUpload(
+          s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the S3 bucket: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the S3 bucket with the provided configuration. \n" + e
-              .getMessage());
+          .withMessage("Could not connect to the S3 bucket with the provided configuration. \n"
+              + e.getMessage());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
-    return new S3ConsumerFactory().create(
-        outputRecordCollector,
-        new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
-        nameTransformer,
-        SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
-        s3Config,
-        catalog);
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    final S3DestinationConfig s3Config =
+        configFactory.getS3DestinationConfig(config, storageProvider());
+    return new S3ConsumerFactory()
+        .create(
+            outputRecordCollector,
+            new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
+            nameTransformer,
+            SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
+            s3Config,
+            catalog);
   }
 
   public abstract StorageProvider storageProvider();
-
 }

@@ -93,10 +93,11 @@ class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
     final var keyspace = nameTransformer.outputKeyspace(namespace);
     final var table = nameTransformer.outputTable(streamName);
     return scyllaCqlProvider.select(keyspace, table).stream()
@@ -105,5 +106,4 @@ class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
-
 }

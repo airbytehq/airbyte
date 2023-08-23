@@ -26,11 +26,12 @@ public final class AirbyteTraceMessageUtility {
     emitErrorTrace(e, displayMessage, FailureType.CONFIG_ERROR);
   }
 
-  public static void emitEstimateTrace(final long byteEstimate,
-                                       final AirbyteEstimateTraceMessage.Type type,
-                                       final long rowEstimate,
-                                       final String streamName,
-                                       final String streamNamespace) {
+  public static void emitEstimateTrace(
+      final long byteEstimate,
+      final AirbyteEstimateTraceMessage.Type type,
+      final long rowEstimate,
+      final String streamName,
+      final String streamNamespace) {
     emitMessage(makeAirbyteMessageFromTraceMessage(
         makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ESTIMATE)
             .withEstimate(new AirbyteEstimateTraceMessage()
@@ -41,11 +42,13 @@ public final class AirbyteTraceMessageUtility {
                 .withNamespace(streamNamespace))));
   }
 
-  public static void emitErrorTrace(final Throwable e, final String displayMessage, final FailureType failureType) {
+  public static void emitErrorTrace(
+      final Throwable e, final String displayMessage, final FailureType failureType) {
     emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType));
   }
 
-  public static void emitStreamStatusTrace(final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {
+  public static void emitStreamStatusTrace(
+      final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {
     emitMessage(makeStreamStatusTraceAirbyteMessage(airbyteStreamStatusHolder));
   }
 
@@ -59,14 +62,13 @@ public final class AirbyteTraceMessageUtility {
   private static void emitMessage(final AirbyteMessage message) {
     // Not sure why defaultOutputRecordCollector is under Destination specifically,
     // but this matches usage elsewhere in base-java
-    final Consumer<AirbyteMessage> outputRecordCollector = Destination::defaultOutputRecordCollector;
+    final Consumer<AirbyteMessage> outputRecordCollector =
+        Destination::defaultOutputRecordCollector;
     outputRecordCollector.accept(message);
   }
 
   private static AirbyteMessage makeErrorTraceAirbyteMessage(
-                                                             final Throwable e,
-                                                             final String displayMessage,
-                                                             final FailureType failureType) {
+      final Throwable e, final String displayMessage, final FailureType failureType) {
 
     return makeAirbyteMessageFromTraceMessage(
         makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
@@ -77,16 +79,19 @@ public final class AirbyteTraceMessageUtility {
                 .withStackTrace(ExceptionUtils.getStackTrace(e))));
   }
 
-  private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {
+  private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(
+      final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {
     return makeAirbyteMessageFromTraceMessage(airbyteStreamStatusHolder.toTraceMessage());
   }
 
-  private static AirbyteMessage makeAirbyteMessageFromTraceMessage(final AirbyteTraceMessage airbyteTraceMessage) {
+  private static AirbyteMessage makeAirbyteMessageFromTraceMessage(
+      final AirbyteTraceMessage airbyteTraceMessage) {
     return new AirbyteMessage().withType(Type.TRACE).withTrace(airbyteTraceMessage);
   }
 
-  private static AirbyteTraceMessage makeAirbyteTraceMessage(final AirbyteTraceMessage.Type traceMessageType) {
-    return new AirbyteTraceMessage().withType(traceMessageType).withEmittedAt((double) System.currentTimeMillis());
+  private static AirbyteTraceMessage makeAirbyteTraceMessage(
+      final AirbyteTraceMessage.Type traceMessageType) {
+    return new AirbyteTraceMessage().withType(traceMessageType).withEmittedAt((double)
+        System.currentTimeMillis());
   }
-
 }

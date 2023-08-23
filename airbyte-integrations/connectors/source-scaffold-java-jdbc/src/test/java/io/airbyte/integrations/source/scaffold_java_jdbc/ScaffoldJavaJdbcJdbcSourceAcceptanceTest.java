@@ -17,7 +17,8 @@ import org.slf4j.LoggerFactory;
 
 class ScaffoldJavaJdbcJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ScaffoldJavaJdbcJdbcSourceAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ScaffoldJavaJdbcJdbcSourceAcceptanceTest.class);
 
   // TODO declare a test container for DB. EX: org.testcontainers.containers.OracleContainer
 
@@ -71,5 +72,4 @@ class ScaffoldJavaJdbcJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest 
   static void cleanUp() {
     // TODO close the container. Ex: "container.close();"
   }
-
 }

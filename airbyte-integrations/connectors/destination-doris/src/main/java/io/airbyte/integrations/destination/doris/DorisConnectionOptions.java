@@ -37,10 +37,16 @@ public class DorisConnectionOptions {
         config.get(FE_HOST_KEY).asText(),
         config.get(FE_HTTP_PORT_KEY).asInt(8030),
         config.get(FE_QUERY_PORT_KEY).asInt(9030));
-
   }
 
-  public DorisConnectionOptions(String db, String table, String user, String pwd, String feHost, Integer feHttpPort, Integer feQueryPort) {
+  public DorisConnectionOptions(
+      String db,
+      String table,
+      String user,
+      String pwd,
+      String feHost,
+      Integer feHttpPort,
+      Integer feQueryPort) {
     this.db = db;
     this.table = table;
     this.user = user;
@@ -88,15 +94,13 @@ public class DorisConnectionOptions {
 
   @Override
   public String toString() {
-    return "DorisConnectionOptions{" +
-        "db='" + db + '\'' +
-        ", table='" + table + '\'' +
-        ", user='" + user + '\'' +
-        ", pwd='" + pwd + '\'' +
-        ", feHost='" + feHost + '\'' +
-        ", feHttpPort=" + feHttpPort +
-        ", feQueryPort=" + feQueryPort +
-        '}';
+    return "DorisConnectionOptions{" + "db='"
+        + db + '\'' + ", table='"
+        + table + '\'' + ", user='"
+        + user + '\'' + ", pwd='"
+        + pwd + '\'' + ", feHost='"
+        + feHost + '\'' + ", feHttpPort="
+        + feHttpPort + ", feQueryPort="
+        + feQueryPort + '}';
   }
-
 }

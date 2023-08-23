@@ -45,7 +45,8 @@ public abstract class IcebergCatalogConfig {
     TableIdentifier tempTableId = TableIdentifier.of(defaultOutputDatabase(), tempTableName);
     Schema schema = new Schema(
         NestedField.required(0, JavaBaseConstants.COLUMN_NAME_AB_ID, Types.StringType.get()),
-        NestedField.optional(1, JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Types.TimestampType.withZone()),
+        NestedField.optional(
+            1, JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Types.TimestampType.withZone()),
         NestedField.required(2, JavaBaseConstants.COLUMN_NAME_DATA, Types.StringType.get()));
     Table tempTable = catalog.createTable(tempTableId, schema);
     TableScan tableScan = tempTable.newScan();
@@ -71,7 +72,8 @@ public abstract class IcebergCatalogConfig {
   public abstract Catalog genCatalog();
 
   public String defaultOutputDatabase() {
-    return isBlank(defaultOutputDatabase) ? IcebergConstants.DEFAULT_DATABASE : defaultOutputDatabase;
+    return isBlank(defaultOutputDatabase)
+        ? IcebergConstants.DEFAULT_DATABASE
+        : defaultOutputDatabase;
   }
-
 }

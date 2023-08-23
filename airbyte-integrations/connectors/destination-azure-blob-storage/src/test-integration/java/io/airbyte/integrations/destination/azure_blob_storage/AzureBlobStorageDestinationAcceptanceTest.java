@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AzureBlobStorageDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  protected static final Logger LOGGER = LoggerFactory
-      .getLogger(AzureBlobStorageDestinationAcceptanceTest.class);
+  protected static final Logger LOGGER =
+      LoggerFactory.getLogger(AzureBlobStorageDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   protected final String secretFilePath = "secrets/config.json";
@@ -75,9 +75,8 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   protected abstract String getAllSyncedObjects(final String streamName);
 
   protected List<AppendBlobClient> getAppendBlobClient(final String streamName) throws Exception {
-    final AppendBlobClient streamAppendBlobClient = specializedBlobClientBuilder
-        .blobName(streamName)
-        .buildAppendBlobClient();
+    final AppendBlobClient streamAppendBlobClient =
+        specializedBlobClientBuilder.blobName(streamName).buildAppendBlobClient();
 
     final BlobContainerClient containerClient = streamAppendBlobClient.getContainerClient();
     final var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
@@ -88,7 +87,8 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
     if (!filteredBlobList.isEmpty()) {
       final List<AppendBlobClient> clobClientList = new ArrayList<>();
       filteredBlobList.forEach(blobItem -> {
-        clobClientList.add(specializedBlobClientBuilder.blobName(blobItem.getName()).buildAppendBlobClient());
+        clobClientList.add(
+            specializedBlobClientBuilder.blobName(blobItem.getName()).buildAppendBlobClient());
       });
       return clobClientList;
     } else {
@@ -130,19 +130,22 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
     final JsonNode baseConfigJson = getBaseConfigJson();
 
     configJson = Jsons.jsonNode(ImmutableMap.builder()
-        .put("azure_blob_storage_account_name",
+        .put(
+            "azure_blob_storage_account_name",
             baseConfigJson.get("azure_blob_storage_account_name"))
         .put("azure_blob_storage_account_key", baseConfigJson.get("azure_blob_storage_account_key"))
-        .put("azure_blob_storage_endpoint_domain_name",
+        .put(
+            "azure_blob_storage_endpoint_domain_name",
             baseConfigJson.get("azure_blob_storage_endpoint_domain_name"))
-        .put("azure_blob_storage_container_name",
+        .put(
+            "azure_blob_storage_container_name",
             baseConfigJson.get("azure_blob_storage_container_name").asText()
                 + System.currentTimeMillis())
         .put("format", getFormatConfig())
         .build());
 
-    this.azureBlobStorageDestinationConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(configJson);
+    this.azureBlobStorageDestinationConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(configJson);
 
     this.credential = new StorageSharedKeyCredential(
         azureBlobStorageDestinationConfig.getAccountName(),
@@ -152,8 +155,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
         .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
         .credential(credential)
         .containerName(
-            azureBlobStorageDestinationConfig.getContainerName());// Like user\schema in DB
-
+            azureBlobStorageDestinationConfig.getContainerName()); // Like user\schema in DB
   }
 
   /**
@@ -161,19 +163,17 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    */
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    final BlobServiceClient storageClient =
-        new BlobServiceClientBuilder()
-            .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
-            .credential(credential)
-            .buildClient();
+    final BlobServiceClient storageClient = new BlobServiceClientBuilder()
+        .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
+        .credential(credential)
+        .buildClient();
 
-    final BlobContainerClient blobContainerClient = storageClient
-        .getBlobContainerClient(azureBlobStorageDestinationConfig.getContainerName());
+    final BlobContainerClient blobContainerClient =
+        storageClient.getBlobContainerClient(azureBlobStorageDestinationConfig.getContainerName());
 
     if (blobContainerClient.exists()) {
       LOGGER.info("Deleting test env: " + azureBlobStorageDestinationConfig.getContainerName());
       blobContainerClient.delete();
     }
   }
-
 }

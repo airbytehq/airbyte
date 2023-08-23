@@ -54,34 +54,45 @@ class PostgresSourceSSLTest {
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createAirbyteStream(
-          STREAM_NAME,
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
-      CatalogHelpers.createAirbyteStream(
-          STREAM_NAME + "2",
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
-      CatalogHelpers.createAirbyteStream(
-          "names",
-          SCHEMA_NAME,
-          Field.of("first_name", JsonSchemaType.STRING),
-          Field.of("last_name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
+      .withStreams(List.of(
+          CatalogHelpers.createAirbyteStream(
+                  STREAM_NAME,
+                  SCHEMA_NAME,
+                  Field.of("id", JsonSchemaType.NUMBER),
+                  Field.of("name", JsonSchemaType.STRING),
+                  Field.of("power", JsonSchemaType.NUMBER))
+              .withSupportedSyncModes(
+                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          CatalogHelpers.createAirbyteStream(
+                  STREAM_NAME + "2",
+                  SCHEMA_NAME,
+                  Field.of("id", JsonSchemaType.NUMBER),
+                  Field.of("name", JsonSchemaType.STRING),
+                  Field.of("power", JsonSchemaType.NUMBER))
+              .withSupportedSyncModes(
+                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
+          CatalogHelpers.createAirbyteStream(
+                  "names",
+                  SCHEMA_NAME,
+                  Field.of("first_name", JsonSchemaType.STRING),
+                  Field.of("last_name", JsonSchemaType.STRING),
+                  Field.of("power", JsonSchemaType.NUMBER))
+              .withSupportedSyncModes(
+                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG =
+      CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null), SCHEMA_NAME),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1), SCHEMA_NAME),
+      createRecord(
+          STREAM_NAME,
+          map("id", new BigDecimal("1.0"), "name", "goku", "power", null),
+          SCHEMA_NAME),
+      createRecord(
+          STREAM_NAME,
+          map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1),
+          SCHEMA_NAME),
       createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null), SCHEMA_NAME));
 
   private static PostgreSQLContainer<?> PSQL_DB;
@@ -90,8 +101,10 @@ class PostgresSourceSSLTest {
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
-        .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
+    PSQL_DB = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev")
+            .asCompatibleSubstituteFor("postgres"))
+        .withCommand(
+            "postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
     PSQL_DB.start();
   }
 
@@ -100,7 +113,8 @@ class PostgresSourceSSLTest {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
@@ -113,7 +127,8 @@ class PostgresSourceSSLTest {
         ctx.fetch(
             "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
+        ctx.fetch(
+            "CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
         ctx.fetch(
             "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
@@ -135,7 +150,8 @@ class PostgresSourceSSLTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -168,8 +184,9 @@ class PostgresSourceSSLTest {
   void testDiscoverWithPk() throws Exception {
     final AirbyteCatalog actual = new PostgresSource().discover(getConfig(PSQL_DB, dbName));
     actual.getStreams().forEach(actualStream -> {
-      final Optional<AirbyteStream> expectedStream =
-          CATALOG.getStreams().stream().filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
+      final Optional<AirbyteStream> expectedStream = CATALOG.getStreams().stream()
+          .filter(stream -> stream.getName().equals(actualStream.getName()))
+          .findAny();
       assertTrue(expectedStream.isPresent());
       assertEquals(expectedStream.get(), actualStream);
     });
@@ -178,10 +195,12 @@ class PostgresSourceSSLTest {
   @Test
   void testReadSuccess() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog =
-        CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME))
+        CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream()
+            .filter(s -> s.getStream().getName().equals(STREAM_NAME))
             .collect(Collectors.toList()));
 
-    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(
+        new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
@@ -193,9 +212,12 @@ class PostgresSourceSSLTest {
 
     assertFalse(PostgresUtils.isCdc(config));
 
-    ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
-        "replication_slot", "slot",
-        "publication", "ab_pub")));
+    ((ObjectNode) config)
+        .set(
+            "replication_method",
+            Jsons.jsonNode(ImmutableMap.of(
+                "replication_slot", "slot",
+                "publication", "ab_pub")));
     assertTrue(PostgresUtils.isCdc(config));
   }
 
@@ -206,7 +228,8 @@ class PostgresSourceSSLTest {
 
     final AirbyteConnectionStatus actual = new PostgresSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("In CDC replication mode ssl value 'allow' is invalid"));
+    assertTrue(
+        actual.getMessage().contains("In CDC replication mode ssl value 'allow' is invalid"));
   }
 
   @Test
@@ -216,17 +239,17 @@ class PostgresSourceSSLTest {
 
     final AirbyteConnectionStatus actual = new PostgresSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("In CDC replication mode ssl value 'prefer' is invalid"));
+    assertTrue(
+        actual.getMessage().contains("In CDC replication mode ssl value 'prefer' is invalid"));
   }
 
   private JsonNode getCDCAndSslModeConfig(String sslMode) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode))
-        .put("replication_method", Map.of("method", "CDC",
-            "replication_slot", "slot",
-            "publication", "ab_pub"))
+        .put(
+            "replication_method",
+            Map.of("method", "CDC", "replication_slot", "slot", "publication", "ab_pub"))
         .build());
   }
-
 }

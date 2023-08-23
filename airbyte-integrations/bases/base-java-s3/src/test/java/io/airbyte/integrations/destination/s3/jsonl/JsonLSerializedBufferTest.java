@@ -30,12 +30,17 @@ import org.junit.jupiter.api.Test;
 public class JsonLSerializedBufferTest {
 
   private static final JsonNode MESSAGE_DATA = Jsons.jsonNode(Map.of(
-      "field1", 10000,
-      "column2", "string value",
-      "another field", true,
-      "nested_column", Map.of("array_column", List.of(1, 2, 3))));
+      "field1",
+      10000,
+      "column2",
+      "string value",
+      "another field",
+      true,
+      "nested_column",
+      Map.of("array_column", List.of(1, 2, 3))));
   private static final String STREAM = "stream1";
-  private static final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM, null);
+  private static final AirbyteStreamNameNamespacePair streamPair =
+      new AirbyteStreamNameNamespacePair(STREAM, null);
   private static final AirbyteRecordMessage message = new AirbyteRecordMessage()
       .withStream(STREAM)
       .withData(MESSAGE_DATA)
@@ -45,7 +50,8 @@ public class JsonLSerializedBufferTest {
       Field.of("column2", JsonSchemaType.STRING),
       Field.of("another field", JsonSchemaType.BOOLEAN),
       Field.of("nested_column", JsonSchemaType.OBJECT));
-  private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
+  private static final ConfiguredAirbyteCatalog catalog =
+      CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
   private static final String JSON_FILE_EXTENSION = ".jsonl";
 
   @Test
@@ -62,24 +68,27 @@ public class JsonLSerializedBufferTest {
     return Jsons.serialize(MESSAGE_DATA);
   }
 
-  private static void runTest(final BufferStorage buffer,
-                              final boolean withCompression,
-                              final Long minExpectedByte,
-                              final Long maxExpectedByte,
-                              final String expectedData)
+  private static void runTest(
+      final BufferStorage buffer,
+      final boolean withCompression,
+      final Long minExpectedByte,
+      final Long maxExpectedByte,
+      final String expectedData)
       throws Exception {
     final File outputFile = buffer.getFile();
-    try (final JsonLSerializedBuffer writer = (JsonLSerializedBuffer) JsonLSerializedBuffer
-        .createBufferFunction(null, () -> buffer)
-        .apply(streamPair, catalog)) {
+    try (final JsonLSerializedBuffer writer = (JsonLSerializedBuffer)
+        JsonLSerializedBuffer.createBufferFunction(null, () -> buffer).apply(streamPair, catalog)) {
       writer.withCompression(withCompression);
       writer.accept(message);
       writer.accept(message);
       writer.flush();
-      // some data are randomized (uuid, timestamp, compression?) so the expected byte count is not always
+      // some data are randomized (uuid, timestamp, compression?) so the expected byte count is not
+      // always
       // deterministic
-      assertTrue(minExpectedByte <= writer.getByteCount() && writer.getByteCount() <= maxExpectedByte,
-          String.format("Expected size between %d and %d, but actual size was %d",
+      assertTrue(
+          minExpectedByte <= writer.getByteCount() && writer.getByteCount() <= maxExpectedByte,
+          String.format(
+              "Expected size between %d and %d, but actual size was %d",
               minExpectedByte, maxExpectedByte, writer.getByteCount()));
       final InputStream inputStream;
       if (withCompression) {
@@ -87,10 +96,10 @@ public class JsonLSerializedBufferTest {
       } else {
         inputStream = writer.getInputStream();
       }
-      final JsonNode actualData = Jsons.deserialize(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+      final JsonNode actualData =
+          Jsons.deserialize(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
       assertEquals(expectedData, Jsons.serialize(actualData.get("_airbyte_data")));
     }
     assertFalse(outputFile.exists());
   }
-
 }

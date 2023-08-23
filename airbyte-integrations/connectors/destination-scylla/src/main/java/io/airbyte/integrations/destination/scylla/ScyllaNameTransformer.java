@@ -38,5 +38,4 @@ class ScyllaNameTransformer extends StandardNameTransformer {
   String outputColumn(String columnName) {
     return Names.doubleQuote(columnName.toLowerCase());
   }
-
 }

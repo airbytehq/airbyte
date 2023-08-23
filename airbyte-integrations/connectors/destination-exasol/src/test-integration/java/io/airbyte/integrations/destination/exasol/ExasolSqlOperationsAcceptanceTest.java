@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test;
 
 class ExasolSqlOperationsAcceptanceTest {
 
-  private static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>()
-      .withReuse(true);
+  private static final ExasolContainer<? extends ExasolContainer<?>> EXASOL =
+      new ExasolContainer<>().withReuse(true);
   private ExasolSqlOperations operations;
 
   @BeforeAll
@@ -58,14 +58,17 @@ class ExasolSqlOperationsAcceptanceTest {
 
   @Test
   void executeTransactionTowStatementsSuccess() throws Exception {
-    executeTransaction("CREATE SCHEMA TESTING_SCHEMA", "CREATE TABLE TESTING_TABLE (C1 VARCHAR(5))");
+    executeTransaction(
+        "CREATE SCHEMA TESTING_SCHEMA", "CREATE TABLE TESTING_TABLE (C1 VARCHAR(5))");
     assertSchemaExists("TESTING_SCHEMA", true);
     assertTableExists("TESTING_SCHEMA", "TESTING_TABLE");
   }
 
   @Test
   void executeTransactionTwoStatementsFailure() throws Exception {
-    assertThrows(SQLSyntaxErrorException.class, () -> executeTransaction("CREATE SCHEMA TESTING_SCHEMA", "INVALID STATEMENT"));
+    assertThrows(
+        SQLSyntaxErrorException.class,
+        () -> executeTransaction("CREATE SCHEMA TESTING_SCHEMA", "INVALID STATEMENT"));
     assertSchemaExists("TESTING_SCHEMA", false);
   }
 
@@ -76,7 +79,8 @@ class ExasolSqlOperationsAcceptanceTest {
   }
 
   private static void assertTableExists(String schemaName, String tableName) throws SQLException {
-    try (ResultSet rs = EXASOL.createConnection().getMetaData().getTables(null, schemaName, tableName, null)) {
+    try (ResultSet rs =
+        EXASOL.createConnection().getMetaData().getTables(null, schemaName, tableName, null)) {
       assertThat("Table exists", rs.next(), equalTo(true));
     }
   }
@@ -86,8 +90,11 @@ class ExasolSqlOperationsAcceptanceTest {
   }
 
   private JdbcDatabase createDatabase() {
-    DataSource dataSource = DataSourceFactory.create(EXASOL.getUsername(), EXASOL.getPassword(), ExasolDestination.DRIVER_CLASS, EXASOL.getJdbcUrl());
+    DataSource dataSource = DataSourceFactory.create(
+        EXASOL.getUsername(),
+        EXASOL.getPassword(),
+        ExasolDestination.DRIVER_CLASS,
+        EXASOL.getJdbcUrl());
     return new DefaultJdbcDatabase(dataSource);
   }
-
 }

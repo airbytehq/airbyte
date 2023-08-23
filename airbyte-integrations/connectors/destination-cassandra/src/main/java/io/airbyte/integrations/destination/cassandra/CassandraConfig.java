@@ -26,13 +26,14 @@ class CassandraConfig {
 
   private final int replication;
 
-  public CassandraConfig(String keyspace,
-                         String username,
-                         String password,
-                         String address,
-                         int port,
-                         String datacenter,
-                         int replication) {
+  public CassandraConfig(
+      String keyspace,
+      String username,
+      String password,
+      String address,
+      int port,
+      String datacenter,
+      int replication) {
     this.keyspace = keyspace;
     this.username = username;
     this.password = password;
@@ -82,15 +83,14 @@ class CassandraConfig {
 
   @Override
   public String toString() {
-    return "CassandraConfig{" +
-        "keyspace='" + keyspace + '\'' +
-        ", username='" + username + '\'' +
-        ", password='" + password + '\'' +
-        ", address='" + address + '\'' +
-        ", port=" + port +
-        ", datacenter='" + datacenter + '\'' +
-        ", replication=" + replication +
-        '}';
+    return "CassandraConfig{" + "keyspace='"
+        + keyspace + '\'' + ", username='"
+        + username + '\'' + ", password='"
+        + password + '\'' + ", address='"
+        + address + '\'' + ", port="
+        + port + ", datacenter='"
+        + datacenter + '\'' + ", replication="
+        + replication + '}';
   }
 
   @Override
@@ -102,13 +102,15 @@ class CassandraConfig {
       return false;
     }
     CassandraConfig that = (CassandraConfig) o;
-    return port == that.port && username.equals(that.username) && password.equals(that.password) &&
-        address.equals(that.address) && datacenter.equals(that.datacenter);
+    return port == that.port
+        && username.equals(that.username)
+        && password.equals(that.password)
+        && address.equals(that.address)
+        && datacenter.equals(that.datacenter);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(username, password, address, port, datacenter);
   }
-
 }

@@ -13,15 +13,14 @@ class SessionManager {
 
   // AtomicInteger is used for convenience, this class is not thread safe
   // and needs additional synchronization for that.
-  private static final ConcurrentHashMap<CassandraConfig, Tuple<CqlSession, AtomicInteger>> sessions;
+  private static final ConcurrentHashMap<CassandraConfig, Tuple<CqlSession, AtomicInteger>>
+      sessions;
 
   static {
     sessions = new ConcurrentHashMap<>();
   }
 
-  private SessionManager() {
-
-  }
+  private SessionManager() {}
 
   /*
    * CqlSession objects are heavyweight and can hold several tcp connections to the Cassandra cluster,
@@ -37,7 +36,8 @@ class SessionManager {
     } else {
       var session = CqlSession.builder()
           .withLocalDatacenter(cassandraConfig.getDatacenter())
-          .addContactPoint(new InetSocketAddress(cassandraConfig.getAddress(), cassandraConfig.getPort()))
+          .addContactPoint(
+              new InetSocketAddress(cassandraConfig.getAddress(), cassandraConfig.getPort()))
           .withAuthCredentials(cassandraConfig.getUsername(), cassandraConfig.getPassword())
           .build();
       sessions.put(cassandraConfig, Tuple.of(session, new AtomicInteger(1)));
@@ -62,5 +62,4 @@ class SessionManager {
       sessions.remove(cassandraConfig);
     }
   }
-
 }

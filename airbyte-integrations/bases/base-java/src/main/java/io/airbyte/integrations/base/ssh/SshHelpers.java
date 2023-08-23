@@ -19,20 +19,26 @@ public class SshHelpers {
     return getSpecAndInjectSsh(Optional.empty());
   }
 
-  public static ConnectorSpecification getSpecAndInjectSsh(final Optional<String> group) throws IOException {
-    final ConnectorSpecification originalSpec = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+  public static ConnectorSpecification getSpecAndInjectSsh(final Optional<String> group)
+      throws IOException {
+    final ConnectorSpecification originalSpec =
+        Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
     return injectSshIntoSpec(originalSpec, group);
   }
 
-  public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification) throws IOException {
+  public static ConnectorSpecification injectSshIntoSpec(
+      final ConnectorSpecification connectorSpecification) throws IOException {
     return injectSshIntoSpec(connectorSpecification, Optional.empty());
   }
 
-  public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification, final Optional<String> group)
+  public static ConnectorSpecification injectSshIntoSpec(
+      final ConnectorSpecification connectorSpecification, final Optional<String> group)
       throws IOException {
     final ConnectorSpecification originalSpec = Jsons.clone(connectorSpecification);
-    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
-    final ObjectNode tunnelMethod = (ObjectNode) Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json"));
+    final ObjectNode propNode =
+        (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
+    final ObjectNode tunnelMethod =
+        (ObjectNode) Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json"));
     if (group.isPresent()) {
       tunnelMethod.put("group", group.get());
     }
@@ -49,7 +55,11 @@ public class SshHelpers {
    */
   public static ImmutablePair<String, Integer> getInnerContainerAddress(final Container container) {
     return ImmutablePair.of(
-        container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream().findFirst().get().getValue().getIpAddress(),
+        container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream()
+            .findFirst()
+            .get()
+            .getValue()
+            .getIpAddress(),
         (Integer) container.getExposedPorts().stream().findFirst().get());
   }
 
@@ -61,8 +71,6 @@ public class SshHelpers {
    * @return a pair of host and port
    */
   public static ImmutablePair<String, Integer> getOuterContainerAddress(final Container container) {
-    return ImmutablePair.of(container.getHost(),
-        container.getFirstMappedPort());
+    return ImmutablePair.of(container.getHost(), container.getFirstMappedPort());
   }
-
 }

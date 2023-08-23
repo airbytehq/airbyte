@@ -70,9 +70,10 @@ public class CsvDestination extends BaseConnector implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
     final Character delimiter = getDelimiter(config);
@@ -88,7 +89,9 @@ public class CsvDestination extends BaseConnector implements Destination {
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter);
-      csvFormat = csvFormat.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+      csvFormat = csvFormat.withHeader(
+          JavaBaseConstants.COLUMN_NAME_AB_ID,
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
           JavaBaseConstants.COLUMN_NAME_DATA);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
@@ -99,9 +102,11 @@ public class CsvDestination extends BaseConnector implements Destination {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
         csvFormat = csvFormat.withSkipHeaderRecord();
       }
-      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
+      final FileWriter fileWriter =
+          new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
       final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
-      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath, delimiter));
+      writeConfigs.put(
+          stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath, delimiter));
     }
 
     return new CsvConsumer(writeConfigs, catalog, outputRecordCollector);
@@ -159,9 +164,10 @@ public class CsvDestination extends BaseConnector implements Destination {
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public CsvConsumer(final Map<String, WriteConfig> writeConfigs,
-                       final ConfiguredAirbyteCatalog catalog,
-                       final Consumer<AirbyteMessage> outputRecordCollector) {
+    public CsvConsumer(
+        final Map<String, WriteConfig> writeConfigs,
+        final ConfiguredAirbyteCatalog catalog,
+        final Consumer<AirbyteMessage> outputRecordCollector) {
       super(outputRecordCollector);
       this.catalog = catalog;
       LOGGER.info("initializing consumer.");
@@ -183,15 +189,18 @@ public class CsvDestination extends BaseConnector implements Destination {
 
       // ignore other message types.
       if (!writeConfigs.containsKey(recordMessage.getStream())) {
-        throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
+        throw new IllegalArgumentException(String.format(
+            "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+            Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
 
-      writeConfigs.get(recordMessage.getStream()).getWriter().printRecord(
-          UUID.randomUUID(),
-          recordMessage.getEmittedAt(),
-          Jsons.serialize(recordMessage.getData()));
+      writeConfigs
+          .get(recordMessage.getStream())
+          .getWriter()
+          .printRecord(
+              UUID.randomUUID(),
+              recordMessage.getEmittedAt(),
+              Jsons.serialize(recordMessage.getData()));
     }
 
     @Override
@@ -218,7 +227,10 @@ public class CsvDestination extends BaseConnector implements Destination {
       try {
         if (!hasFailed) {
           for (final WriteConfig writeConfig : writeConfigs.values()) {
-            Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(
+                writeConfig.getTmpPath(),
+                writeConfig.getFinalPath(),
+                StandardCopyOption.REPLACE_EXISTING);
             LOGGER.info(String.format("File output: %s", writeConfig.getFinalPath()));
           }
         } else {
@@ -233,7 +245,6 @@ public class CsvDestination extends BaseConnector implements Destination {
         }
       }
     }
-
   }
 
   private static class WriteConfig {
@@ -243,7 +254,11 @@ public class CsvDestination extends BaseConnector implements Destination {
     private final Path finalPath;
     private final Character delimiter;
 
-    public WriteConfig(final CSVPrinter writer, final Path tmpPath, final Path finalPath, final Character delimiter) {
+    public WriteConfig(
+        final CSVPrinter writer,
+        final Path tmpPath,
+        final Path finalPath,
+        final Character delimiter) {
       this.writer = writer;
       this.tmpPath = tmpPath;
       this.finalPath = finalPath;
@@ -265,11 +280,9 @@ public class CsvDestination extends BaseConnector implements Destination {
     public Character getDelimiter() {
       return delimiter;
     }
-
   }
 
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new CsvDestination()).run(args);
   }
-
 }

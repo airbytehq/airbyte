@@ -22,8 +22,8 @@ public class TiDBSourceTests {
 
   @Test
   public void testSettingTimezones() throws Exception {
-    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
-        .withExposedPorts(4000);
+    container =
+        new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly")).withExposedPorts(4000);
 
     container.start();
 
@@ -39,5 +39,4 @@ public class TiDBSourceTests {
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
     container.close();
   }
-
 }

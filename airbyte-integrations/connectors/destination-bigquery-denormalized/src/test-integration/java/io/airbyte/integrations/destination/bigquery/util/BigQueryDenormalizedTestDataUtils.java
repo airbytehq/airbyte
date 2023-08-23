@@ -46,7 +46,8 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDenormalizedTestDataUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedTestDataUtils.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BigQueryDenormalizedTestDataUtils.class);
 
   private static final String JSON_FILES_BASE_LOCATION = "testdata/";
 
@@ -140,30 +141,40 @@ public class BigQueryDenormalizedTestDataUtils {
 
   public static JsonNode getDataWithNestedDatetimeInsideNullObject() {
     return getTestDataFromResourceJson("dataWithNestedDatetimeInsideNullObject.json");
-
   }
 
   private static JsonNode getTestDataFromResourceJson(final String fileName) {
     final String fileContent;
     try {
-      fileContent = Files.readString(Path.of(BigQueryDenormalizedTestDataUtils.class.getClassLoader()
-          .getResource(JSON_FILES_BASE_LOCATION + fileName).getPath()));
+      fileContent = Files.readString(Path.of(BigQueryDenormalizedTestDataUtils.class
+          .getClassLoader()
+          .getResource(JSON_FILES_BASE_LOCATION + fileName)
+          .getPath()));
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     return Jsons.deserialize(fileContent);
   }
 
-  public static ConfiguredAirbyteCatalog getCommonCatalog(final JsonNode schema, final String datasetId) {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema)
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+  public static ConfiguredAirbyteCatalog getCommonCatalog(
+      final JsonNode schema, final String datasetId) {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+            .withStream(new AirbyteStream()
+                .withName(USERS_STREAM_NAME)
+                .withNamespace(datasetId)
+                .withJsonSchema(schema)
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
   }
 
-  public static void runDestinationWrite(ConfiguredAirbyteCatalog catalog, JsonNode config, AirbyteMessage... messages) throws Exception {
+  public static void runDestinationWrite(
+      ConfiguredAirbyteCatalog catalog, JsonNode config, AirbyteMessage... messages)
+      throws Exception {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer =
+        destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.start();
     for (AirbyteMessage message : messages) {
@@ -175,7 +186,8 @@ public class BigQueryDenormalizedTestDataUtils {
   private static void checkCredentialPath() {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a big query credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
   }
@@ -184,7 +196,8 @@ public class BigQueryDenormalizedTestDataUtils {
     checkCredentialPath();
 
     final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final JsonNode credentialsJson =
+        Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
@@ -203,25 +216,39 @@ public class BigQueryDenormalizedTestDataUtils {
     final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
 
     final JsonNode fullConfigFromSecretFileJson = Jsons.deserialize(credentialsJsonString);
-    final JsonNode bigqueryConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final JsonNode gcsConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.GCS_CONFIG);
+    final JsonNode bigqueryConfigFromSecretFile =
+        fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final JsonNode gcsConfigFromSecretFile =
+        fullConfigFromSecretFileJson.get(BigQueryConsts.GCS_CONFIG);
 
     final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
-    final JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
+    final JsonNode gcsCredentialFromSecretFile =
+        gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
     final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CREDENTIAL_TYPE, gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
+        .put(
+            BigQueryConsts.CREDENTIAL_TYPE,
+            gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
+        .put(
+            BigQueryConsts.HMAC_KEY_ACCESS_ID,
+            gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
+        .put(
+            BigQueryConsts.HMAC_KEY_ACCESS_SECRET,
+            gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
         .build());
 
     final JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
-        .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
-        .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
+        .put(
+            BigQueryConsts.GCS_BUCKET_NAME,
+            gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
+        .put(
+            BigQueryConsts.GCS_BUCKET_PATH,
+            gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText()
+                + System.currentTimeMillis())
         .put(BigQueryConsts.CREDENTIAL, credential)
         .build());
 
@@ -235,8 +262,9 @@ public class BigQueryDenormalizedTestDataUtils {
   }
 
   public static BigQuery configureBigQuery(final JsonNode config) throws IOException {
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes(StandardCharsets.UTF_8)));
+    final ServiceAccountCredentials credentials =
+        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(
+            config.get(CONFIG_CREDS).asText().getBytes(StandardCharsets.UTF_8)));
 
     return BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
@@ -246,8 +274,9 @@ public class BigQueryDenormalizedTestDataUtils {
   }
 
   public static Dataset getBigQueryDataSet(final JsonNode config, final BigQuery bigQuery) {
-    final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(BigQueryUtils.getDatasetId(config)).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(BigQueryUtils.getDatasetId(config))
+        .setLocation(config.get(CONFIG_DATASET_LOCATION).asText())
+        .build();
     Dataset dataset = bigQuery.create(datasetInfo);
     trackTestDataSet(dataset, bigQuery);
     return dataset;
@@ -256,10 +285,7 @@ public class BigQueryDenormalizedTestDataUtils {
   private static Set<Dataset> dataSetsForDrop = new HashSet<>();
 
   public static void trackTestDataSet(final Dataset dataset, final BigQuery bigQuery) {
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> tearDownBigQuery(dataset, bigQuery)));
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> tearDownBigQuery(dataset, bigQuery)));
   }
 
   public static synchronized void tearDownBigQuery(final Dataset dataset, final BigQuery bigQuery) {
@@ -276,5 +302,4 @@ public class BigQueryDenormalizedTestDataUtils {
       dataSetsForDrop.remove(dataset);
     }
   }
-
 }

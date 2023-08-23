@@ -72,7 +72,9 @@ public class IntegrationCliParser {
   private static IntegrationConfig parseOptions(final String[] args, final Command command) {
 
     final Options options = new Options();
-    options.addOptionGroup(COMMAND_GROUP); // so that the parser does not throw an exception when encounter command args.
+    options.addOptionGroup(
+        COMMAND_GROUP); // so that the parser does not throw an exception when encounter command
+    // args.
 
     switch (command) {
       case SPEC -> {
@@ -107,7 +109,8 @@ public class IntegrationCliParser {
             .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
             .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
             .hasArg(true)
-            .required(true).build());
+            .required(true)
+            .build());
         options.addOption(Option.builder()
             .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
             .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
@@ -139,7 +142,9 @@ public class IntegrationCliParser {
         return IntegrationConfig.read(
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CATALOG_KEY)),
-            argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY) ? Path.of(argsMap.get(JavaBaseConstants.ARGS_STATE_KEY)) : null);
+            argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY)
+                ? Path.of(argsMap.get(JavaBaseConstants.ARGS_STATE_KEY))
+                : null);
       }
       case WRITE -> {
         return IntegrationConfig.write(
@@ -149,5 +154,4 @@ public class IntegrationCliParser {
       default -> throw new IllegalStateException("Unexpected value: " + command);
     }
   }
-
 }

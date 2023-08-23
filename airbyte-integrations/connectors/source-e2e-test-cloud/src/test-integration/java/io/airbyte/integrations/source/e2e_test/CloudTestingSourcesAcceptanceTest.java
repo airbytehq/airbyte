@@ -36,7 +36,8 @@ public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
   private static final int MAX_MESSAGES = ThreadLocalRandom.current().nextInt(10, 20);
   private static final JsonSchemaValidator JSON_VALIDATOR = new JsonSchemaValidator();
   private static final String STREAM_1 = "stream1";
-  private static final JsonNode SCHEMA_1 = Jsons.deserialize("""
+  private static final JsonNode SCHEMA_1 = Jsons.deserialize(
+      """
                                                              {
                                                                "type": "object",
                                                                "properties": {
@@ -45,7 +46,8 @@ public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
                                                              }
                                                              """);
   private static final String STREAM_2 = "stream2";
-  private static final JsonNode SCHEMA_2 = Jsons.deserialize("""
+  private static final JsonNode SCHEMA_2 = Jsons.deserialize(
+      """
                                                              {
                                                                "type": "object",
                                                                "properties": {
@@ -78,11 +80,11 @@ public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
 
     final JsonNode mockCatalog = Jsons.jsonNode(ImmutableMap.builder()
         .put("type", MockCatalogType.MULTI_STREAM)
-        .put("stream_schemas", String.format("{ \"%s\": %s, \"%s\": %s }",
-            STREAM_1,
-            Jsons.serialize(SCHEMA_1),
-            STREAM_2,
-            Jsons.serialize(SCHEMA_2)))
+        .put(
+            "stream_schemas",
+            String.format(
+                "{ \"%s\": %s, \"%s\": %s }",
+                STREAM_1, Jsons.serialize(SCHEMA_1), STREAM_2, Jsons.serialize(SCHEMA_2)))
         .build());
     this.config = Jsons.jsonNode(ImmutableMap.builder()
         .put("type", TestingSourceType.CONTINUOUS_FEED)
@@ -100,7 +102,8 @@ public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws IOException {
-    return Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
+    return Jsons.deserialize(
+        MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
   }
 
   @Override
@@ -134,5 +137,4 @@ public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
       ++index;
     }
   }
-
 }

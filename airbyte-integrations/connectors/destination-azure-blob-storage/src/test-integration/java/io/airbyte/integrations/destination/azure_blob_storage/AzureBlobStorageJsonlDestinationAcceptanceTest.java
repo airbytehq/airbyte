@@ -14,8 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
-public class AzureBlobStorageJsonlDestinationAcceptanceTest extends
-    AzureBlobStorageDestinationAcceptanceTest {
+public class AzureBlobStorageJsonlDestinationAcceptanceTest
+    extends AzureBlobStorageDestinationAcceptanceTest {
 
   public AzureBlobStorageJsonlDestinationAcceptanceTest() {
     super(AzureBlobStorageFormat.JSONL);
@@ -23,16 +23,15 @@ public class AzureBlobStorageJsonlDestinationAcceptanceTest extends
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}");
+    return Jsons.deserialize("{\n" + "  \"format_type\": \"JSONL\"\n" + "}");
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
 
     final String allSyncedObjects = getAllSyncedObjects(streamName);
@@ -61,5 +60,4 @@ public class AzureBlobStorageJsonlDestinationAcceptanceTest extends
       return "";
     }
   }
-
 }

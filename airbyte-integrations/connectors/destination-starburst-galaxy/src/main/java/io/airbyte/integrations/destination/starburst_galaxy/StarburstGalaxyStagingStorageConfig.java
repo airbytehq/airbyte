@@ -16,10 +16,12 @@ public abstract class StarburstGalaxyStagingStorageConfig {
 
   private static final Logger LOGGER = getLogger(StarburstGalaxyStagingStorageConfig.class);
 
-  public static StarburstGalaxyStagingStorageConfig getStarburstGalaxyStagingStorageConfig(final JsonNode config) {
+  public static StarburstGalaxyStagingStorageConfig getStarburstGalaxyStagingStorageConfig(
+      final JsonNode config) {
     final JsonNode typeConfig = config.get(OBJECT_STORE_TYPE);
     LOGGER.info("Galaxy staging storage type config: {}", typeConfig.toString());
-    final StarburstGalaxyStagingStorageType storageType = StarburstGalaxyStagingStorageType.valueOf(typeConfig.asText().toUpperCase());
+    final StarburstGalaxyStagingStorageType storageType =
+        StarburstGalaxyStagingStorageType.valueOf(typeConfig.asText().toUpperCase());
     if (storageType == S3) {
       return new StarburstGalaxyS3StagingStorageConfig(config);
     }
@@ -27,7 +29,7 @@ public abstract class StarburstGalaxyStagingStorageConfig {
   }
 
   public S3DestinationConfig getS3DestinationConfigOrThrow() {
-    throw new UnsupportedOperationException("Cannot get S3 destination config from " + this.getClass().getSimpleName());
+    throw new UnsupportedOperationException(
+        "Cannot get S3 destination config from " + this.getClass().getSimpleName());
   }
-
 }

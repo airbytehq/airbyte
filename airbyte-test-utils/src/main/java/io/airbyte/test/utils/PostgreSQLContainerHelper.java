@@ -22,5 +22,4 @@ public class PostgreSQLContainerHelper {
       throw new RuntimeException(e);
     }
   }
-
 }

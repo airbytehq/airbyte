@@ -41,22 +41,23 @@ public interface ProcessFactory {
    * @return ProcessBuilder object to run the process.
    * @throws TestHarnessException
    */
-  Process create(String jobType,
-                 String jobId,
-                 int attempt,
-                 final Path jobPath,
-                 final String imageName,
-                 final boolean usesIsolatedPool,
-                 final boolean usesStdin,
-                 final Map<String, String> files,
-                 final String entrypoint,
-                 final ResourceRequirements resourceRequirements,
-                 final AllowedHosts allowedHosts,
-                 final Map<String, String> labels,
-                 final Map<String, String> jobMetadata,
-                 final Map<Integer, Integer> portMapping,
-                 final Map<String, String> additionalEnvironmentVariables,
-                 final String... args)
+  Process create(
+      String jobType,
+      String jobId,
+      int attempt,
+      final Path jobPath,
+      final String imageName,
+      final boolean usesIsolatedPool,
+      final boolean usesStdin,
+      final Map<String, String> files,
+      final String entrypoint,
+      final ResourceRequirements resourceRequirements,
+      final AllowedHosts allowedHosts,
+      final Map<String, String> labels,
+      final Map<String, String> jobMetadata,
+      final Map<Integer, Integer> portMapping,
+      final Map<String, String> additionalEnvironmentVariables,
+      final String... args)
       throws TestHarnessException;
 
   /**
@@ -67,7 +68,12 @@ public interface ProcessFactory {
    * With these two facts, attempt to construct a unique process name with the image name present that
    * can be used by the factories implementing this interface for easier operations.
    */
-  static String createProcessName(final String fullImagePath, final String jobType, final String jobId, final int attempt, final int lenLimit) {
+  static String createProcessName(
+      final String fullImagePath,
+      final String jobType,
+      final String jobId,
+      final int attempt,
+      final int lenLimit) {
 
     var imageName = extractShortImageName(fullImagePath);
     final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
@@ -106,5 +112,4 @@ public interface ProcessFactory {
     final var nameParts = noVersion.split(DOCKER_DELIMITER);
     return nameParts[nameParts.length - 1];
   }
-
 }

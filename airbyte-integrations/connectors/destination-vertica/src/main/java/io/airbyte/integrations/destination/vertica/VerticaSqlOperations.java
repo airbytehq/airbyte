@@ -21,7 +21,8 @@ import java.util.UUID;
 
 public class VerticaSqlOperations extends JdbcSqlOperations {
 
-  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
+  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records)
+      throws Exception {
     try {
       final StringBuffer bfr = new StringBuffer();
       FileWriter wr = new FileWriter(tmpFile, StandardCharsets.UTF_8);
@@ -32,14 +33,16 @@ public class VerticaSqlOperations extends JdbcSqlOperations {
         wr.write(uuid.toString() + "|" + jsonData.toString() + "|" + emittedAt.toString() + "\n");
       }
       wr.close();
-    } catch (Exception e) {}
+    } catch (Exception e) {
+    }
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -49,7 +52,8 @@ public class VerticaSqlOperations extends JdbcSqlOperations {
       try {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".csv").toFile();
         writeBatchToFile(tmpFile, records);
-        final String query = String.format("copy %s.%s from local '%s' delimiter '%s'", schemaName, tmpTableName, tmpFile, "|");
+        final String query = String.format(
+            "copy %s.%s from local '%s' delimiter '%s'", schemaName, tmpTableName, tmpFile, "|");
         Statement stmt = connection.createStatement();
         stmt.execute(query);
         stmt.close();
@@ -60,21 +64,28 @@ public class VerticaSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName)
+      throws Exception {
     final String query = String.format("CREATE SCHEMA IF NOT EXISTS %s", schemaName);
     database.execute(query);
   }
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     final String query = String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s (%s VARCHAR(500) PRIMARY KEY,%s VARCHAR(1000),%s VARCHAR(1000));", schemaName, tableName,
-        VerticaDestination.COLUMN_NAME_AB_ID, VerticaDestination.COLUMN_NAME_DATA, VerticaDestination.COLUMN_NAME_EMITTED_AT);
+        "CREATE TABLE IF NOT EXISTS %s.%s (%s VARCHAR(500) PRIMARY KEY,%s VARCHAR(1000),%s VARCHAR(1000));",
+        schemaName,
+        tableName,
+        VerticaDestination.COLUMN_NAME_AB_ID,
+        VerticaDestination.COLUMN_NAME_DATA,
+        VerticaDestination.COLUMN_NAME_EMITTED_AT);
     return query;
   }
 
   @Override
-  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public void createTableIfNotExists(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     try {
       database.execute(createTableQuery(database, schemaName, tableName));
     } catch (final Exception e) {
@@ -83,7 +94,8 @@ public class VerticaSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public void dropTableIfExists(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     try {
       final String query = String.format("DROP TABLE IF EXISTS %s.%s", schemaName, tableName);
       database.execute(query);
@@ -94,16 +106,19 @@ public class VerticaSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     database.executeWithinTransaction(queries);
   }
 
   @Override
-  public String insertTableQuery(final JdbcDatabase database,
-                                 final String schemaName,
-                                 final String sourceTableName,
-                                 final String destinationTableName) {
-    return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, destinationTableName, schemaName, sourceTableName);
+  public String insertTableQuery(
+      final JdbcDatabase database,
+      final String schemaName,
+      final String sourceTableName,
+      final String destinationTableName) {
+    return String.format(
+        "INSERT INTO %s.%s SELECT * FROM %s.%s;\n",
+        schemaName, destinationTableName, schemaName, sourceTableName);
   }
-
 }

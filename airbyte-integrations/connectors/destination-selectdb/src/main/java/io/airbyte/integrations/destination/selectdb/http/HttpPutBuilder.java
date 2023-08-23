@@ -68,5 +68,4 @@ public class HttpPutBuilder {
     put.setEntity(httpEntity);
     return put;
   }
-
 }

@@ -19,5 +19,4 @@ public class AirbyteFileUtilsTest {
     assertEquals("2.67 GB", AirbyteFileUtils.byteCountToDisplaySize(2872000000L));
     assertEquals("1.82 TB", AirbyteFileUtils.byteCountToDisplaySize(2000000000000L));
   }
-
 }

@@ -13,5 +13,4 @@ public class AzureBlobStorageContainer extends GenericContainer<AzureBlobStorage
   public AzureBlobStorageContainer() {
     super("mcr.microsoft.com/azure-storage/azurite");
   }
-
 }

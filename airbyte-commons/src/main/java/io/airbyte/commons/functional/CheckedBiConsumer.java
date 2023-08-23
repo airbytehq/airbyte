@@ -8,5 +8,4 @@ package io.airbyte.commons.functional;
 public interface CheckedBiConsumer<T, R, E extends Throwable> {
 
   void accept(T t, R r) throws E;
-
 }

@@ -24,7 +24,6 @@ public class ConfigTestUtils {
         + "  },"
         + "  \"format\": " + formatConfig
         + "}");
-
   }
 
   public static void assertBaseConfig(final GcsDestinationConfig gcsDestinationConfig) {
@@ -32,5 +31,4 @@ public class ConfigTestUtils {
     assertEquals("test_path", gcsDestinationConfig.getBucketPath());
     assertEquals("us-east-2", gcsDestinationConfig.getBucketRegion());
   }
-
 }

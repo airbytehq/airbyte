@@ -23,7 +23,8 @@ import org.slf4j.LoggerFactory;
  */
 public class IcebergHiveCatalogS3AvroIntegrationTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(IcebergHiveCatalogS3AvroIntegrationTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(IcebergHiveCatalogS3AvroIntegrationTest.class);
 
   /**
    * start-up of hive metastore server takes minutes (including pg table initializing) so put the
@@ -40,7 +41,6 @@ public class IcebergHiveCatalogS3AvroIntegrationTest extends DestinationAcceptan
     config = metastoreCompose.getComposeConfig(DataFileFormat.AVRO);
     IcebergIntegrationTestUtil.createS3WarehouseBucket(config);
     LOGGER.info("==> Started Hive Metastore docker compose containers...");
-
   }
 
   @AfterAll
@@ -70,12 +70,12 @@ public class IcebergHiveCatalogS3AvroIntegrationTest extends DestinationAcceptan
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
     return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
   }
-
 }

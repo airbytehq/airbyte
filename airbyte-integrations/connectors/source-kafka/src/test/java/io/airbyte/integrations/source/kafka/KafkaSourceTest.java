@@ -22,5 +22,4 @@ public class KafkaSourceTest {
     final KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(configJson);
     assertInstanceOf(AvroFormat.class, kafkaFormat);
   }
-
 }

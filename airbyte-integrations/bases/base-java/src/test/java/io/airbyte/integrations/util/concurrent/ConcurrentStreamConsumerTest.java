@@ -39,7 +39,8 @@ class ConcurrentStreamConsumerTest {
     final AutoCloseableIterator<AirbyteMessage> stream = mock(AutoCloseableIterator.class);
     final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer = mock(Consumer.class);
 
-    final ConcurrentStreamConsumer concurrentStreamConsumer = new ConcurrentStreamConsumer(streamConsumer, 1);
+    final ConcurrentStreamConsumer concurrentStreamConsumer =
+        new ConcurrentStreamConsumer(streamConsumer, 1);
 
     assertDoesNotThrow(() -> concurrentStreamConsumer.accept(List.of(stream)));
 
@@ -54,7 +55,8 @@ class ConcurrentStreamConsumerTest {
 
     doThrow(e).when(streamConsumer).accept(any());
 
-    final ConcurrentStreamConsumer concurrentStreamConsumer = new ConcurrentStreamConsumer(streamConsumer, 1);
+    final ConcurrentStreamConsumer concurrentStreamConsumer =
+        new ConcurrentStreamConsumer(streamConsumer, 1);
 
     assertDoesNotThrow(() -> concurrentStreamConsumer.accept(List.of(stream)));
 
@@ -79,7 +81,8 @@ class ConcurrentStreamConsumerTest {
     doThrow(e2).when(streamConsumer).accept(stream2);
     doThrow(e3).when(streamConsumer).accept(stream3);
 
-    final ConcurrentStreamConsumer concurrentStreamConsumer = new ConcurrentStreamConsumer(streamConsumer, 1);
+    final ConcurrentStreamConsumer concurrentStreamConsumer =
+        new ConcurrentStreamConsumer(streamConsumer, 1);
 
     assertDoesNotThrow(() -> concurrentStreamConsumer.accept(List.of(stream1, stream2, stream3)));
 
@@ -107,14 +110,16 @@ class ConcurrentStreamConsumerTest {
         when(airbyteMessage.getRecord()).thenReturn(recordMessage);
         messages.add(airbyteMessage);
       }
-      streams.add(AutoCloseableIterators.fromIterator(messages.iterator(), airbyteStreamNameNamespacePair));
+      streams.add(
+          AutoCloseableIterators.fromIterator(messages.iterator(), airbyteStreamNameNamespacePair));
     }
     final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer = mock(Consumer.class);
 
-    final ConcurrentStreamConsumer concurrentStreamConsumer = new ConcurrentStreamConsumer(streamConsumer, streams.size());
+    final ConcurrentStreamConsumer concurrentStreamConsumer =
+        new ConcurrentStreamConsumer(streamConsumer, streams.size());
     final Integer partitionSize = concurrentStreamConsumer.getParallelism();
-    final List<List<AutoCloseableIterator<AirbyteMessage>>> partitions = Lists.partition(streams.stream().toList(),
-        partitionSize);
+    final List<List<AutoCloseableIterator<AirbyteMessage>>> partitions =
+        Lists.partition(streams.stream().toList(), partitionSize);
 
     for (final List<AutoCloseableIterator<AirbyteMessage>> partition : partitions) {
       assertDoesNotThrow(() -> concurrentStreamConsumer.accept(partition));
@@ -122,5 +127,4 @@ class ConcurrentStreamConsumerTest {
 
     verify(streamConsumer, times(streams.size())).accept(any(AutoCloseableIterator.class));
   }
-
 }

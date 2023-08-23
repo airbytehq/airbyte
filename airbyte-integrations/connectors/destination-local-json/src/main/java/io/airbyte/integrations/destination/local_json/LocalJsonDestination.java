@@ -68,9 +68,10 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
@@ -79,8 +80,10 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
-      final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
+      final Path finalPath =
+          destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
+      final Path tmpPath =
+          destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
         throw new IllegalStateException("Undefined destination sync mode");
@@ -90,7 +93,8 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
       }
 
-      final Writer writer = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
+      final Writer writer =
+          new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(writer, tmpPath, finalPath));
     }
 
@@ -127,9 +131,10 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public JsonConsumer(final Map<String, WriteConfig> writeConfigs,
-                        final ConfiguredAirbyteCatalog catalog,
-                        final Consumer<AirbyteMessage> outputRecordCollector) {
+    public JsonConsumer(
+        final Map<String, WriteConfig> writeConfigs,
+        final ConfiguredAirbyteCatalog catalog,
+        final Consumer<AirbyteMessage> outputRecordCollector) {
       super(outputRecordCollector);
       LOGGER.info("initializing consumer.");
       this.catalog = catalog;
@@ -150,9 +155,9 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
 
       // ignore other message types.
       if (!writeConfigs.containsKey(recordMessage.getStream())) {
-        throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
+        throw new IllegalArgumentException(String.format(
+            "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+            Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
 
       final Writer writer = writeConfigs.get(recordMessage.getStream()).getWriter();
@@ -187,7 +192,10 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
       try {
         if (!hasFailed) {
           for (final WriteConfig writeConfig : writeConfigs.values()) {
-            Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(
+                writeConfig.getTmpPath(),
+                writeConfig.getFinalPath(),
+                StandardCopyOption.REPLACE_EXISTING);
             LOGGER.info(String.format("File output: %s", writeConfig.getFinalPath()));
           }
         } else {
@@ -202,7 +210,6 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
         }
       }
     }
-
   }
 
   private static class WriteConfig {
@@ -228,11 +235,9 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
     public Path getFinalPath() {
       return finalPath;
     }
-
   }
 
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new LocalJsonDestination()).run(args);
   }
-
 }

@@ -54,5 +54,4 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
     throw new RuntimeException("Snapshot of individual tables is not implemented in MSSQL");
   }
-
 }

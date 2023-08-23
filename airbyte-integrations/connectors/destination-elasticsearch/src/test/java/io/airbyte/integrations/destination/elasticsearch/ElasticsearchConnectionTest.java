@@ -37,7 +37,8 @@ public class ElasticsearchConnectionTest {
     final var headerValues = headers[0].getValue().split(" ");
     Assertions.assertEquals("Basic", headerValues[0]);
     final var decoded = Base64.getDecoder().decode(headerValues[1]);
-    Assertions.assertTrue("user:password".contentEquals(new String(decoded, Charset.defaultCharset())));
+    Assertions.assertTrue(
+        "user:password".contentEquals(new String(decoded, Charset.defaultCharset())));
   }
 
   @Test
@@ -56,5 +57,4 @@ public class ElasticsearchConnectionTest {
     final var decoded = Base64.getDecoder().decode(headerValues[1]);
     Assertions.assertTrue("id:secret".contentEquals(new String(decoded, Charset.defaultCharset())));
   }
-
 }

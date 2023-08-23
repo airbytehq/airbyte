@@ -42,7 +42,8 @@ public class RocksetDestination extends BaseConnector implements Destination {
     ApiClient client = null;
     String workspace = null;
     // Create a temporary table
-    final String cname = "tmp_test_airbyte_collection_" + RandomStringUtils.randomAlphabetic(7).toLowerCase();
+    final String cname =
+        "tmp_test_airbyte_collection_" + RandomStringUtils.randomAlphabetic(7).toLowerCase();
 
     try {
       client = RocksetUtils.apiClientFromConfig(config);
@@ -61,30 +62,31 @@ public class RocksetDestination extends BaseConnector implements Destination {
       new DocumentsApi(client).add(workspace, cname, req);
 
       // Verify that the doc shows up
-      final String sql = String.format("SELECT * FROM %s.%s WHERE _id = '%s';", workspace, cname, unique);
+      final String sql =
+          String.format("SELECT * FROM %s.%s WHERE _id = '%s';", workspace, cname, unique);
       RocksetUtils.waitUntilDocCount(client, sql, 1);
 
       LOGGER.info("Check succeeded");
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.info("Check failed.", e);
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     } finally {
       // Delete the collection
       if (client != null && workspace != null) {
         RocksetUtils.deleteCollectionIfExists(client, workspace, cname);
       }
-
     }
   }
 
   @Override
   public AirbyteMessageConsumer getConsumer(
-                                            JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+      JsonNode config,
+      ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return new RocksetWriteApiConsumer(config, catalog, outputRecordCollector);
   }
-
 }

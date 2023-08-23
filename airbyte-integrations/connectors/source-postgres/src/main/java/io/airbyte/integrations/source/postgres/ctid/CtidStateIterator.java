@@ -24,7 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+public class CtidStateIterator extends AbstractIterator<AirbyteMessage>
+    implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateIterator.class);
   public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
@@ -42,13 +43,14 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private final Duration syncCheckpointDuration;
   private final Long syncCheckpointRecords;
 
-  public CtidStateIterator(final Iterator<AirbyteMessageWithCtid> messageIterator,
-                           final AirbyteStreamNameNamespacePair pair,
-                           final long relationFileNode,
-                           final CtidStateManager stateManager,
-                           final JsonNode streamStateForIncrementalRun,
-                           final Duration checkpointDuration,
-                           final Long checkpointRecords) {
+  public CtidStateIterator(
+      final Iterator<AirbyteMessageWithCtid> messageIterator,
+      final AirbyteStreamNameNamespacePair pair,
+      final long relationFileNode,
+      final CtidStateManager stateManager,
+      final JsonNode streamStateForIncrementalRun,
+      final Duration checkpointDuration,
+      final Long checkpointRecords) {
     this.messageIterator = messageIterator;
     this.pair = pair;
     this.relationFileNode = relationFileNode;
@@ -62,7 +64,10 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   @Override
   protected AirbyteMessage computeNext() {
     if (messageIterator.hasNext()) {
-      if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
+      if ((recordCount >= syncCheckpointRecords
+              || Duration.between(lastCheckpoint, OffsetDateTime.now())
+                      .compareTo(syncCheckpointDuration)
+                  > 0)
           && Objects.nonNull(lastCtid)
           && StringUtils.isNotBlank(lastCtid)) {
         final CtidStatus ctidStatus = new CtidStatus()
@@ -91,14 +96,15 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
-      LOGGER.info("Finished initial sync of stream {}, Emitting final state, state is {}", pair, finalStateMessage);
-      return new AirbyteMessage()
-          .withType(Type.STATE)
-          .withState(finalStateMessage);
+      final AirbyteStateMessage finalStateMessage =
+          stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
+      LOGGER.info(
+          "Finished initial sync of stream {}, Emitting final state, state is {}",
+          pair,
+          finalStateMessage);
+      return new AirbyteMessage().withType(Type.STATE).withState(finalStateMessage);
     } else {
       return endOfData();
     }
   }
-
 }

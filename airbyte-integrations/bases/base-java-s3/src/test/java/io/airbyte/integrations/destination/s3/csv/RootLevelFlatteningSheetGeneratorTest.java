@@ -18,8 +18,9 @@ import org.junit.jupiter.api.Test;
 
 class RootLevelFlatteningSheetGeneratorTest {
 
-  private final static ObjectMapper MAPPER = MoreMappers.initMapper();
-  private final static ObjectNode SCHEMA = MAPPER.createObjectNode();
+  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
+  private static final ObjectNode SCHEMA = MAPPER.createObjectNode();
+
   static {
     final List<String> fields = Lists.newArrayList("C", "B", "A", "c", "b", "a");
     Collections.shuffle(fields);
@@ -45,7 +46,12 @@ class RootLevelFlatteningSheetGeneratorTest {
         Lists.newArrayList(
             JavaBaseConstants.COLUMN_NAME_AB_ID,
             JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-            "A", "B", "C", "a", "b", "c"),
+            "A",
+            "B",
+            "C",
+            "a",
+            "b",
+            "c"),
         sheetGenerator.getHeaderRow());
   }
 
@@ -64,5 +70,4 @@ class RootLevelFlatteningSheetGeneratorTest {
         Lists.newArrayList("{\"Field 41\":15}", "value B", "3", "1", "value b", ""),
         sheetGenerator.getRecordColumns(json));
   }
-
 }

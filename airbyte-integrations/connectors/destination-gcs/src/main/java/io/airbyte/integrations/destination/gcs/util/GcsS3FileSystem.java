@@ -22,5 +22,4 @@ public class GcsS3FileSystem extends S3AFileSystem {
   protected void verifyBucketExistsV2() throws IOException {
     super.verifyBucketExists();
   }
-
 }

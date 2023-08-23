@@ -18,8 +18,8 @@ import org.junit.jupiter.params.provider.Arguments;
 public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   private static final String PERFORMANCE_SECRET_CREDS = "secrets/performance-config.json";
-  private static final List<String> SCHEMAS = List.of("t1000_c240_r200",
-      "t25_c8_r50k_s10kb", "t1000_c8_r10k_s500b");
+  private static final List<String> SCHEMAS =
+      List.of("t1000_c240_r200", "t25_c8_r50k_s10kb", "t1000_c8_r10k_s500b");
 
   @Override
   protected String getImageName() {
@@ -30,9 +30,8 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
   protected void setupDatabase(final String dbName) {
     final JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "Standard").build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
@@ -61,5 +60,4 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
         Arguments.of(SCHEMAS.get(1), SCHEMAS.get(1), 50000, 8, 25),
         Arguments.of(SCHEMAS.get(2), SCHEMAS.get(2), 10000, 8, 1000));
   }
-
 }

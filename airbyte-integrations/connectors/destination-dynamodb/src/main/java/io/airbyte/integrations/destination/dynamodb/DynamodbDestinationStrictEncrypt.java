@@ -29,5 +29,4 @@ public class DynamodbDestinationStrictEncrypt extends DynamodbDestination {
 
     return super.check(config);
   }
-
 }

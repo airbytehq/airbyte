@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.s3.util;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Flattening {
-
   NO("No flattening"),
   ROOT_LEVEL("Root level flattening");
 
@@ -30,5 +29,4 @@ public enum Flattening {
     }
     throw new IllegalArgumentException("Unexpected value: " + value);
   }
-
 }

@@ -17,8 +17,10 @@ public class NumberDataTypeTestArgumentProvider implements ArgumentsProvider {
 
   public static final String NUMBER_DATA_TYPE_TEST_CATALOG = "number_data_type_test_catalog.json";
   public static final String NUMBER_DATA_TYPE_TEST_MESSAGES = "number_data_type_test_messages.txt";
-  public static final String NUMBER_DATA_TYPE_ARRAY_TEST_CATALOG = "number_data_type_array_test_catalog.json";
-  public static final String NUMBER_DATA_TYPE_ARRAY_TEST_MESSAGES = "number_data_type_array_test_messages.txt";
+  public static final String NUMBER_DATA_TYPE_ARRAY_TEST_CATALOG =
+      "number_data_type_array_test_catalog.json";
+  public static final String NUMBER_DATA_TYPE_ARRAY_TEST_MESSAGES =
+      "number_data_type_array_test_messages.txt";
   private ProtocolVersion protocolVersion;
 
   @Override
@@ -30,7 +32,8 @@ public class NumberDataTypeTestArgumentProvider implements ArgumentsProvider {
   }
 
   private Arguments getArguments(final String catalogFile, final String messageFile) {
-    return Arguments.of(prefixFileNameByVersion(catalogFile, protocolVersion), prefixFileNameByVersion(messageFile, protocolVersion));
+    return Arguments.of(
+        prefixFileNameByVersion(catalogFile, protocolVersion),
+        prefixFileNameByVersion(messageFile, protocolVersion));
   }
-
 }

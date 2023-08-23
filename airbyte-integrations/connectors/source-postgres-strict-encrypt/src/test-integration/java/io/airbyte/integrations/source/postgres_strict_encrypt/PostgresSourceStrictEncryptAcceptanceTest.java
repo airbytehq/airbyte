@@ -46,8 +46,10 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   private static final String SCHEMA_NAME = "public";
+
   @SystemStub
   private EnvironmentVariables environmentVariables;
+
   private PostgreSQLContainer<?> container;
   private JsonNode config;
 
@@ -58,13 +60,12 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     environmentVariables.set("DEPLOYMENT_MODE", "CLOUD");
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-        .asCompatibleSubstituteFor("postgres"));
+    container = new PostgreSQLContainer<>(
+        DockerImageName.parse("postgres:bullseye").asCompatibleSubstituteFor("postgres"));
     container.start();
     certs = getCertificate(container);
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "Standard").build());
     final var containerOuterAddress = SshHelpers.getOuterContainerAddress(container);
     final var containerInnerAddress = SshHelpers.getInnerContainerAddress(container);
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -74,20 +75,23 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
-        .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "verify-ca")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", PASSWORD)
-            .build())
+        .put(
+            "ssl_mode",
+            ImmutableMap.builder()
+                .put("mode", "verify-ca")
+                .put("ca_certificate", certs.getCaCertificate())
+                .put("client_certificate", certs.getClientCertificate())
+                .put("client_key", certs.getClientKey())
+                .put("client_key_password", PASSWORD)
+                .build())
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             containerOuterAddress.left,
             containerOuterAddress.right,
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -96,9 +100,11 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
 
       database.query(ctx -> {
         ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.fetch(
+            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        ctx.fetch(
+            "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
         return null;
       });
     }
@@ -117,7 +123,9 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.injectSshIntoSpec(
-        Jsons.deserialize(MoreResources.readResource("expected_strict_encrypt_spec.json"), ConnectorSpecification.class),
+        Jsons.deserialize(
+            MoreResources.readResource("expected_strict_encrypt_spec.json"),
+            ConnectorSpecification.class),
         Optional.of("security"));
   }
 
@@ -128,27 +136,32 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME, SCHEMA_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2, SCHEMA_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("id"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME,
+                        SCHEMA_NAME,
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("id"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME2,
+                        SCHEMA_NAME,
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
   }
 
   @Override
@@ -160,5 +173,4 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   protected boolean supportsPerStream() {
     return true;
   }
-
 }

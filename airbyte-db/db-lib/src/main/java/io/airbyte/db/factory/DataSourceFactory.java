@@ -31,10 +31,11 @@ public class DataSourceFactory {
    * @param jdbcConnectionString The JDBC connection string.
    * @return The configured {@link DataSource}.
    */
-  public static DataSource create(final String username,
-                                  final String password,
-                                  final String driverClassName,
-                                  final String jdbcConnectionString) {
+  public static DataSource create(
+      final String username,
+      final String password,
+      final String driverClassName,
+      final String jdbcConnectionString) {
     return new DataSourceBuilder()
         .withDriverClassName(driverClassName)
         .withJdbcUrl(jdbcConnectionString)
@@ -53,18 +54,20 @@ public class DataSourceFactory {
    * @param connectionProperties Additional configuration properties for the underlying driver.
    * @return The configured {@link DataSource}.
    */
-  public static DataSource create(final String username,
-                                  final String password,
-                                  final String driverClassName,
-                                  final String jdbcConnectionString,
-                                  final Map<String, String> connectionProperties) {
+  public static DataSource create(
+      final String username,
+      final String password,
+      final String driverClassName,
+      final String jdbcConnectionString,
+      final Map<String, String> connectionProperties) {
     return new DataSourceBuilder()
         .withConnectionProperties(connectionProperties)
         .withDriverClassName(driverClassName)
         .withJdbcUrl(jdbcConnectionString)
         .withPassword(password)
         .withUsername(username)
-        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties, driverClassName))
+        .withConnectionTimeoutMs(
+            DataSourceBuilder.getConnectionTimeoutMs(connectionProperties, driverClassName))
         .build();
   }
 
@@ -79,12 +82,13 @@ public class DataSourceFactory {
    * @param driverClassName The fully qualified name of the JDBC driver class.
    * @return The configured {@link DataSource}.
    */
-  public static DataSource create(final String username,
-                                  final String password,
-                                  final String host,
-                                  final int port,
-                                  final String database,
-                                  final String driverClassName) {
+  public static DataSource create(
+      final String username,
+      final String password,
+      final String host,
+      final int port,
+      final String database,
+      final String driverClassName) {
     return new DataSourceBuilder()
         .withDatabase(database)
         .withDriverClassName(driverClassName)
@@ -107,13 +111,14 @@ public class DataSourceFactory {
    * @param connectionProperties Additional configuration properties for the underlying driver.
    * @return The configured {@link DataSource}.
    */
-  public static DataSource create(final String username,
-                                  final String password,
-                                  final String host,
-                                  final int port,
-                                  final String database,
-                                  final String driverClassName,
-                                  final Map<String, String> connectionProperties) {
+  public static DataSource create(
+      final String username,
+      final String password,
+      final String host,
+      final int port,
+      final String database,
+      final String driverClassName,
+      final Map<String, String> connectionProperties) {
     return new DataSourceBuilder()
         .withConnectionProperties(connectionProperties)
         .withDatabase(database)
@@ -136,11 +141,12 @@ public class DataSourceFactory {
    * @param database The name of the database.
    * @return The configured {@link DataSource}.
    */
-  public static DataSource createPostgres(final String username,
-                                          final String password,
-                                          final String host,
-                                          final int port,
-                                          final String database) {
+  public static DataSource createPostgres(
+      final String username,
+      final String password,
+      final String host,
+      final int port,
+      final String database) {
     return new DataSourceBuilder()
         .withDatabase(database)
         .withDriverClassName("org.postgresql.Driver")
@@ -202,31 +208,42 @@ public class DataSourceFactory {
      * @param driverClassName name of the JDBC driver
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
-    private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
-      // TODO: the usage of CONNECT_TIMEOUT is Postgres specific, may need to extend for other databases
+    private static long getConnectionTimeoutMs(
+        final Map<String, String> connectionProperties, String driverClassName) {
+      // TODO: the usage of CONNECT_TIMEOUT is Postgres specific, may need to extend for other
+      // databases
       if (driverClassName.equals(DatabaseDriver.POSTGRESQL.getDriverClassName())) {
         final String pgPropertyConnectTimeout = CONNECT_TIMEOUT.getName();
-        // If the PGProperty.CONNECT_TIMEOUT was set by the user, then take its value, if not take the
+        // If the PGProperty.CONNECT_TIMEOUT was set by the user, then take its value, if not take
+        // the
         // default
         if (connectionProperties.containsKey(pgPropertyConnectTimeout)
             && (Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout)) >= 0)) {
-          return Duration.ofSeconds(Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout))).toMillis();
+          return Duration.ofSeconds(
+                  Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout)))
+              .toMillis();
         } else {
-          return Duration.ofSeconds(Long.parseLong(Objects.requireNonNull(CONNECT_TIMEOUT.getDefaultValue()))).toMillis();
+          return Duration.ofSeconds(
+                  Long.parseLong(Objects.requireNonNull(CONNECT_TIMEOUT.getDefaultValue())))
+              .toMillis();
         }
       }
       final Duration connectionTimeout;
-      connectionTimeout =
-          connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY)))
-              : CONNECT_TIMEOUT_DEFAULT;
+      connectionTimeout = connectionProperties.containsKey(CONNECT_TIMEOUT_KEY)
+          ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY)))
+          : CONNECT_TIMEOUT_DEFAULT;
       if (connectionTimeout.getSeconds() == 0) {
         return connectionTimeout.toMillis();
       } else {
-        return (connectionTimeout.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0 ? connectionTimeout : CONNECT_TIMEOUT_DEFAULT).toMillis();
+        return (connectionTimeout.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0
+                ? connectionTimeout
+                : CONNECT_TIMEOUT_DEFAULT)
+            .toMillis();
       }
     }
 
-    public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {
+    public DataSourceBuilder withConnectionProperties(
+        final Map<String, String> connectionProperties) {
       if (connectionProperties != null) {
         this.connectionProperties = connectionProperties;
       }
@@ -294,12 +311,16 @@ public class DataSourceFactory {
     public DataSource build() {
       final DatabaseDriver databaseDriver = DatabaseDriver.findByDriverClassName(driverClassName);
 
-      Preconditions.checkNotNull(databaseDriver, "Unknown or blank driver class name: '" + driverClassName + "'.");
+      Preconditions.checkNotNull(
+          databaseDriver, "Unknown or blank driver class name: '" + driverClassName + "'.");
 
       final HikariConfig config = new HikariConfig();
 
       config.setDriverClassName(databaseDriver.getDriverClassName());
-      config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.getUrlFormatString(), host, port, database));
+      config.setJdbcUrl(
+          jdbcUrl != null
+              ? jdbcUrl
+              : String.format(databaseDriver.getUrlFormatString(), host, port, database));
       config.setMaximumPoolSize(maximumPoolSize);
       config.setMinimumIdle(minimumPoolSize);
       config.setConnectionTimeout(connectionTimeoutMs);
@@ -317,7 +338,5 @@ public class DataSourceFactory {
 
       return new HikariDataSource(config);
     }
-
   }
-
 }

@@ -26,7 +26,8 @@ class DebeziumConverterUtilsTest {
 
     when(relationalColumn.isOptional()).thenReturn(true);
     Object actualColumnDefaultValue = DebeziumConverterUtils.convertDefaultValue(relationalColumn);
-    Assertions.assertNull(actualColumnDefaultValue, "Default value for optional relational column should be null");
+    Assertions.assertNull(
+        actualColumnDefaultValue, "Default value for optional relational column should be null");
 
     when(relationalColumn.isOptional()).thenReturn(false);
     when(relationalColumn.hasDefaultValue()).thenReturn(false);
@@ -98,5 +99,4 @@ class DebeziumConverterUtilsTest {
     final String actual = DebeziumConverterUtils.convertDate(stringValue);
     Assertions.assertEquals("2021-01-01T00:00:00Z", actual);
   }
-
 }

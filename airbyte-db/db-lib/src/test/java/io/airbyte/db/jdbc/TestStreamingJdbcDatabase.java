@@ -64,44 +64,52 @@ class TestStreamingJdbcDatabase {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final DataSource connectionPool = DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     defaultJdbcDatabase = spy(new DefaultJdbcDatabase(connectionPool));
-    streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, JdbcUtils.getDefaultSourceOperations(), AdaptiveStreamingQueryConfig::new);
+    streamingJdbcDatabase = new StreamingJdbcDatabase(
+        connectionPool, JdbcUtils.getDefaultSourceOperations(), AdaptiveStreamingQueryConfig::new);
   }
 
   @Test
   @Order(1)
   void testQuery() throws SQLException {
     defaultJdbcDatabase.execute(connection -> {
-      connection.createStatement().execute(
-          """
+      connection
+          .createStatement()
+          .execute(
+              """
           DROP TABLE IF EXISTS id_and_name;
           CREATE TABLE id_and_name (id INTEGER, name VARCHAR(200));
           INSERT INTO id_and_name (id, name) VALUES (1, 'picard'),  (2, 'crusher'), (3, 'vash');
           """);
     });
 
-    // grab references to connection and prepared statement, so we can verify the streaming config is
+    // grab references to connection and prepared statement, so we can verify the streaming config
+    // is
     // invoked.
     final AtomicReference<Connection> connection1 = new AtomicReference<>();
     final AtomicReference<PreparedStatement> ps1 = new AtomicReference<>();
-    final List<JsonNode> actual = streamingJdbcDatabase.queryJsons(connection -> {
-      connection1.set(connection);
-      final PreparedStatement ps = connection.prepareStatement("SELECT * FROM id_and_name;");
-      ps1.set(ps);
-      return ps;
-    }, sourceOperations::rowToJson);
+    final List<JsonNode> actual = streamingJdbcDatabase.queryJsons(
+        connection -> {
+          connection1.set(connection);
+          final PreparedStatement ps = connection.prepareStatement("SELECT * FROM id_and_name;");
+          ps1.set(ps);
+          return ps;
+        },
+        sourceOperations::rowToJson);
     final List<JsonNode> expectedRecords = Lists.newArrayList(
         Jsons.jsonNode(Map.of("id", 1, "name", "picard")),
         Jsons.jsonNode(Map.of("id", 2, "name", "crusher")),
@@ -118,9 +126,11 @@ class TestStreamingJdbcDatabase {
   @Order(2)
   @Test
   void testLargeRow() throws SQLException {
-    defaultJdbcDatabase.execute(connection -> connection.createStatement()
-        .execute(
-            """
+    defaultJdbcDatabase.execute(
+        connection -> connection
+            .createStatement()
+            .execute(
+                """
             DROP TABLE IF EXISTS id_and_name;
             CREATE TABLE id_and_name (id INTEGER, name TEXT);
             INSERT INTO id_and_name SELECT id, repeat('a', 10485760) as name from generate_series(1, 20) as id;
@@ -161,5 +171,4 @@ class TestStreamingJdbcDatabase {
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .build());
   }
-
 }

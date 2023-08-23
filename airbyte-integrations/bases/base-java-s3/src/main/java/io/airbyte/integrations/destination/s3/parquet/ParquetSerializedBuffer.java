@@ -55,28 +55,34 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   private Long lastByteCount;
   private boolean isClosed;
 
-  public ParquetSerializedBuffer(final S3DestinationConfig config,
-                                 final AirbyteStreamNameNamespacePair stream,
-                                 final ConfiguredAirbyteCatalog catalog)
+  public ParquetSerializedBuffer(
+      final S3DestinationConfig config,
+      final AirbyteStreamNameNamespacePair stream,
+      final ConfiguredAirbyteCatalog catalog)
       throws IOException {
     final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-    final Schema schema = schemaConverter.getAvroSchema(catalog.getStreams()
-        .stream()
-        .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
-        .findFirst()
-        .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", stream.getNamespace(), stream.getName())))
-        .getStream()
-        .getJsonSchema(),
-        stream.getName(), stream.getNamespace());
+    final Schema schema = schemaConverter.getAvroSchema(
+        catalog.getStreams().stream()
+            .filter(s -> s.getStream().getName().equals(stream.getName())
+                && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException(
+                String.format("No such stream %s.%s", stream.getNamespace(), stream.getName())))
+            .getStream()
+            .getJsonSchema(),
+        stream.getName(),
+        stream.getNamespace());
     bufferFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet");
     Files.deleteIfExists(bufferFile);
     avroRecordFactory = new AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER);
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     final Configuration avroConfig = new Configuration();
     avroConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
-    parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile
-        .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), avroConfig))
-        .withConf(avroConfig) // yes, this should be here despite the fact we pass this config above in path
+    parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile.fromPath(
+            new org.apache.hadoop.fs.Path(bufferFile.toUri()), avroConfig))
+        .withConf(
+            avroConfig) // yes, this should be here despite the fact we pass this config above in
+        // path
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())
@@ -103,7 +109,8 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
 
   @Override
   public long accept(final String recordString, final long emittedAt) throws Exception {
-    throw new UnsupportedOperationException("This method is not supported for ParquetSerializedBuffer");
+    throw new UnsupportedOperationException(
+        "This method is not supported for ParquetSerializedBuffer");
   }
 
   @Override
@@ -112,14 +119,18 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
       getByteCount();
       parquetWriter.close();
       inputStream = new FileInputStream(bufferFile.toFile());
-      LOGGER.info("Finished writing data to {} ({})", getFilename(), FileUtils.byteCountToDisplaySize(getByteCount()));
+      LOGGER.info(
+          "Finished writing data to {} ({})",
+          getFilename(),
+          FileUtils.byteCountToDisplaySize(getByteCount()));
     }
   }
 
   @Override
   public long getByteCount() {
     if (inputStream != null) {
-      // once the parquetWriter is closed, we can't query how many bytes are in it, so we cache the last
+      // once the parquetWriter is closed, we can't query how many bytes are in it, so we cache the
+      // last
       // count
       return lastByteCount;
     }
@@ -167,8 +178,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   public static BufferCreateFunction createFunction(final S3DestinationConfig s3DestinationConfig) {
-    return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> new ParquetSerializedBuffer(s3DestinationConfig,
-        stream, catalog);
+    return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) ->
+        new ParquetSerializedBuffer(s3DestinationConfig, stream, catalog);
   }
-
 }

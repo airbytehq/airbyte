@@ -45,15 +45,10 @@ class KinesisDestinationTest {
   void testCheckTestConnectionWithFailure() {
 
     var jsonConfig = KinesisDataFactory.jsonConfig(
-        "127.0.0.9",
-        "eu-west-1",
-        "random_access_key",
-        "random_secret_key");
+        "127.0.0.9", "eu-west-1", "random_access_key", "random_secret_key");
 
     var connectionStatus = kinesisDestination.check(jsonConfig);
 
     assertThat(connectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.FAILED);
-
   }
-
 }

@@ -38,7 +38,9 @@ public class HadoopCatalogConfig extends IcebergCatalogConfig {
     configMap.put("spark.sql.defaultCatalog", CATALOG_NAME);
     configMap.put("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
     configMap.put("spark.sql.catalog." + CATALOG_NAME + ".type", "hadoop");
-    configMap.put("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions");
+    configMap.put(
+        "spark.sql.extensions",
+        "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions");
     configMap.put("spark.driver.extraJavaOptions", "-Dpackaging.type=jar -Djava.io.tmpdir=/tmp");
 
     configMap.putAll(this.storageConfig.sparkConfigMap(CATALOG_NAME));
@@ -48,7 +50,8 @@ public class HadoopCatalogConfig extends IcebergCatalogConfig {
   @Override
   public Catalog genCatalog() {
     Configuration conf = new Configuration();
-    for (Entry<String, String> entry : this.storageConfig.sparkConfigMap(CATALOG_NAME).entrySet()) {
+    for (Entry<String, String> entry :
+        this.storageConfig.sparkConfigMap(CATALOG_NAME).entrySet()) {
       String key = entry.getKey();
       if (key.startsWith(SPARK_HADOOP_CONFIG_PREFIX + "fs.")) {
         conf.set(key.substring(SPARK_HADOOP_CONFIG_PREFIX.length()), entry.getValue());
@@ -57,10 +60,10 @@ public class HadoopCatalogConfig extends IcebergCatalogConfig {
 
     HadoopCatalog catalog = new HadoopCatalog();
     catalog.setConf(conf);
-    Map<String, String> properties = new HashMap<>(this.storageConfig.catalogInitializeProperties());
+    Map<String, String> properties =
+        new HashMap<>(this.storageConfig.catalogInitializeProperties());
     properties.put(CatalogProperties.WAREHOUSE_LOCATION, this.storageConfig.getWarehouseUri());
     catalog.initialize(CATALOG_NAME, properties);
     return catalog;
   }
-
 }

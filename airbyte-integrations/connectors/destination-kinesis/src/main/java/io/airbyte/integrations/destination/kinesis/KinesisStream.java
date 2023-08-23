@@ -56,13 +56,15 @@ public class KinesisStream implements Closeable {
    */
   public void createStream(String streamName) {
     try {
-      kinesisClient.createStream(b -> b.streamName(streamName).shardCount(kinesisConfig.getShardCount()));
+      kinesisClient.createStream(
+          b -> b.streamName(streamName).shardCount(kinesisConfig.getShardCount()));
     } catch (ResourceInUseException e) {
       LOGGER.info("Stream with name {} has already been created", streamName);
     }
     // block/wait until stream is active
-    for (;;) {
-      DescribeStreamResponse describeStream = kinesisClient.describeStream(b -> b.streamName(streamName));
+    for (; ; ) {
+      DescribeStreamResponse describeStream =
+          kinesisClient.describeStream(b -> b.streamName(streamName));
       if (describeStream.streamDescription().streamStatus() == StreamStatus.ACTIVE) {
         return;
       }
@@ -70,7 +72,8 @@ public class KinesisStream implements Closeable {
         Thread.sleep(2000);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        throw KinesisUtils.buildKinesisException("Thread interrupted while waiting for stream to be active", e);
+        throw KinesisUtils.buildKinesisException(
+            "Thread interrupted while waiting for stream to be active", e);
       }
     }
   }
@@ -84,7 +87,7 @@ public class KinesisStream implements Closeable {
   public void deleteStream(String streamName) {
     kinesisClient.deleteStream(b -> b.streamName(streamName));
     // block/wait until stream is deleted
-    for (;;) {
+    for (; ; ) {
       try {
         kinesisClient.describeStream(b -> b.streamName(streamName));
         Thread.sleep(2000);
@@ -92,7 +95,8 @@ public class KinesisStream implements Closeable {
         return;
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        throw KinesisUtils.buildKinesisException("Thread interrupted while waiting for stream to be deleted", e);
+        throw KinesisUtils.buildKinesisException(
+            "Thread interrupted while waiting for stream to be deleted", e);
       }
     }
   }
@@ -114,7 +118,8 @@ public class KinesisStream implements Closeable {
    * @param data actual data to be streamed
    * @param exceptionConsumer for handling errors related to flushing data per stream
    */
-  public void putRecord(String streamName, String partitionKey, String data, Consumer<Exception> exceptionConsumer) {
+  public void putRecord(
+      String streamName, String partitionKey, String data, Consumer<Exception> exceptionConsumer) {
     buffer.add(Tuple.of(streamName, Tuple.of(partitionKey, data)));
     if (buffer.size() == bufferSize) {
       flush(exceptionConsumer);
@@ -142,9 +147,10 @@ public class KinesisStream implements Closeable {
     // iterate over stream shards and retrieve records
     return shards.stream()
         .map(Shard::shardId)
-        .map(sh -> kinesisClient.getShardIterator(b -> b.streamName(streamName)
-            .shardIteratorType(ShardIteratorType.TRIM_HORIZON)
-            .shardId(sh))
+        .map(sh -> kinesisClient
+            .getShardIterator(b -> b.streamName(streamName)
+                .shardIteratorType(ShardIteratorType.TRIM_HORIZON)
+                .shardId(sh))
             .shardIterator())
         .flatMap(it -> kinesisClient.getRecords(b -> b.shardIterator(it)).records().stream())
         .map(Record::data)
@@ -163,13 +169,15 @@ public class KinesisStream implements Closeable {
   public void flush(Consumer<Exception> exceptionConsumer) {
     try {
       buffer.stream()
-          .collect(Collectors.groupingBy(Tuple::value1, Collectors.mapping(Tuple::value2, Collectors.toList())))
+          .collect(Collectors.groupingBy(
+              Tuple::value1, Collectors.mapping(Tuple::value2, Collectors.toList())))
           .forEach((k, v) -> {
-            var records = v.stream().map(entry -> PutRecordsRequestEntry.builder()
-                // partition key used to determine stream shard.
-                .partitionKey(entry.value1())
-                .data(SdkBytes.fromUtf8String(entry.value2()))
-                .build())
+            var records = v.stream()
+                .map(entry -> PutRecordsRequestEntry.builder()
+                    // partition key used to determine stream shard.
+                    .partitionKey(entry.value1())
+                    .data(SdkBytes.fromUtf8String(entry.value2()))
+                    .build())
                 .collect(Collectors.toList());
             try {
               kinesisClient.putRecords(b -> b.streamName(k).records(records));
@@ -189,5 +197,4 @@ public class KinesisStream implements Closeable {
   public void close() {
     KinesisClientPool.closeClient(kinesisConfig);
   }
-
 }

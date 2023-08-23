@@ -16,5 +16,4 @@ public class SelectdbRuntimeException extends RuntimeException {
   public SelectdbRuntimeException(Throwable cause) {
     super(cause);
   }
-
 }

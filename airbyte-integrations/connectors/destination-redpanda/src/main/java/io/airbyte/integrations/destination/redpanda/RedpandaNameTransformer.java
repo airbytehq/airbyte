@@ -15,5 +15,4 @@ public class RedpandaNameTransformer extends StandardNameTransformer {
     // max char length for redpanda topic name is 255
     return streamName.length() > 255 ? streamName.substring(0, 255) : streamName;
   }
-
 }

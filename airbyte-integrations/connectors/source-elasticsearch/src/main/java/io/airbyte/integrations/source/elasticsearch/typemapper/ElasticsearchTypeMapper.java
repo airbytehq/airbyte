@@ -92,14 +92,14 @@ public class ElasticsearchTypeMapper {
       put("dense_vector", "array");
       // put("rank_feature", "integer"); THEY ARE PUTTING OBJECTS HERE AS WELL????
 
-      // SPATIAL DATA TYPES (HARD TO HANDLE AS QUERYING MECHANISM IS BASED ON SHAPE, which has multiple
+      // SPATIAL DATA TYPES (HARD TO HANDLE AS QUERYING MECHANISM IS BASED ON SHAPE, which has
+      // multiple
       // fields)
       put("geo_point", Arrays.asList("object", "array"));
       put("geo_shape", Arrays.asList("object", "array"));
       put("shape", Arrays.asList("object", "array"));
       put("point", Arrays.asList("object", "array"));
     }
-
   };
 
   public static Map<String, Object> getMapper() {
@@ -124,7 +124,9 @@ public class ElasticsearchTypeMapper {
           ((ObjectNode) node).remove("type");
           ((ObjectNode) node).set("type", mapper.valueToTree(ElasticSearchToAirbyte.get(nodeType)));
         } else
-          throw new UnsupportedDatatypeException("Cannot map unsupported data type to Airbyte data type: " + node.get("type").textValue());
+          throw new UnsupportedDatatypeException(
+              "Cannot map unsupported data type to Airbyte data type: "
+                  + node.get("type").textValue());
       }
       node.fields().forEachRemaining(entry -> {
         try {
@@ -153,5 +155,4 @@ public class ElasticsearchTypeMapper {
       ((ObjectNode) jsonNode).retain(KEEP_LIST);
     }
   }
-
 }

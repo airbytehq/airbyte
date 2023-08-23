@@ -37,7 +37,6 @@ public class GlueTestClient implements Closeable {
     } while (nextToken != null);
 
     return tables;
-
   }
 
   private BatchDeleteTableRequest getBatchDeleteRequest(String databaseName, List<Table> tables) {
@@ -52,7 +51,8 @@ public class GlueTestClient implements Closeable {
     while (countRetries < 5) {
       try {
         List<Table> allTables = getAllTables(databaseName);
-        BatchDeleteTableRequest batchDeleteTableRequest = getBatchDeleteRequest(databaseName, allTables);
+        BatchDeleteTableRequest batchDeleteTableRequest =
+            getBatchDeleteRequest(databaseName, allTables);
         glueClient.batchDeleteTable(batchDeleteTableRequest);
         return;
       } catch (Exception e) {
@@ -65,5 +65,4 @@ public class GlueTestClient implements Closeable {
   public void close() {
     glueClient.shutdown();
   }
-
 }

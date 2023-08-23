@@ -45,9 +45,10 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    * @param catalog collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
    * @param onStreamFlush buffer flush logic used throughout the streaming of messages
    */
-  public SerializedBufferingStrategy(final BufferCreateFunction onCreateBuffer,
-                                     final ConfiguredAirbyteCatalog catalog,
-                                     final FlushBufferFunction onStreamFlush) {
+  public SerializedBufferingStrategy(
+      final BufferCreateFunction onCreateBuffer,
+      final ConfiguredAirbyteCatalog catalog,
+      final FlushBufferFunction onStreamFlush) {
     this.onCreateBuffer = onCreateBuffer;
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;
@@ -63,17 +64,20 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    * @throws Exception
    */
   @Override
-  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public Optional<BufferFlushType> addRecord(
+      final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
     Optional<BufferFlushType> flushed = Optional.empty();
 
     final SerializableBuffer buffer = getOrCreateBuffer(stream);
     if (buffer == null) {
-      throw new RuntimeException(String.format("Failed to create/get buffer for stream %s.%s", stream.getNamespace(), stream.getName()));
+      throw new RuntimeException(String.format(
+          "Failed to create/get buffer for stream %s.%s", stream.getNamespace(), stream.getName()));
     }
 
     final long actualMessageSizeInBytes = buffer.accept(message.getRecord());
     totalBufferSizeInBytes += actualMessageSizeInBytes;
-    // Flushes buffer when either the buffer was completely filled or only a single stream was filled
+    // Flushes buffer when either the buffer was completely filled or only a single stream was
+    // filled
     if (totalBufferSizeInBytes >= buffer.getMaxTotalBufferSizeInBytes()
         || allBuffers.size() >= buffer.getMaxConcurrentStreamsInBuffer()) {
       flushAllBuffers();
@@ -106,7 +110,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    */
   private SerializableBuffer getOrCreateBuffer(final AirbyteStreamNameNamespacePair stream) {
     return allBuffers.computeIfAbsent(stream, k -> {
-      LOGGER.info("Starting a new buffer for stream {} (current state: {} in {} buffers)",
+      LOGGER.info(
+          "Starting a new buffer for stream {} (current state: {} in {} buffers)",
           stream.getName(),
           FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes),
           allBuffers.size());
@@ -120,8 +125,13 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public void flushSingleBuffer(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer) throws Exception {
-    LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+  public void flushSingleBuffer(
+      final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer)
+      throws Exception {
+    LOGGER.info(
+        "Flushing buffer of stream {} ({})",
+        stream.getName(),
+        FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
     onStreamFlush.accept(stream, buffer);
     totalBufferSizeInBytes -= buffer.getByteCount();
     allBuffers.remove(stream);
@@ -130,11 +140,18 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
 
   @Override
   public void flushAllBuffers() throws Exception {
-    LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size(), FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
-    for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
+    LOGGER.info(
+        "Flushing all {} current buffers ({} in total)",
+        allBuffers.size(),
+        FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
+    for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry :
+        allBuffers.entrySet()) {
       final AirbyteStreamNameNamespacePair stream = entry.getKey();
       final SerializableBuffer buffer = entry.getValue();
-      LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+      LOGGER.info(
+          "Flushing buffer of stream {} ({})",
+          stream.getName(),
+          FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
       onStreamFlush.accept(stream, buffer);
       LOGGER.info("Flushing completed for {}", stream.getName());
     }
@@ -152,7 +169,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   @Override
   public void close() throws Exception {
     final List<Exception> exceptionsThrown = new ArrayList<>();
-    for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
+    for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry :
+        allBuffers.entrySet()) {
       try {
         final AirbyteStreamNameNamespacePair stream = entry.getKey();
         LOGGER.info("Closing buffer for stream {}", stream.getName());
@@ -164,8 +182,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
       }
     }
     if (!exceptionsThrown.isEmpty()) {
-      throw new RuntimeException(String.format("Exceptions thrown while closing buffers: %s", Strings.join(exceptionsThrown, "\n")));
+      throw new RuntimeException(String.format(
+          "Exceptions thrown while closing buffers: %s", Strings.join(exceptionsThrown, "\n")));
     }
   }
-
 }

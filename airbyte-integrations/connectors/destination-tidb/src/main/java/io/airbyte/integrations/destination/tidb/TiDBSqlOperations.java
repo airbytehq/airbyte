@@ -19,20 +19,23 @@ import java.sql.Statement;
 import java.util.List;
 
 @SuppressFBWarnings(
-                    value = {"SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"},
-                    justification = "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement.")
+    value = {"SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"},
+    justification =
+        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement.")
 public class TiDBSqlOperations extends JdbcSqlOperations {
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     database.executeWithinTransaction(queries);
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -73,18 +76,24 @@ public class TiDBSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR(256) PRIMARY KEY,\n"
             + "%s JSON,\n"
             + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
             + ");\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
-  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName)
+      throws Exception {
     // TiDB use database instead of schema.
     database.execute(String.format("CREATE DATABASE IF NOT EXISTS %s;\n", schemaName));
   }
@@ -93,5 +102,4 @@ public class TiDBSqlOperations extends JdbcSqlOperations {
   protected JsonNode formatData(JsonNode data) {
     return StandardNameTransformer.formatJsonPath(data);
   }
-
 }

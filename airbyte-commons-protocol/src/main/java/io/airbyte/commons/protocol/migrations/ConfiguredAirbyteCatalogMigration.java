@@ -4,7 +4,8 @@
 
 package io.airbyte.commons.protocol.migrations;
 
-public interface ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersion> extends Migration {
+public interface ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersion>
+    extends Migration {
 
   /**
    * Downgrades a ConfiguredAirbyteCatalog from the new version to the old version
@@ -21,5 +22,4 @@ public interface ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersi
    * @return the upgraded ConfiguredAirbyteCatalog
    */
   CurrentVersion upgrade(final PreviousVersion message);
-
 }

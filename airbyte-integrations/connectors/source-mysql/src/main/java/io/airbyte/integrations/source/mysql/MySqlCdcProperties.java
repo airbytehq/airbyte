@@ -33,7 +33,8 @@ public class MySqlCdcProperties {
     final Properties props = commonProperties(database);
     // snapshot config
     if (sourceConfig.has("snapshot_mode")) {
-      // The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and skip
+      // The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and
+      // skip
       // initial snapshot
       props.setProperty("snapshot.mode", sourceConfig.get("snapshot_mode").asText());
     } else {
@@ -67,7 +68,8 @@ public class MySqlCdcProperties {
     // specifically defined in the replication_method
     // config.
     if (sourceConfig.get("replication_method").has("server_time_zone")) {
-      final String serverTimeZone = sourceConfig.get("replication_method").get("server_time_zone").asText();
+      final String serverTimeZone =
+          sourceConfig.get("replication_method").get("server_time_zone").asText();
       if (!serverTimeZone.isEmpty()) {
         props.setProperty("database.serverTimezone", serverTimeZone);
       }
@@ -75,24 +77,40 @@ public class MySqlCdcProperties {
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-database-ssl-mode
-    if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
+    if (!sourceConfig.has(JdbcUtils.SSL_KEY)
+        || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
-        props.setProperty("database.ssl.mode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
+        props.setProperty(
+            "database.ssl.mode",
+            MySqlSource.toSslJdbcParamInternal(
+                SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
 
-        if (dbConfig.has(TRUST_KEY_STORE_URL) && !dbConfig.get(TRUST_KEY_STORE_URL).asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore", Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+        if (dbConfig.has(TRUST_KEY_STORE_URL)
+            && !dbConfig.get(TRUST_KEY_STORE_URL).asText().isEmpty()) {
+          props.setProperty(
+              "database.ssl.truststore",
+              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
         }
 
-        if (dbConfig.has(TRUST_KEY_STORE_PASS) && !dbConfig.get(TRUST_KEY_STORE_PASS).asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+        if (dbConfig.has(TRUST_KEY_STORE_PASS)
+            && !dbConfig.get(TRUST_KEY_STORE_PASS).asText().isEmpty()) {
+          props.setProperty(
+              "database.ssl.truststore.password",
+              dbConfig.get(TRUST_KEY_STORE_PASS).asText());
         }
 
-        if (dbConfig.has(CLIENT_KEY_STORE_URL) && !dbConfig.get(CLIENT_KEY_STORE_URL).asText().isEmpty()) {
-          props.setProperty("database.ssl.keystore", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+        if (dbConfig.has(CLIENT_KEY_STORE_URL)
+            && !dbConfig.get(CLIENT_KEY_STORE_URL).asText().isEmpty()) {
+          props.setProperty(
+              "database.ssl.keystore",
+              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
         }
 
-        if (dbConfig.has(CLIENT_KEY_STORE_PASS) && !dbConfig.get(CLIENT_KEY_STORE_PASS).asText().isEmpty()) {
-          props.setProperty("database.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
+        if (dbConfig.has(CLIENT_KEY_STORE_PASS)
+            && !dbConfig.get(CLIENT_KEY_STORE_PASS).asText().isEmpty()) {
+          props.setProperty(
+              "database.ssl.keystore.password",
+              dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
         }
 
       } else {
@@ -129,5 +147,4 @@ public class MySqlCdcProperties {
     LOGGER.info("Randomly generated Server ID : " + serverId);
     return serverId;
   }
-
 }

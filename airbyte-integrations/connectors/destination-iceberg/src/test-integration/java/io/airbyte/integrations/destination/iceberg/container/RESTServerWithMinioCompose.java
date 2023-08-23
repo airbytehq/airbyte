@@ -4,19 +4,6 @@
 
 package io.airbyte.integrations.destination.iceberg.container;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
-import io.airbyte.integrations.destination.iceberg.hive.IcebergHiveCatalogS3ParquetIntegrationTest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.Map;
-
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_TYPE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_FORMAT_CONFIG_KEY;
@@ -31,9 +18,22 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_WA
 import static java.util.Map.entry;
 import static java.util.Map.ofEntries;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
+import io.airbyte.integrations.destination.iceberg.hive.IcebergHiveCatalogS3ParquetIntegrationTest;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+
 public class RESTServerWithMinioCompose extends DockerComposeContainer<RESTServerWithMinioCompose> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(IcebergHiveCatalogS3ParquetIntegrationTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(IcebergHiveCatalogS3ParquetIntegrationTest.class);
   private static final String LOCAL_RELATIVE_PATH = "src/test-integration/resources/";
   private static final String COMPOSE_PATH = LOCAL_RELATIVE_PATH + "rest-catalog-compose.yml";
   private static final int REST_SERVER_PORT = 8181;
@@ -43,10 +43,12 @@ public class RESTServerWithMinioCompose extends DockerComposeContainer<RESTServe
 
   public RESTServerWithMinioCompose() {
     super(Path.of(COMPOSE_PATH).toFile());
-    super.withExposedService(REST_SERVICE_NAME,
+    super.withExposedService(
+            REST_SERVICE_NAME,
             REST_SERVER_PORT,
             Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)))
-        .withExposedService(MINIO_SERVICE_NAME,
+        .withExposedService(
+            MINIO_SERVICE_NAME,
             MinioContainer.MINIO_PORT,
             Wait.forHttp(MinioContainer.HEALTH_ENDPOINT).withStartupTimeout(Duration.ofSeconds(60)))
         .withLocalCompose(true);
@@ -58,7 +60,8 @@ public class RESTServerWithMinioCompose extends DockerComposeContainer<RESTServe
     super.start();
     LOGGER.info("REST Server port: {}", getServicePort(REST_SERVICE_NAME, REST_SERVER_PORT));
     LOGGER.info("Minio port: {}", getServicePort(MINIO_SERVICE_NAME, MINIO_PORT));
-    LOGGER.info("REST Server docker-compose startup cost: {} ms", System.currentTimeMillis() - startTime);
+    LOGGER.info(
+        "REST Server docker-compose startup cost: {} ms", System.currentTimeMillis() - startTime);
   }
 
   public String s3Endpoint() {
@@ -73,11 +76,13 @@ public class RESTServerWithMinioCompose extends DockerComposeContainer<RESTServe
     String s3Endpoint = this.s3Endpoint();
     LOGGER.info("Configure S3 endpoint to {}", s3Endpoint);
     return Jsons.jsonNode(ofEntries(
-        entry(ICEBERG_CATALOG_CONFIG_KEY,
+        entry(
+            ICEBERG_CATALOG_CONFIG_KEY,
             Jsons.jsonNode(ofEntries(
                 entry(ICEBERG_CATALOG_TYPE_CONFIG_KEY, "Rest"),
                 entry(REST_CATALOG_URI_CONFIG_KEY, this.restServerUri())))),
-        entry(ICEBERG_STORAGE_CONFIG_KEY,
+        entry(
+            ICEBERG_STORAGE_CONFIG_KEY,
             Jsons.jsonNode(ofEntries(
                 entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
                 entry(S3_ACCESS_KEY_ID_CONFIG_KEY, "admin"),
@@ -85,18 +90,22 @@ public class RESTServerWithMinioCompose extends DockerComposeContainer<RESTServe
                 entry(S3_WAREHOUSE_URI_CONFIG_KEY, "s3://warehouse/rest"),
                 entry(S3_BUCKET_REGION_CONFIG_KEY, "us-east-1"),
                 entry(S3_ENDPOINT_CONFIG_KEY, s3Endpoint)))),
-        entry(ICEBERG_FORMAT_CONFIG_KEY,
+        entry(
+            ICEBERG_FORMAT_CONFIG_KEY,
             Jsons.jsonNode(Map.of("format", fileFormat.getConfigValue())))));
   }
 
   public JsonNode getWrongConfig() {
     return Jsons.jsonNode(ofEntries(
-        entry(ICEBERG_CATALOG_CONFIG_KEY,
+        entry(
+            ICEBERG_CATALOG_CONFIG_KEY,
             Jsons.jsonNode(ofEntries(
                 entry(ICEBERG_CATALOG_TYPE_CONFIG_KEY, "Rest"),
                 entry(REST_CATALOG_URI_CONFIG_KEY, "wrong-host:1234")))),
-        entry(ICEBERG_STORAGE_CONFIG_KEY,
-            Jsons.jsonNode(ofEntries(entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
+        entry(
+            ICEBERG_STORAGE_CONFIG_KEY,
+            Jsons.jsonNode(ofEntries(
+                entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
                 entry(S3_ACCESS_KEY_ID_CONFIG_KEY, "wrong_access_key"),
                 entry(S3_SECRET_KEY_CONFIG_KEY, "wrong_secret_key"),
                 entry(S3_WAREHOUSE_URI_CONFIG_KEY, "s3://warehouse/"),

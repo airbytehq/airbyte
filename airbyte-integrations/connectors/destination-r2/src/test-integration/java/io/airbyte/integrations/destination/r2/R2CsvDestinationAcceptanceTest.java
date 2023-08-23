@@ -18,5 +18,4 @@ public class R2CsvDestinationAcceptanceTest extends S3BaseCsvDestinationAcceptan
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
-
 }

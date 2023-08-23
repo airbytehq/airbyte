@@ -13,5 +13,4 @@ public interface DestinationFileWriter extends DestinationWriter {
   S3Format getFileFormat();
 
   String getOutputPath();
-
 }

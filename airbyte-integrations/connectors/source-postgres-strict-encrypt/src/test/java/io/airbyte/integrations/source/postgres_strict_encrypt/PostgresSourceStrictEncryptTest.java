@@ -27,10 +27,13 @@ import org.testcontainers.utility.DockerImageName;
 public class PostgresSourceStrictEncryptTest {
 
   private final PostgresSourceStrictEncrypt source = new PostgresSourceStrictEncrypt();
-  private final PostgreSQLContainer<?> postgreSQLContainerNoSSL = new PostgreSQLContainer<>("postgres:13-alpine");
-  private final PostgreSQLContainer<?> postgreSQLContainerWithSSL =
-      new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
-          .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
+  private final PostgreSQLContainer<?> postgreSQLContainerNoSSL =
+      new PostgreSQLContainer<>("postgres:13-alpine");
+  private final PostgreSQLContainer<?> postgreSQLContainerWithSSL = new PostgreSQLContainer<>(
+          DockerImageName.parse("marcosmarxm/postgres-ssl:dev")
+              .asCompatibleSubstituteFor("postgres"))
+      .withCommand(
+          "postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
   private static final List<String> NON_STRICT_SSL_MODES = List.of("disable", "allow", "prefer");
   private static final String SSL_MODE_REQUIRE = "require";
 
@@ -81,7 +84,6 @@ public class PostgresSourceStrictEncryptTest {
         final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode, false);
         assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
         assertTrue(connectionStatus.getMessage().contains("Connection is not available"));
-
       }
     } finally {
       bastion.stopAndClose();
@@ -96,7 +98,9 @@ public class PostgresSourceStrictEncryptTest {
       db.start();
       final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, SSL_MODE_REQUIRE, false);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
-      assertEquals("State code: 08004; Message: The server does not support SSL.", connectionStatus.getMessage());
+      assertEquals(
+          "State code: 08004; Message: The server does not support SSL.",
+          connectionStatus.getMessage());
 
     } finally {
       bastion.stopAndClose();
@@ -109,7 +113,8 @@ public class PostgresSourceStrictEncryptTest {
     try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL) {
       db.start();
 
-      final ImmutableMap<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, SSL_MODE_REQUIRE, false).build();
+      final ImmutableMap<Object, Object> configBuilderWithSSLMode =
+          getDatabaseConfigBuilderWithSSLMode(db, SSL_MODE_REQUIRE, false).build();
       final JsonNode config = Jsons.jsonNode(configBuilderWithSSLMode);
       addNoTunnel((ObjectNode) config);
       final AirbyteConnectionStatus connectionStatus = source.check(config);
@@ -132,13 +137,13 @@ public class PostgresSourceStrictEncryptTest {
     }
   }
 
-  private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(final PostgreSQLContainer<?> db,
-                                                                                   final String sslMode,
-                                                                                   final boolean innerAddress) {
-    final var containerAddress = innerAddress ? SshHelpers.getInnerContainerAddress(db) : SshHelpers.getOuterContainerAddress(db);
+  private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(
+      final PostgreSQLContainer<?> db, final String sslMode, final boolean innerAddress) {
+    final var containerAddress = innerAddress
+        ? SshHelpers.getInnerContainerAddress(db)
+        : SshHelpers.getOuterContainerAddress(db);
     return ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(
-            containerAddress.left))
+        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(containerAddress.left))
         .put(JdbcUtils.PORT_KEY, containerAddress.right)
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
@@ -171,18 +176,19 @@ public class PostgresSourceStrictEncryptTest {
     }
   }
 
-  private AirbyteConnectionStatus checkWithTunnel(final PostgreSQLContainer<?> db, final String sslmode, final boolean innerAddress)
+  private AirbyteConnectionStatus checkWithTunnel(
+      final PostgreSQLContainer<?> db, final String sslmode, final boolean innerAddress)
       throws Exception {
-    final ImmutableMap.Builder<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslmode, true);
-    final JsonNode configWithSSLModeDisable =
-        bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode, innerAddress);
+    final ImmutableMap.Builder<Object, Object> configBuilderWithSSLMode =
+        getDatabaseConfigBuilderWithSSLMode(db, sslmode, true);
+    final JsonNode configWithSSLModeDisable = bastion.getTunnelConfig(
+        SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode, innerAddress);
     return source.check(configWithSSLModeDisable);
   }
 
   private static void addNoTunnel(final ObjectNode config) {
-    config.putIfAbsent("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
-        .put("tunnel_method", "NO_TUNNEL")
-        .build()));
+    config.putIfAbsent(
+        "tunnel_method",
+        Jsons.jsonNode(ImmutableMap.builder().put("tunnel_method", "NO_TUNNEL").build()));
   }
-
 }

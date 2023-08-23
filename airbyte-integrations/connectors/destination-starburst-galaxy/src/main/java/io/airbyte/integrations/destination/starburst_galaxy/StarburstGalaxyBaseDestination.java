@@ -24,8 +24,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 
-public abstract class StarburstGalaxyBaseDestination
-    extends CopyDestination {
+public abstract class StarburstGalaxyBaseDestination extends CopyDestination {
 
   public StarburstGalaxyBaseDestination() {
     super(CATALOG_SCHEMA);
@@ -39,9 +38,10 @@ public abstract class StarburstGalaxyBaseDestination
   protected abstract void checkPersistence(StarburstGalaxyStagingStorageConfig galaxyStorageConfig);
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final StarburstGalaxyDestinationConfig starburstGalaxyConfig = get(config);
     final DataSource dataSource = getDataSource(config);
     return create(
@@ -83,11 +83,12 @@ public abstract class StarburstGalaxyBaseDestination
     return new StarburstGalaxySqlOperations();
   }
 
-  public static String getGalaxyConnectionString(final StarburstGalaxyDestinationConfig galaxyDestinationConfig) {
-    return format(STARBURST.getUrlFormatString(),
+  public static String getGalaxyConnectionString(
+      final StarburstGalaxyDestinationConfig galaxyDestinationConfig) {
+    return format(
+        STARBURST.getUrlFormatString(),
         galaxyDestinationConfig.galaxyServerHostname(),
         galaxyDestinationConfig.galaxyPort(),
         galaxyDestinationConfig.galaxyCatalog());
   }
-
 }

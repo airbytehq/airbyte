@@ -70,7 +70,8 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * @throws IOException
    */
   protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
-    writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
+    writeRecord(
+        Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
   }
 
   /**
@@ -169,7 +170,10 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
       closeWriter();
       bufferStorage.close();
       inputStream = convertToInputStream();
-      LOGGER.info("Finished writing data to {} ({})", getFilename(), FileUtils.byteCountToDisplaySize(byteCounter.getCount()));
+      LOGGER.info(
+          "Finished writing data to {} ({})",
+          getFilename(),
+          FileUtils.byteCountToDisplaySize(byteCounter.getCount()));
     }
   }
 
@@ -205,5 +209,4 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   public int getMaxConcurrentStreamsInBuffer() {
     return bufferStorage.getMaxConcurrentStreamsInBuffer();
   }
-
 }

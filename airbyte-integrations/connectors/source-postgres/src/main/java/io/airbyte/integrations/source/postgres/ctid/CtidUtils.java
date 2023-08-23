@@ -18,39 +18,40 @@ import java.util.stream.Collectors;
 
 public class CtidUtils {
 
-  public static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,
-                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams,
-                                                                        final SyncMode syncMode) {
-    final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(fullCatalog);
+  public static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(
+      final ConfiguredAirbyteCatalog fullCatalog,
+      final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams,
+      final SyncMode syncMode) {
+    final Set<AirbyteStreamNameNamespacePair> allStreams =
+        AirbyteStreamNameNamespacePair.fromConfiguredCatalog(fullCatalog);
 
-    final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySeenStreams));
+    final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams =
+        new HashSet<>(Sets.difference(allStreams, alreadySeenStreams));
 
     return fullCatalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == syncMode)
-        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+        .filter(stream -> newlyAddedStreams.contains(
+            AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }
 
-  public static List<ConfiguredAirbyteStream> getStreamsFromStreamPairs(final ConfiguredAirbyteCatalog catalog,
-                                                                        final Set<AirbyteStreamNameNamespacePair> streamPairs,
-                                                                        final SyncMode syncMode) {
+  public static List<ConfiguredAirbyteStream> getStreamsFromStreamPairs(
+      final ConfiguredAirbyteCatalog catalog,
+      final Set<AirbyteStreamNameNamespacePair> streamPairs,
+      final SyncMode syncMode) {
 
     return catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == syncMode)
-        .filter(stream -> streamPairs.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+        .filter(stream -> streamPairs.contains(
+            AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }
 
-  public record CtidStreams(List<ConfiguredAirbyteStream> streamsForCtidSync,
-                            List<AirbyteStateMessage> statesFromCtidSync) {
+  public record CtidStreams(
+      List<ConfiguredAirbyteStream> streamsForCtidSync,
+      List<AirbyteStateMessage> statesFromCtidSync) {}
 
-  }
-
-  public record StreamsCategorised<T> (CtidStreams ctidStreams,
-                                       T remainingStreams) {
-
-  }
-
+  public record StreamsCategorised<T>(CtidStreams ctidStreams, T remainingStreams) {}
 }

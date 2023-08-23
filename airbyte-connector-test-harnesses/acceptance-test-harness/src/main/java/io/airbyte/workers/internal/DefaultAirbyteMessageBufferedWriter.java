@@ -32,5 +32,4 @@ public class DefaultAirbyteMessageBufferedWriter implements AirbyteMessageBuffer
   public void close() throws IOException {
     writer.close();
   }
-
 }

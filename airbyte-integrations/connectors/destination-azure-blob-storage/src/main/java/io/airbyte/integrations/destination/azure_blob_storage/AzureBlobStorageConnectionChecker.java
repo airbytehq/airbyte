@@ -24,33 +24,30 @@ public class AzureBlobStorageConnectionChecker {
   private BlobContainerClient containerClient; // aka schema in SQL DBs
   private final AppendBlobClient appendBlobClient; // aka "SQL Table"
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-      AzureBlobStorageConnectionChecker.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(AzureBlobStorageConnectionChecker.class);
 
   public AzureBlobStorageConnectionChecker(
-                                           final AzureBlobStorageDestinationConfig azureBlobStorageConfig) {
+      final AzureBlobStorageDestinationConfig azureBlobStorageConfig) {
 
     final StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
-        azureBlobStorageConfig.getAccountName(),
-        azureBlobStorageConfig.getAccountKey());
+        azureBlobStorageConfig.getAccountName(), azureBlobStorageConfig.getAccountKey());
 
-    this.appendBlobClient =
-        new SpecializedBlobClientBuilder()
-            .endpoint(azureBlobStorageConfig.getEndpointUrl())
-            .credential(credential)
-            .containerName(azureBlobStorageConfig.getContainerName()) // Like schema in DB
-            .blobName(TEST_BLOB_NAME_PREFIX + UUID.randomUUID()) // Like table in DB
-            .buildAppendBlobClient();
+    this.appendBlobClient = new SpecializedBlobClientBuilder()
+        .endpoint(azureBlobStorageConfig.getEndpointUrl())
+        .credential(credential)
+        .containerName(azureBlobStorageConfig.getContainerName()) // Like schema in DB
+        .blobName(TEST_BLOB_NAME_PREFIX + UUID.randomUUID()) // Like table in DB
+        .buildAppendBlobClient();
   }
 
   public AzureBlobStorageConnectionChecker(final AzureBlobStorageConfig azureBlobStorageConfig) {
-    this.appendBlobClient =
-        new SpecializedBlobClientBuilder()
-            .endpoint(azureBlobStorageConfig.getEndpointUrl())
-            .sasToken(azureBlobStorageConfig.getSasToken())
-            .containerName(azureBlobStorageConfig.getContainerName()) // Like schema in DB
-            .blobName(TEST_BLOB_NAME_PREFIX + UUID.randomUUID()) // Like table in DB
-            .buildAppendBlobClient();
+    this.appendBlobClient = new SpecializedBlobClientBuilder()
+        .endpoint(azureBlobStorageConfig.getEndpointUrl())
+        .sasToken(azureBlobStorageConfig.getSasToken())
+        .containerName(azureBlobStorageConfig.getContainerName()) // Like schema in DB
+        .blobName(TEST_BLOB_NAME_PREFIX + UUID.randomUUID()) // Like table in DB
+        .buildAppendBlobClient();
   }
 
   /*
@@ -61,8 +58,8 @@ public class AzureBlobStorageConnectionChecker {
     initTestContainerAndBlob();
     writeUsingAppendBlock("Some test data");
     listBlobsInContainer()
-        .forEach(
-            blobItem -> LOGGER.info("Blob name: {}, Snapshot: {}", blobItem.getName(), blobItem.getSnapshot()));
+        .forEach(blobItem ->
+            LOGGER.info("Blob name: {}, Snapshot: {}", blobItem.getName(), blobItem.getSnapshot()));
 
     deleteBlob();
   }
@@ -91,8 +88,8 @@ public class AzureBlobStorageConnectionChecker {
     LOGGER.info("Writing test data to Azure Blob storage: {}", data);
     final InputStream dataStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
 
-    final Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
-        .getBlobCommittedBlockCount();
+    final Integer blobCommittedBlockCount =
+        appendBlobClient.appendBlock(dataStream, data.length()).getBlobCommittedBlockCount();
 
     LOGGER.info("blobCommittedBlockCount: {}", blobCommittedBlockCount);
   }
@@ -120,5 +117,4 @@ public class AzureBlobStorageConnectionChecker {
     LOGGER.info("Deleting blob: {}", containerClient.getBlobContainerName());
     containerClient.delete(); // remove aka "SQL Schema" used
   }
-
 }

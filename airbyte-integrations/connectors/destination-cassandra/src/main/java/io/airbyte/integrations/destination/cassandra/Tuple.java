@@ -29,10 +29,6 @@ public class Tuple<V1, V2> {
 
   @Override
   public String toString() {
-    return "Tuple{" +
-        "value1=" + value1 +
-        ", value2=" + value2 +
-        '}';
+    return "Tuple{" + "value1=" + value1 + ", value2=" + value2 + '}';
   }
-
 }

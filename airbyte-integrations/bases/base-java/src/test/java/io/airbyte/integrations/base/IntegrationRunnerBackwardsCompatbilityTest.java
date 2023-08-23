@@ -34,7 +34,8 @@ public class IntegrationRunnerBackwardsCompatbilityTest {
 
     for (final String testInput : testInputs) {
       // get new output
-      final InputStream stream1 = new ByteArrayInputStream(testInput.getBytes(StandardCharsets.UTF_8));
+      final InputStream stream1 =
+          new ByteArrayInputStream(testInput.getBytes(StandardCharsets.UTF_8));
       final MockConsumer consumer2 = new MockConsumer();
       try (final BufferedInputStream bis = new BufferedInputStream(stream1);
           final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -44,7 +45,8 @@ public class IntegrationRunnerBackwardsCompatbilityTest {
 
       // get old output
       final List<String> oldOutput = new ArrayList<>();
-      final InputStream stream2 = new ByteArrayInputStream(testInput.getBytes(StandardCharsets.UTF_8));
+      final InputStream stream2 =
+          new ByteArrayInputStream(testInput.getBytes(StandardCharsets.UTF_8));
       final Scanner scanner = new Scanner(stream2, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
       while (scanner.hasNext()) {
         oldOutput.add(scanner.next());
@@ -59,9 +61,7 @@ public class IntegrationRunnerBackwardsCompatbilityTest {
     private final List<String> output = new ArrayList<>();
 
     @Override
-    public void start() {
-
-    }
+    public void start() {}
 
     @Override
     public void accept(final String message, final Integer sizeInBytes) {
@@ -69,14 +69,10 @@ public class IntegrationRunnerBackwardsCompatbilityTest {
     }
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
 
     public List<String> getOutput() {
       return new ArrayList<>(output);
     }
-
   }
-
 }

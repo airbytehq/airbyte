@@ -38,17 +38,16 @@ class YugabytedbDestinationTest {
     assertThat(jdbcConfig.get("schema").asText()).isEqualTo("public");
     assertThat(jdbcConfig.get("username").asText()).isEqualTo("yugabyte");
     assertThat(jdbcConfig.get("password").asText()).isEqualTo("yugabyte");
-    assertThat(jdbcConfig.get("jdbc_url").asText()).isEqualTo("jdbc:yugabytedb://localhost:5433/yugabyte");
-
+    assertThat(jdbcConfig.get("jdbc_url").asText())
+        .isEqualTo("jdbc:yugabytedb://localhost:5433/yugabyte");
   }
 
   @Test
   void testGetDefaultConnectionProperties() {
 
-    var map = yugabytedbDestination.getDefaultConnectionProperties(Jsons.jsonNode(Collections.emptyMap()));
+    var map = yugabytedbDestination.getDefaultConnectionProperties(
+        Jsons.jsonNode(Collections.emptyMap()));
 
     assertThat(map).isEmpty();
-
   }
-
 }

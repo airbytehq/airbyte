@@ -29,9 +29,8 @@ import java.util.Map;
 
 public class AirbyteMessageUtils {
 
-  public static AirbyteMessage createRecordMessage(final String tableName,
-                                                   final JsonNode record,
-                                                   final Instant timeExtracted) {
+  public static AirbyteMessage createRecordMessage(
+      final String tableName, final JsonNode record, final Instant timeExtracted) {
 
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
@@ -41,37 +40,34 @@ public class AirbyteMessageUtils {
             .withEmittedAt(timeExtracted.getEpochSecond()));
   }
 
-  public static AirbyteMessage createLogMessage(final AirbyteLogMessage.Level level,
-                                                final String message) {
+  public static AirbyteMessage createLogMessage(
+      final AirbyteLogMessage.Level level, final String message) {
 
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.LOG)
-        .withLog(new AirbyteLogMessage()
-            .withLevel(level)
-            .withMessage(message));
+        .withLog(new AirbyteLogMessage().withLevel(level).withMessage(message));
   }
 
-  public static AirbyteMessage createRecordMessage(final String tableName,
-                                                   final String key,
-                                                   final String value) {
+  public static AirbyteMessage createRecordMessage(
+      final String tableName, final String key, final String value) {
     return createRecordMessage(tableName, ImmutableMap.of(key, value));
   }
 
-  public static AirbyteMessage createRecordMessage(final String tableName,
-                                                   final String key,
-                                                   final Integer value) {
+  public static AirbyteMessage createRecordMessage(
+      final String tableName, final String key, final Integer value) {
     return createRecordMessage(tableName, ImmutableMap.of(key, value));
   }
 
-  public static AirbyteMessage createRecordMessage(final String tableName,
-                                                   final Map<String, ?> record) {
+  public static AirbyteMessage createRecordMessage(
+      final String tableName, final Map<String, ?> record) {
     return createRecordMessage(tableName, Jsons.jsonNode(record), Instant.EPOCH);
   }
 
   public static AirbyteMessage createRecordMessage(final String streamName, final int recordData) {
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(recordData)));
+        .withRecord(
+            new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(recordData)));
   }
 
   public static AirbyteMessage createStateMessage(final int stateData) {
@@ -86,39 +82,48 @@ public class AirbyteMessageUtils {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))));
   }
 
-  public static AirbyteStateMessage createStreamStateMessage(final String streamName, final int stateData) {
+  public static AirbyteStateMessage createStreamStateMessage(
+      final String streamName, final int stateData) {
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData)));
   }
 
-  public static AirbyteMessage createGlobalStateMessage(final int stateData, final String... streamNames) {
+  public static AirbyteMessage createGlobalStateMessage(
+      final int stateData, final String... streamNames) {
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     for (final String streamName : streamNames) {
       streamStates.add(createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData)));
     }
     return new AirbyteMessage()
         .withType(Type.STATE)
-        .withState(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(new AirbyteGlobalState().withStreamStates(streamStates)));
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.GLOBAL)
+            .withGlobal(new AirbyteGlobalState().withStreamStates(streamStates)));
   }
 
   public static AirbyteStreamState createStreamState(final String streamName) {
-    return new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName));
+    return new AirbyteStreamState()
+        .withStreamDescriptor(new StreamDescriptor().withName(streamName));
   }
 
-  public static AirbyteMessage createStreamEstimateMessage(final String name, final String namespace, final long byteEst, final long rowEst) {
-    return createEstimateMessage(AirbyteEstimateTraceMessage.Type.STREAM, name, namespace, byteEst, rowEst);
+  public static AirbyteMessage createStreamEstimateMessage(
+      final String name, final String namespace, final long byteEst, final long rowEst) {
+    return createEstimateMessage(
+        AirbyteEstimateTraceMessage.Type.STREAM, name, namespace, byteEst, rowEst);
   }
 
   public static AirbyteMessage createSyncEstimateMessage(final long byteEst, final long rowEst) {
-    return createEstimateMessage(AirbyteEstimateTraceMessage.Type.SYNC, null, null, byteEst, rowEst);
+    return createEstimateMessage(
+        AirbyteEstimateTraceMessage.Type.SYNC, null, null, byteEst, rowEst);
   }
 
-  public static AirbyteMessage createEstimateMessage(AirbyteEstimateTraceMessage.Type type,
-                                                     final String name,
-                                                     final String namespace,
-                                                     final long byteEst,
-                                                     final long rowEst) {
+  public static AirbyteMessage createEstimateMessage(
+      AirbyteEstimateTraceMessage.Type type,
+      final String name,
+      final String namespace,
+      final long byteEst,
+      final long rowEst) {
     final var est = new AirbyteEstimateTraceMessage()
         .withType(type)
         .withByteEstimate(byteEst)
@@ -133,7 +138,8 @@ public class AirbyteMessageUtils {
 
     return new AirbyteMessage()
         .withType(Type.TRACE)
-        .withTrace(new AirbyteTraceMessage().withType(AirbyteTraceMessage.Type.ESTIMATE)
+        .withTrace(new AirbyteTraceMessage()
+            .withType(AirbyteTraceMessage.Type.ESTIMATE)
             .withEstimate(est));
   }
 
@@ -143,13 +149,15 @@ public class AirbyteMessageUtils {
         .withTrace(createErrorTraceMessage(message, emittedAt));
   }
 
-  public static AirbyteTraceMessage createErrorTraceMessage(final String message, final Double emittedAt) {
+  public static AirbyteTraceMessage createErrorTraceMessage(
+      final String message, final Double emittedAt) {
     return createErrorTraceMessage(message, emittedAt, null);
   }
 
-  public static AirbyteTraceMessage createErrorTraceMessage(final String message,
-                                                            final Double emittedAt,
-                                                            final AirbyteErrorTraceMessage.FailureType failureType) {
+  public static AirbyteTraceMessage createErrorTraceMessage(
+      final String message,
+      final Double emittedAt,
+      final AirbyteErrorTraceMessage.FailureType failureType) {
     final var msg = new AirbyteTraceMessage()
         .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
         .withError(new AirbyteErrorTraceMessage().withMessage(message))
@@ -162,14 +170,13 @@ public class AirbyteMessageUtils {
     return msg;
   }
 
-  public static AirbyteMessage createConfigControlMessage(final Config config, final Double emittedAt) {
+  public static AirbyteMessage createConfigControlMessage(
+      final Config config, final Double emittedAt) {
     return new AirbyteMessage()
         .withType(Type.CONTROL)
         .withControl(new AirbyteControlMessage()
             .withEmittedAt(emittedAt)
             .withType(AirbyteControlMessage.Type.CONNECTOR_CONFIG)
-            .withConnectorConfig(new AirbyteControlConnectorConfigMessage()
-                .withConfig(config)));
+            .withConnectorConfig(new AirbyteControlConnectorConfigMessage().withConfig(config)));
   }
-
 }

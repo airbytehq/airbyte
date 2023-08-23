@@ -56,14 +56,20 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
   }
 
   public List<String> listTables() {
-    return dynamoDbClient.listTables()
+    return dynamoDbClient
+        .listTables()
         // filter on table status?
         .tableNames();
   }
 
   public List<String> primaryKey(String tableName) {
-    DescribeTableRequest describeTableRequest = DescribeTableRequest.builder().tableName(tableName).build();
-    return dynamoDbClient.describeTable(describeTableRequest).table().attributeDefinitions().stream()
+    DescribeTableRequest describeTableRequest =
+        DescribeTableRequest.builder().tableName(tableName).build();
+    return dynamoDbClient
+        .describeTable(describeTableRequest)
+        .table()
+        .attributeDefinitions()
+        .stream()
         .map(AttributeDefinition::attributeName)
         .toList();
   }
@@ -72,10 +78,8 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
 
     List<Map<String, AttributeValue>> items = new ArrayList<>();
 
-    ScanRequest scanRequest = ScanRequest.builder()
-        .limit(sampleSize)
-        .tableName(tableName)
-        .build();
+    ScanRequest scanRequest =
+        ScanRequest.builder().limit(sampleSize).tableName(tableName).build();
 
     var scanIterable = dynamoDbClient.scanPaginator(scanRequest);
     int scannedItems = 0;
@@ -90,7 +94,6 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
       scannedItems += scanResponse.count();
 
       items.addAll(scanResponse.items());
-
     }
 
     /*
@@ -107,7 +110,8 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
     return schemaObjectMapper.convertValue(mergedItems, JsonNode.class);
   }
 
-  public List<JsonNode> scanTable(String tableName, Set<String> attributes, FilterAttribute filterAttribute) {
+  public List<JsonNode> scanTable(
+      String tableName, Set<String> attributes, FilterAttribute filterAttribute) {
     List<JsonNode> items = new ArrayList<>();
 
     String prefix = "dyndb";
@@ -121,31 +125,34 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
 
     Map<String, String> mappingAttributes = dynamodbConfig.reservedAttributeNames().stream()
         .filter(attributes::contains)
-        .collect(Collectors.toUnmodifiableMap(k -> "#" + prefix + "_" + k.replaceAll("[-.]", ""), k -> k));
+        .collect(Collectors.toUnmodifiableMap(
+            k -> "#" + prefix + "_" + k.replaceAll("[-.]", ""), k -> k));
 
     var projectionAttributes = String.join(", ", copyAttributes);
 
-    ScanRequest.Builder scanRequestBuilder = ScanRequest.builder()
-        .tableName(tableName)
-        .projectionExpression(projectionAttributes);
+    ScanRequest.Builder scanRequestBuilder =
+        ScanRequest.builder().tableName(tableName).projectionExpression(projectionAttributes);
 
     if (!mappingAttributes.isEmpty()) {
-      scanRequestBuilder
-          .expressionAttributeNames(mappingAttributes);
+      scanRequestBuilder.expressionAttributeNames(mappingAttributes);
     }
 
-    if (filterAttribute != null && filterAttribute.name() != null &&
-        filterAttribute.value() != null && filterAttribute.type() != null) {
+    if (filterAttribute != null
+        && filterAttribute.name() != null
+        && filterAttribute.value() != null
+        && filterAttribute.type() != null) {
 
       var filterName = filterAttribute.name();
       var filterValue = filterAttribute.value();
 
-      // Dynamodb supports timestamp filtering based on ISO format as string and Epoch format as number
+      // Dynamodb supports timestamp filtering based on ISO format as string and Epoch format as
+      // number
       // type
-      AttributeValue attributeValue = switch (filterAttribute.type()) {
-        case S -> AttributeValue.builder().s(filterValue).build();
-        case N -> AttributeValue.builder().n(filterValue).build();
-      };
+      AttributeValue attributeValue =
+          switch (filterAttribute.type()) {
+            case S -> AttributeValue.builder().s(filterValue).build();
+            case N -> AttributeValue.builder().n(filterValue).build();
+          };
 
       String comparator;
       try {
@@ -157,12 +164,12 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
         comparator = ">";
       }
 
-      String filterPlaceholder =
-          dynamodbConfig.reservedAttributeNames().contains(filterName) ? "#" + prefix + "_" + filterName.replaceAll("[-.]", "") : filterName;
+      String filterPlaceholder = dynamodbConfig.reservedAttributeNames().contains(filterName)
+          ? "#" + prefix + "_" + filterName.replaceAll("[-.]", "")
+          : filterName;
       scanRequestBuilder
           .filterExpression(filterPlaceholder + " " + comparator + " :timestamp")
           .expressionAttributeValues(Map.of(":timestamp", attributeValue));
-
     }
 
     var scanIterable = dynamoDbClient.scanPaginator(scanRequestBuilder.build());
@@ -171,7 +178,6 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
       scanResponse.items().stream()
           .map(attr -> attributeObjectMapper.convertValue(attr, JsonNode.class))
           .forEach(items::add);
-
     }
 
     return items;
@@ -185,12 +191,8 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
   public record FilterAttribute(String name, String value, FilterType type) {
 
     public enum FilterType {
-
       S,
       N
-
     }
-
   }
-
 }

@@ -8,5 +8,4 @@ package io.airbyte.commons.functional;
 public interface CheckedSupplier<T, E extends Throwable> {
 
   T get() throws E;
-
 }

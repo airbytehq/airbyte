@@ -37,7 +37,8 @@ public class RedpandaDestination extends BaseConnector implements Destination {
       redpandaOperations = new RedpandaOperations(redpandaConfig);
       redpandaOperations.createTopic(
           List.of(new RedpandaOperations.TopicInfo(topicName, Optional.empty(), Optional.empty())));
-      redpandaOperations.putRecordBlocking(topicName, UUID.randomUUID().toString(), Jsons.emptyObject());
+      redpandaOperations.putRecordBlocking(
+          topicName, UUID.randomUUID().toString(), Jsons.emptyObject());
       redpandaOperations.flush();
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
@@ -56,12 +57,15 @@ public class RedpandaDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     RedpandaConfig redpandaConfig = RedpandaConfig.createConfig(config);
-    return new RedpandaMessageConsumer(configuredCatalog, new RedpandaOperations(redpandaConfig), redpandaConfig,
+    return new RedpandaMessageConsumer(
+        configuredCatalog,
+        new RedpandaOperations(redpandaConfig),
+        redpandaConfig,
         outputRecordCollector);
   }
-
 }

@@ -42,7 +42,9 @@ public class AzureBlobStorageSourceAcceptanceTest extends SourceAcceptanceTest {
     var azureBlobStorageConfig = AzureBlobStorageConfig.createAzureBlobStorageConfig(jsonConfig);
     var blobContainerClient = azureBlobStorageConfig.createBlobContainerClient();
     blobContainerClient.createIfNotExists();
-    blobContainerClient.getBlobClient("FolderA/FolderB/blob1.json").upload(BinaryData.fromString("{\"attr1\":\"str_1\",\"attr2\":1}\n"));
+    blobContainerClient
+        .getBlobClient("FolderA/FolderB/blob1.json")
+        .upload(BinaryData.fromString("{\"attr1\":\"str_1\",\"attr2\":1}\n"));
   }
 
   @Override
@@ -65,5 +67,4 @@ public class AzureBlobStorageSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

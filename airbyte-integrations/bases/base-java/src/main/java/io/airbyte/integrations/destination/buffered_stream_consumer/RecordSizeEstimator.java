@@ -75,5 +75,4 @@ public class RecordSizeEstimator {
     // assume UTF-8 encoding, and each char is 4 bytes long
     return Jsons.serialize(data).length() * 4L;
   }
-
 }

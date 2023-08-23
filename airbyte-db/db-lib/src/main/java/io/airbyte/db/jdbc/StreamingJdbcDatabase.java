@@ -33,9 +33,10 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
 
   private final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider;
 
-  public StreamingJdbcDatabase(final DataSource dataSource,
-                               final JdbcCompatibleSourceOperations<?> sourceOperations,
-                               final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider) {
+  public StreamingJdbcDatabase(
+      final DataSource dataSource,
+      final JdbcCompatibleSourceOperations<?> sourceOperations,
+      final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider) {
     super(dataSource, sourceOperations);
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
   }
@@ -58,8 +59,9 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
    */
   @Override
   @MustBeClosed
-  public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                   final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeQuery(
+      final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try {
       final Connection connection = dataSource.getConnection();
@@ -87,31 +89,32 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
    * This method differs from {@link DefaultJdbcDatabase#toUnsafeStream} in that it takes a streaming
    * config that adjusts the fetch size dynamically according to sampled row size.
    */
-  protected <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
-                                         final CheckedFunction<ResultSet, T, SQLException> mapper,
-                                         final JdbcStreamingQueryConfig streamingConfig) {
-    return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
+  protected <T> Stream<T> toUnsafeStream(
+      final ResultSet resultSet,
+      final CheckedFunction<ResultSet, T, SQLException> mapper,
+      final JdbcStreamingQueryConfig streamingConfig) {
+    return StreamSupport.stream(
+        new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
-      @Override
-      public boolean tryAdvance(final Consumer<? super T> action) {
-        try {
-          if (!resultSet.next()) {
-            resultSet.close();
-            return false;
+          @Override
+          public boolean tryAdvance(final Consumer<? super T> action) {
+            try {
+              if (!resultSet.next()) {
+                resultSet.close();
+                return false;
+              }
+              final T dataRow = mapper.apply(resultSet);
+              streamingConfig.accept(resultSet, dataRow);
+              action.accept(dataRow);
+              return true;
+            } catch (final SQLException e) {
+              LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
+              streamException = e;
+              isStreamFailed = true;
+              throw new RuntimeException(e);
+            }
           }
-          final T dataRow = mapper.apply(resultSet);
-          streamingConfig.accept(resultSet, dataRow);
-          action.accept(dataRow);
-          return true;
-        } catch (final SQLException e) {
-          LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
-          streamException = e;
-          isStreamFailed = true;
-          throw new RuntimeException(e);
-        }
-      }
-
-    }, false);
+        },
+        false);
   }
-
 }

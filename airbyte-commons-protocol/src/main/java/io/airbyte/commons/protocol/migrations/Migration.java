@@ -17,5 +17,4 @@ public interface Migration {
    * The New version, note that due to semver, the important piece of information is the Major.
    */
   Version getCurrentVersion();
-
 }

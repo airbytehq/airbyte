@@ -37,10 +37,12 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode config;
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv testEnv) throws IOException, SQLException {
+  protected void setupEnvironment(final TestDestinationEnv testEnv)
+      throws IOException, SQLException {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a big query credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
@@ -60,12 +62,15 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
 
     database = new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
 
-    final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(datasetLocation).build();
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(
+            config.get(CONFIG_DATASET_ID).asText())
+        .setLocation(datasetLocation)
+        .build();
     dataset = database.getBigQuery().create(datasetInfo);
 
     database.execute("CREATE TABLE " + datasetId + ".id_and_name(id INT64, name STRING);");
-    database.execute("INSERT INTO " + datasetId + ".id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+    database.execute("INSERT INTO " + datasetId
+        + ".id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
   }
 
   @Override
@@ -101,5 +106,4 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

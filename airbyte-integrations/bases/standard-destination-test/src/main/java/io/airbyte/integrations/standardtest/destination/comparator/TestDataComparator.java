@@ -10,5 +10,4 @@ import java.util.List;
 public interface TestDataComparator {
 
   void assertSameData(final List<JsonNode> expected, final List<JsonNode> actual);
-
 }

@@ -17,37 +17,30 @@ public class PostgresXminHandlerTest {
   @Test
   void testWraparound() {
     final XminStatus initialStatus =
-        new XminStatus()
-            .withNumWraparound(0L)
-            .withXminRawValue(5555L)
-            .withXminRawValue(5555L);
+        new XminStatus().withNumWraparound(0L).withXminRawValue(5555L).withXminRawValue(5555L);
     final JsonNode initialStatusAsJson = Jsons.jsonNode(initialStatus);
 
     final XminStatus noWrapAroundStatus =
-        new XminStatus()
-            .withNumWraparound(0L)
-            .withXminRawValue(5588L)
-            .withXminRawValue(5588L);
+        new XminStatus().withNumWraparound(0L).withXminRawValue(5588L).withXminRawValue(5588L);
     assertFalse(PostgresXminHandler.isSingleWraparound(initialStatus, noWrapAroundStatus));
     assertFalse(PostgresXminHandler.shouldPerformFullSync(noWrapAroundStatus, initialStatusAsJson));
 
-    final XminStatus singleWrapAroundStatus =
-        new XminStatus()
-            .withNumWraparound(1L)
-            .withXminRawValue(5588L)
-            .withXminRawValue(4294972884L);
+    final XminStatus singleWrapAroundStatus = new XminStatus()
+        .withNumWraparound(1L)
+        .withXminRawValue(5588L)
+        .withXminRawValue(4294972884L);
 
     assertTrue(PostgresXminHandler.isSingleWraparound(initialStatus, singleWrapAroundStatus));
-    assertFalse(PostgresXminHandler.shouldPerformFullSync(singleWrapAroundStatus, initialStatusAsJson));
+    assertFalse(
+        PostgresXminHandler.shouldPerformFullSync(singleWrapAroundStatus, initialStatusAsJson));
 
-    final XminStatus doubleWrapAroundStatus =
-        new XminStatus()
-            .withNumWraparound(2L)
-            .withXminRawValue(5588L)
-            .withXminRawValue(8589940180L);
+    final XminStatus doubleWrapAroundStatus = new XminStatus()
+        .withNumWraparound(2L)
+        .withXminRawValue(5588L)
+        .withXminRawValue(8589940180L);
 
     assertFalse(PostgresXminHandler.isSingleWraparound(initialStatus, doubleWrapAroundStatus));
-    assertTrue(PostgresXminHandler.shouldPerformFullSync(doubleWrapAroundStatus, initialStatusAsJson));
+    assertTrue(
+        PostgresXminHandler.shouldPerformFullSync(doubleWrapAroundStatus, initialStatusAsJson));
   }
-
 }

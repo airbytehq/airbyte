@@ -34,8 +34,8 @@ class CassandraDestination extends BaseConnector implements Destination {
     try {
       cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
       // check connection and write permissions
-      cassandraCqlProvider.createKeySpaceIfNotExists(cassandraConfig.getKeyspace(),
-          cassandraConfig.getReplication());
+      cassandraCqlProvider.createKeySpaceIfNotExists(
+          cassandraConfig.getKeyspace(), cassandraConfig.getReplication());
       cassandraCqlProvider.createTableIfNotExists(cassandraConfig.getKeyspace(), tableName);
       cassandraCqlProvider.insert(cassandraConfig.getKeyspace(), tableName, "{}");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
@@ -55,12 +55,13 @@ class CassandraDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final CassandraConfig cassandraConfig = new CassandraConfig(config);
     final CassandraCqlProvider cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
-    return new CassandraMessageConsumer(cassandraConfig, configuredCatalog, cassandraCqlProvider, outputRecordCollector);
+    return new CassandraMessageConsumer(
+        cassandraConfig, configuredCatalog, cassandraCqlProvider, outputRecordCollector);
   }
-
 }

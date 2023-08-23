@@ -20,14 +20,14 @@ public class DatabricksConstants {
   public static final String DATABRICKS_CATALOG_JDBC_KEY = "ConnCatalog";
   public static final String DATABRICKS_SCHEMA_JDBC_KEY = "ConnSchema";
   public static final String DATABRICKS_PURGE_STAGING_DATA_KEY = "purge_staging_data";
-  public static final String DATABRICKS_PERSONAL_ACCESS_TOKEN_KEY = "databricks_personal_access_token";
+  public static final String DATABRICKS_PERSONAL_ACCESS_TOKEN_KEY =
+      "databricks_personal_access_token";
   public static final String DATABRICKS_USERNAME = "token";
-  public static final String DATABRICKS_DRIVER_CLASS = DatabaseDriver.DATABRICKS.getDriverClassName();
+  public static final String DATABRICKS_DRIVER_CLASS =
+      DatabaseDriver.DATABRICKS.getDriverClassName();
 
-  public static final Set<String> DEFAULT_TBL_PROPERTIES = Set.of(
-      "delta.autoOptimize.optimizeWrite = true",
-      "delta.autoOptimize.autoCompact = true");
+  public static final Set<String> DEFAULT_TBL_PROPERTIES =
+      Set.of("delta.autoOptimize.optimizeWrite = true", "delta.autoOptimize.autoCompact = true");
 
   private DatabricksConstants() {}
-
 }

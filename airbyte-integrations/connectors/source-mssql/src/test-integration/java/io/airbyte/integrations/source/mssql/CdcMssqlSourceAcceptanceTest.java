@@ -69,31 +69,32 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                String.format("%s", SCHEMA_NAME),
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                String.format("%s", SCHEMA_NAME),
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        String.format("%s", STREAM_NAME),
+                        String.format("%s", SCHEMA_NAME),
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSourceDefinedCursor(true)
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        String.format("%s", STREAM_NAME2),
+                        String.format("%s", SCHEMA_NAME),
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSourceDefinedCursor(true)
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -102,9 +103,11 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws InterruptedException {
+  protected void setupEnvironment(final TestDestinationEnv environment)
+      throws InterruptedException {
     if (container == null) {
-      container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+      container =
+          new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
       container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
       container.start();
     }
@@ -128,14 +131,17 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 
-    dslContext = DSLContextFactory.create(DataSourceFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false")), null);
+    dslContext = DSLContextFactory.create(
+        DataSourceFactory.create(
+            container.getUsername(),
+            container.getPassword(),
+            container.getDriverClassName(),
+            String.format(
+                "jdbc:sqlserver://%s:%d;",
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt()),
+            Map.of("encrypt", "false")),
+        null);
     database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
@@ -160,13 +166,17 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void createAndPopulateTables() throws InterruptedException {
-    executeQuery(String.format("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
+    executeQuery(String.format(
+        "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
         SCHEMA_NAME, STREAM_NAME));
-    executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+    executeQuery(String.format(
+        "INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
         SCHEMA_NAME, STREAM_NAME));
-    executeQuery(String.format("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
+    executeQuery(String.format(
+        "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
         SCHEMA_NAME, STREAM_NAME2));
-    executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
+    executeQuery(String.format(
+        "INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
         SCHEMA_NAME, STREAM_NAME2));
 
     // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still
@@ -201,16 +211,16 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void grantCorrectPermissions() {
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", testUserName));
-    executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", dbName, "cdc", testUserName));
+    executeQuery(
+        String.format("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", testUserName));
+    executeQuery(String.format(
+        "USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", dbName, "cdc", testUserName));
     executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName));
   }
 
   private void executeQuery(final String query) {
     try {
-      database.query(
-          ctx -> ctx
-              .execute(query));
+      database.query(ctx -> ctx.execute(query));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -220,5 +230,4 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     dslContext.close();
   }
-
 }

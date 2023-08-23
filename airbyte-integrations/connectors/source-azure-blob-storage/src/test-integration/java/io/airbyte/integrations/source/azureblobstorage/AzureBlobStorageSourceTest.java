@@ -40,9 +40,11 @@ class AzureBlobStorageSourceTest {
     var azureBlobStorageConfig = AzureBlobStorageConfig.createAzureBlobStorageConfig(jsonConfig);
     var blobContainerClient = azureBlobStorageConfig.createBlobContainerClient();
     blobContainerClient.createIfNotExists();
-    blobContainerClient.getBlobClient("FolderA/FolderB/blob1.json")
+    blobContainerClient
+        .getBlobClient("FolderA/FolderB/blob1.json")
         .upload(BinaryData.fromString("{\"attr_1\":\"str_1\"}\n"));
-    blobContainerClient.getBlobClient("FolderA/FolderB/blob2.json")
+    blobContainerClient
+        .getBlobClient("FolderA/FolderB/blob2.json")
         .upload(BinaryData.fromString("{\"attr_2\":\"str_2\"}\n"));
     // blob in ignored path
     blobContainerClient.getBlobClient("FolderA/blob3.json").upload(BinaryData.fromString("{}"));
@@ -58,8 +60,8 @@ class AzureBlobStorageSourceTest {
   void testCheckConnectionWithSucceeded() {
     var airbyteConnectionStatus = azureBlobStorageSource.check(jsonConfig);
 
-    assertThat(airbyteConnectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.SUCCEEDED);
-
+    assertThat(airbyteConnectionStatus.getStatus())
+        .isEqualTo(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   @Test
@@ -70,8 +72,8 @@ class AzureBlobStorageSourceTest {
 
     var airbyteConnectionStatus = azureBlobStorageSource.check(failingConfig);
 
-    assertThat(airbyteConnectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.FAILED);
-
+    assertThat(airbyteConnectionStatus.getStatus())
+        .isEqualTo(AirbyteConnectionStatus.Status.FAILED);
   }
 
   @Test
@@ -83,16 +85,18 @@ class AzureBlobStorageSourceTest {
         .element(0)
         .hasFieldOrPropertyWithValue("name", STREAM_NAME)
         .hasFieldOrPropertyWithValue("sourceDefinedCursor", true)
-        .hasFieldOrPropertyWithValue("defaultCursorField", List.of(AzureBlobAdditionalProperties.LAST_MODIFIED))
-        .hasFieldOrPropertyWithValue("supportedSyncModes", List.of(SyncMode.INCREMENTAL, SyncMode.FULL_REFRESH))
+        .hasFieldOrPropertyWithValue(
+            "defaultCursorField", List.of(AzureBlobAdditionalProperties.LAST_MODIFIED))
+        .hasFieldOrPropertyWithValue(
+            "supportedSyncModes", List.of(SyncMode.INCREMENTAL, SyncMode.FULL_REFRESH))
         .extracting("jsonSchema")
         .isNotNull();
-
   }
 
   @Test
   void testRead() {
-    var configuredAirbyteCatalog = AzureBlobStorageDataFactory.createConfiguredAirbyteCatalog(STREAM_NAME);
+    var configuredAirbyteCatalog =
+        AzureBlobStorageDataFactory.createConfiguredAirbyteCatalog(STREAM_NAME);
 
     Iterator<AirbyteMessage> iterator =
         azureBlobStorageSource.read(jsonConfig, configuredAirbyteCatalog, Jsons.emptyObject());
@@ -106,13 +110,9 @@ class AzureBlobStorageSourceTest {
 
     assertThat(airbyteRecordMessages)
         .hasSize(2)
-        .anyMatch(arm -> arm.getStream().equals(STREAM_NAME) &&
-            Jsons.serialize(arm.getData()).contains(
-                "\"attr_1\":\"str_1\""))
-        .anyMatch(arm -> arm.getStream().equals(STREAM_NAME) &&
-            Jsons.serialize(arm.getData()).contains(
-                "\"attr_2\":\"str_2\""));
-
+        .anyMatch(arm -> arm.getStream().equals(STREAM_NAME)
+            && Jsons.serialize(arm.getData()).contains("\"attr_1\":\"str_1\""))
+        .anyMatch(arm -> arm.getStream().equals(STREAM_NAME)
+            && Jsons.serialize(arm.getData()).contains("\"attr_2\":\"str_2\""));
   }
-
 }

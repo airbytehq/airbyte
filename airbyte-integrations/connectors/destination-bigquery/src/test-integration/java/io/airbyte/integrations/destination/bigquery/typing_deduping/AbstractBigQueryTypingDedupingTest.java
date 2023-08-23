@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,7 +31,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   public JsonNode generateConfig() throws IOException {
     final String datasetId = "typing_deduping_default_dataset" + getUniqueSuffix();
     final String stagingPath = "test_path" + getUniqueSuffix();
-    final ObjectNode config = BigQueryDestinationTestUtils.createConfig(Path.of(getConfigPath()), datasetId, stagingPath);
+    final ObjectNode config =
+        BigQueryDestinationTestUtils.createConfig(Path.of(getConfigPath()), datasetId, stagingPath);
     bq = BigQueryDestination.getBigQuery(config);
     return config;
   }
@@ -38,20 +43,24 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   }
 
   @Override
-  protected List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws InterruptedException {
+  protected List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName)
+      throws InterruptedException {
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
+    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "."
+        + StreamId.concatenateRawTableName(streamNamespace, streamName)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws InterruptedException {
+  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName)
+      throws InterruptedException {
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamNamespace + "." + streamName));
+    TableResult result =
+        bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamNamespace + "." + streamName));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
@@ -60,9 +69,11 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to create it)
+    // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector
+    // failed to create it)
     // so we don't need to do any existence checks here.
-    bq.delete(TableId.of(getRawDataset(), StreamId.concatenateRawTableName(streamNamespace, streamName)));
+    bq.delete(
+        TableId.of(getRawDataset(), StreamId.concatenateRawTableName(streamNamespace, streamName)));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
   }
 

@@ -25,9 +25,8 @@ class RedisHCacheTest {
 
   @BeforeEach
   void init() {
-    var jsonConfig = RedisDataFactory.jsonConfig(
-        redisContainer.getHost(),
-        redisContainer.getFirstMappedPort());
+    var jsonConfig =
+        RedisDataFactory.jsonConfig(redisContainer.getHost(), redisContainer.getFirstMappedPort());
     redisCache = new RedisHCache(jsonConfig);
   }
 
@@ -116,5 +115,4 @@ class RedisHCacheTest {
     // then
     assertThat(redisRecords).isEmpty();
   }
-
 }

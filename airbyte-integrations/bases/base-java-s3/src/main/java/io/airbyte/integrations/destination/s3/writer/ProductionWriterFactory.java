@@ -25,10 +25,11 @@ public class ProductionWriterFactory implements S3WriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public DestinationFileWriter create(final S3DestinationConfig config,
-                                      final AmazonS3 s3Client,
-                                      final ConfiguredAirbyteStream configuredStream,
-                                      final Timestamp uploadTimestamp)
+  public DestinationFileWriter create(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp)
       throws Exception {
     final S3Format format = config.getFormatConfig().getFormat();
 
@@ -37,14 +38,27 @@ public class ProductionWriterFactory implements S3WriterFactory {
       LOGGER.info("Json schema for stream {}: {}", stream.getName(), stream.getJsonSchema());
 
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace());
+      final Schema avroSchema = schemaConverter.getAvroSchema(
+          stream.getJsonSchema(), stream.getName(), stream.getNamespace());
 
       LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
 
       if (format == S3Format.AVRO) {
-        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER);
+        return new S3AvroWriter(
+            config,
+            s3Client,
+            configuredStream,
+            uploadTimestamp,
+            avroSchema,
+            AvroConstants.JSON_CONVERTER);
       } else {
-        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER);
+        return new S3ParquetWriter(
+            config,
+            s3Client,
+            configuredStream,
+            uploadTimestamp,
+            avroSchema,
+            AvroConstants.JSON_CONVERTER);
       }
     }
 
@@ -58,5 +72,4 @@ public class ProductionWriterFactory implements S3WriterFactory {
 
     throw new RuntimeException("Unexpected S3 destination format: " + format);
   }
-
 }

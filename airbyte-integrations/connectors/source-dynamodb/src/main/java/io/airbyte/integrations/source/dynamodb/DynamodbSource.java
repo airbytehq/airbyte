@@ -59,14 +59,11 @@ public class DynamodbSource extends BaseConnector implements Source {
     try (final var dynamodbOperations = new DynamodbOperations(dynamodbConfig)) {
       dynamodbOperations.listTables();
 
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Error while listing Dynamodb tables with reason: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED);
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
     }
-
   }
 
   @Override
@@ -83,24 +80,24 @@ public class DynamodbSource extends BaseConnector implements Source {
                   .put("type", "object")
                   .put("properties", dynamodbOperations.inferSchema(tb, 1000))
                   .build()))
-              .withSourceDefinedPrimaryKey(Collections.singletonList(dynamodbOperations.primaryKey(tb)))
+              .withSourceDefinedPrimaryKey(
+                  Collections.singletonList(dynamodbOperations.primaryKey(tb)))
               .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
           .toList();
 
       return new AirbyteCatalog().withStreams(airbyteStreams);
     }
-
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
 
-    final var streamState = DynamodbUtils.deserializeStreamState(state, featureFlags.useStreamCapableState());
+    final var streamState =
+        DynamodbUtils.deserializeStreamState(state, featureFlags.useStreamCapableState());
 
-    final StateManager stateManager = StateManagerFactory
-        .createStateManager(streamState.airbyteStateType(), streamState.airbyteStateMessages(), catalog);
+    final StateManager stateManager = StateManagerFactory.createStateManager(
+        streamState.airbyteStateType(), streamState.airbyteStateMessages(), catalog);
 
     final var dynamodbConfig = DynamodbConfig.createDynamodbConfig(config);
 
@@ -108,86 +105,91 @@ public class DynamodbSource extends BaseConnector implements Source {
 
       final var streamIterators = catalog.getStreams().stream()
           .map(str -> switch (str.getSyncMode()) {
-          case INCREMENTAL -> scanIncremental(dynamodbOperations, str.getStream(), str.getCursorField().get(0), stateManager);
-          case FULL_REFRESH -> scanFullRefresh(dynamodbOperations, str.getStream());
+            case INCREMENTAL -> scanIncremental(
+                dynamodbOperations, str.getStream(), str.getCursorField().get(0), stateManager);
+            case FULL_REFRESH -> scanFullRefresh(dynamodbOperations, str.getStream());
           })
           .toList();
 
-      return AutoCloseableIterators.concatWithEagerClose(streamIterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
-
+      return AutoCloseableIterators.concatWithEagerClose(
+          streamIterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
     }
   }
 
-  private AutoCloseableIterator<AirbyteMessage> scanIncremental(final DynamodbOperations dynamodbOperations,
-                                                                final AirbyteStream airbyteStream,
-                                                                final String cursorField,
-                                                                final StateManager stateManager) {
+  private AutoCloseableIterator<AirbyteMessage> scanIncremental(
+      final DynamodbOperations dynamodbOperations,
+      final AirbyteStream airbyteStream,
+      final String cursorField,
+      final StateManager stateManager) {
 
-    final var streamPair = new AirbyteStreamNameNamespacePair(airbyteStream.getName(), airbyteStream.getNamespace());
+    final var streamPair =
+        new AirbyteStreamNameNamespacePair(airbyteStream.getName(), airbyteStream.getNamespace());
 
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(streamPair);
 
-    final Map<String, JsonNode> properties = objectMapper.convertValue(airbyteStream.getJsonSchema().get("properties"), new TypeReference<>() {});
+    final Map<String, JsonNode> properties = objectMapper.convertValue(
+        airbyteStream.getJsonSchema().get("properties"), new TypeReference<>() {});
     final Set<String> selectedAttributes = properties.keySet();
 
     // cursor type will be retrieved from the json schema to save time on db schema crawling reading
     // large amount of items
     final String cursorType = properties.get(cursorField).get("type").asText();
 
-    final var messageStream = cursorInfo.map(cursor -> {
+    final var messageStream = cursorInfo
+        .map(cursor -> {
+          final var filterType =
+              switch (cursorType) {
+                case "string" -> DynamodbOperations.FilterAttribute.FilterType.S;
+                case "integer" -> DynamodbOperations.FilterAttribute.FilterType.N;
+                case "number" -> {
+                  final JsonNode airbyteType = properties.get(cursorField).get("airbyte_type");
+                  if (airbyteType != null && airbyteType.asText().equals("integer")) {
+                    yield DynamodbOperations.FilterAttribute.FilterType.N;
+                  } else {
+                    throw new UnsupportedOperationException(
+                        "Unsupported attribute type for filtering");
+                  }
+                }
+                default -> throw new UnsupportedOperationException(
+                    "Unsupported attribute type for filtering");
+              };
 
-      final var filterType = switch (cursorType) {
-        case "string" -> DynamodbOperations.FilterAttribute.FilterType.S;
-        case "integer" -> DynamodbOperations.FilterAttribute.FilterType.N;
-        case "number" -> {
-          final JsonNode airbyteType = properties.get(cursorField).get("airbyte_type");
-          if (airbyteType != null && airbyteType.asText().equals("integer")) {
-            yield DynamodbOperations.FilterAttribute.FilterType.N;
-          } else {
-            throw new UnsupportedOperationException("Unsupported attribute type for filtering");
-          }
-        }
-        default -> throw new UnsupportedOperationException("Unsupported attribute type for filtering");
-      };
+          final DynamodbOperations.FilterAttribute filterAttribute =
+              new DynamodbOperations.FilterAttribute(
+                  cursor.getCursorField(), cursor.getCursor(), filterType);
 
-      final DynamodbOperations.FilterAttribute filterAttribute = new DynamodbOperations.FilterAttribute(
-          cursor.getCursorField(),
-          cursor.getCursor(),
-          filterType);
-
-      return dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, filterAttribute);
-
-    })
+          return dynamodbOperations.scanTable(
+              airbyteStream.getName(), selectedAttributes, filterAttribute);
+        })
         // perform full refresh if cursor is not present
         .orElse(dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, null))
         .stream()
         .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
     // wrap stream in state emission iterator
-    return AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
-        autoCloseableIterator,
-        stateManager,
-        streamPair,
-        cursorField,
-        cursorInfo.map(CursorInfo::getCursor).orElse(null),
-        JsonSchemaPrimitive.valueOf(cursorType.toUpperCase()),
-        // emit state after full stream has been processed
-        0),
+    return AutoCloseableIterators.transform(
+        autoCloseableIterator -> new StateDecoratingIterator(
+            autoCloseableIterator,
+            stateManager,
+            streamPair,
+            cursorField,
+            cursorInfo.map(CursorInfo::getCursor).orElse(null),
+            JsonSchemaPrimitive.valueOf(cursorType.toUpperCase()),
+            // emit state after full stream has been processed
+            0),
         AutoCloseableIterators.fromStream(messageStream));
-
   }
 
-  private AutoCloseableIterator<AirbyteMessage> scanFullRefresh(final DynamodbOperations dynamodbOperations,
-                                                                final AirbyteStream airbyteStream) {
-    final Map<String, JsonNode> properties = objectMapper.convertValue(airbyteStream.getJsonSchema().get("properties"), new TypeReference<>() {});
+  private AutoCloseableIterator<AirbyteMessage> scanFullRefresh(
+      final DynamodbOperations dynamodbOperations, final AirbyteStream airbyteStream) {
+    final Map<String, JsonNode> properties = objectMapper.convertValue(
+        airbyteStream.getJsonSchema().get("properties"), new TypeReference<>() {});
     final Set<String> selectedAttributes = properties.keySet();
 
-    final var messageStream = dynamodbOperations
-        .scanTable(airbyteStream.getName(), selectedAttributes, null)
-        .stream()
-        .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
+    final var messageStream =
+        dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, null).stream()
+            .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
     return AutoCloseableIterators.fromStream(messageStream);
   }
-
 }

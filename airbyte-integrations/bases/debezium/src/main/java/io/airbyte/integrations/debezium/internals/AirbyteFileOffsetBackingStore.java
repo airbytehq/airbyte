@@ -39,8 +39,9 @@ import org.slf4j.LoggerFactory;
 public class AirbyteFileOffsetBackingStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteFileOffsetBackingStore.class);
-  private static final BiFunction<String, String, String> SQL_SERVER_STATE_MUTATION = (key, databaseName) -> key.substring(0, key.length() - 2)
-      + ",\"database\":\"" + databaseName + "\"" + key.substring(key.length() - 2);
+  private static final BiFunction<String, String, String> SQL_SERVER_STATE_MUTATION =
+      (key, databaseName) -> key.substring(0, key.length() - 2) + ",\"database\":\"" + databaseName
+          + "\"" + key.substring(key.length() - 2);
   private final Path offsetFilePath;
   private final Optional<String> dbName;
 
@@ -56,9 +57,9 @@ public class AirbyteFileOffsetBackingStore {
   public Map<String, String> read() {
     final Map<ByteBuffer, ByteBuffer> raw = load();
 
-    return raw.entrySet().stream().collect(Collectors.toMap(
-        e -> byteBufferToString(e.getKey()),
-        e -> byteBufferToString(e.getValue())));
+    return raw.entrySet().stream()
+        .collect(Collectors.toMap(
+            e -> byteBufferToString(e.getKey()), e -> byteBufferToString(e.getValue())));
   }
 
   @SuppressWarnings("unchecked")
@@ -68,9 +69,9 @@ public class AirbyteFileOffsetBackingStore {
 
     final Map<String, String> updatedMap = updateStateForDebezium2_1(mapAsString);
 
-    final Map<ByteBuffer, ByteBuffer> mappedAsStrings = updatedMap.entrySet().stream().collect(Collectors.toMap(
-        e -> stringToByteBuffer(e.getKey()),
-        e -> stringToByteBuffer(e.getValue())));
+    final Map<ByteBuffer, ByteBuffer> mappedAsStrings = updatedMap.entrySet().stream()
+        .collect(Collectors.toMap(
+            e -> stringToByteBuffer(e.getKey()), e -> stringToByteBuffer(e.getValue())));
 
     FileUtils.deleteQuietly(offsetFilePath.toFile());
     save(mappedAsStrings);
@@ -89,7 +90,9 @@ public class AirbyteFileOffsetBackingStore {
       }
 
       LOGGER.info("Mutating sate to make it Debezium 2.1 compatible");
-      final String newKey = dbName.isPresent() ? SQL_SERVER_STATE_MUTATION.apply(key.substring(i, i1 + 1), dbName.get()) : key.substring(i, i1 + 1);
+      final String newKey = dbName.isPresent()
+          ? SQL_SERVER_STATE_MUTATION.apply(key.substring(i, i1 + 1), dbName.get())
+          : key.substring(i, i1 + 1);
       final String value = mapAsString.get(key);
       updatedMap.put(newKey, value);
     }
@@ -114,10 +117,14 @@ public class AirbyteFileOffsetBackingStore {
   @SuppressWarnings("unchecked")
   private Map<ByteBuffer, ByteBuffer> load() {
     Object obj;
-    try (final SafeObjectInputStream is = new SafeObjectInputStream(Files.newInputStream(offsetFilePath))) {
-      // todo (cgardens) - we currently suppress a security warning for this line. use of readObject from
-      // untrusted sources is considered unsafe. Since the source is controlled by us in this case it
-      // should be safe. That said, changing this implementation to not use readObject would remove some
+    try (final SafeObjectInputStream is =
+        new SafeObjectInputStream(Files.newInputStream(offsetFilePath))) {
+      // todo (cgardens) - we currently suppress a security warning for this line. use of readObject
+      // from
+      // untrusted sources is considered unsafe. Since the source is controlled by us in this case
+      // it
+      // should be safe. That said, changing this implementation to not use readObject would remove
+      // some
       // headache.
       obj = is.readObject();
     } catch (final NoSuchFileException | EOFException e) {
@@ -133,8 +140,10 @@ public class AirbyteFileOffsetBackingStore {
     final Map<byte[], byte[]> raw = (Map<byte[], byte[]>) obj;
     final Map<ByteBuffer, ByteBuffer> data = new HashMap<>();
     for (final Map.Entry<byte[], byte[]> mapEntry : raw.entrySet()) {
-      final ByteBuffer key = (mapEntry.getKey() != null) ? ByteBuffer.wrap(mapEntry.getKey()) : null;
-      final ByteBuffer value = (mapEntry.getValue() != null) ? ByteBuffer.wrap(mapEntry.getValue()) : null;
+      final ByteBuffer key =
+          (mapEntry.getKey() != null) ? ByteBuffer.wrap(mapEntry.getKey()) : null;
+      final ByteBuffer value =
+          (mapEntry.getValue() != null) ? ByteBuffer.wrap(mapEntry.getValue()) : null;
       data.put(key, value);
     }
 
@@ -146,7 +155,8 @@ public class AirbyteFileOffsetBackingStore {
    * method is not public.
    */
   private void save(final Map<ByteBuffer, ByteBuffer> data) {
-    try (final ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(offsetFilePath))) {
+    try (final ObjectOutputStream os =
+        new ObjectOutputStream(Files.newOutputStream(offsetFilePath))) {
       final Map<byte[], byte[]> raw = new HashMap<>();
       for (final Map.Entry<ByteBuffer, ByteBuffer> mapEntry : data.entrySet()) {
         final byte[] key = (mapEntry.getKey() != null) ? mapEntry.getKey().array() : null;
@@ -159,7 +169,8 @@ public class AirbyteFileOffsetBackingStore {
     }
   }
 
-  public static AirbyteFileOffsetBackingStore initializeState(final JsonNode cdcState, final Optional<String> dbName) {
+  public static AirbyteFileOffsetBackingStore initializeState(
+      final JsonNode cdcState, final Optional<String> dbName) {
     final Path cdcWorkingDir;
     try {
       cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset");
@@ -168,7 +179,8 @@ public class AirbyteFileOffsetBackingStore {
     }
     final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
 
-    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(cdcOffsetFilePath, dbName);
+    final AirbyteFileOffsetBackingStore offsetManager =
+        new AirbyteFileOffsetBackingStore(cdcOffsetFilePath, dbName);
     offsetManager.persist(cdcState);
     return offsetManager;
   }
@@ -184,5 +196,4 @@ public class AirbyteFileOffsetBackingStore {
 
     return new AirbyteFileOffsetBackingStore(cdcOffsetFilePath, Optional.empty());
   }
-
 }

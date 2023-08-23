@@ -12,7 +12,8 @@ class JsonSchemaFormatTest {
 
   @Test
   void fromJsonSchemaFormat_matchByFormatAndType() {
-    JsonSchemaFormat result = JsonSchemaFormat.fromJsonSchemaFormat("date-time", "timestamp_with_timezone");
+    JsonSchemaFormat result =
+        JsonSchemaFormat.fromJsonSchemaFormat("date-time", "timestamp_with_timezone");
     assertEquals(JsonSchemaFormat.DATETIME_WITH_TZ, result);
   }
 
@@ -27,5 +28,4 @@ class JsonSchemaFormatTest {
     JsonSchemaFormat result = JsonSchemaFormat.fromJsonSchemaFormat("not_existing_format", null);
     assertNull(result);
   }
-
 }

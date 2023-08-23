@@ -56,14 +56,20 @@ class TestDefaultJdbcDatabase {
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     dataSource = getDataSourceFromConfig(config);
     database = new DefaultJdbcDatabase(dataSource);
     database.execute(connection -> {
-      connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      connection
+          .createStatement()
+          .execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      connection
+          .createStatement()
+          .execute(
+              "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
     });
   }
 
@@ -103,7 +109,8 @@ class TestDefaultJdbcDatabase {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));
@@ -118,5 +125,4 @@ class TestDefaultJdbcDatabase {
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .build());
   }
-
 }

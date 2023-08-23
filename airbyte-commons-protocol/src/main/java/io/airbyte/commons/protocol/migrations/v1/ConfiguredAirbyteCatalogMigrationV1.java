@@ -15,14 +15,16 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 // Disable V1 Migration, uncomment to re-enable
 // @Singleton
 public class ConfiguredAirbyteCatalogMigrationV1
-    implements ConfiguredAirbyteCatalogMigration<io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalog> {
+    implements ConfiguredAirbyteCatalogMigration<
+        io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalog> {
 
   @Override
-  public io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgrade(final ConfiguredAirbyteCatalog oldMessage) {
+  public io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgrade(
+      final ConfiguredAirbyteCatalog oldMessage) {
     final io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog newMessage = Jsons.object(
-        Jsons.jsonNode(oldMessage),
-        io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class);
-    for (final io.airbyte.protocol.models.v0.ConfiguredAirbyteStream stream : newMessage.getStreams()) {
+        Jsons.jsonNode(oldMessage), io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class);
+    for (final io.airbyte.protocol.models.v0.ConfiguredAirbyteStream stream :
+        newMessage.getStreams()) {
       final JsonNode schema = stream.getStream().getJsonSchema();
       SchemaMigrationV1.downgradeSchema(schema);
     }
@@ -30,10 +32,10 @@ public class ConfiguredAirbyteCatalogMigrationV1
   }
 
   @Override
-  public ConfiguredAirbyteCatalog upgrade(final io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog oldMessage) {
-    final ConfiguredAirbyteCatalog newMessage = Jsons.object(
-        Jsons.jsonNode(oldMessage),
-        ConfiguredAirbyteCatalog.class);
+  public ConfiguredAirbyteCatalog upgrade(
+      final io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog oldMessage) {
+    final ConfiguredAirbyteCatalog newMessage =
+        Jsons.object(Jsons.jsonNode(oldMessage), ConfiguredAirbyteCatalog.class);
     for (final ConfiguredAirbyteStream stream : newMessage.getStreams()) {
       final JsonNode schema = stream.getStream().getJsonSchema();
       SchemaMigrationV1.upgradeSchema(schema);
@@ -50,5 +52,4 @@ public class ConfiguredAirbyteCatalogMigrationV1
   public Version getCurrentVersion() {
     return AirbyteProtocolVersion.V1;
   }
-
 }

@@ -29,9 +29,10 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final Map<AirbyteStreamNameNamespacePair, KinesisStreamConfig> kinesisStreams;
 
-  public KinesisMessageConsumer(final ConfiguredAirbyteCatalog configuredCatalog,
-                                final KinesisStream kinesisStream,
-                                final Consumer<AirbyteMessage> outputRecordCollector) {
+  public KinesisMessageConsumer(
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final KinesisStream kinesisStream,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
     this.kinesisStream = kinesisStream;
     var nameTransformer = new KinesisNameTransformer();
@@ -39,7 +40,8 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
         .collect(Collectors.toUnmodifiableMap(
             AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam,
             k -> new KinesisStreamConfig(
-                nameTransformer.streamName(k.getStream().getNamespace(), k.getStream().getName()),
+                nameTransformer.streamName(
+                    k.getStream().getNamespace(), k.getStream().getName()),
                 k.getDestinationSyncMode())));
   }
 
@@ -106,5 +108,4 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
       kinesisStream.close();
     }
   }
-
 }

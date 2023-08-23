@@ -15,11 +15,11 @@ public class DynamodbDestinationConfig {
   private final String region;
 
   public DynamodbDestinationConfig(
-                                   final String endpoint,
-                                   final String tableNamePrefix,
-                                   final String region,
-                                   final String accessKeyId,
-                                   final String secretAccessKey) {
+      final String endpoint,
+      final String tableNamePrefix,
+      final String region,
+      final String accessKeyId,
+      final String secretAccessKey) {
     this.endpoint = endpoint;
     this.tableNamePrefix = tableNamePrefix;
     this.region = region;
@@ -29,7 +29,9 @@ public class DynamodbDestinationConfig {
 
   public static DynamodbDestinationConfig getDynamodbDestinationConfig(final JsonNode config) {
     return new DynamodbDestinationConfig(
-        config.get("dynamodb_endpoint") == null ? "" : config.get("dynamodb_endpoint").asText(),
+        config.get("dynamodb_endpoint") == null
+            ? ""
+            : config.get("dynamodb_endpoint").asText(),
         config.get("dynamodb_table_name_prefix").asText(),
         config.get("dynamodb_region").asText(),
         config.get("access_key_id").asText(),
@@ -55,5 +57,4 @@ public class DynamodbDestinationConfig {
   public String getTableNamePrefix() {
     return tableNamePrefix;
   }
-
 }

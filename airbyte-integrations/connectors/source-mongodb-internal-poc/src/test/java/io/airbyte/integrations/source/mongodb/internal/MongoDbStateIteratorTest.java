@@ -34,8 +34,10 @@ import org.mockito.stubbing.Answer;
 class MongoDbStateIteratorTest {
 
   private static final int CHECKPOINT_INTERVAL = 2;
+
   @Mock
   private MongoCursor<Document> mongoCursor;
+
   private AutoCloseable closeable;
 
   @BeforeEach
@@ -62,7 +64,6 @@ class MongoDbStateIteratorTest {
         // hasNext will be called for each doc plus for each state message
         return count <= (docs.size() + (docs.size() % CHECKPOINT_INTERVAL));
       }
-
     });
 
     when(mongoCursor.next()).thenAnswer(new Answer<Document>() {
@@ -75,12 +76,12 @@ class MongoDbStateIteratorTest {
         offset++;
         return doc;
       }
-
     });
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty() , Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(
+        mongoCursor, stream, Optional.empty(), Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -94,12 +95,16 @@ class MongoDbStateIteratorTest {
     assertTrue(iter.hasNext(), "air force blue should be next");
     message = iter.next();
     assertEquals(Type.RECORD, message.getType());
-    assertEquals(docs.get(0).get("_id").toString(), message.getRecord().getData().get("_id").asText());
+    assertEquals(
+        docs.get(0).get("_id").toString(),
+        message.getRecord().getData().get("_id").asText());
 
     assertTrue(iter.hasNext(), "alice blue should be next");
     message = iter.next();
     assertEquals(Type.RECORD, message.getType());
-    assertEquals(docs.get(1).get("_id").toString(), message.getRecord().getData().get("_id").asText());
+    assertEquals(
+        docs.get(1).get("_id").toString(),
+        message.getRecord().getData().get("_id").asText());
 
     assertTrue(iter.hasNext(), "state should be next");
     message = iter.next();
@@ -112,7 +117,9 @@ class MongoDbStateIteratorTest {
     assertTrue(iter.hasNext(), "alizarin crimson should be next");
     message = iter.next();
     assertEquals(Type.RECORD, message.getType());
-    assertEquals(docs.get(2).get("_id").toString(), message.getRecord().getData().get("_id").asText());
+    assertEquals(
+        docs.get(2).get("_id").toString(),
+        message.getRecord().getData().get("_id").asText());
 
     assertTrue(iter.hasNext(), "state should be next");
     message = iter.next();
@@ -130,15 +137,14 @@ class MongoDbStateIteratorTest {
     final var docs = docs();
 
     // on the second hasNext call, throw an exception
-    when(mongoCursor.hasNext())
-        .thenReturn(true)
-        .thenThrow(new MongoException("test exception"));
+    when(mongoCursor.hasNext()).thenReturn(true).thenThrow(new MongoException("test exception"));
 
     when(mongoCursor.next()).thenReturn(docs.get(0));
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty() , Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(
+        mongoCursor, stream, Optional.empty(), Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -149,7 +155,9 @@ class MongoDbStateIteratorTest {
     assertTrue(iter.hasNext(), "air force blue should be next");
     message = iter.next();
     assertEquals(Type.RECORD, message.getType());
-    assertEquals(docs.get(0).get("_id").toString(), message.getRecord().getData().get("_id").asText());
+    assertEquals(
+        docs.get(0).get("_id").toString(),
+        message.getRecord().getData().get("_id").asText());
 
     assertTrue(iter.hasNext(), "state should be next");
     message = iter.next();
@@ -171,7 +179,12 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
     final var objectId = "64dfb6a7bb3c3458c30801f4";
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.of(new MongodbStreamState(objectId)), Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(
+        mongoCursor,
+        stream,
+        Optional.of(new MongodbStreamState(objectId)),
+        Instant.now(),
+        CHECKPOINT_INTERVAL);
 
     // the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -190,17 +203,17 @@ class MongoDbStateIteratorTest {
   }
 
   private ConfiguredAirbyteCatalog catalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(List.of(
-        new ConfiguredAirbyteStream()
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("_id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                "test.unit",
-                Field.of("_id", JsonSchemaType.STRING),
-                Field.of("name", JsonSchemaType.STRING),
-                Field.of("hex", JsonSchemaType.STRING))
+                    "test.unit",
+                    Field.of("_id", JsonSchemaType.STRING),
+                    Field.of("name", JsonSchemaType.STRING),
+                    Field.of("hex", JsonSchemaType.STRING))
                 .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }
@@ -208,11 +221,13 @@ class MongoDbStateIteratorTest {
   private List<Document> docs() {
     return List.of(
         new Document("_id", new ObjectId("64c0029d95ad260d69ef28a0"))
-            .append("name", "Air Force Blue").append("hex", "#5d8aa8"),
+            .append("name", "Air Force Blue")
+            .append("hex", "#5d8aa8"),
         new Document("_id", new ObjectId("64c0029d95ad260d69ef28a1"))
-            .append("name", "Alice Blue").append("hex", "#f0f8ff"),
+            .append("name", "Alice Blue")
+            .append("hex", "#f0f8ff"),
         new Document("_id", new ObjectId("64c0029d95ad260d69ef28a2"))
-            .append("name", "Alizarin Crimson").append("hex", "#e32636"));
+            .append("name", "Alizarin Crimson")
+            .append("hex", "#e32636"));
   }
-
 }

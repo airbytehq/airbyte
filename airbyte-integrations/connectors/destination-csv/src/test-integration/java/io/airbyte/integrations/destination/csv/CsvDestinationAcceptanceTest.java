@@ -49,11 +49,16 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
+    return Jsons.jsonNode(ImmutableMap.of(
+        "destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
   }
 
   protected JsonNode getConfigWithDelimiter(final String delimiter) {
-    config = Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString(), "delimiter", delimiter));
+    config = Jsons.jsonNode(ImmutableMap.of(
+        "destination_path",
+        Path.of("/local").resolve(RELATIVE_PATH).toString(),
+        "delimiter",
+        delimiter));
     return config;
   }
 
@@ -76,13 +81,15 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @ParameterizedTest
   @ArgumentsSource(CSVDataArgumentsProvider.class)
-  public void testSyncWithDelimiter(final String messagesFilename, final String catalogFilename, final String delimiter)
+  public void testSyncWithDelimiter(
+      final String messagesFilename, final String catalogFilename, final String delimiter)
       throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
-        AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
-        catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename)
+        .lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
 
@@ -93,17 +100,20 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
+    final List<Path> allOutputs =
+        Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
 
-    final Optional<Path> streamOutput =
-        allOutputs.stream()
-            .filter(path -> path.getFileName().toString().endsWith(new StandardNameTransformer().getRawTableName(streamName) + ".csv"))
-            .findFirst();
+    final Optional<Path> streamOutput = allOutputs.stream()
+        .filter(path -> path.getFileName()
+            .toString()
+            .endsWith(new StandardNameTransformer().getRawTableName(streamName) + ".csv"))
+        .findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
 
@@ -130,24 +140,34 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   public static class CSVDataArgumentsProvider extends DataArgumentsProvider {
 
-    public CSVDataArgumentsProvider() {};
+    public CSVDataArgumentsProvider() {}
+    ;
 
     @Override
-    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
+        throws Exception {
       final ProtocolVersion protocolVersion = ArgumentProviderUtil.getProtocolVersion(context);
       return Stream.of(
-          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+          Arguments.of(
+              EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion),
+              EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
               "\\u002c"),
-          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+          Arguments.of(
+              EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion),
+              EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
               "\\u003b"),
-          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+          Arguments.of(
+              EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion),
+              EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
               "\\u007c"),
-          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+          Arguments.of(
+              EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion),
+              EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
               "\\u0009"),
-          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+          Arguments.of(
+              EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion),
+              EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
               "\\u0020"));
     }
-
   }
-
 }

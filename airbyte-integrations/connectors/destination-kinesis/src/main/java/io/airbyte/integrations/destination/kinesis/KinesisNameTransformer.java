@@ -24,5 +24,4 @@ class KinesisNameTransformer extends StandardNameTransformer {
     // max char length for kinesis stream name is 128
     return streamName.length() > 128 ? streamName.substring(0, 128) : streamName;
   }
-
 }

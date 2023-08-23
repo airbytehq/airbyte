@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
@@ -35,7 +39,8 @@ import org.slf4j.LoggerFactory;
 public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     implements AutoCloseableIterator<JsonNode> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadRecordIterator.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(MySqlInitialLoadRecordIterator.class);
 
   private final MySqlInitialLoadSourceOperations sourceOperations;
 
@@ -76,7 +81,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   protected JsonNode computeNext() {
     if (shouldBuildNextSubquery()) {
       try {
-        // We will only issue one query for a composite key load. If we have already processed all the data associated with this
+        // We will only issue one query for a composite key load. If we have already processed all
+        // the data associated with this
         // query, we should indicate that we are done processing for the given stream.
         if (isCompositeKeyLoad && numSubqueries >= 1) {
           return endOfData();
@@ -87,12 +93,13 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         }
 
         LOGGER.info("Subquery number : {}", numSubqueries);
-        final Stream<JsonNode> stream = database.unsafeQuery(
-            this::getPkPreparedStatement, sourceOperations::rowToJson);
+        final Stream<JsonNode> stream =
+            database.unsafeQuery(this::getPkPreparedStatement, sourceOperations::rowToJson);
 
         currentIterator = AutoCloseableIterators.fromStream(stream, pair);
         numSubqueries++;
-        // If the current subquery has no records associated with it, the entire stream has been read.
+        // If the current subquery has no records associated with it, the entire stream has been
+        // read.
         if (!currentIterator.hasNext()) {
           return endOfData();
         }
@@ -104,7 +111,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   }
 
   private boolean shouldBuildNextSubquery() {
-    // The next sub-query should be built if (i) it is the first subquery in the sequence. (ii) the previous subquery has finished.
+    // The next sub-query should be built if (i) it is the first subquery in the sequence. (ii) the
+    // previous subquery has finished.
     return (currentIterator == null || !currentIterator.hasNext());
   }
 
@@ -113,24 +121,29 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       final String tableName = pair.getName();
       final String schemaName = pair.getNamespace();
       LOGGER.info("Preparing query for table: {}", tableName);
-      final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
-          quoteString);
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, quoteString);
 
-      final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
+      final String wrappedColumnNames =
+          RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
 
-      final PrimaryKeyLoadStatus pkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
+      final PrimaryKeyLoadStatus pkLoadStatus =
+          initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
 
       if (pkLoadStatus == null) {
         LOGGER.info("pkLoadStatus is null");
         final String quotedCursorField = enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
         final String sql;
-        // We cannot load in chunks for a composite key load, since each field might not have distinct values.
+        // We cannot load in chunks for a composite key load, since each field might not have
+        // distinct values.
         if (isCompositeKeyLoad) {
-          sql = String.format("SELECT %s FROM %s ORDER BY %s", wrappedColumnNames, fullTableName,
-              quotedCursorField);
+          sql = String.format(
+              "SELECT %s FROM %s ORDER BY %s",
+              wrappedColumnNames, fullTableName, quotedCursorField);
         } else {
-          sql = String.format("SELECT %s FROM %s ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
-              quotedCursorField, chunkSize);
+          sql = String.format(
+              "SELECT %s FROM %s ORDER BY %s LIMIT %s",
+              wrappedColumnNames, fullTableName, quotedCursorField, chunkSize);
         }
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
@@ -139,18 +152,23 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
         final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
         final String sql;
-        // We cannot load in chunks for a composite key load, since each field might not have distinct values. Furthermore, we have to issue a >=
-        // query since we may not have processed all of the data associated with the last saved primary key value.
+        // We cannot load in chunks for a composite key load, since each field might not have
+        // distinct values. Furthermore, we have to issue a >=
+        // query since we may not have processed all of the data associated with the last saved
+        // primary key value.
         if (isCompositeKeyLoad) {
-          sql = String.format("SELECT %s FROM %s WHERE %s >= ? ORDER BY %s", wrappedColumnNames, fullTableName,
-              quotedCursorField, quotedCursorField);
+          sql = String.format(
+              "SELECT %s FROM %s WHERE %s >= ? ORDER BY %s",
+              wrappedColumnNames, fullTableName, quotedCursorField, quotedCursorField);
         } else {
-          sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
-              quotedCursorField, quotedCursorField, chunkSize);
+          sql = String.format(
+              "SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s",
+              wrappedColumnNames, fullTableName, quotedCursorField, quotedCursorField, chunkSize);
         }
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         final MysqlType cursorFieldType = pkInfo.fieldType();
-        sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());
+        sourceOperations.setCursorField(
+            preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       }

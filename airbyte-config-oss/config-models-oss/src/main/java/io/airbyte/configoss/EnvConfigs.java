@@ -10,7 +10,12 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters", "PMD.ConstructorCallsOverridableMethod"})
+@SuppressWarnings({
+  "PMD.LongVariable",
+  "PMD.CyclomaticComplexity",
+  "PMD.AvoidReassigningParameters",
+  "PMD.ConstructorCallsOverridableMethod"
+})
 public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
@@ -55,12 +60,19 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
   }
 
-  public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
+  public <T> T getEnvOrDefault(
+      final String key,
+      final T defaultValue,
+      final Function<String, T> parser,
+      final boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info("Using default value for environment variable {}: '{}'", key, isSecret ? "*****" : defaultValue);
+      LOGGER.info(
+          "Using default value for environment variable {}: '{}'",
+          key,
+          isSecret ? "*****" : defaultValue);
       return defaultValue;
     }
   }
@@ -68,5 +80,4 @@ public class EnvConfigs implements Configs {
   public String getEnv(final String name) {
     return getEnv.apply(name);
   }
-
 }

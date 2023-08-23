@@ -13,8 +13,8 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
  */
 public class GcsCsvBigQueryRecordFormatter extends DefaultBigQueryRecordFormatter {
 
-  public GcsCsvBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+  public GcsCsvBigQueryRecordFormatter(
+      JsonNode jsonSchema, StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
-
 }

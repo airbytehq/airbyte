@@ -11,5 +11,4 @@ import java.util.stream.Stream;
 public interface AirbyteStreamFactory {
 
   Stream<AirbyteMessage> create(BufferedReader bufferedReader);
-
 }

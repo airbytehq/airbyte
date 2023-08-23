@@ -12,5 +12,4 @@ public class SshPasswordOracleSourceAcceptanceTest extends AbstractSshOracleSour
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
   }
-
 }

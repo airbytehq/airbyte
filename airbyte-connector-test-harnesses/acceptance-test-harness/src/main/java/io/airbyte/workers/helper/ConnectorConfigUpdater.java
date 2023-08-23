@@ -47,20 +47,21 @@ public class ConnectorConfigUpdater {
    */
   public void updateSource(final UUID sourceId, final Config config) {
     final SourceRead source = AirbyteApiClient.retryWithJitter(
-        () -> sourceApi.getSource(new SourceIdRequestBody().sourceId(sourceId)),
-        "get source");
+        () -> sourceApi.getSource(new SourceIdRequestBody().sourceId(sourceId)), "get source");
 
     final SourceRead updatedSource = AirbyteApiClient.retryWithJitter(
-        () -> sourceApi
-            .updateSource(new SourceUpdate()
-                .sourceId(sourceId)
-                .name(source.getName())
-                .connectionConfiguration(Jsons.jsonNode(config.getAdditionalProperties()))),
+        () -> sourceApi.updateSource(new SourceUpdate()
+            .sourceId(sourceId)
+            .name(source.getName())
+            .connectionConfiguration(Jsons.jsonNode(config.getAdditionalProperties()))),
         "update source");
 
-    LOGGER.info("Persisted updated configuration for source {}. New config hash: {}.", sourceId,
-        Hashing.sha256().hashString(updatedSource.getConnectionConfiguration().asText(), StandardCharsets.UTF_8));
-
+    LOGGER.info(
+        "Persisted updated configuration for source {}. New config hash: {}.",
+        sourceId,
+        Hashing.sha256()
+            .hashString(
+                updatedSource.getConnectionConfiguration().asText(), StandardCharsets.UTF_8));
   }
 
   /**
@@ -69,19 +70,22 @@ public class ConnectorConfigUpdater {
    */
   public void updateDestination(final UUID destinationId, final Config config) {
     final DestinationRead destination = AirbyteApiClient.retryWithJitter(
-        () -> destinationApi.getDestination(new DestinationIdRequestBody().destinationId(destinationId)),
+        () -> destinationApi.getDestination(
+            new DestinationIdRequestBody().destinationId(destinationId)),
         "get destination");
 
     final DestinationRead updatedDestination = AirbyteApiClient.retryWithJitter(
-        () -> destinationApi
-            .updateDestination(new DestinationUpdate()
-                .destinationId(destinationId)
-                .name(destination.getName())
-                .connectionConfiguration(Jsons.jsonNode(config.getAdditionalProperties()))),
+        () -> destinationApi.updateDestination(new DestinationUpdate()
+            .destinationId(destinationId)
+            .name(destination.getName())
+            .connectionConfiguration(Jsons.jsonNode(config.getAdditionalProperties()))),
         "update destination");
 
-    LOGGER.info("Persisted updated configuration for destination {}. New config hash: {}.", destinationId,
-        Hashing.sha256().hashString(updatedDestination.getConnectionConfiguration().asText(), StandardCharsets.UTF_8));
+    LOGGER.info(
+        "Persisted updated configuration for destination {}. New config hash: {}.",
+        destinationId,
+        Hashing.sha256()
+            .hashString(
+                updatedDestination.getConnectionConfiguration().asText(), StandardCharsets.UTF_8));
   }
-
 }

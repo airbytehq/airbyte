@@ -58,7 +58,8 @@ public final class PostgresCatalogHelper {
    * @return will return list of sync modes
    */
   public static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    return stream.withSupportedSyncModes(
+        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
   /*
@@ -94,9 +95,10 @@ public final class PostgresCatalogHelper {
    * should be able to replicate these streams, just not in incremental mode as they have no
    * associated publication.
    */
-  public static AirbyteStream setFullRefreshForNonPublicationStreams(final AirbyteStream stream,
-                                                                     final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc) {
-    if (!publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace()))) {
+  public static AirbyteStream setFullRefreshForNonPublicationStreams(
+      final AirbyteStream stream, final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc) {
+    if (!publicizedTablesInCdc.contains(
+        new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace()))) {
       stream.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
       stream.setSourceDefinedCursor(false);
       stream.setSourceDefinedPrimaryKey(List.of());
@@ -107,20 +109,27 @@ public final class PostgresCatalogHelper {
   /**
    * @return tables included in the publication. When it is not CDC mode, returns an empty set.
    */
-  public static Set<AirbyteStreamNameNamespacePair> getPublicizedTables(final JdbcDatabase database) throws SQLException {
+  public static Set<AirbyteStreamNameNamespacePair> getPublicizedTables(final JdbcDatabase database)
+      throws SQLException {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (sourceConfig == null || !PostgresUtils.isCdc(sourceConfig)) {
       return Collections.emptySet();
     }
 
-    final String publication = sourceConfig.get("replication_method").get("publication").asText();
+    final String publication =
+        sourceConfig.get("replication_method").get("publication").asText();
     final List<JsonNode> tablesInPublication = database.queryJsons(
         "SELECT schemaname, tablename FROM pg_publication_tables WHERE pubname = ?", publication);
     final Set<AirbyteStreamNameNamespacePair> publicizedTables = tablesInPublication.stream()
-        .map(table -> new AirbyteStreamNameNamespacePair(table.get("tablename").asText(), table.get("schemaname").asText()))
+        .map(table -> new AirbyteStreamNameNamespacePair(
+            table.get("tablename").asText(), table.get("schemaname").asText()))
         .collect(Collectors.toSet());
-    LOGGER.info("For CDC, only tables in publication {} will be included in the sync: {}", publication,
-        publicizedTables.stream().map(pair -> pair.getNamespace() + "." + pair.getName()).toList());
+    LOGGER.info(
+        "For CDC, only tables in publication {} will be included in the sync: {}",
+        publication,
+        publicizedTables.stream()
+            .map(pair -> pair.getNamespace() + "." + pair.getName())
+            .toList());
 
     return publicizedTables;
   }

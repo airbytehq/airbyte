@@ -84,7 +84,10 @@ public class TestEnvConfigs {
   }
 
   public WorkerEnvironment getWorkerEnvironment() {
-    return getEnvOrDefault(WORKER_ENVIRONMENT, WorkerEnvironment.DOCKER, s -> WorkerEnvironment.valueOf(s.toUpperCase()));
+    return getEnvOrDefault(
+        WORKER_ENVIRONMENT,
+        WorkerEnvironment.DOCKER,
+        s -> WorkerEnvironment.valueOf(s.toUpperCase()));
   }
 
   /**
@@ -101,22 +104,32 @@ public class TestEnvConfigs {
     // This method assumes that these shared env variables are not critical to the execution
     // of the jobs, and only serve as metadata. So any exception is swallowed and default to
     // an empty string. Change this logic if this assumption no longer holds.
-    final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream().collect(Collectors.toMap(
-        Entry::getKey,
-        entry -> Exceptions.swallowWithDefault(() -> Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
+    final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream()
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            entry -> Exceptions.swallowWithDefault(
+                () -> Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
     return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
 
-  public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
+  public <T> T getEnvOrDefault(
+      final String key, final T defaultValue, final Function<String, T> parser) {
     return getEnvOrDefault(key, defaultValue, parser, false);
   }
 
-  public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
+  public <T> T getEnvOrDefault(
+      final String key,
+      final T defaultValue,
+      final Function<String, T> parser,
+      final boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info("Using default value for environment variable {}: '{}'", key, isSecret ? "*****" : defaultValue);
+      LOGGER.info(
+          "Using default value for environment variable {}: '{}'",
+          key,
+          isSecret ? "*****" : defaultValue);
       return defaultValue;
     }
   }
@@ -131,5 +144,4 @@ public class TestEnvConfigs {
 
     return value;
   }
-
 }

@@ -22,5 +22,4 @@ public interface SourceOperations<QueryResult, SourceType> {
    * {@link JsonSchemaType}
    */
   JsonSchemaType getAirbyteType(SourceType sourceType);
-
 }

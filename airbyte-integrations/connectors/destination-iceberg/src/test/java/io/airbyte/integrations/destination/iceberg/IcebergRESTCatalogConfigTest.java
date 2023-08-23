@@ -4,6 +4,15 @@
 
 package io.airbyte.integrations.destination.iceberg;
 
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FORMAT_TYPE_CONFIG_KEY;
+import static java.util.Map.entry;
+import static java.util.Map.ofEntries;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
@@ -20,6 +29,7 @@ import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
 import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.s3a.S3AFileSystem;
 import org.apache.iceberg.Table;
@@ -37,20 +47,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import java.util.Map;
-
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FORMAT_TYPE_CONFIG_KEY;
-import static java.util.Map.entry;
-import static java.util.Map.ofEntries;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 @Slf4j
-class IcebergRESTCatalogConfigTest
-{
+class IcebergRESTCatalogConfigTest {
 
   private static final String FAKE_WAREHOUSE_URI = "s3://fake-bucket";
   private static final String FAKE_ENDPOINT = "fake-endpoint";
@@ -81,7 +79,8 @@ class IcebergRESTCatalogConfigTest
     final InitiateMultipartUploadResult uploadResult = mock(InitiateMultipartUploadResult.class);
     final UploadPartResult uploadPartResult = mock(UploadPartResult.class);
     when(s3.uploadPart(any(UploadPartRequest.class))).thenReturn(uploadPartResult);
-    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class))).thenReturn(uploadResult);
+    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class)))
+        .thenReturn(uploadResult);
 
     TableScan tableScan = mock(TableScan.class);
     when(tableScan.schema()).thenReturn(null);
@@ -95,7 +94,8 @@ class IcebergRESTCatalogConfigTest
     when(catalog.createTable(any(), any())).thenReturn(tempTable);
     when(catalog.dropTable(any())).thenReturn(true);
 
-    JsonNode jsonNode = Jsons.jsonNode(ofEntries(entry(IcebergConstants.REST_CATALOG_URI_CONFIG_KEY, FAKE_REST_URI)));
+    JsonNode jsonNode = Jsons.jsonNode(
+        ofEntries(entry(IcebergConstants.REST_CATALOG_URI_CONFIG_KEY, FAKE_REST_URI)));
 
     config = new RESTCatalogConfig(jsonNode);
     config.setStorageConfig(S3Config.builder()
@@ -105,10 +105,12 @@ class IcebergRESTCatalogConfigTest
         .endpointWithSchema(FAKE_ENDPOINT_WITH_SCHEMA)
         .accessKeyId(FAKE_ACCESS_KEY_ID)
         .secretKey(FAKE_SECRET_ACCESS_KEY)
-        .credentialConfig(new S3AccessKeyCredentialConfig(FAKE_ACCESS_KEY_ID, FAKE_SECRET_ACCESS_KEY))
+        .credentialConfig(
+            new S3AccessKeyCredentialConfig(FAKE_ACCESS_KEY_ID, FAKE_SECRET_ACCESS_KEY))
         .s3Client(s3)
         .build());
-    config.setFormatConfig(new FormatConfig(Jsons.jsonNode(ImmutableMap.of(FORMAT_TYPE_CONFIG_KEY, "Parquet"))));
+    config.setFormatConfig(
+        new FormatConfig(Jsons.jsonNode(ImmutableMap.of(FORMAT_TYPE_CONFIG_KEY, "Parquet"))));
     config.setDefaultOutputDatabase("default");
 
     factory = new IcebergCatalogConfigFactory() {
@@ -123,7 +125,9 @@ class IcebergRESTCatalogConfigTest
   @Test
   public void checksRESTServerUri() {
     final IcebergDestination destinationFail = new IcebergDestination();
-    final AirbyteConnectionStatus status = destinationFail.check(Jsons.deserialize("""
+    final AirbyteConnectionStatus status = destinationFail.check(
+        Jsons.deserialize(
+            """
                                                                                    {
                                                                                      "catalog_config": {
                                                                                        "catalog_type": "REST",
@@ -152,21 +156,30 @@ class IcebergRESTCatalogConfigTest
     log.info("Spark Config for REST catalog: {}", sparkConfig);
 
     // Catalog config
-    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.catalog-impl")).isEqualTo(RESTCatalog.class.getName());
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.catalog-impl"))
+        .isEqualTo(RESTCatalog.class.getName());
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.uri")).isEqualTo(FAKE_REST_URI);
-    assertThat(sparkConfig.get("spark.sql.catalog.iceberg")).isEqualTo(SparkCatalog.class.getName());
-    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.io-impl")).isEqualTo(S3FileIO.class.getName());
-    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.warehouse")).isEqualTo(FAKE_WAREHOUSE_URI);
-    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.access-key-id")).isEqualTo(FAKE_ACCESS_KEY_ID);
-    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.secret-access-key")).isEqualTo(FAKE_SECRET_ACCESS_KEY);
-    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.endpoint")).isEqualTo(FAKE_ENDPOINT_WITH_SCHEMA);
-    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.path-style-access")).isEqualTo("false");
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg"))
+        .isEqualTo(SparkCatalog.class.getName());
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.io-impl"))
+        .isEqualTo(S3FileIO.class.getName());
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.warehouse"))
+        .isEqualTo(FAKE_WAREHOUSE_URI);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.access-key-id"))
+        .isEqualTo(FAKE_ACCESS_KEY_ID);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.secret-access-key"))
+        .isEqualTo(FAKE_SECRET_ACCESS_KEY);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.endpoint"))
+        .isEqualTo(FAKE_ENDPOINT_WITH_SCHEMA);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.path-style-access"))
+        .isEqualTo("false");
 
     // Hadoop config
     assertThat(sparkConfig.get("spark.hadoop.fs.s3a.endpoint")).isEqualTo(FAKE_ENDPOINT);
     assertThat(sparkConfig.get("spark.hadoop.fs.s3a.access.key")).isEqualTo(FAKE_ACCESS_KEY_ID);
     assertThat(sparkConfig.get("spark.hadoop.fs.s3a.secret.key")).isEqualTo(FAKE_SECRET_ACCESS_KEY);
-    assertThat(sparkConfig.get("spark.hadoop.fs.s3a.impl")).isEqualTo(S3AFileSystem.class.getName());
+    assertThat(sparkConfig.get("spark.hadoop.fs.s3a.impl"))
+        .isEqualTo(S3AFileSystem.class.getName());
     assertThat(sparkConfig.get("spark.hadoop.fs.s3a.connection.ssl.enabled")).isEqualTo("false");
   }
 
@@ -181,5 +194,4 @@ class IcebergRESTCatalogConfigTest
     assertThat(properties.get("s3.secret-access-key")).isEqualTo(FAKE_SECRET_ACCESS_KEY);
     assertThat(properties.get("s3.path-style-access")).isEqualTo("false");
   }
-
 }

@@ -41,7 +41,8 @@ public class SpeedBenchmarkFileGenerator {
       fileWriter = new FileWriter("/tmp/benchmark_data_text.txt", StandardCharsets.UTF_8);
       final PrintWriter bufferedWriter = new PrintWriter(fileWriter);
       while (speedBenchmarkGeneratorIterator.hasNext()) {
-        bufferedWriter.println(speedBenchmarkGeneratorIterator.next().getRecord().getData());
+        bufferedWriter.println(
+            speedBenchmarkGeneratorIterator.next().getRecord().getData());
       }
       bufferedWriter.flush();
     } catch (final IOException e) {
@@ -66,7 +67,8 @@ public class SpeedBenchmarkFileGenerator {
       while (speedBenchmarkGeneratorIterator.hasNext()) {
         final JsonNode data = speedBenchmarkGeneratorIterator.next().getRecord().getData();
 
-        final String outputString = String.format("%s,%s,%s,%s,%s",
+        final String outputString = String.format(
+            "%s,%s,%s,%s,%s",
             data.get("field1").asText(),
             data.get("field2").asText(),
             data.get("field3").asText(),
@@ -80,5 +82,4 @@ public class SpeedBenchmarkFileGenerator {
       throw new RuntimeException(e);
     }
   }
-
 }

@@ -51,8 +51,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeAll
   static void init() {
-    snConfig = Jsons
-        .deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    snConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
     // due to case sensitiveness in SnowflakeDB
     SCHEMA_NAME = Strings.addRandomSuffix("jdbc_integration_test1", "_", 5).toUpperCase();
     SCHEMA_NAME2 = Strings.addRandomSuffix("jdbc_integration_test1", "_", 5).toUpperCase();
@@ -143,82 +142,95 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
-    return new AirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
-            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_WITHOUT_PK,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
-            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(Collections.emptyList()),
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_COMPOSITE_PK,
-            defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
-            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(
-                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+    return new AirbyteCatalog()
+        .withStreams(List.of(
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME,
+                    defaultNamespace,
+                    Field.of(COL_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+                .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME_WITHOUT_PK,
+                    defaultNamespace,
+                    Field.of(COL_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+                .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(Collections.emptyList()),
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME_COMPOSITE_PK,
+                    defaultNamespace,
+                    Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+                .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(
+                    List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
   @Override
   protected List<AirbyteMessage> getTestMessages() {
     return List.of(
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_1,
-                        COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_2,
-                        COL_NAME, "crusher",
-                        COL_UPDATED_AT,
-                        "2005-10-19")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_3,
-                        COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19")))));
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
+                .withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map.of(
+                    COL_ID, ID_VALUE_1,
+                    COL_NAME, "picard",
+                    COL_UPDATED_AT, "2004-10-19")))),
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
+                .withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map.of(
+                    COL_ID, ID_VALUE_2, COL_NAME, "crusher", COL_UPDATED_AT, "2005-10-19")))),
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
+                .withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map.of(
+                    COL_ID, ID_VALUE_3,
+                    COL_NAME, "vash",
+                    COL_UPDATED_AT, "2006-10-19")))));
   }
 
   @Override
   protected void incrementalDateCheck() throws Exception {
-    super.incrementalCursorCheck(COL_UPDATED_AT,
+    super.incrementalCursorCheck(
+        COL_UPDATED_AT,
         "2005-10-18",
         "2006-10-19",
-        Lists.newArrayList(getTestMessages().get(1),
-            getTestMessages().get(2)));
+        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
   @Override
   protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_4,
-                    COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_5,
-                    COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19")))));
+    expectedMessages.add(new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(streamName)
+            .withNamespace(namespace)
+            .withData(Jsons.jsonNode(Map.of(
+                COL_ID, ID_VALUE_4,
+                COL_NAME, "riker",
+                COL_UPDATED_AT, "2006-10-19")))));
+    expectedMessages.add(new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(streamName)
+            .withNamespace(namespace)
+            .withData(Jsons.jsonNode(Map.of(
+                COL_ID, ID_VALUE_5,
+                COL_NAME, "data",
+                COL_UPDATED_AT, "2006-10-19")))));
     final DbStreamState state = new DbStreamState()
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
@@ -234,21 +246,32 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   void testDiscoverSchemaConfig() throws Exception {
     // add table and data to a separate schema.
     database.execute(connection -> {
-      connection.createStatement().execute(
-          String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
               RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "INSERT INTO %s(id, name) VALUES ('1','picard')",
               RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
               RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
+      connection
+          .createStatement()
+          .execute(String.format(
+              "INSERT INTO %s(id, name) VALUES ('3', 'vash')",
               RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement().execute(
-          String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
+      connection
+          .createStatement()
+          .execute(String.format(
+              "CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
+              RelationalDbQueryUtils.getFullyQualifiedTableName(
+                  SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
     });
 
     JsonNode confWithSchema = ((ObjectNode) config).put("schema", SCHEMA_NAME);
@@ -272,5 +295,4 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     assertTrue(streams.isEmpty());
   }
-
 }

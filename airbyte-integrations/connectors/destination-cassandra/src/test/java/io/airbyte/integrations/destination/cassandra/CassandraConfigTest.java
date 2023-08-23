@@ -15,11 +15,7 @@ class CassandraConfigTest {
 
   @BeforeEach
   void setup() {
-    var jsonNode = TestDataFactory.createJsonConfig(
-        "usr",
-        "pw",
-        "127.0.0.1",
-        9042);
+    var jsonNode = TestDataFactory.createJsonConfig("usr", "pw", "127.0.0.1", 9042);
     this.cassandraConfig = new CassandraConfig(jsonNode);
   }
 
@@ -34,7 +30,5 @@ class CassandraConfigTest {
         .hasFieldOrPropertyWithValue("port", 9042)
         .hasFieldOrPropertyWithValue("datacenter", "datacenter1")
         .hasFieldOrPropertyWithValue("replication", 1);
-
   }
-
 }

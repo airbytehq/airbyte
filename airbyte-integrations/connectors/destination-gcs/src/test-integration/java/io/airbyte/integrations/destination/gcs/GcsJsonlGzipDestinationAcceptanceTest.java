@@ -29,7 +29,7 @@ public class GcsJsonlGzipDestinationAcceptanceTest extends GcsJsonlDestinationAc
   }
 
   protected BufferedReader getReader(final S3Object s3Object) throws IOException {
-    return new BufferedReader(new InputStreamReader(new GZIPInputStream(s3Object.getObjectContent()), StandardCharsets.UTF_8));
+    return new BufferedReader(new InputStreamReader(
+        new GZIPInputStream(s3Object.getObjectContent()), StandardCharsets.UTF_8));
   }
-
 }

@@ -70,24 +70,26 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * @return stream of records that the result set is mapped to.
    */
   @MustBeClosed
-  protected static <T> Stream<T> toUnsafeStream(final ResultSet resultSet, final CheckedFunction<ResultSet, T, SQLException> mapper) {
-    return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
+  protected static <T> Stream<T> toUnsafeStream(
+      final ResultSet resultSet, final CheckedFunction<ResultSet, T, SQLException> mapper) {
+    return StreamSupport.stream(
+        new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
-      @Override
-      public boolean tryAdvance(final Consumer<? super T> action) {
-        try {
-          if (!resultSet.next()) {
-            resultSet.close();
-            return false;
+          @Override
+          public boolean tryAdvance(final Consumer<? super T> action) {
+            try {
+              if (!resultSet.next()) {
+                resultSet.close();
+                return false;
+              }
+              action.accept(mapper.apply(resultSet));
+              return true;
+            } catch (final SQLException e) {
+              throw new RuntimeException(e);
+            }
           }
-          action.accept(mapper.apply(resultSet));
-          return true;
-        } catch (final SQLException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-    }, false);
+        },
+        false);
   }
 
   /**
@@ -103,8 +105,9 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * @return Result of the query mapped to a list.
    * @throws SQLException SQL related exceptions.
    */
-  public abstract <T> List<T> bufferedResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                                     CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public abstract <T> List<T> bufferedResultSetQuery(
+      CheckedFunction<Connection, ResultSet, SQLException> query,
+      CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
   /**
@@ -123,16 +126,18 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * @throws SQLException SQL related exceptions.
    */
   @MustBeClosed
-  public abstract <T> Stream<T> unsafeResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                                     CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public abstract <T> Stream<T> unsafeResultSetQuery(
+      CheckedFunction<Connection, ResultSet, SQLException> query,
+      CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
   /**
    * String query is a common use case for {@link JdbcDatabase#unsafeResultSetQuery}. So this method
    * is created as syntactic sugar.
    */
-  public List<String> queryStrings(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                   final CheckedFunction<ResultSet, String, SQLException> recordTransform)
+  public List<String> queryStrings(
+      final CheckedFunction<Connection, ResultSet, SQLException> query,
+      final CheckedFunction<ResultSet, String, SQLException> recordTransform)
       throws SQLException {
     try (final Stream<String> stream = unsafeResultSetQuery(query, recordTransform)) {
       return stream.toList();
@@ -156,8 +161,9 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * @throws SQLException SQL related exceptions.
    */
   @MustBeClosed
-  public abstract <T> Stream<T> unsafeQuery(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                            CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public abstract <T> Stream<T> unsafeQuery(
+      CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+      CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
   /**
@@ -165,8 +171,9 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * {@link JdbcDatabase#unsafeQuery(CheckedFunction, CheckedFunction)}. So this method is created as
    * syntactic sugar.
    */
-  public List<JsonNode> queryJsons(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                   final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
+  public List<JsonNode> queryJsons(
+      final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+      final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
       throws SQLException {
     try (final Stream<JsonNode> stream = unsafeQuery(statementCreator, recordTransform)) {
       return stream.toList();
@@ -174,15 +181,17 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   public int queryInt(final String sql, final String... params) throws SQLException {
-    try (final Stream<Integer> stream = unsafeQuery(c -> {
-      PreparedStatement statement = c.prepareStatement(sql);
-      int i = 1;
-      for (String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement;
-    }, rs -> rs.getInt(1))) {
+    try (final Stream<Integer> stream = unsafeQuery(
+        c -> {
+          PreparedStatement statement = c.prepareStatement(sql);
+          int i = 1;
+          for (String param : params) {
+            statement.setString(i, param);
+            ++i;
+          }
+          return statement;
+        },
+        rs -> rs.getInt(1))) {
       return stream.findFirst().get();
     }
   }
@@ -193,16 +202,19 @@ public abstract class JdbcDatabase extends SqlDatabase {
    */
   @MustBeClosed
   @Override
-  public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws SQLException {
-    return unsafeQuery(connection -> {
-      final PreparedStatement statement = connection.prepareStatement(sql);
-      int i = 1;
-      for (final String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement;
-    }, sourceOperations::rowToJson);
+  public Stream<JsonNode> unsafeQuery(final String sql, final String... params)
+      throws SQLException {
+    return unsafeQuery(
+        connection -> {
+          final PreparedStatement statement = connection.prepareStatement(sql);
+          int i = 1;
+          for (final String param : params) {
+            statement.setString(i, param);
+            ++i;
+          }
+          return statement;
+        },
+        sourceOperations::rowToJson);
   }
 
   /**
@@ -215,21 +227,22 @@ public abstract class JdbcDatabase extends SqlDatabase {
     }
   }
 
-  public ResultSetMetaData queryMetadata(final String sql, final String... params) throws SQLException {
-    try (final Stream<ResultSetMetaData> q = unsafeQuery(c -> {
-      PreparedStatement statement = c.prepareStatement(sql);
-      int i = 1;
-      for (String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement;
-    },
+  public ResultSetMetaData queryMetadata(final String sql, final String... params)
+      throws SQLException {
+    try (final Stream<ResultSetMetaData> q = unsafeQuery(
+        c -> {
+          PreparedStatement statement = c.prepareStatement(sql);
+          int i = 1;
+          for (String param : params) {
+            statement.setString(i, param);
+            ++i;
+          }
+          return statement;
+        },
         ResultSet::getMetaData)) {
       return q.findFirst().orElse(null);
     }
   }
 
   public abstract DatabaseMetaData getMetaData() throws SQLException;
-
 }

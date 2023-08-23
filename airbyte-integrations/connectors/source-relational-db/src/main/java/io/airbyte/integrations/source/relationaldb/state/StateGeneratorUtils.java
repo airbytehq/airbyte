@@ -64,10 +64,11 @@ public class StateGeneratorUtils {
   /**
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.
    */
-  public static final Function<AirbyteStreamState, AirbyteStreamNameNamespacePair> NAME_NAMESPACE_PAIR_FUNCTION =
-      s -> isValidStreamDescriptor(s.getStreamDescriptor())
-          ? new AirbyteStreamNameNamespacePair(s.getStreamDescriptor().getName(), s.getStreamDescriptor().getNamespace())
-          : null;
+  public static final Function<AirbyteStreamState, AirbyteStreamNameNamespacePair>
+      NAME_NAMESPACE_PAIR_FUNCTION = s -> isValidStreamDescriptor(s.getStreamDescriptor())
+      ? new AirbyteStreamNameNamespacePair(
+          s.getStreamDescriptor().getName(), s.getStreamDescriptor().getNamespace())
+      : null;
 
   private StateGeneratorUtils() {}
 
@@ -78,12 +79,15 @@ public class StateGeneratorUtils {
    * @param cursorInfo The current cursor.
    * @return The {@link AirbyteStreamState} representing the current state of the stream.
    */
-  public static AirbyteStreamState generateStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                                       final CursorInfo cursorInfo) {
+  public static AirbyteStreamState generateStreamState(
+      final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+      final CursorInfo cursorInfo) {
     return new AirbyteStreamState()
-        .withStreamDescriptor(
-            new StreamDescriptor().withName(airbyteStreamNameNamespacePair.getName()).withNamespace(airbyteStreamNameNamespacePair.getNamespace()))
-        .withStreamState(Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)));
+        .withStreamDescriptor(new StreamDescriptor()
+            .withName(airbyteStreamNameNamespacePair.getName())
+            .withNamespace(airbyteStreamNameNamespacePair.getNamespace()))
+        .withStreamState(
+            Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)));
   }
 
   /**
@@ -96,7 +100,8 @@ public class StateGeneratorUtils {
    * @return The list of stream states derived from the state information extracted from the provided
    *         map.
    */
-  public static List<AirbyteStreamState> generateStreamStateList(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+  public static List<AirbyteStreamState> generateStreamStateList(
+      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
     return pairToCursorInfoMap.entrySet().stream()
         .sorted(Entry.comparingByKey())
         .map(e -> generateStreamState(e.getKey(), e.getValue()))
@@ -111,7 +116,8 @@ public class StateGeneratorUtils {
    *        information for that stream
    * @return The legacy {@link DbState}.
    */
-  public static DbState generateDbState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+  public static DbState generateDbState(
+      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
     return new DbState()
         .withCdc(false)
         .withStreams(pairToCursorInfoMap.entrySet().stream()
@@ -127,12 +133,16 @@ public class StateGeneratorUtils {
    * @param cursorInfo The current cursor.
    * @return The {@link DbStreamState}.
    */
-  public static DbStreamState generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                                    final CursorInfo cursorInfo) {
+  public static DbStreamState generateDbStreamState(
+      final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+      final CursorInfo cursorInfo) {
     final DbStreamState state = new DbStreamState()
         .withStreamName(airbyteStreamNameNamespacePair.getName())
         .withStreamNamespace(airbyteStreamNameNamespacePair.getNamespace())
-        .withCursorField(cursorInfo.getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(cursorInfo.getCursorField()))
+        .withCursorField(
+            cursorInfo.getCursorField() == null
+                ? Collections.emptyList()
+                : Lists.newArrayList(cursorInfo.getCursorField()))
         .withCursor(cursorInfo.getCursor());
     if (cursorInfo.getCursorRecordCount() > 0L) {
       state.setCursorRecordCount(cursorInfo.getCursorRecordCount());
@@ -184,16 +194,18 @@ public class StateGeneratorUtils {
    * @param airbyteStateMessage A {@link AirbyteStateType#LEGACY} state message.
    * @return A {@link AirbyteStateType#GLOBAL} state message.
    */
-  public static AirbyteStateMessage convertLegacyStateToGlobalState(final AirbyteStateMessage airbyteStateMessage) {
+  public static AirbyteStateMessage convertLegacyStateToGlobalState(
+      final AirbyteStateMessage airbyteStateMessage) {
     final DbState dbState = Jsons.object(airbyteStateMessage.getData(), DbState.class);
     final AirbyteGlobalState globalState = new AirbyteGlobalState()
         .withSharedState(Jsons.jsonNode(dbState.getCdcState()))
         .withStreamStates(dbState.getStreams().stream()
             .map(s -> new AirbyteStreamState()
-                .withStreamDescriptor(new StreamDescriptor().withName(s.getStreamName()).withNamespace(s.getStreamNamespace()))
+                .withStreamDescriptor(new StreamDescriptor()
+                    .withName(s.getStreamName())
+                    .withNamespace(s.getStreamNamespace()))
                 .withStreamState(Jsons.jsonNode(s)))
-            .collect(
-                Collectors.toList()));
+            .collect(Collectors.toList()));
     return new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState);
   }
 
@@ -204,16 +216,21 @@ public class StateGeneratorUtils {
    * @param airbyteStateMessage A {@link AirbyteStateType#LEGACY} state message.
    * @return A list {@link AirbyteStateType#STREAM} state messages.
    */
-  public static List<AirbyteStateMessage> convertLegacyStateToStreamState(final AirbyteStateMessage airbyteStateMessage) {
+  public static List<AirbyteStateMessage> convertLegacyStateToStreamState(
+      final AirbyteStateMessage airbyteStateMessage) {
     return Jsons.object(airbyteStateMessage.getData(), DbState.class).getStreams().stream()
-        .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+        .map(s -> new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()
-                .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                .withStreamDescriptor(new StreamDescriptor()
+                    .withNamespace(s.getStreamNamespace())
+                    .withName(s.getStreamName()))
                 .withStreamState(Jsons.jsonNode(s))))
         .collect(Collectors.toList());
   }
 
-  public static AirbyteStateMessage convertStateMessage(final io.airbyte.protocol.models.AirbyteStateMessage state) {
+  public static AirbyteStateMessage convertStateMessage(
+      final io.airbyte.protocol.models.AirbyteStateMessage state) {
     return Jsons.object(Jsons.jsonNode(state), AirbyteStateMessage.class);
   }
 
@@ -224,18 +241,20 @@ public class StateGeneratorUtils {
    * @Param supportedStateType the {@link AirbyteStateType} supported by this connector.
    * @return The deserialized object representation of the state.
    */
-  public static List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson,
-                                                                  final boolean useStreamCapableState,
-                                                                  final AirbyteStateType supportedStateType) {
-    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson,
-        useStreamCapableState);
+  public static List<AirbyteStateMessage> deserializeInitialState(
+      final JsonNode initialStateJson,
+      final boolean useStreamCapableState,
+      final AirbyteStateType supportedStateType) {
+    final Optional<StateWrapper> typedState =
+        StateMessageHelper.getTypedState(initialStateJson, useStreamCapableState);
     return typedState
         .map(state -> switch (state.getStateType()) {
           case GLOBAL -> List.of(StateGeneratorUtils.convertStateMessage(state.getGlobal()));
-          case STREAM -> state.getStateMessages()
-              .stream()
-              .map(StateGeneratorUtils::convertStateMessage).toList();
-          default -> List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
+          case STREAM -> state.getStateMessages().stream()
+              .map(StateGeneratorUtils::convertStateMessage)
+              .toList();
+          default -> List.of(new AirbyteStateMessage()
+              .withType(AirbyteStateType.LEGACY)
               .withData(state.getLegacyState()));
         })
         .orElse(generateEmptyInitialState(supportedStateType));
@@ -247,7 +266,8 @@ public class StateGeneratorUtils {
    * @Param supportedStateType the {@link AirbyteStateType} supported by this connector.
    * @return The empty, initial state.
    */
-  private static List<AirbyteStateMessage> generateEmptyInitialState(final AirbyteStateType supportedStateType) {
+  private static List<AirbyteStateMessage> generateEmptyInitialState(
+      final AirbyteStateType supportedStateType) {
     // For backwards compatibility with existing connectors
     if (supportedStateType == AirbyteStateType.LEGACY) {
       return List.of(new AirbyteStateMessage()
@@ -257,12 +277,12 @@ public class StateGeneratorUtils {
       final AirbyteGlobalState globalState = new AirbyteGlobalState()
           .withSharedState(Jsons.jsonNode(new CdcState()))
           .withStreamStates(List.of());
-      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+      return List.of(
+          new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
     } else {
       return List.of(new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState()));
     }
   }
-
 }

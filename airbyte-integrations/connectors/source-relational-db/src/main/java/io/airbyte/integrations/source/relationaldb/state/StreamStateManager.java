@@ -30,7 +30,8 @@ import org.slf4j.LoggerFactory;
  * This implementation generates a state object for each stream detected in catalog/map of known
  * streams to cursor information stored in this manager.
  */
-public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
+public class StreamStateManager
+    extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
   private final List<AirbyteStateMessage> rawAirbyteStateMessages;
@@ -44,9 +45,14 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
    * @param catalog The {@link ConfiguredAirbyteCatalog} for the connector associated with this state
    *        manager.
    */
-  public StreamStateManager(final List<AirbyteStateMessage> airbyteStateMessages, final ConfiguredAirbyteCatalog catalog) {
-    super(catalog,
-        () -> airbyteStateMessages.stream().map(AirbyteStateMessage::getStream).collect(Collectors.toList()),
+  public StreamStateManager(
+      final List<AirbyteStateMessage> airbyteStateMessages,
+      final ConfiguredAirbyteCatalog catalog) {
+    super(
+        catalog,
+        () -> airbyteStateMessages.stream()
+            .map(AirbyteStateMessage::getStream)
+            .collect(Collectors.toList()),
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
         CURSOR_RECORD_COUNT_FUNCTION,
@@ -56,7 +62,8 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
 
   @Override
   public CdcStateManager getCdcStateManager() {
-    throw new UnsupportedOperationException("CDC state management not supported by stream state manager.");
+    throw new UnsupportedOperationException(
+        "CDC state management not supported by stream state manager.");
   }
 
   @Override
@@ -67,8 +74,10 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
   @Override
   public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
     if (pair.isPresent()) {
-      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = getPairToCursorInfoMap();
-      final Optional<CursorInfo> cursorInfo = Optional.ofNullable(pairToCursorInfoMap.get(pair.get()));
+      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap =
+          getPairToCursorInfoMap();
+      final Optional<CursorInfo> cursorInfo =
+          Optional.ofNullable(pairToCursorInfoMap.get(pair.get()));
 
       if (cursorInfo.isPresent()) {
         LOGGER.debug("Generating state message for {}...", pair);
@@ -78,13 +87,18 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
             .withData(Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap)))
             .withStream(StateGeneratorUtils.generateStreamState(pair.get(), cursorInfo.get()));
       } else {
-        LOGGER.warn("Cursor information could not be located in state for stream {}.  Returning a new, empty state message...", pair);
-        return new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
+        LOGGER.warn(
+            "Cursor information could not be located in state for stream {}.  Returning a new, empty state message...",
+            pair);
+        return new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState());
       }
     } else {
       LOGGER.warn("Stream not provided.  Returning a new, empty state message...");
-      return new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
+      return new AirbyteStateMessage()
+          .withType(AirbyteStateType.STREAM)
+          .withStream(new AirbyteStreamState());
     }
   }
-
 }

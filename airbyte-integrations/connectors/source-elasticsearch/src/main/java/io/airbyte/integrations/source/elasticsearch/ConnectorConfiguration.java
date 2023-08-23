@@ -48,12 +48,12 @@ public class ConnectorConfiguration {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     ConnectorConfiguration that = (ConnectorConfiguration) o;
-    return upsert == that.upsert && Objects.equals(endpoint, that.endpoint) && Objects.equals(authenticationMethod, that.authenticationMethod);
+    return upsert == that.upsert
+        && Objects.equals(endpoint, that.endpoint)
+        && Objects.equals(authenticationMethod, that.authenticationMethod);
   }
 
   @Override
@@ -63,11 +63,10 @@ public class ConnectorConfiguration {
 
   @Override
   public String toString() {
-    return "ConnectorConfiguration{" +
-        "endpoint='" + endpoint + '\'' +
-        ", upsert=" + upsert +
-        ", authenticationMethod=" + authenticationMethod +
-        '}';
+    return "ConnectorConfiguration{" + "endpoint='"
+        + endpoint + '\'' + ", upsert="
+        + upsert + ", authenticationMethod="
+        + authenticationMethod + '}';
   }
 
   static class AuthenticationMethod {
@@ -128,16 +127,14 @@ public class ConnectorConfiguration {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o)
-        return true;
-      if (o == null || getClass() != o.getClass())
-        return false;
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
       AuthenticationMethod that = (AuthenticationMethod) o;
-      return method == that.method &&
-          Objects.equals(username, that.username) &&
-          Objects.equals(password, that.password) &&
-          Objects.equals(apiKeyId, that.apiKeyId) &&
-          Objects.equals(apiKeySecret, that.apiKeySecret);
+      return method == that.method
+          && Objects.equals(username, that.username)
+          && Objects.equals(password, that.password)
+          && Objects.equals(apiKeyId, that.apiKeyId)
+          && Objects.equals(apiKeySecret, that.apiKeySecret);
     }
 
     @Override
@@ -147,13 +144,10 @@ public class ConnectorConfiguration {
 
     @Override
     public String toString() {
-      return "AuthenticationMethod{" +
-          "method=" + method +
-          ", username='" + username + '\'' +
-          ", apiKeyId='" + apiKeyId + '\'' +
-          '}';
+      return "AuthenticationMethod{" + "method="
+          + method + ", username='"
+          + username + '\'' + ", apiKeyId='"
+          + apiKeyId + '\'' + '}';
     }
-
   }
-
 }

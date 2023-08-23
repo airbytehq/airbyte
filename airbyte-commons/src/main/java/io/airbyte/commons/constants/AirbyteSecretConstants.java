@@ -22,5 +22,4 @@ public final class AirbyteSecretConstants {
   private AirbyteSecretConstants() {
     // Private constructor to prevent instantiation
   }
-
 }

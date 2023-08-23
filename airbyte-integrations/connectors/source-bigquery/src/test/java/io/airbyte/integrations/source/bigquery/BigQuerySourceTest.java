@@ -18,21 +18,24 @@ class BigQuerySourceTest {
 
   @Test
   public void testEmptyDatasetIdInConfig() throws IOException {
-    final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_empty_datasetid.json"));
+    final JsonNode configJson =
+        Jsons.deserialize(MoreResources.readResource("test_config_empty_datasetid.json"));
     final JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
     assertTrue(dbConfig.get(BigQuerySource.CONFIG_DATASET_ID).isEmpty());
   }
 
   @Test
   public void testMissingDatasetIdInConfig() throws IOException {
-    final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_missing_datasetid.json"));
+    final JsonNode configJson =
+        Jsons.deserialize(MoreResources.readResource("test_config_missing_datasetid.json"));
     final JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
     assertFalse(dbConfig.hasNonNull(BigQuerySource.CONFIG_DATASET_ID));
   }
 
   @Test
   public void testNullDatasetIdInConfig() throws IOException {
-    final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_null_datasetid.json"));
+    final JsonNode configJson =
+        Jsons.deserialize(MoreResources.readResource("test_config_null_datasetid.json"));
     final JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
     assertFalse(dbConfig.hasNonNull(BigQuerySource.CONFIG_DATASET_ID));
   }
@@ -45,5 +48,4 @@ class BigQuerySourceTest {
     assertEquals("project", dbConfig.get(BigQuerySource.CONFIG_PROJECT_ID).asText());
     assertEquals("credentials", dbConfig.get(BigQuerySource.CONFIG_CREDS).asText());
   }
-
 }

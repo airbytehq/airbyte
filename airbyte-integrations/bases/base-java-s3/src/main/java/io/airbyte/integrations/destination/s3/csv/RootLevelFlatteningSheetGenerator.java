@@ -13,7 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implements CsvSheetGenerator {
+public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator
+    implements CsvSheetGenerator {
 
   /**
    * Keep a header list to iterate the input json object with a defined order.
@@ -21,14 +22,15 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
   private final List<String> recordHeaders;
 
   public RootLevelFlatteningSheetGenerator(final JsonNode jsonSchema) {
-    this.recordHeaders = MoreIterators.toList(jsonSchema.get("properties").fieldNames())
-        .stream().sorted().collect(Collectors.toList());
+    this.recordHeaders = MoreIterators.toList(jsonSchema.get("properties").fieldNames()).stream()
+        .sorted()
+        .collect(Collectors.toList());
   }
 
   @Override
   public List<String> getHeaderRow() {
-    final List<String> headers = Lists.newArrayList(JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    final List<String> headers = Lists.newArrayList(
+        JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     headers.addAll(recordHeaders);
     return headers;
   }
@@ -57,5 +59,4 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
 
     return values;
   }
-
 }

@@ -45,10 +45,12 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
           properties.put("trustStore", getTrustStoreLocation());
           final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
           if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
-            properties.put("trustStorePassword", config.get("trustStorePassword").asText());
+            properties.put(
+                "trustStorePassword", config.get("trustStorePassword").asText());
           }
           if (config.has("hostNameInCertificate")) {
-            properties.put("hostNameInCertificate", config.get("hostNameInCertificate").asText());
+            properties.put(
+                "hostNameInCertificate", config.get("hostNameInCertificate").asText());
           }
         }
       }
@@ -59,9 +61,11 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema =
+        Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
-    final String jdbcUrl = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+    final String jdbcUrl = String.format(
+        "jdbc:sqlserver://%s:%s;databaseName=%s;",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
@@ -83,18 +87,21 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
 
   private String getTrustStoreLocation() {
     // trust store location code found at https://stackoverflow.com/a/56570588
-    final String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+    final String trustStoreLocation = Optional.ofNullable(
+            System.getProperty("javax.net.ssl.trustStore"))
         .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
     final File trustStoreFile = new File(trustStoreLocation);
     if (!trustStoreFile.exists()) {
-      throw new RuntimeException("Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
-          + trustStoreLocation + " does not exist.");
+      throw new RuntimeException(
+          "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
+              + trustStoreLocation + " does not exist.");
     }
     return trustStoreLocation;
   }
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new MSSQLDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedDestination(
+        new MSSQLDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public static void main(final String[] args) throws Exception {
@@ -103,5 +110,4 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MSSQLDestination.class);
   }
-
 }

@@ -50,17 +50,17 @@ public class SelectdbCopyInto {
   private static final int SUCCESS = 0;
   private static final String FAIL = "1";
 
-  private final static String COPY_SYNC = "copy.async";
+  private static final String COPY_SYNC = "copy.async";
   private String COPY_INTO_SQL = "";
   private String internalSatgeFileName = "";
   private Properties copyIntoSqlProp;
 
   public SelectdbCopyInto(
-                          Path path,
-                          SelectdbConnectionOptions selectdbOptions,
-                          LabelInfo labelInfo,
-                          CloseableHttpClient httpClient,
-                          String... head) {
+      Path path,
+      SelectdbConnectionOptions selectdbOptions,
+      LabelInfo labelInfo,
+      CloseableHttpClient httpClient,
+      String... head) {
     this.loadUrl = selectdbOptions.getLoadUrl();
     this.db = selectdbOptions.getDb();
     this.tableName = selectdbOptions.getTable();
@@ -86,7 +86,8 @@ public class SelectdbCopyInto {
     LOGGER.info("redirect to s3 address:{}", uploadAddress);
     try {
       HttpPutBuilder putBuilder = new HttpPutBuilder();
-      putBuilder.setUrl(uploadAddress)
+      putBuilder
+          .setUrl(uploadAddress)
           .setCommonHeader()
           .setEntity(new ByteArrayEntity(new FileInputStream(pathChecked.toFile()).readAllBytes()));
 
@@ -100,7 +101,8 @@ public class SelectdbCopyInto {
 
   private String getUploadAddress() throws IOException {
     HttpPutBuilder putBuilder = new HttpPutBuilder();
-    putBuilder.setUrl(uploadUrlStr)
+    putBuilder
+        .setUrl(uploadUrlStr)
         .setFileName(this.internalSatgeFileName)
         .setCommonHeader()
         .setEmptyEntity()
@@ -115,7 +117,10 @@ public class SelectdbCopyInto {
       } else {
         HttpEntity entity = execute.getEntity();
         String result = entity == null ? null : EntityUtils.toString(entity);
-        LOGGER.error("Failed get the redirected address, status {}, reason {}, response {}", statusCode, reason,
+        LOGGER.error(
+            "Failed get the redirected address, status {}, reason {}, response {}",
+            statusCode,
+            reason,
             result);
         throw new RuntimeException("Could not get the redirected address.");
       }
@@ -132,7 +137,9 @@ public class SelectdbCopyInto {
         .append(db)
         .append("`.`")
         .append(tableName)
-        .append("` FROM @~('{").append(String.join(",", fileList)).append("}') ")
+        .append("` FROM @~('{")
+        .append(String.join(",", fileList))
+        .append("}') ")
         .append("PROPERTIES (");
 
     // this copy into is sync
@@ -163,7 +170,8 @@ public class SelectdbCopyInto {
     String loadResult = "";
     while (retry++ <= maxRetry) {
       HttpPostBuilder postBuilder = new HttpPostBuilder();
-      postBuilder.setUrl(jdbcUrlStr)
+      postBuilder
+          .setUrl(jdbcUrlStr)
           .baseAuth(user, passwd)
           .setEntity(new StringEntity(OBJECT_MAPPER.writeValueAsString(params)));
       try {
@@ -175,13 +183,16 @@ public class SelectdbCopyInto {
       statusCode = response.getStatusLine().getStatusCode();
       reasonPhrase = response.getStatusLine().getReasonPhrase();
       if (statusCode != 200) {
-        LOGGER.warn("commit failed with status {} {}, reason {}", statusCode, loadUrl, reasonPhrase);
+        LOGGER.warn(
+            "commit failed with status {} {}, reason {}", statusCode, loadUrl, reasonPhrase);
         continue;
       } else if (response.getEntity() != null) {
         loadResult = EntityUtils.toString(response.getEntity());
         success = handleCommitResponse(loadResult);
         if (success) {
-          LOGGER.info("commit success cost {}ms, response is {}", System.currentTimeMillis() - start,
+          LOGGER.info(
+              "commit success cost {}ms, response is {}",
+              System.currentTimeMillis() - start,
               loadResult);
           break;
         } else {
@@ -191,7 +202,11 @@ public class SelectdbCopyInto {
     }
 
     if (!success) {
-      LOGGER.error("commit error with status {}, reason {}, response {}", statusCode, reasonPhrase, loadResult);
+      LOGGER.error(
+          "commit error with status {}, reason {}, response {}",
+          statusCode,
+          reasonPhrase,
+          loadResult);
       throw new CopyIntoException("commit error with " + COPY_INTO_SQL);
     }
   }
@@ -205,15 +220,16 @@ public class SelectdbCopyInto {
           return;
         }
         LOGGER.info("response result {}", loadResult);
-        BaseResponse<HashMap<String, String>> baseResponse = new ObjectMapper().readValue(loadResult,
-            new TypeReference<BaseResponse<HashMap<String, String>>>() {});
+        BaseResponse<HashMap<String, String>> baseResponse = new ObjectMapper()
+            .readValue(loadResult, new TypeReference<BaseResponse<HashMap<String, String>>>() {});
         if (baseResponse.getCode() == 0) {
           return;
         } else {
           throw new RuntimeException("upload file error: " + baseResponse.getMsg());
         }
       }
-      throw new RuntimeException("upload file error: " + response.getStatusLine().toString());
+      throw new RuntimeException(
+          "upload file error: " + response.getStatusLine().toString());
     } finally {
       if (response != null) {
         response.close();
@@ -222,8 +238,8 @@ public class SelectdbCopyInto {
   }
 
   public boolean handleCommitResponse(String loadResult) throws IOException {
-    BaseResponse<CopyIntoResp> baseResponse = OBJECT_MAPPER.readValue(loadResult,
-        new TypeReference<BaseResponse<CopyIntoResp>>() {});
+    BaseResponse<CopyIntoResp> baseResponse =
+        OBJECT_MAPPER.readValue(loadResult, new TypeReference<BaseResponse<CopyIntoResp>>() {});
     if (baseResponse.getCode() == SUCCESS) {
       CopyIntoResp dataResp = baseResponse.getData();
       if (FAIL.equals(dataResp.getDataCode())) {
@@ -231,7 +247,8 @@ public class SelectdbCopyInto {
         return false;
       } else {
         Map<String, String> result = dataResp.getResult();
-        if (!result.get("state").equals("FINISHED") && !ResponseUtils.isCommitted(result.get("msg"))) {
+        if (!result.get("state").equals("FINISHED")
+            && !ResponseUtils.isCommitted(result.get("msg"))) {
           LOGGER.error("copy into load failed, reason:{}", loadResult);
           return false;
         } else {
@@ -257,5 +274,4 @@ public class SelectdbCopyInto {
       }
     }
   }
-
 }

@@ -32,5 +32,4 @@ public class MongodbNameTransformer extends StandardNameTransformer {
     }
     return value.substring(0, length);
   }
-
 }

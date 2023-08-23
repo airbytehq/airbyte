@@ -28,7 +28,9 @@ class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCl
   private boolean hasSupplied;
   private AutoCloseableIterator<T> internalIterator;
 
-  public LazyAutoCloseableIterator(final Supplier<AutoCloseableIterator<T>> iteratorSupplier, final AirbyteStreamNameNamespacePair airbyteStream) {
+  public LazyAutoCloseableIterator(
+      final Supplier<AutoCloseableIterator<T>> iteratorSupplier,
+      final AirbyteStreamNameNamespacePair airbyteStream) {
     Preconditions.checkNotNull(iteratorSupplier);
     this.airbyteStream = airbyteStream;
     this.iteratorSupplier = iteratorSupplier;
@@ -61,5 +63,4 @@ class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCl
   public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
     return Optional.ofNullable(airbyteStream);
   }
-
 }

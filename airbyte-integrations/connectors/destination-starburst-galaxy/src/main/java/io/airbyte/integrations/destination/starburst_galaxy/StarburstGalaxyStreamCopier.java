@@ -36,8 +36,7 @@ import org.slf4j.LoggerFactory;
  * <li>5. Deletes the tmp Iceberg table.</li>
  * </ul>
  */
-public abstract class StarburstGalaxyStreamCopier
-    implements StreamCopier {
+public abstract class StarburstGalaxyStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StarburstGalaxyStreamCopier.class);
 
@@ -55,15 +54,17 @@ public abstract class StarburstGalaxyStreamCopier
   protected final StarburstGalaxyDestinationConfig galaxyDestinationConfig;
   protected TableSchema galaxySchema;
 
-  public StarburstGalaxyStreamCopier(final String stagingFolder,
-                                     final String schemaName,
-                                     final ConfiguredAirbyteStream configuredStream,
-                                     final JdbcDatabase database,
-                                     final StarburstGalaxyDestinationConfig galaxyDestinationConfig,
-                                     final StandardNameTransformer nameTransformer,
-                                     final SqlOperations sqlOperations) {
+  public StarburstGalaxyStreamCopier(
+      final String stagingFolder,
+      final String schemaName,
+      final ConfiguredAirbyteStream configuredStream,
+      final JdbcDatabase database,
+      final StarburstGalaxyDestinationConfig galaxyDestinationConfig,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
     this.schemaName = schemaName;
-    this.quotedSchemaName = "\"" + this.schemaName + "\""; // Wrap schema name with double quotes to support Galaxy reserved keywords
+    this.quotedSchemaName = "\"" + this.schemaName
+        + "\""; // Wrap schema name with double quotes to support Galaxy reserved keywords
     this.streamName = configuredStream.getStream().getName();
     this.destinationSyncMode = configuredStream.getDestinationSyncMode();
     this.purgeStagingTable = galaxyDestinationConfig.purgeStagingData();
@@ -71,8 +72,9 @@ public abstract class StarburstGalaxyStreamCopier
     this.sqlOperations = (StarburstGalaxySqlOperations) sqlOperations;
     this.galaxyDestinationConfig = galaxyDestinationConfig;
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
-    this.quotedDestTableName = "\"" + nameTransformer.getIdentifier(streamName) + "\""; // Wrap table name with double quotes to support Galaxy
-                                                                                        // reserved
+    this.quotedDestTableName = "\"" + nameTransformer.getIdentifier(streamName)
+        + "\""; // Wrap table name with double quotes to support Galaxy
+    // reserved
     // keywords
     this.stagingFolder = stagingFolder;
     LOGGER.info("[Stream {}] Catalog schema: {}", streamName, this.schemaName);
@@ -80,11 +82,14 @@ public abstract class StarburstGalaxyStreamCopier
 
   static TableSchema convertIcebergSchemaToGalaxySchema(org.apache.iceberg.Schema icebergSchema) {
     TableSchema tableSchema = new TableSchema();
-    icebergSchema.columns()
+    icebergSchema
+        .columns()
         .forEach(
             // Wrap column name in double quotes to support reserved keywords
-            column -> tableSchema
-                .addColumn(new ColumnMetadata("\"" + column.name() + "\"", toTrinoType(column.type(), TESTING_TYPE_MANAGER), column.fieldId())));
+            column -> tableSchema.addColumn(new ColumnMetadata(
+                "\"" + column.name() + "\"",
+                toTrinoType(column.type(), TESTING_TYPE_MANAGER),
+                column.fieldId())));
     return tableSchema;
   }
 
@@ -98,18 +103,19 @@ public abstract class StarburstGalaxyStreamCopier
 
   @Override
   public void createTemporaryTable() throws Exception {
-    String registerTable = format("""
+    String registerTable = format(
+        """
                                   CALL system.register_table(schema_name => '%s', table_name => '%s',
                                   table_location => '%s',
                                   metadata_file_name => '%s')
-                                  """, schemaName, tmpTableName, getTmpTableLocation(), getTmpTableMetadataFileName());
+                                  """,
+        schemaName, tmpTableName, getTmpTableLocation(), getTmpTableMetadataFileName());
     LOGGER.info("[Stream {}] Register table: {}", streamName, registerTable);
     database.execute(registerTable);
     LOGGER.info("[Stream {}] Table {} is registered", streamName, tmpTableName);
   }
 
-  protected abstract String getTmpTableMetadataFileName()
-      throws IOException, InterruptedException;
+  protected abstract String getTmpTableMetadataFileName() throws IOException, InterruptedException;
 
   @Override
   public void copyStagingFileToTemporaryTable() {
@@ -120,26 +126,33 @@ public abstract class StarburstGalaxyStreamCopier
   /**
    * Adds newly created source columns to target
    */
-  private void promoteSourceSchemaChangesToDestination()
-      throws SQLException {
-    List<JsonNode> describeTable = database.queryJsons(format("DESCRIBE %s.%s", quotedSchemaName, quotedDestTableName));
-    LOGGER.info("[Stream {}] Existing table structure for {}.{} table is {}", streamName, schemaName, quotedDestTableName, describeTable);
-    Map<String, String> existingColumns = describeTable.stream().collect(
-        // Column name is wrapped within double quotes as column name in Galaxy schema is wrapped within
-        // double quotes when the schema is created
-        Collectors.toMap(column -> "\"" + column.get("Column").asText().toLowerCase(ENGLISH) + "\"",
-            column -> column.get("Type").asText().toLowerCase(ENGLISH)));
+  private void promoteSourceSchemaChangesToDestination() throws SQLException {
+    List<JsonNode> describeTable =
+        database.queryJsons(format("DESCRIBE %s.%s", quotedSchemaName, quotedDestTableName));
+    LOGGER.info(
+        "[Stream {}] Existing table structure for {}.{} table is {}",
+        streamName,
+        schemaName,
+        quotedDestTableName,
+        describeTable);
+    Map<String, String> existingColumns = describeTable.stream()
+        .collect(
+            // Column name is wrapped within double quotes as column name in Galaxy schema is
+            // wrapped within
+            // double quotes when the schema is created
+            Collectors.toMap(
+                column -> "\"" + column.get("Column").asText().toLowerCase(ENGLISH) + "\"",
+                column -> column.get("Type").asText().toLowerCase(ENGLISH)));
     galaxySchema.columns().forEach(columnMetadata -> {
       String columnName = columnMetadata.name().toLowerCase(ENGLISH);
       if (!existingColumns.containsKey(columnName)) {
         try {
-          String alterTable =
-              format(
-                  "ALTER TABLE %s.%s ADD COLUMN IF NOT EXISTS %s %s",
-                  quotedSchemaName,
-                  quotedDestTableName,
-                  columnName,
-                  columnMetadata.galaxyIcebergType().getDisplayName());
+          String alterTable = format(
+              "ALTER TABLE %s.%s ADD COLUMN IF NOT EXISTS %s %s",
+              quotedSchemaName,
+              quotedDestTableName,
+              columnName,
+              columnMetadata.galaxyIcebergType().getDisplayName());
           LOGGER.info("[Stream {}] Add column {} : {}", streamName, columnName, alterTable);
           database.execute(alterTable);
         } catch (SQLException e) {
@@ -153,19 +166,21 @@ public abstract class StarburstGalaxyStreamCopier
   public String createDestinationTable() throws Exception {
     if (destinationSyncMode == OVERWRITE) {
       // Drop existing table to propagate source schema changes
-      String dropTable = format("DROP TABLE IF EXISTS %s.%s", quotedSchemaName, quotedDestTableName);
+      String dropTable =
+          format("DROP TABLE IF EXISTS %s.%s", quotedSchemaName, quotedDestTableName);
       LOGGER.info("[Stream {}] Dropping destination table: {}", streamName, dropTable);
       database.execute(dropTable);
     }
 
     String fields = galaxySchema.columns().stream()
-        .map(columnMetadata -> format("%s %s",
-            columnMetadata.name(),
-            columnMetadata.galaxyIcebergType().getDisplayName()))
+        .map(columnMetadata -> format(
+            "%s %s", columnMetadata.name(), columnMetadata.galaxyIcebergType().getDisplayName()))
         .collect(Collectors.joining(", "));
-    String createTable =
-        format("CREATE TABLE IF NOT EXISTS %s.%s (%s) WITH (format = 'PARQUET', type = 'ICEBERG')", quotedSchemaName, quotedDestTableName, fields);
-    LOGGER.info("[Stream {}] Create destination table if it does not exist: {}", streamName, createTable);
+    String createTable = format(
+        "CREATE TABLE IF NOT EXISTS %s.%s (%s) WITH (format = 'PARQUET', type = 'ICEBERG')",
+        quotedSchemaName, quotedDestTableName, fields);
+    LOGGER.info(
+        "[Stream {}] Create destination table if it does not exist: {}", streamName, createTable);
     database.execute(createTable);
     if (destinationSyncMode == APPEND) {
       LOGGER.info("[Stream {}] Promote new columns from source to target", streamName);
@@ -176,12 +191,10 @@ public abstract class StarburstGalaxyStreamCopier
   }
 
   @Override
-  public void removeFileAndDropTmpTable()
-      throws SQLException {
+  public void removeFileAndDropTmpTable() throws SQLException {
     if (purgeStagingTable) {
       LOGGER.info("[Stream {}] Delete tmp table: {}", streamName, tmpTableName);
       sqlOperations.dropTableIfExists(database, quotedSchemaName, tmpTableName);
     }
   }
-
 }

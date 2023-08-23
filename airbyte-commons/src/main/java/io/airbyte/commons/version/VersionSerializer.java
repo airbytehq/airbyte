@@ -20,10 +20,10 @@ public class VersionSerializer extends StdSerializer<Version> {
   }
 
   @Override
-  public void serialize(Version value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+  public void serialize(Version value, JsonGenerator gen, SerializerProvider provider)
+      throws IOException {
     gen.writeStartObject();
     gen.writeStringField("version", value.version);
     gen.writeEndObject();
   }
-
 }

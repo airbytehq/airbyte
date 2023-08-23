@@ -42,16 +42,10 @@ class CassandraDestinationIT {
   @Test
   void testCheckWithStatusFailed() {
 
-    var jsonConfiguration = TestDataFactory.createJsonConfig(
-        "usr",
-        "pw",
-        "192.0.2.1",
-        8080);
+    var jsonConfiguration = TestDataFactory.createJsonConfig("usr", "pw", "192.0.2.1", 8080);
 
     var connectionStatus = cassandraDestination.check(jsonConfiguration);
 
     assertThat(connectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.FAILED);
-
   }
-
 }

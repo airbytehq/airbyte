@@ -20,9 +20,11 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OracleStrictEncryptDestination extends SpecModifyingDestination implements Destination {
+public class OracleStrictEncryptDestination extends SpecModifyingDestination
+    implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OracleStrictEncryptDestination.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(OracleStrictEncryptDestination.class);
 
   public OracleStrictEncryptDestination() {
     super(OracleDestination.sshWrappedDestination());
@@ -36,15 +38,19 @@ public class OracleStrictEncryptDestination extends SpecModifyingDestination imp
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final JsonNode cloneConfig = Jsons.clone(config);
-    ((ObjectNode) cloneConfig).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-        .put("encryption_method", "client_nne")
-        .put("encryption_algorithm", "AES256")
-        .build()));
+    ((ObjectNode) cloneConfig)
+        .put(
+            "encryption",
+            Jsons.jsonNode(ImmutableMap.builder()
+                .put("encryption_method", "client_nne")
+                .put("encryption_algorithm", "AES256")
+                .build()));
 
     return super.getConsumer(cloneConfig, catalog, outputRecordCollector);
   }
@@ -55,5 +61,4 @@ public class OracleStrictEncryptDestination extends SpecModifyingDestination imp
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", OracleStrictEncryptDestination.class);
   }
-
 }

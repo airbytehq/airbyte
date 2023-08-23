@@ -30,5 +30,4 @@ public class FormatterUtil {
     }
     return false;
   }
-
 }

@@ -20,8 +20,8 @@ public class OracleSourceOperations extends JdbcSourceOperations {
    * Oracle's DATE type can actually have time values, so we return a full timestamp.
    */
   @Override
-  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index)
+      throws SQLException {
     node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
   }
-
 }

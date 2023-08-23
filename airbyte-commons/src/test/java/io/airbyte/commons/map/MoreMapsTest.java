@@ -19,5 +19,4 @@ class MoreMapsTest {
 
     assertEquals(ImmutableMap.of("a", 1, "b", 2), MoreMaps.merge(map1, map2));
   }
-
 }

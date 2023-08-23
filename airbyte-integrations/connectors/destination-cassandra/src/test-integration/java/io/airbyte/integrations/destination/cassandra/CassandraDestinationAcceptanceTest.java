@@ -66,18 +66,15 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return TestDataFactory.createJsonConfig(
-        "usr",
-        "pw",
-        "127.0.192.1",
-        8080);
+    return TestDataFactory.createJsonConfig("usr", "pw", "127.0.192.1", 8080);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
     final var keyspace = cassandraNameTransformer.outputKeyspace(namespace);
     final var table = cassandraNameTransformer.outputTable(streamName);
     return cassandraCqlProvider.select(keyspace, table).stream()
@@ -86,5 +83,4 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
-
 }

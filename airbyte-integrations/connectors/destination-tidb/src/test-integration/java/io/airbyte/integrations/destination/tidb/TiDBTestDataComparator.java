@@ -31,18 +31,21 @@ public class TiDBTestDataComparator extends AdvancedTestDataComparator {
   @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     if (!isDateTimeValue(actualValue)) {
-      actualValue = LocalDateTime.parse(actualValue, DateTimeFormatter.ofPattern(TIDB_DATATIME_FORMAT)).toString();
+      actualValue = LocalDateTime.parse(
+              actualValue, DateTimeFormatter.ofPattern(TIDB_DATATIME_FORMAT))
+          .toString();
     }
     return super.compareDateTimeValues(expectedValue, actualValue);
   }
 
   @Override
   protected boolean compareBooleanValues(String firstBooleanValue, String secondBooleanValue) {
-    if (secondBooleanValue.equalsIgnoreCase("true") || secondBooleanValue.equalsIgnoreCase("false")) {
+    if (secondBooleanValue.equalsIgnoreCase("true")
+        || secondBooleanValue.equalsIgnoreCase("false")) {
       return super.compareBooleanValues(firstBooleanValue, secondBooleanValue);
     } else {
-      return super.compareBooleanValues(firstBooleanValue, String.valueOf(secondBooleanValue.equals("1")));
+      return super.compareBooleanValues(
+          firstBooleanValue, String.valueOf(secondBooleanValue.equals("1")));
     }
   }
-
 }

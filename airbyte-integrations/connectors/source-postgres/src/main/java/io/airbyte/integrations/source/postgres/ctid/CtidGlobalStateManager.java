@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,31 +36,39 @@ public class CtidGlobalStateManager extends CtidStateManager {
   private final CdcState cdcState;
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
-  public CtidGlobalStateManager(final CtidStreams ctidStreams,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes, final CdcState cdcState, final ConfiguredAirbyteCatalog catalog) {
+  public CtidGlobalStateManager(
+      final CtidStreams ctidStreams,
+      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
+      final CdcState cdcState,
+      final ConfiguredAirbyteCatalog catalog) {
     super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodes));
     this.cdcState = cdcState;
     this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(ctidStreams, catalog);
   }
 
-  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final CtidStreams ctidStreams, final ConfiguredAirbyteCatalog catalog) {
+  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(
+      final CtidStreams ctidStreams, final ConfiguredAirbyteCatalog catalog) {
     final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
-      if (ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream) || configuredAirbyteStream.getSyncMode() != SyncMode.INCREMENTAL) {
+      if (ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream)
+          || configuredAirbyteStream.getSyncMode() != SyncMode.INCREMENTAL) {
         return;
       }
-      streamsThatHaveCompletedSnapshot.add(
-          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+      streamsThatHaveCompletedSnapshot.add(new AirbyteStreamNameNamespacePair(
+          configuredAirbyteStream.getStream().getName(),
+          configuredAirbyteStream.getStream().getNamespace()));
     });
     return streamsThatHaveCompletedSnapshot;
   }
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> filterOutExpiredFileNodes(
-      final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus,
+      final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CtidStatus>
+          pairToCtidStatus,
       final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> filteredMap = new HashMap<>();
     pairToCtidStatus.forEach((pair, ctidStatus) -> {
-      final AirbyteStreamNameNamespacePair updatedPair = new AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace());
+      final AirbyteStreamNameNamespacePair updatedPair =
+          new AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace());
       if (validateRelationFileNode(ctidStatus, updatedPair, fileNodes)) {
         filteredMap.put(updatedPair, ctidStatus);
       } else {
@@ -69,25 +81,24 @@ public class CtidGlobalStateManager extends CtidStateManager {
   }
 
   @Override
-  public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
+  public AirbyteStateMessage createCtidStateMessage(
+      final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
-
     });
     streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(ctidStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
 
-    return new AirbyteStateMessage()
-        .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState);
+    return new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState);
   }
 
   @Override
-  public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
+  public AirbyteStateMessage createFinalStateMessage(
+      final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
@@ -99,12 +110,11 @@ public class CtidGlobalStateManager extends CtidStateManager {
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
 
-    return new AirbyteStateMessage()
-        .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState);
+    return new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState);
   }
 
-  private AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
+  private AirbyteStreamState getAirbyteStreamState(
+      final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     assert Objects.nonNull(pair);
     assert Objects.nonNull(pair.getName());
     assert Objects.nonNull(pair.getNamespace());

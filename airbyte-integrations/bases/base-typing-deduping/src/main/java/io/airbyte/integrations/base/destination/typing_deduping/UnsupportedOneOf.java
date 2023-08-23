@@ -11,6 +11,4 @@ import java.util.List;
  * <p>
  * This is purely a legacy type that we should eventually delete. See also {@link Union}.
  */
-public record UnsupportedOneOf(List<AirbyteType> options) implements AirbyteType {
-
-}
+public record UnsupportedOneOf(List<AirbyteType> options) implements AirbyteType {}

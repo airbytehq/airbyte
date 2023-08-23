@@ -41,11 +41,13 @@ class GcsAvroWriterTest {
         new ConfiguredAirbyteStream()
             .withStream(new AirbyteStream()
                 .withNamespace("fake-namespace")
-                .withName("fake-stream").withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))),
+                .withName("fake-stream")
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))),
         Timestamp.from(Instant.ofEpochMilli(1234)),
         null);
 
-    assertEquals("fake-bucketPath/fake-namespace/fake-stream/1970_01_01_1234_0.avro", writer.getOutputPath());
+    assertEquals(
+        "fake-bucketPath/fake-namespace/fake-stream/1970_01_01_1234_0.avro",
+        writer.getOutputPath());
   }
-
 }

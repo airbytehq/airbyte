@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 
 public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(KinesisDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(KinesisDestinationAcceptanceTest.class);
 
   private JsonNode configJson;
 
@@ -88,17 +89,15 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Override
   protected JsonNode getFailCheckConfig() {
     return KinesisDataFactory.jsonConfig(
-        "127.0.0.9",
-        "eu-west-1",
-        "random_access_key",
-        "random_secret_key");
+        "127.0.0.9", "eu-west-1", "random_access_key", "random_secret_key");
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
     final var stream = kinesisNameTransformer.streamName(namespace, streamName);
     return kinesisStream.getRecords(stream).stream()
         .sorted(Comparator.comparing(KinesisRecord::getTimestamp))
@@ -106,5 +105,4 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
-
 }

@@ -19,12 +19,12 @@ public final class CDKConstants {
   private static String getVersion() {
     Properties prop = new Properties();
 
-    try (InputStream inputStream = CDKConstants.class.getClassLoader().getResourceAsStream("version.properties")) {
+    try (InputStream inputStream =
+        CDKConstants.class.getClassLoader().getResourceAsStream("version.properties")) {
       prop.load(inputStream);
       return prop.getProperty("version");
     } catch (IOException e) {
       throw new RuntimeException("Could not read version properties file", e);
     }
   }
-
 }

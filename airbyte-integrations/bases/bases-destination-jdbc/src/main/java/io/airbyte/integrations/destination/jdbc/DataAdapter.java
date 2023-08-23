@@ -23,8 +23,8 @@ public class DataAdapter {
    * @param valueNodeAdapter - transformation function which returns adapted value node
    */
   public DataAdapter(
-                     final Predicate<JsonNode> filterValueNode,
-                     final Function<JsonNode, JsonNode> valueNodeAdapter) {
+      final Predicate<JsonNode> filterValueNode,
+      final Function<JsonNode, JsonNode> valueNodeAdapter) {
     this.filterValueNode = filterValueNode;
     this.valueNodeAdapter = valueNodeAdapter;
   }
@@ -48,18 +48,19 @@ public class DataAdapter {
    * @param node Json node
    * @param parentNode Parent json node
    */
-  private void adaptValueNodes(final String fieldName, final JsonNode node, final JsonNode parentNode) {
+  private void adaptValueNodes(
+      final String fieldName, final JsonNode node, final JsonNode parentNode) {
     if (node.isValueNode() && filterValueNode.test(node)) {
       if (fieldName != null) {
         final var adaptedNode = valueNodeAdapter.apply(node);
         ((ObjectNode) parentNode).set(fieldName, adaptedNode);
-      } else
-        throw new RuntimeException("Unexpected value node without fieldName. Node: " + node);
+      } else throw new RuntimeException("Unexpected value node without fieldName. Node: " + node);
     } else if (node.isArray()) {
       node.elements().forEachRemaining(arrayNode -> adaptValueNodes(null, arrayNode, node));
     } else {
-      node.fields().forEachRemaining(stringJsonNodeEntry -> adaptValueNodes(stringJsonNodeEntry.getKey(), stringJsonNodeEntry.getValue(), node));
+      node.fields()
+          .forEachRemaining(stringJsonNodeEntry ->
+              adaptValueNodes(stringJsonNodeEntry.getKey(), stringJsonNodeEntry.getValue(), node));
     }
   }
-
 }

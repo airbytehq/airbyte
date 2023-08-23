@@ -36,7 +36,8 @@ public interface Source extends Integration {
    *         will always be called once regardless of success or failure.
    * @throws Exception - any exception.
    */
-  AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
+  AutoCloseableIterator<AirbyteMessage> read(
+      JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
 
   /**
    * Returns a collection of iterators of messages pulled from the source, each representing a
@@ -50,9 +51,8 @@ public interface Source extends Integration {
    *         configured "stream"
    * @throws Exception - any exception
    */
-  default Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
-      throws Exception {
+  default Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(
+      JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     return List.of(read(config, catalog, state));
   }
-
 }

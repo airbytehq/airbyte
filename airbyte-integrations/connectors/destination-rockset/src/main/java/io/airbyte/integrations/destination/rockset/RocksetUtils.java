@@ -46,7 +46,8 @@ public class RocksetUtils {
   public static final String API_SERVER_ID = "api_server";
   public static final Duration DEFAULT_TIMEOUT = new Duration(20, TimeUnit.MINUTES);
   public static final Duration DEFAULT_POLL_INTERVAL = Duration.FIVE_SECONDS;
-  private static final java.time.Duration DEFAULT_HTTP_CLIENT_TIMEOUT = java.time.Duration.ofMinutes(1L);
+  private static final java.time.Duration DEFAULT_HTTP_CLIENT_TIMEOUT =
+      java.time.Duration.ofMinutes(1L);
   private static final String DEFAULT_ROCKSET_CLIENT_VERSION = "0.9.0";
 
   public static ApiClient apiClientFromConfig(JsonNode config) {
@@ -58,7 +59,8 @@ public class RocksetUtils {
   public static ApiClient apiClient(String apiKey, String apiServer) {
     final ApiClient client = new ApiClient();
 
-    client.setReadTimeout((int) DEFAULT_HTTP_CLIENT_TIMEOUT.toMillis())
+    client
+        .setReadTimeout((int) DEFAULT_HTTP_CLIENT_TIMEOUT.toMillis())
         .setConnectTimeout((int) DEFAULT_HTTP_CLIENT_TIMEOUT.toMillis())
         .setWriteTimeout((int) DEFAULT_HTTP_CLIENT_TIMEOUT.toMillis());
 
@@ -122,39 +124,34 @@ public class RocksetUtils {
 
   // Assumes the collection exists
   public static void waitUntilCollectionReady(ApiClient client, String workspace, String cname) {
-    pollingConfig(workspace, cname)
-        .until(() -> isCollectionReady(client, workspace, cname));
-
+    pollingConfig(workspace, cname).until(() -> isCollectionReady(client, workspace, cname));
   }
 
-  private static boolean isCollectionReady(ApiClient client, String workspace, String cname) throws Exception {
+  private static boolean isCollectionReady(ApiClient client, String workspace, String cname)
+      throws Exception {
     final GetCollectionResponse resp = new CollectionsApi(client).get(workspace, cname);
     final Collection.StatusEnum status = resp.getData().getStatus();
     if (status == Collection.StatusEnum.READY) {
       LOGGER.info(String.format("Collection %s.%s is READY", workspace, cname));
       return true;
     } else {
-      LOGGER.info(
-          String.format(
-              "Waiting until %s.%s is READY, it is %s", workspace, cname, status.toString()));
+      LOGGER.info(String.format(
+          "Waiting until %s.%s is READY, it is %s", workspace, cname, status.toString()));
       return false;
     }
   }
 
   // Assumes the collection exists
   public static void waitUntilCollectionDeleted(ApiClient client, String workspace, String cname) {
-    pollingConfig(workspace, cname)
-        .until(() -> isCollectionDeleted(client, workspace, cname));
-
+    pollingConfig(workspace, cname).until(() -> isCollectionDeleted(client, workspace, cname));
   }
 
-  private static boolean isCollectionDeleted(ApiClient client, String workspace, String cname) throws Exception {
+  private static boolean isCollectionDeleted(ApiClient client, String workspace, String cname)
+      throws Exception {
     try {
       new CollectionsApi(client).get(workspace, cname);
-      LOGGER.info(
-          String.format(
-              "Collection %s.%s still exists, waiting for deletion to complete",
-              workspace, cname));
+      LOGGER.info(String.format(
+          "Collection %s.%s still exists, waiting for deletion to complete", workspace, cname));
     } catch (ApiException e) {
       if (e.getCode() == 404 && e.getErrorModel().getType() == ErrorModel.TypeEnum.NOTFOUND) {
         LOGGER.info(String.format("Collection %s.%s does not exist", workspace, cname));
@@ -168,11 +165,11 @@ public class RocksetUtils {
 
   // Assumes the collection exists
   public static void waitUntilDocCount(ApiClient client, String sql, int desiredCount) {
-    pollingConfig(sql)
-        .until(() -> queryMatchesCount(client, sql, desiredCount));
+    pollingConfig(sql).until(() -> queryMatchesCount(client, sql, desiredCount));
   }
 
-  private static boolean queryMatchesCount(ApiClient client, String sql, int desiredCount) throws Exception {
+  private static boolean queryMatchesCount(ApiClient client, String sql, int desiredCount)
+      throws Exception {
     LOGGER.info(String.format("Running query %s", sql));
     final QueryRequestSql qrs = new QueryRequestSql();
     qrs.setQuery(sql);
@@ -187,33 +184,36 @@ public class RocksetUtils {
       LOGGER.info(String.format("Desired result count %s found", desiredCount));
       return true;
     } else {
-      LOGGER.info(
-          String.format(
-              "Waiting for desired result count %s, current is %s", desiredCount, resultCount));
+      LOGGER.info(String.format(
+          "Waiting for desired result count %s, current is %s", desiredCount, resultCount));
       return false;
     }
   }
 
-  private static boolean doesCollectionExist(ApiClient client, String workspace, String cname) throws Exception {
-    final ListCollectionsResponse collectionsResponse = new CollectionsApi(client).workspace(workspace);
-    return collectionsResponse
-        .getData()
-        .stream()
+  private static boolean doesCollectionExist(ApiClient client, String workspace, String cname)
+      throws Exception {
+    final ListCollectionsResponse collectionsResponse =
+        new CollectionsApi(client).workspace(workspace);
+    return collectionsResponse.getData().stream()
         .anyMatch(coll -> coll.getName().equals(cname));
   }
 
-  public static void clearCollectionIfCollectionExists(ApiClient client, String workspace, String cname) {
+  public static void clearCollectionIfCollectionExists(
+      ApiClient client, String workspace, String cname) {
     Exceptions.toRuntime(() -> {
-
       if (!doesCollectionExist(client, workspace, cname)) {
         return;
       }
 
-      final QueryRequest qr = new QueryRequest().sql(new QueryRequestSql().query(String.format("SELECT _id from %s.%s", workspace, cname)));
+      final QueryRequest qr = new QueryRequest()
+          .sql(new QueryRequestSql()
+              .query(String.format("SELECT _id from %s.%s", workspace, cname)));
       try {
         final QueryResponse resp = new QueriesApi(client).query(qr);
-        final List<String> ids =
-            resp.getResults().stream().map(f -> (LinkedTreeMap<String, Object>) f).map(f -> (String) f.get("_id")).collect(Collectors.toList());
+        final List<String> ids = resp.getResults().stream()
+            .map(f -> (LinkedTreeMap<String, Object>) f)
+            .map(f -> (String) f.get("_id"))
+            .collect(Collectors.toList());
         final DeleteDocumentsRequest ddr = new DeleteDocumentsRequest();
         for (String id : ids) {
           ddr.addDataItem(new DeleteDocumentsRequestData().id(id));
@@ -224,24 +224,24 @@ public class RocksetUtils {
         LOGGER.error("Error while trying to clear a collection ", e);
       }
 
-      pollingConfig(workspace, cname)
-          .until(() -> isCollectionEmpty(client, workspace, cname));
-
+      pollingConfig(workspace, cname).until(() -> isCollectionEmpty(client, workspace, cname));
     });
   }
 
   private static boolean isCollectionEmpty(ApiClient client, String workspace, String cname) {
     return Exceptions.toRuntime(() -> {
-      final String elementCount = String.format("SELECT count(*) as numel from %s.%s", workspace, cname);
+      final String elementCount =
+          String.format("SELECT count(*) as numel from %s.%s", workspace, cname);
 
       final QueryRequest qr = new QueryRequest().sql(new QueryRequestSql().query(elementCount));
       final QueryResponse resp = new QueriesApi(client).query(qr);
-      Optional<Number> count =
-          resp.getResults().stream().map(f -> (LinkedTreeMap<String, Object>) f).map(f -> f.get("numel")).map(f -> (Number) f).findFirst();
+      Optional<Number> count = resp.getResults().stream()
+          .map(f -> (LinkedTreeMap<String, Object>) f)
+          .map(f -> f.get("numel"))
+          .map(f -> (Number) f)
+          .findFirst();
       return count.filter(number -> number.intValue() == 0).isPresent();
-
     });
-
   }
 
   private static Duration jitter(String... args) {
@@ -250,8 +250,8 @@ public class RocksetUtils {
       hsh.putString(s, Charset.defaultCharset());
     }
 
-    return new Duration(Math.abs(hsh.hash().asInt()) % DEFAULT_POLL_INTERVAL.getValueInMS(), TimeUnit.MILLISECONDS);
-
+    return new Duration(
+        Math.abs(hsh.hash().asInt()) % DEFAULT_POLL_INTERVAL.getValueInMS(), TimeUnit.MILLISECONDS);
   }
 
   private static ConditionFactory pollingConfig(final String... args) {
@@ -260,5 +260,4 @@ public class RocksetUtils {
         .pollDelay(jitter(args))
         .pollInterval(DEFAULT_POLL_INTERVAL);
   }
-
 }

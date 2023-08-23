@@ -15,11 +15,12 @@ public class InitialSizeEstimator extends BaseSizeEstimator implements FetchSize
   private final int sampleSize;
   private int counter = 0;
 
-  public InitialSizeEstimator(final long bufferByteSize,
-                              final int initialSampleSize,
-                              final int minFetchSize,
-                              final int defaultFetchSize,
-                              final int maxFetchSize) {
+  public InitialSizeEstimator(
+      final long bufferByteSize,
+      final int initialSampleSize,
+      final int minFetchSize,
+      final int defaultFetchSize,
+      final int maxFetchSize) {
     super(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize);
     this.sampleSize = initialSampleSize;
   }
@@ -40,5 +41,4 @@ public class InitialSizeEstimator extends BaseSizeEstimator implements FetchSize
     }
     return Optional.of(getBoundedFetchSize());
   }
-
 }

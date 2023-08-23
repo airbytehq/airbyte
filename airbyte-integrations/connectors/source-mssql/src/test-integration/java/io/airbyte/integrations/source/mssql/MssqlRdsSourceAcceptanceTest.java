@@ -32,7 +32,8 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
         ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
         ctx.fetch(String.format("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", dbName));
         ctx.fetch(String.format("USE %s;", dbName));
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
+        ctx.fetch(
+            "CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
         ctx.fetch(
             "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
         return null;
@@ -52,13 +53,15 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
     final JsonNode sslMethod = baseConfig.get("ssl_method");
     switch (sslMethod.get("ssl_method").asText()) {
       case "unencrypted" -> additionalParameter = "encrypt=false;";
-      case "encrypted_trust_server_certificate" -> additionalParameter = "encrypt=true;trustServerCertificate=true;";
+      case "encrypted_trust_server_certificate" -> additionalParameter =
+          "encrypt=true;trustServerCertificate=true;";
     }
     return DSLContextFactory.create(
         baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;%s",
+        String.format(
+            "jdbc:sqlserver://%s:%d;%s",
             baseConfig.get(JdbcUtils.HOST_KEY).asText(),
             baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
             additionalParameter),
@@ -74,11 +77,11 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
     final String database = config.get(JdbcUtils.DATABASE_KEY).asText();
     try (final DSLContext dslContext = getDslContext(baseConfig)) {
       getDatabase(dslContext).query(ctx -> {
-        ctx.fetch(String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));
+        ctx.fetch(
+            String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));
         ctx.fetch(String.format("DROP DATABASE %s;", database));
         return null;
       });
     }
   }
-
 }

@@ -61,7 +61,8 @@ public interface CdcTargetPosition<T> {
    * @param event Event from the CDC load
    * @return Returns `true` when the event is ahead of the offset. Otherwise, it returns `false`
    */
-  default boolean isEventAheadOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
+  default boolean isEventAheadOffset(
+      final Map<String, String> offset, final ChangeEventWithMetadata event) {
     return false;
   }
 
@@ -73,8 +74,8 @@ public interface CdcTargetPosition<T> {
    * @param offsetB Offset to compare
    * @return Returns `true` if both offsets are at the same position. Otherwise, it returns `false`
    */
-  default boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
+  default boolean isSameOffset(
+      final Map<String, String> offsetA, final Map<String, String> offsetB) {
     return true;
   }
-
 }

@@ -21,13 +21,14 @@ public class AzureBlobStorageDestinationConfig {
   private final int blobSpillSize;
   private final AzureBlobStorageFormatConfig formatConfig;
 
-  public AzureBlobStorageDestinationConfig(final String endpointUrl,
-                                           final String accountName,
-                                           final String accountKey,
-                                           final String containerName,
-                                           final int outputStreamBufferSize,
-                                           final int blobSpillSize,
-                                           final AzureBlobStorageFormatConfig formatConfig) {
+  public AzureBlobStorageDestinationConfig(
+      final String endpointUrl,
+      final String accountName,
+      final String accountKey,
+      final String containerName,
+      final int outputStreamBufferSize,
+      final int blobSpillSize,
+      final AzureBlobStorageFormatConfig formatConfig) {
     this.endpointUrl = endpointUrl;
     this.accountName = accountName;
     this.accountKey = accountKey;
@@ -38,12 +39,12 @@ public class AzureBlobStorageDestinationConfig {
   }
 
   public AzureBlobStorageDestinationConfig(
-                                           final String endpointUrl,
-                                           final String accountName,
-                                           final String accountKey,
-                                           final String containerName,
-                                           final int outputStreamBufferSize,
-                                           final AzureBlobStorageFormatConfig formatConfig) {
+      final String endpointUrl,
+      final String accountName,
+      final String accountKey,
+      final String containerName,
+      final int outputStreamBufferSize,
+      final AzureBlobStorageFormatConfig formatConfig) {
     this.endpointUrl = endpointUrl;
     this.accountName = accountName;
     this.accountKey = accountKey;
@@ -74,18 +75,16 @@ public class AzureBlobStorageDestinationConfig {
   }
 
   public static SpecializedBlobClientBuilder createSpecializedBlobClientBuilder(
-                                                                                AzureBlobStorageDestinationConfig destinationConfig) {
+      AzureBlobStorageDestinationConfig destinationConfig) {
 
     // Init the client itself here
     final StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
-        destinationConfig.getAccountName(),
-        destinationConfig.getAccountKey());
+        destinationConfig.getAccountName(), destinationConfig.getAccountKey());
 
     return new SpecializedBlobClientBuilder()
         .endpoint(destinationConfig.getEndpointUrl())
         .credential(credential)
         .containerName(destinationConfig.getContainerName());
-
   }
 
   public long getBlobSpillSize() {
@@ -99,20 +98,26 @@ public class AzureBlobStorageDestinationConfig {
   }
 
   public static AzureBlobStorageDestinationConfig getAzureBlobStorageConfig(final JsonNode config) {
-    final String accountNameFomConfig = config.get("azure_blob_storage_account_name").asText();
-    final String accountKeyFromConfig = config.get("azure_blob_storage_account_key").asText();
-    final JsonNode endpointFromConfig = config
-        .get("azure_blob_storage_endpoint_domain_name");
+    final String accountNameFomConfig =
+        config.get("azure_blob_storage_account_name").asText();
+    final String accountKeyFromConfig =
+        config.get("azure_blob_storage_account_key").asText();
+    final JsonNode endpointFromConfig = config.get("azure_blob_storage_endpoint_domain_name");
     final JsonNode containerName = config.get("azure_blob_storage_container_name");
     final int outputStreamBufferSizeFromConfig =
         config.get("azure_blob_storage_output_buffer_size") != null
-            ? config.get("azure_blob_storage_output_buffer_size").asInt(DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE)
+            ? config
+                .get("azure_blob_storage_output_buffer_size")
+                .asInt(DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE)
             : DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE;
 
-    final String endpointComputed = String.format(Locale.ROOT, DEFAULT_STORAGE_ENDPOINT_FORMAT,
+    final String endpointComputed = String.format(
+        Locale.ROOT,
+        DEFAULT_STORAGE_ENDPOINT_FORMAT,
         DEFAULT_STORAGE_ENDPOINT_HTTP_PROTOCOL,
         accountNameFomConfig,
-        endpointFromConfig == null ? DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME
+        endpointFromConfig == null
+            ? DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME
             : endpointFromConfig.asText());
 
     final String containerNameComputed =
@@ -131,5 +136,4 @@ public class AzureBlobStorageDestinationConfig {
         blobSpillSize,
         AzureBlobStorageFormatConfigs.getAzureBlobStorageFormatConfig(config));
   }
-
 }

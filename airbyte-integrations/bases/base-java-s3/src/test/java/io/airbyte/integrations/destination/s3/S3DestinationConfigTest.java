@@ -16,7 +16,8 @@ import org.junit.jupiter.api.Test;
 
 class S3DestinationConfigTest {
 
-  private static final S3DestinationConfig CONFIG = S3DestinationConfig.create("test-bucket", "test-path", "test-region")
+  private static final S3DestinationConfig CONFIG = S3DestinationConfig.create(
+          "test-bucket", "test-path", "test-region")
       .withEndpoint("test-endpoint")
       .withPathFormat("${STREAM_NAME}/${NAMESPACE}")
       .withAccessKeyCredential("test-key", "test-secret")
@@ -49,7 +50,8 @@ class S3DestinationConfigTest {
     assertEquals(newBucketPath, modifiedConfig.getBucketPath());
     assertEquals(newBucketRegion, modifiedConfig.getBucketRegion());
 
-    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) modifiedConfig.getS3CredentialConfig();
+    final S3AccessKeyCredentialConfig credentialConfig =
+        (S3AccessKeyCredentialConfig) modifiedConfig.getS3CredentialConfig();
     assertEquals(newKey, credentialConfig.getAccessKeyId());
     assertEquals(newSecret, credentialConfig.getSecretAccessKey());
   }
@@ -64,14 +66,17 @@ class S3DestinationConfigTest {
         + "  \"secret_access_key\": \"paste-secret-access-key-here\"\n"
         + "}");
 
-    final S3DestinationConfig result = S3DestinationConfig.getS3DestinationConfig(s3config, StorageProvider.AWS_S3);
+    final S3DestinationConfig result =
+        S3DestinationConfig.getS3DestinationConfig(s3config, StorageProvider.AWS_S3);
 
     assertThat(result.getEndpoint()).isEmpty();
     assertThat(result.getBucketName()).isEqualTo("paste-bucket-name-here");
     assertThat(result.getBucketPath()).isEqualTo("integration-test");
     assertThat(result.getBucketRegion()).isEqualTo("paste-bucket-region-here");
-    assertThat(result.getPathFormat()).isEqualTo("${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_");
-    final AWSCredentials awsCredentials = result.getS3CredentialConfig().getS3CredentialsProvider().getCredentials();
+    assertThat(result.getPathFormat())
+        .isEqualTo("${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_");
+    final AWSCredentials awsCredentials =
+        result.getS3CredentialConfig().getS3CredentialsProvider().getCredentials();
     assertThat(awsCredentials.getAWSAccessKeyId()).isEqualTo("paste-access-key-id-here");
     assertThat(awsCredentials.getAWSSecretKey()).isEqualTo("paste-secret-access-key-here");
     assertThat(result.isCheckIntegrity()).isEqualTo(true);
@@ -87,17 +92,20 @@ class S3DestinationConfigTest {
         + "  \"secret_access_key\": \"paste-secret-access-key-here\"\n"
         + "}\n");
 
-    final S3DestinationConfig result = S3DestinationConfig.getS3DestinationConfig(s3config, StorageProvider.CF_R2);
+    final S3DestinationConfig result =
+        S3DestinationConfig.getS3DestinationConfig(s3config, StorageProvider.CF_R2);
 
-    assertThat(result.getEndpoint()).isEqualTo("https://paster-account-id-here.r2.cloudflarestorage.com");
+    assertThat(result.getEndpoint())
+        .isEqualTo("https://paster-account-id-here.r2.cloudflarestorage.com");
     assertThat(result.getBucketName()).isEqualTo("paste-bucket-name-here");
     assertThat(result.getBucketPath()).isEqualTo("integration-test");
     assertThat(result.getBucketRegion()).isNull();
-    assertThat(result.getPathFormat()).isEqualTo("${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_");
-    final AWSCredentials awsCredentials = result.getS3CredentialConfig().getS3CredentialsProvider().getCredentials();
+    assertThat(result.getPathFormat())
+        .isEqualTo("${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_");
+    final AWSCredentials awsCredentials =
+        result.getS3CredentialConfig().getS3CredentialsProvider().getCredentials();
     assertThat(awsCredentials.getAWSAccessKeyId()).isEqualTo("paste-access-key-id-here");
     assertThat(awsCredentials.getAWSSecretKey()).isEqualTo("paste-secret-access-key-here");
     assertThat(result.isCheckIntegrity()).isEqualTo(false);
   }
-
 }

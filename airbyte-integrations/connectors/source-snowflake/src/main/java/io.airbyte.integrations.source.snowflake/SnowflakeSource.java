@@ -34,7 +34,8 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   public static final String DRIVER_CLASS = DatabaseDriver.SNOWFLAKE.getDriverClassName();
-  public static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
+  public static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE =
+      Executors.newScheduledThreadPool(1);
 
   private final String airbyteEnvironment;
 
@@ -47,15 +48,15 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
     // Create the data source
-    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(sourceConfig, airbyteEnvironment);
+    final DataSource dataSource =
+        SnowflakeDataSourceUtils.createDataSource(sourceConfig, airbyteEnvironment);
     dataSources.add(dataSource);
 
-    final JdbcDatabase database = new StreamingJdbcDatabase(
-        dataSource,
-        sourceOperations,
-        streamingQueryConfigProvider);
+    final JdbcDatabase database =
+        new StreamingJdbcDatabase(dataSource, sourceOperations, streamingQueryConfigProvider);
 
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    quoteString =
+        (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
     return database;
@@ -71,8 +72,8 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
           credentials.has("auth_type") ? credentials.get("auth_type").asText() : UNRECOGNIZED;
       return switch (authType) {
         case OAUTH_METHOD -> buildOAuthConfig(config, jdbcUrl);
-        case USERNAME_PASSWORD_METHOD -> buildUsernamePasswordConfig(config.get("credentials"),
-            jdbcUrl);
+        case USERNAME_PASSWORD_METHOD -> buildUsernamePasswordConfig(
+            config.get("credentials"), jdbcUrl);
         default -> throw new IllegalArgumentException("Unrecognized auth type: " + authType);
       };
     } else {
@@ -82,8 +83,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Set.of(
-        "INFORMATION_SCHEMA");
+    return Set.of("INFORMATION_SCHEMA");
   }
 
   @Override
@@ -102,12 +102,14 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     try {
       accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
           config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
-          credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
+          credentials.get("client_secret").asText(),
+              credentials.get("refresh_token").asText());
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.CONNECTION_PROPERTIES_KEY,
+        .put(
+            JdbcUtils.CONNECTION_PROPERTIES_KEY,
             String.join(";", "authenticator=oauth", "token=" + accessToken))
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
     return Jsons.jsonNode(configBuilder.build());
@@ -121,5 +123,4 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     LOGGER.info(jdbcUrl);
     return Jsons.jsonNode(configBuilder.build());
   }
-
 }

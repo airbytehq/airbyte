@@ -45,5 +45,4 @@ public interface DestinationFlushFunction {
    * @return the optimal batch size in bytes
    */
   long getOptimalBatchSizeBytes();
-
 }

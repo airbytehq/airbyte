@@ -22,17 +22,16 @@ public class LegacyArrayFormatter extends DefaultArrayFormatter {
 
   @Override
   public void surroundArraysByObjects(final JsonNode node) {
-    findArrays(node).forEach(
-        jsonNode -> {
-          final JsonNode arrayNode = jsonNode.deepCopy();
+    findArrays(node).forEach(jsonNode -> {
+      final JsonNode arrayNode = jsonNode.deepCopy();
 
-          final ObjectNode newNode = (ObjectNode) jsonNode;
-          newNode.removeAll();
-          newNode.putArray(TYPE_FIELD).add("object");
-          newNode.putObject(PROPERTIES_FIELD).set(NESTED_ARRAY_FIELD, arrayNode);
+      final ObjectNode newNode = (ObjectNode) jsonNode;
+      newNode.removeAll();
+      newNode.putArray(TYPE_FIELD).add("object");
+      newNode.putObject(PROPERTIES_FIELD).set(NESTED_ARRAY_FIELD, arrayNode);
 
-          surroundArraysByObjects(arrayNode.get(ARRAY_ITEMS_FIELD));
-        });
+      surroundArraysByObjects(arrayNode.get(ARRAY_ITEMS_FIELD));
+    });
   }
 
   @Override
@@ -50,5 +49,4 @@ public class LegacyArrayFormatter extends DefaultArrayFormatter {
   public JsonNode formatArrayItems(List<JsonNode> arrayItems) {
     return Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, arrayItems));
   }
-
 }

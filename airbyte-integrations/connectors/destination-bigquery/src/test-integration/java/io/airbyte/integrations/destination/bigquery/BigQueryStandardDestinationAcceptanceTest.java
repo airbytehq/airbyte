@@ -14,9 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @TestInstance(PER_CLASS)
-public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryDestinationAcceptanceTest {
+public class BigQueryStandardDestinationAcceptanceTest
+    extends AbstractBigQueryDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStandardDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BigQueryStandardDestinationAcceptanceTest.class);
 
   /**
    * Sets up secretsFile path and BigQuery instance for verification and cleanup This function will be called before EACH test.
@@ -27,7 +29,8 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
    * @see DestinationAcceptanceTest#setUpInternal()
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     secretsFile = Path.of("secrets/credentials-standard.json");
     setUpBigQuery();
   }
@@ -43,5 +46,4 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
   protected void tearDown(final TestDestinationEnv testEnv) {
     tearDownBigQuery();
   }
-
 }

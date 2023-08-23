@@ -14,5 +14,4 @@ public interface S3CredentialConfig {
   S3CredentialType getCredentialType();
 
   AWSCredentialsProvider getS3CredentialsProvider();
-
 }

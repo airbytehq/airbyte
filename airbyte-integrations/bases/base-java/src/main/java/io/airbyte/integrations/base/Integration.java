@@ -27,5 +27,4 @@ public interface Integration {
    * @throws Exception - any exception.
    */
   AirbyteConnectionStatus check(JsonNode config) throws Exception;
-
 }

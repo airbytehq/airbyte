@@ -38,9 +38,8 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   @Override
   protected Database setupDatabase(final String dbName) throws Exception {
 
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "STANDARD")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "STANDARD").build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "your_host")
         .put(JdbcUtils.PORT_KEY, 3306)
@@ -50,17 +49,17 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .put("replication_method", replicationMethod)
         .build());
 
-    final Database database = new Database(
-        DSLContextFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.MYSQL.getDriverClassName(),
-            String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()),
-            SQLDialect.MYSQL,
-            Map.of("zeroDateTimeBehavior", "convertToNull")));
+    final Database database = new Database(DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
+        SQLDialect.MYSQL,
+        Map.of("zeroDateTimeBehavior", "convertToNull")));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -84,5 +83,4 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     // for MySQL DB name ans schema name would be the same
     return Stream.of(Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000));
   }
-
 }

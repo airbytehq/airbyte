@@ -64,5 +64,4 @@ public interface AirbyteSource extends AutoCloseable {
    * @throws Exception - throws if there is any failure in shutdown.
    */
   void cancel() throws Exception;
-
 }

@@ -45,8 +45,8 @@ public class TiDBDestinationTest {
 
   @BeforeEach
   public void setup() {
-    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
-        .withExposedPorts(4000);
+    container =
+        new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly")).withExposedPorts(4000);
     container.start();
   }
 
@@ -67,14 +67,15 @@ public class TiDBDestinationTest {
   @Test
   public void sanityTest() throws Exception {
     final Destination destination = new TiDBDestination();
-    final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createConfiguredAirbyteStream(
+    final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(CatalogHelpers.createConfiguredAirbyteStream(
             STREAM_NAME,
             SCHEMA_NAME,
             Field.of("id", JsonSchemaType.NUMBER),
             Field.of("name", JsonSchemaType.STRING))));
     JsonNode config = getConfig();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer =
+        destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
     consumer.start();
     expectedRecords.forEach(m -> {
@@ -86,27 +87,35 @@ public class TiDBDestinationTest {
     });
     consumer.accept(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
     consumer.close();
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            "",
-            DatabaseDriver.MYSQL.getDriverClassName(),
-            String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText())));
+    final JdbcDatabase database = new DefaultJdbcDatabase(DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        "",
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText())));
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
+        connection -> connection
+            .createStatement()
+            .executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
         JdbcUtils.getDefaultSourceOperations()::rowToJson);
     final Map<Integer, JsonNode> expectedRecordsWithId = new HashMap<>();
-    expectedRecords.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData)
+    expectedRecords.stream()
+        .map(AirbyteMessage::getRecord)
+        .map(AirbyteRecordMessage::getData)
         .forEach(data -> expectedRecordsWithId.put(data.get("id").asInt(), data));
-    actualRecords.stream().map(o -> o.get("_airbyte_data").asText()).map(Jsons::deserialize).forEach(actual -> {
-      assertTrue(expectedRecordsWithId.containsKey(actual.get("id").asInt()));
-      assertEquals(expectedRecordsWithId.get(actual.get("id").asInt()), actual);
-    });
+    actualRecords.stream()
+        .map(o -> o.get("_airbyte_data").asText())
+        .map(Jsons::deserialize)
+        .forEach(actual -> {
+          assertTrue(expectedRecordsWithId.containsKey(actual.get("id").asInt()));
+          assertEquals(expectedRecordsWithId.get(actual.get("id").asInt()), actual);
+        });
   }
 
   private List<AirbyteMessage> getNRecords(final int n) {
@@ -127,5 +136,4 @@ public class TiDBDestinationTest {
     Destination destination = new TiDBDestination();
     assertEquals(Status.SUCCEEDED, destination.check(getConfig()).getStatus());
   }
-
 }

@@ -51,7 +51,6 @@ class RedpandaDestinationTest {
     var status = redpandaDestination.check(jsonConfig);
 
     assertThat(status.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.SUCCEEDED);
-
   }
 
   @Test
@@ -72,7 +71,5 @@ class RedpandaDestinationTest {
     var status = redpandaDestination.check(jsonConfig);
 
     assertThat(status.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.FAILED);
-
   }
-
 }

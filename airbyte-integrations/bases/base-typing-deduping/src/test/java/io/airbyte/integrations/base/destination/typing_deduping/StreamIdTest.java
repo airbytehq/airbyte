@@ -31,5 +31,4 @@ class StreamIdTest {
 
     assertEquals("a_raw__stream_b", stream);
   }
-
 }

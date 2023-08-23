@@ -46,7 +46,5 @@ class ScyllaDestinationTest {
     var connectionStatus = scyllaDestination.check(jsonConfiguration);
 
     assertThat(connectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.FAILED);
-
   }
-
 }

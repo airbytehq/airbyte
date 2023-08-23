@@ -28,7 +28,8 @@ import org.junit.jupiter.api.Test;
  */
 public class OracleSpecTest {
 
-  private static final String CONFIGURATION = """
+  private static final String CONFIGURATION =
+      """
                                               {
                                                 "host": "localhost",
                                                 "port": 1521,
@@ -50,7 +51,9 @@ public class OracleSpecTest {
   @BeforeAll
   static void init() throws IOException {
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec).toFile();
+    final File schemaFile = IOs.writeFile(
+            Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec)
+        .toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
@@ -115,5 +118,4 @@ public class OracleSpecTest {
     final ConnectorSpecification spec = new OracleSource().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
-
 }

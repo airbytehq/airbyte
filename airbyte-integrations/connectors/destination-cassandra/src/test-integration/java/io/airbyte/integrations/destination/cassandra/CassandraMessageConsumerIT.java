@@ -51,13 +51,16 @@ class CassandraMessageConsumerIT {
     final var stream1 = TestDataFactory.createAirbyteStream(AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1);
     final var stream2 = TestDataFactory.createAirbyteStream(AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2);
 
-    final var cStream1 = TestDataFactory.createConfiguredAirbyteStream(DestinationSyncMode.APPEND, stream1);
-    final var cStream2 = TestDataFactory.createConfiguredAirbyteStream(DestinationSyncMode.OVERWRITE, stream2);
+    final var cStream1 =
+        TestDataFactory.createConfiguredAirbyteStream(DestinationSyncMode.APPEND, stream1);
+    final var cStream2 =
+        TestDataFactory.createConfiguredAirbyteStream(DestinationSyncMode.OVERWRITE, stream2);
 
     final var catalog = TestDataFactory.createConfiguredAirbyteCatalog(cStream1, cStream2);
 
     final CassandraCqlProvider cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
-    cassandraMessageConsumer = new CassandraMessageConsumer(cassandraConfig, catalog, cassandraCqlProvider, message -> {});
+    cassandraMessageConsumer =
+        new CassandraMessageConsumer(cassandraConfig, catalog, cassandraCqlProvider, message -> {});
     nameTransformer = new CassandraNameTransformer(cassandraConfig);
   }
 
@@ -80,23 +83,32 @@ class CassandraMessageConsumerIT {
         data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
 
     assertDoesNotThrow(() -> {
-      cassandraMessageConsumer.acceptTracked(
-          TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1,
-              function.apply("data1")));
-      cassandraMessageConsumer.acceptTracked(
-          TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1,
-              function.apply("data2")));
-      cassandraMessageConsumer.acceptTracked(
-          TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-              function.apply("data3")));
-      cassandraMessageConsumer.acceptTracked(
-          TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-              function.apply("data4")));
-      cassandraMessageConsumer.acceptTracked(
-          TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.STATE, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-              function.apply("data5")));
+      cassandraMessageConsumer.acceptTracked(TestDataFactory.createAirbyteMessage(
+          AirbyteMessage.Type.RECORD,
+          AIRBYTE_STREAM_1,
+          AIRBYTE_NAMESPACE_1,
+          function.apply("data1")));
+      cassandraMessageConsumer.acceptTracked(TestDataFactory.createAirbyteMessage(
+          AirbyteMessage.Type.RECORD,
+          AIRBYTE_STREAM_1,
+          AIRBYTE_NAMESPACE_1,
+          function.apply("data2")));
+      cassandraMessageConsumer.acceptTracked(TestDataFactory.createAirbyteMessage(
+          AirbyteMessage.Type.RECORD,
+          AIRBYTE_STREAM_2,
+          AIRBYTE_NAMESPACE_2,
+          function.apply("data3")));
+      cassandraMessageConsumer.acceptTracked(TestDataFactory.createAirbyteMessage(
+          AirbyteMessage.Type.RECORD,
+          AIRBYTE_STREAM_2,
+          AIRBYTE_NAMESPACE_2,
+          function.apply("data4")));
+      cassandraMessageConsumer.acceptTracked(TestDataFactory.createAirbyteMessage(
+          AirbyteMessage.Type.STATE,
+          AIRBYTE_STREAM_2,
+          AIRBYTE_NAMESPACE_2,
+          function.apply("data5")));
     });
-
   }
 
   @Test
@@ -104,7 +116,6 @@ class CassandraMessageConsumerIT {
   void testClose() {
 
     assertDoesNotThrow(() -> cassandraMessageConsumer.close(false));
-
   }
 
   @Test
@@ -130,5 +141,4 @@ class CassandraMessageConsumerIT {
           .anyMatch(r -> r.getData().equals("{\"property\":\"data4\"}"));
     }
   }
-
 }

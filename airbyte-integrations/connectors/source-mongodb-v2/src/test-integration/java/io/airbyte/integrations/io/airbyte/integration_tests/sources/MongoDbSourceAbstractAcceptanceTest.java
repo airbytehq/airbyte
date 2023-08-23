@@ -46,23 +46,23 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("_id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                DATABASE_NAME + "." + COLLECTION_NAME,
-                Field.of("_id", JsonSchemaType.STRING),
-                Field.of("id", JsonSchemaType.STRING),
-                Field.of("name", JsonSchemaType.STRING),
-                Field.of("test", JsonSchemaType.STRING),
-                Field.of("test_array", JsonSchemaType.ARRAY),
-                Field.of("empty_test", JsonSchemaType.STRING),
-                Field.of("double_test", JsonSchemaType.NUMBER),
-                Field.of("int_test", JsonSchemaType.NUMBER),
-                Field.of("object_test", JsonSchemaType.OBJECT))
+                    DATABASE_NAME + "." + COLLECTION_NAME,
+                    Field.of("_id", JsonSchemaType.STRING),
+                    Field.of("id", JsonSchemaType.STRING),
+                    Field.of("name", JsonSchemaType.STRING),
+                    Field.of("test", JsonSchemaType.STRING),
+                    Field.of("test_array", JsonSchemaType.ARRAY),
+                    Field.of("empty_test", JsonSchemaType.STRING),
+                    Field.of("double_test", JsonSchemaType.NUMBER),
+                    Field.of("int_test", JsonSchemaType.NUMBER),
+                    Field.of("object_test", JsonSchemaType.OBJECT))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }
@@ -71,5 +71,4 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

@@ -46,7 +46,8 @@ public class SftpClient {
     username = config.has("user") ? config.get("user").asText() : "";
     hostAddress = config.has("host") ? config.get("host").asText() : "";
     port = config.has("port") ? config.get("port").asInt() : 22;
-    authMethod = SftpAuthMethod.valueOf(config.get("credentials").get("auth_method").asText());
+    authMethod =
+        SftpAuthMethod.valueOf(config.get("credentials").get("auth_method").asText());
   }
 
   public void connect() {
@@ -94,7 +95,8 @@ public class SftpClient {
     try {
       return channelSftp.ls("*." + fileExtension.typeName);
     } catch (SftpException e) {
-      LOGGER.error("Exception occurred while trying to find files with type {} : ", fileExtension, e);
+      LOGGER.error(
+          "Exception occurred while trying to find files with type {} : ", fileExtension, e);
       throw new RuntimeException(e);
     }
   }
@@ -114,15 +116,19 @@ public class SftpClient {
 
   private void configureAuthMethod() throws Exception {
     switch (authMethod) {
-      case SSH_PASSWORD_AUTH -> session.setPassword(config.get("credentials").get("auth_user_password").asText());
+      case SSH_PASSWORD_AUTH -> session.setPassword(
+          config.get("credentials").get("auth_user_password").asText());
       case SSH_KEY_AUTH -> {
         File tempFile = File.createTempFile("private_key", "", null);
         FileOutputStream fos = new FileOutputStream(tempFile);
-        fos.write(config.get("credentials").get("auth_ssh_key").asText().getBytes(StandardCharsets.UTF_8));
+        fos.write(config
+            .get("credentials")
+            .get("auth_ssh_key")
+            .asText()
+            .getBytes(StandardCharsets.UTF_8));
         jsch.addIdentity(tempFile.getAbsolutePath());
       }
       default -> throw new RuntimeException("Unsupported SFTP Authentication type");
     }
   }
-
 }

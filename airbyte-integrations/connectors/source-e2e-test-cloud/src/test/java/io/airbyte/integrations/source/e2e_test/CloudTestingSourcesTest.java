@@ -21,5 +21,4 @@ class CloudTestingSourcesTest {
 
     assertEquals(expected, actual);
   }
-
 }

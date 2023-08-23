@@ -20,7 +20,10 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
 
   public JdbcSource() {
-    super(DatabaseDriver.POSTGRESQL.getDriverClassName(), AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+    super(
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        AdaptiveStreamingQueryConfig::new,
+        JdbcUtils.getDefaultSourceOperations());
   }
 
   // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
@@ -40,5 +43,4 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", JdbcSource.class);
   }
-
 }

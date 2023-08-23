@@ -27,7 +27,8 @@ public interface StagingOperations extends SqlOperations {
    */
   String getStageName(String namespace, String streamName);
 
-  String getStagingPath(UUID connectionId, String namespace, String streamName, DateTime writeDatetime);
+  String getStagingPath(
+      UUID connectionId, String namespace, String streamName, DateTime writeDatetime);
 
   /**
    * Create a staging folder where to upload temporary files before loading into the final destination
@@ -44,7 +45,12 @@ public interface StagingOperations extends SqlOperations {
    * @param stagingPath path of staging folder to data files
    * @return the name of the file that was uploaded.
    */
-  String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String stageName, String stagingPath)
+  String uploadRecordsToStage(
+      JdbcDatabase database,
+      SerializableBuffer recordsData,
+      String schemaName,
+      String stageName,
+      String stagingPath)
       throws Exception;
 
   /**
@@ -57,12 +63,13 @@ public interface StagingOperations extends SqlOperations {
    * @param tableName name of table to write staging files to
    * @param schemaName name of schema
    */
-  void copyIntoTableFromStage(JdbcDatabase database,
-                              String stageName,
-                              String stagingPath,
-                              List<String> stagedFiles,
-                              String tableName,
-                              String schemaName)
+  void copyIntoTableFromStage(
+      JdbcDatabase database,
+      String stageName,
+      String stagingPath,
+      List<String> stagedFiles,
+      String tableName,
+      String schemaName)
       throws Exception;
 
   /**
@@ -72,7 +79,8 @@ public interface StagingOperations extends SqlOperations {
    * @param stageName name of staging area folder
    * @param stagedFiles collection of the staging files to remove
    */
-  void cleanUpStage(JdbcDatabase database, String stageName, List<String> stagedFiles) throws Exception;
+  void cleanUpStage(JdbcDatabase database, String stageName, List<String> stagedFiles)
+      throws Exception;
 
   /**
    * Delete the stage area and all staged files that was in it
@@ -81,5 +89,4 @@ public interface StagingOperations extends SqlOperations {
    * @param stageName Name of the staging area used to store files
    */
   void dropStageIfExists(JdbcDatabase database, String stageName) throws Exception;
-
 }

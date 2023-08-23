@@ -31,10 +31,10 @@ public class LoggerHelper {
 
   public static String getJobErrorMessage(List<BigQueryError> errors, Job job) {
     if (!errors.isEmpty()) {
-      return String.format("Error is happened during execution for job: %s, \n For more details see Big Query Error collection: %s:", job,
-          errors.stream().map(BigQueryError::toString).collect(Collectors.joining(",\n ")));
+      return String.format(
+          "Error is happened during execution for job: %s, \n For more details see Big Query Error collection: %s:",
+          job, errors.stream().map(BigQueryError::toString).collect(Collectors.joining(",\n ")));
     }
     return StringUtils.EMPTY;
   }
-
 }

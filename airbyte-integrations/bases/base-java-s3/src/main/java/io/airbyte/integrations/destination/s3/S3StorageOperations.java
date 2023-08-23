@@ -43,7 +43,8 @@ public class S3StorageOperations extends BlobStorageOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StorageOperations.class);
 
-  private final S3FilenameTemplateManager s3FilenameTemplateManager = new S3FilenameTemplateManager();
+  private final S3FilenameTemplateManager s3FilenameTemplateManager =
+      new S3FilenameTemplateManager();
 
   public static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
 
@@ -70,30 +71,52 @@ public class S3StorageOperations extends BlobStorageOperations {
   protected final S3DestinationConfig s3Config;
   protected AmazonS3 s3Client;
 
-  public S3StorageOperations(final NamingConventionTransformer nameTransformer, final AmazonS3 s3Client, final S3DestinationConfig s3Config) {
+  public S3StorageOperations(
+      final NamingConventionTransformer nameTransformer,
+      final AmazonS3 s3Client,
+      final S3DestinationConfig s3Config) {
     this.nameTransformer = nameTransformer;
     this.s3Client = s3Client;
     this.s3Config = s3Config;
   }
 
   @Override
-  public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
-    final String namespaceStr = nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
+  public String getBucketObjectPath(
+      final String namespace,
+      final String streamName,
+      final DateTime writeDatetime,
+      final String customPathFormat) {
+    final String namespaceStr =
+        nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
     final String streamNameStr = nameTransformer.getIdentifier(streamName);
-    return nameTransformer.applyDefaultCase(
-        customPathFormat
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_NAMESPACE), namespaceStr)
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_STREAM_NAME), streamNameStr)
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_YEAR), String.format("%s", writeDatetime.year().get()))
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_MONTH), String.format("%02d", writeDatetime.monthOfYear().get()))
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_DAY), String.format("%02d", writeDatetime.dayOfMonth().get()))
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_HOUR), String.format("%02d", writeDatetime.hourOfDay().get()))
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_MINUTE), String.format("%02d", writeDatetime.minuteOfHour().get()))
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_SECOND), String.format("%02d", writeDatetime.secondOfMinute().get()))
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_MILLISECOND), String.format("%04d", writeDatetime.millisOfSecond().get()))
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_EPOCH), String.format("%d", writeDatetime.getMillis()))
-            .replaceAll(Pattern.quote(FORMAT_VARIABLE_UUID), String.format("%s", UUID.randomUUID()))
-            .replaceAll("/+", "/"));
+    return nameTransformer.applyDefaultCase(customPathFormat
+        .replaceAll(Pattern.quote(FORMAT_VARIABLE_NAMESPACE), namespaceStr)
+        .replaceAll(Pattern.quote(FORMAT_VARIABLE_STREAM_NAME), streamNameStr)
+        .replaceAll(
+            Pattern.quote(FORMAT_VARIABLE_YEAR),
+            String.format("%s", writeDatetime.year().get()))
+        .replaceAll(
+            Pattern.quote(FORMAT_VARIABLE_MONTH),
+            String.format("%02d", writeDatetime.monthOfYear().get()))
+        .replaceAll(
+            Pattern.quote(FORMAT_VARIABLE_DAY),
+            String.format("%02d", writeDatetime.dayOfMonth().get()))
+        .replaceAll(
+            Pattern.quote(FORMAT_VARIABLE_HOUR),
+            String.format("%02d", writeDatetime.hourOfDay().get()))
+        .replaceAll(
+            Pattern.quote(FORMAT_VARIABLE_MINUTE),
+            String.format("%02d", writeDatetime.minuteOfHour().get()))
+        .replaceAll(
+            Pattern.quote(FORMAT_VARIABLE_SECOND),
+            String.format("%02d", writeDatetime.secondOfMinute().get()))
+        .replaceAll(
+            Pattern.quote(FORMAT_VARIABLE_MILLISECOND),
+            String.format("%04d", writeDatetime.millisOfSecond().get()))
+        .replaceAll(
+            Pattern.quote(FORMAT_VARIABLE_EPOCH), String.format("%d", writeDatetime.getMillis()))
+        .replaceAll(Pattern.quote(FORMAT_VARIABLE_UUID), String.format("%s", UUID.randomUUID()))
+        .replaceAll("/+", "/"));
   }
 
   /**
@@ -114,37 +137,50 @@ public class S3StorageOperations extends BlobStorageOperations {
   }
 
   @Override
-  public String uploadRecordsToBucket(final SerializableBuffer recordsData,
-                                      final String namespace,
-                                      final String streamName,
-                                      final String objectPath) {
+  public String uploadRecordsToBucket(
+      final SerializableBuffer recordsData,
+      final String namespace,
+      final String streamName,
+      final String objectPath) {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
       if (!exceptionsThrown.isEmpty()) {
-        LOGGER.info("Retrying to upload records into storage {} ({}/{}})", objectPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
+        LOGGER.info(
+            "Retrying to upload records into storage {} ({}/{}})",
+            objectPath,
+            exceptionsThrown.size(),
+            UPLOAD_RETRY_LIMIT);
         // Force a reconnection before retrying in case error was due to network issues...
         s3Client = s3Config.resetS3Client();
       }
 
       try {
         final String fileName = loadDataIntoBucket(objectPath, recordsData);
-        LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", objectPath, exceptionsThrown.size());
+        LOGGER.info(
+            "Successfully loaded records to stage {} with {} re-attempt(s)",
+            objectPath,
+            exceptionsThrown.size());
         return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", objectPath, e);
         exceptionsThrown.add(e);
       }
     }
-    // Verifying that ALL exceptions are authentication related before assuming this is a configuration
+    // Verifying that ALL exceptions are authentication related before assuming this is a
+    // configuration
     // issue reduces risk of misidentifying errors or reporting a transient error.
-    final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)
-        .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode())
-        .filter(ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES::contains)
-        .count() == exceptionsThrown.size();
+    final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream()
+            .filter(e -> e instanceof AmazonS3Exception)
+            .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode())
+            .filter(ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES::contains)
+            .count()
+        == exceptionsThrown.size();
     if (areAllExceptionsAuthExceptions) {
       throw new ConfigErrorException(exceptionsThrown.get(0).getMessage(), exceptionsThrown.get(0));
     } else {
-      throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
+      throw new RuntimeException(String.format(
+          "Exceptions thrown while uploading records into storage: %s",
+          Strings.join(exceptionsThrown, "\n")));
     }
   }
 
@@ -153,23 +189,22 @@ public class S3StorageOperations extends BlobStorageOperations {
    *
    * @return the uploaded filename, which is different from the serialized buffer filename
    */
-  private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
+  private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData)
+      throws IOException {
     final long partSize = DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
     final String partId = UUID.randomUUID().toString();
     final String fileExtension = getExtension(recordsData.getFilename());
     final String fullObjectKey;
     if (StringUtils.isNotBlank(s3Config.getFileNamePattern())) {
-      fullObjectKey = s3FilenameTemplateManager
-          .applyPatternToFilename(
-              S3FilenameTemplateParameterObject
-                  .builder()
-                  .partId(partId)
-                  .recordsData(recordsData)
-                  .objectPath(objectPath)
-                  .fileExtension(fileExtension)
-                  .fileNamePattern(s3Config.getFileNamePattern())
-                  .build());
+      fullObjectKey = s3FilenameTemplateManager.applyPatternToFilename(
+          S3FilenameTemplateParameterObject.builder()
+              .partId(partId)
+              .recordsData(recordsData)
+              .objectPath(objectPath)
+              .fileExtension(fileExtension)
+              .fileNamePattern(s3Config.getFileNamePattern())
+              .build());
     } else {
       fullObjectKey = objectPath + partId + fileExtension;
     }
@@ -177,7 +212,8 @@ public class S3StorageOperations extends BlobStorageOperations {
     for (final BlobDecorator blobDecorator : blobDecorators) {
       blobDecorator.updateMetadata(metadata, getMetadataMapping());
     }
-    final StreamTransferManager uploadManager = StreamTransferManagerFactory.create(bucket, fullObjectKey, s3Client)
+    final StreamTransferManager uploadManager = StreamTransferManagerFactory.create(
+            bucket, fullObjectKey, s3Client)
         .setPartSize(partSize)
         .setUserMetadata(metadata)
         .get()
@@ -211,7 +247,11 @@ public class S3StorageOperations extends BlobStorageOperations {
       throw new RuntimeException("Upload failed");
     }
     final String newFilename = getFilename(fullObjectKey);
-    LOGGER.info("Uploaded buffer file to storage: {} -> {} (filename: {})", recordsData.getFilename(), fullObjectKey, newFilename);
+    LOGGER.info(
+        "Uploaded buffer file to storage: {} -> {} (filename: {})",
+        recordsData.getFilename(),
+        fullObjectKey,
+        newFilename);
     return newFilename;
   }
 
@@ -236,7 +276,11 @@ public class S3StorageOperations extends BlobStorageOperations {
   }
 
   @Override
-  public void cleanUpBucketObject(final String namespace, final String streamName, final String objectPath, final String pathFormat) {
+  public void cleanUpBucketObject(
+      final String namespace,
+      final String streamName,
+      final String objectPath,
+      final String pathFormat) {
     final String bucket = s3Config.getBucketName();
     ObjectListing objects = s3Client.listObjects(new ListObjectsRequest()
         .withBucketName(bucket)
@@ -246,13 +290,16 @@ public class S3StorageOperations extends BlobStorageOperations {
         .withDelimiter(""));
     final Pattern regexFormat = Pattern.compile(getRegexFormat(namespace, streamName, pathFormat));
     while (objects.getObjectSummaries().size() > 0) {
-      final List<KeyVersion> keysToDelete = objects.getObjectSummaries()
-          .stream()
+      final List<KeyVersion> keysToDelete = objects.getObjectSummaries().stream()
           .filter(obj -> regexFormat.matcher(obj.getKey()).matches())
           .map(obj -> new KeyVersion(obj.getKey()))
           .toList();
       cleanUpObjects(bucket, keysToDelete);
-      LOGGER.info("Storage bucket {} has been cleaned-up ({} objects matching {} were deleted)...", objectPath, keysToDelete.size(), regexFormat);
+      LOGGER.info(
+          "Storage bucket {} has been cleaned-up ({} objects matching {} were deleted)...",
+          objectPath,
+          keysToDelete.size(),
+          regexFormat);
       if (objects.isTruncated()) {
         objects = s3Client.listNextBatchOfObjects(objects);
       } else {
@@ -261,22 +308,24 @@ public class S3StorageOperations extends BlobStorageOperations {
     }
   }
 
-  protected String getRegexFormat(final String namespace, final String streamName, final String pathFormat) {
-    final String namespaceStr = nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
+  protected String getRegexFormat(
+      final String namespace, final String streamName, final String pathFormat) {
+    final String namespaceStr =
+        nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
     final String streamNameStr = nameTransformer.getIdentifier(streamName);
     return nameTransformer.applyDefaultCase(pathFormat
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_NAMESPACE), namespaceStr)
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_STREAM_NAME), streamNameStr)
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_YEAR), "[0-9]{4}")
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_MONTH), "[0-9]{2}")
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_DAY), "[0-9]{2}")
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_HOUR), "[0-9]{2}")
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_MINUTE), "[0-9]{2}")
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_SECOND), "[0-9]{2}")
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_MILLISECOND), "[0-9]{4}")
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_EPOCH), "[0-9]+")
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_UUID), ".*")
-        .replaceAll("/+", "/")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_NAMESPACE), namespaceStr)
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_STREAM_NAME), streamNameStr)
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_YEAR), "[0-9]{4}")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_MONTH), "[0-9]{2}")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_DAY), "[0-9]{2}")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_HOUR), "[0-9]{2}")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_MINUTE), "[0-9]{2}")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_SECOND), "[0-9]{2}")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_MILLISECOND), "[0-9]{4}")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_EPOCH), "[0-9]+")
+            .replaceAll(Pattern.quote(FORMAT_VARIABLE_UUID), ".*")
+            .replaceAll("/+", "/")
         // match part_id and extension at the end
         + ".*");
   }
@@ -286,13 +335,15 @@ public class S3StorageOperations extends BlobStorageOperations {
     final String bucket = s3Config.getBucketName();
     ObjectListing objects = s3Client.listObjects(bucket, objectPath);
     while (objects.getObjectSummaries().size() > 0) {
-      final List<KeyVersion> keysToDelete = objects.getObjectSummaries()
-          .stream()
+      final List<KeyVersion> keysToDelete = objects.getObjectSummaries().stream()
           .filter(obj -> stagedFiles.isEmpty() || stagedFiles.contains(obj.getKey()))
           .map(obj -> new KeyVersion(obj.getKey()))
           .toList();
       cleanUpObjects(bucket, keysToDelete);
-      LOGGER.info("Storage bucket {} has been cleaned-up ({} objects were deleted)...", objectPath, keysToDelete.size());
+      LOGGER.info(
+          "Storage bucket {} has been cleaned-up ({} objects were deleted)...",
+          objectPath,
+          keysToDelete.size());
       if (objects.isTruncated()) {
         objects = s3Client.listNextBatchOfObjects(objects);
       } else {
@@ -303,7 +354,9 @@ public class S3StorageOperations extends BlobStorageOperations {
 
   protected void cleanUpObjects(final String bucket, final List<KeyVersion> keysToDelete) {
     if (!keysToDelete.isEmpty()) {
-      LOGGER.info("Deleting objects {}", String.join(", ", keysToDelete.stream().map(KeyVersion::getKey).toList()));
+      LOGGER.info(
+          "Deleting objects {}",
+          String.join(", ", keysToDelete.stream().map(KeyVersion::getKey).toList()));
       s3Client.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
     }
   }
@@ -320,8 +373,8 @@ public class S3StorageOperations extends BlobStorageOperations {
         AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "x-amz-iv");
   }
 
-  public void uploadManifest(final String bucketName, final String manifestFilePath, final String manifestContents) {
+  public void uploadManifest(
+      final String bucketName, final String manifestFilePath, final String manifestContents) {
     s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
   }
-
 }

@@ -53,22 +53,27 @@ class FailureHelperTest {
           .withAdditionalProperty(JOB_ID_KEY, 12345)
           .withAdditionalProperty(ATTEMPT_NUMBER_KEY, 1));
 
-  private static final AirbyteTraceMessage TRACE_MESSAGE = AirbyteMessageUtils.createErrorTraceMessage(
-      "trace message error",
-      Double.valueOf(123),
-      AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR);
+  private static final AirbyteTraceMessage TRACE_MESSAGE =
+      AirbyteMessageUtils.createErrorTraceMessage(
+          "trace message error",
+          Double.valueOf(123),
+          AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR);
 
   @Test
   void testGenericFailureFromTrace() throws Exception {
-    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123),
+    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage(
+        "trace message error",
+        Double.valueOf(123),
         AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR);
-    final FailureReason failureReason = FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
+    final FailureReason failureReason =
+        FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
     assertEquals(FailureType.CONFIG_ERROR, failureReason.getFailureType());
   }
 
   @Test
   void testGenericFailureFromTraceNoFailureType() throws Exception {
-    final FailureReason failureReason = FailureHelper.genericFailure(TRACE_MESSAGE, Long.valueOf(12345), 1);
+    final FailureReason failureReason =
+        FailureHelper.genericFailure(TRACE_MESSAGE, Long.valueOf(12345), 1);
     assertEquals(failureReason.getFailureType(), FailureType.SYSTEM_ERROR);
   }
 
@@ -77,7 +82,8 @@ class FailureHelperTest {
     final Throwable t = new RuntimeException();
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;
-    final FailureReason failureReason = FailureHelper.connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.CHECK);
+    final FailureReason failureReason =
+        FailureHelper.connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.CHECK);
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
     assertEquals("check", metadata.get(CONNECTOR_COMMAND_KEY));
@@ -90,7 +96,8 @@ class FailureHelperTest {
   void testConnectorCommandFailureFromTrace() {
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;
-    final FailureReason failureReason = FailureHelper.connectorCommandFailure(TRACE_MESSAGE, jobId, attemptNumber, ConnectorCommand.DISCOVER);
+    final FailureReason failureReason = FailureHelper.connectorCommandFailure(
+        TRACE_MESSAGE, jobId, attemptNumber, ConnectorCommand.DISCOVER);
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
     assertEquals("discover", metadata.get(CONNECTOR_COMMAND_KEY));
@@ -118,7 +125,8 @@ class FailureHelperTest {
   void testSourceFailureFromTrace() {
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;
-    final FailureReason failureReason = FailureHelper.sourceFailure(TRACE_MESSAGE, jobId, attemptNumber);
+    final FailureReason failureReason =
+        FailureHelper.sourceFailure(TRACE_MESSAGE, jobId, attemptNumber);
     assertEquals(FailureOrigin.SOURCE, failureReason.getFailureOrigin());
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
@@ -147,7 +155,8 @@ class FailureHelperTest {
   void testDestinationFailureFromTrace() {
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;
-    final FailureReason failureReason = FailureHelper.destinationFailure(TRACE_MESSAGE, jobId, attemptNumber);
+    final FailureReason failureReason =
+        FailureHelper.destinationFailure(TRACE_MESSAGE, jobId, attemptNumber);
     assertEquals(FailureOrigin.DESTINATION, failureReason.getFailureOrigin());
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
@@ -162,7 +171,8 @@ class FailureHelperTest {
     final Throwable t = new RuntimeException();
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;
-    final FailureReason failureReason = FailureHelper.checkFailure(t, jobId, attemptNumber, FailureOrigin.DESTINATION);
+    final FailureReason failureReason =
+        FailureHelper.checkFailure(t, jobId, attemptNumber, FailureOrigin.DESTINATION);
     assertEquals(FailureOrigin.DESTINATION, failureReason.getFailureOrigin());
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
@@ -174,8 +184,8 @@ class FailureHelperTest {
 
   @Test
   void testOrderedFailures() throws Exception {
-    final List<FailureReason> failureReasonList =
-        FailureHelper.orderedFailures(Set.of(TRACE_FAILURE_REASON_2, TRACE_FAILURE_REASON, EXCEPTION_FAILURE_REASON));
+    final List<FailureReason> failureReasonList = FailureHelper.orderedFailures(
+        Set.of(TRACE_FAILURE_REASON_2, TRACE_FAILURE_REASON, EXCEPTION_FAILURE_REASON));
     assertEquals(failureReasonList.get(0), TRACE_FAILURE_REASON);
   }
 
@@ -188,5 +198,4 @@ class FailureHelperTest {
     assertEquals(FailureOrigin.UNKNOWN, failureReason.getFailureOrigin());
     assertEquals("An unknown failure occurred", failureReason.getExternalMessage());
   }
-
 }

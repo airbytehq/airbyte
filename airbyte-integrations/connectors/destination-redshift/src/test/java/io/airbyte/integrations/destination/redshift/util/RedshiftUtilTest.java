@@ -68,5 +68,4 @@ public class RedshiftUtilTest {
 
     assertFalse(RedshiftUtil.anyOfS3FieldsAreNullOrEmpty(jsonNode));
   }
-
 }

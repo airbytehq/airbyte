@@ -23,7 +23,8 @@ public class OracleNameTransformer extends StandardNameTransformer {
 
   @Override
   public String getTmpTableName(final String streamName) {
-    return convertStreamName("airbyte_tmp_" + streamName + "_" + UUID.randomUUID().toString().replace("-", ""));
+    return convertStreamName(
+        "airbyte_tmp_" + streamName + "_" + UUID.randomUUID().toString().replace("-", ""));
   }
 
   private String maxStringLength(final String value, final Integer length) {
@@ -43,5 +44,4 @@ public class OracleNameTransformer extends StandardNameTransformer {
     // However, from version 12.2 they can be up to 128 bytes long. (Note: bytes, not characters).
     return maxStringLength(result, 128);
   }
-
 }

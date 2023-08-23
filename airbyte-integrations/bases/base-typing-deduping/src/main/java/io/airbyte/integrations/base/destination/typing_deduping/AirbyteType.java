@@ -13,7 +13,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,UnsupportedOneOf,Union {
+public sealed interface AirbyteType
+    permits AirbyteProtocolType, Struct, Array, UnsupportedOneOf, Union {
 
   Logger LOGGER = LoggerFactory.getLogger(AirbyteType.class);
 
@@ -39,10 +40,14 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
         }
       } else if (schema.hasNonNull("oneOf")) {
         final List<AirbyteType> options = new ArrayList<>();
-        schema.get("oneOf").elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
+        schema
+            .get("oneOf")
+            .elements()
+            .forEachRemaining(element -> options.add(fromJsonSchema(element)));
         return new UnsupportedOneOf(options);
       } else if (schema.hasNonNull("properties")) {
-        // The schema has neither type nor oneof, but it does have properties. Assume we're looking at a
+        // The schema has neither type nor oneof, but it does have properties. Assume we're looking
+        // at a
         // struct.
         // This is for backwards-compatibility with legacy normalization.
         return getStruct(schema);
@@ -105,7 +110,9 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
     }
 
     // Recurse into a schema that forces a specific one of each option
-    final List<AirbyteType> options = typeOptions.stream().map(typeOption -> fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))).toList();
+    final List<AirbyteType> options = typeOptions.stream()
+        .map(typeOption -> fromJsonSchema(getTrimmedJsonSchema(schema, typeOption)))
+        .toList();
     return new Union(options);
   }
 
@@ -116,5 +123,4 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
     ((ObjectNode) schemaClone).put("type", type);
     return schemaClone;
   }
-
 }

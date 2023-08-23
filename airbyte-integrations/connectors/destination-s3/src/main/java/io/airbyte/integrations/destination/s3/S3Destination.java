@@ -24,5 +24,4 @@ public class S3Destination extends BaseS3Destination {
   public StorageProvider storageProvider() {
     return StorageProvider.AWS_S3;
   }
-
 }

@@ -29,7 +29,5 @@ class ScyllaConfigTest {
         .hasFieldOrPropertyWithValue("address", "127.0.0.1")
         .hasFieldOrPropertyWithValue("port", 9042)
         .hasFieldOrPropertyWithValue("replication", 2);
-
   }
-
 }

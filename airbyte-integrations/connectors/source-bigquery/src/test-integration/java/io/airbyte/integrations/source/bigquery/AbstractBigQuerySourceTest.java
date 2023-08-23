@@ -35,7 +35,8 @@ abstract class AbstractBigQuerySourceTest {
   void setUp() throws IOException, SQLException {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a big query credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
@@ -55,8 +56,10 @@ abstract class AbstractBigQuerySourceTest {
 
     database = new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
 
-    final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(datasetLocation).build();
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(
+            config.get(CONFIG_DATASET_ID).asText())
+        .setLocation(datasetLocation)
+        .build();
     dataset = database.getBigQuery().create(datasetInfo);
 
     createTable(datasetId);
@@ -70,5 +73,4 @@ abstract class AbstractBigQuerySourceTest {
   protected abstract void createTable(String datasetId) throws SQLException;
 
   protected abstract ConfiguredAirbyteCatalog getConfiguredCatalog();
-
 }

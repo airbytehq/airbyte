@@ -13,7 +13,9 @@ class JsonSchemaTypeTest {
 
   @Test
   void fromJsonSchemaType_notPresent() {
-    assertThrows(IllegalArgumentException.class, () -> JsonSchemaType.fromJsonSchemaType("not_existing_value"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> JsonSchemaType.fromJsonSchemaType("not_existing_value"));
   }
 
   @Test
@@ -21,5 +23,4 @@ class JsonSchemaTypeTest {
     JsonSchemaType result = JsonSchemaType.fromJsonSchemaType("string");
     assertEquals(JsonSchemaType.STRING, result);
   }
-
 }

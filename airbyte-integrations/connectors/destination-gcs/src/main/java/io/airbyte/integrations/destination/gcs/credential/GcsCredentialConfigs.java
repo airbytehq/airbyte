@@ -11,12 +11,12 @@ public class GcsCredentialConfigs {
 
   public static GcsCredentialConfig getCredentialConfig(final JsonNode config) {
     final JsonNode credentialConfig = config.get("credential");
-    final GcsCredentialType credentialType = GcsCredentialType.valueOf(credentialConfig.get("credential_type").asText().toUpperCase());
+    final GcsCredentialType credentialType = GcsCredentialType.valueOf(
+        credentialConfig.get("credential_type").asText().toUpperCase());
 
     if (credentialType == GcsCredentialType.HMAC_KEY) {
       return new GcsHmacKeyCredentialConfig(credentialConfig);
     }
     throw new RuntimeException("Unexpected credential: " + Jsons.serialize(credentialConfig));
   }
-
 }

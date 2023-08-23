@@ -15,8 +15,10 @@ public class MariadbColumnstoreDestinationTest {
   @Test
   public void testToJdbcConfig() throws Exception {
     final MariadbColumnstoreDestination dest = new MariadbColumnstoreDestination();
-    String configJson = "{\"host\": \"localhost\", \"port\": 3306, \"database\": \"test\", \"username\": \"root\", \"password\": \"secret\"}";
-    String expectedJson = "{\"username\": \"root\", \"password\": \"secret\", \"jdbc_url\": \"jdbc:mariadb://localhost:3306/test\"}";
+    String configJson =
+        "{\"host\": \"localhost\", \"port\": 3306, \"database\": \"test\", \"username\": \"root\", \"password\": \"secret\"}";
+    String expectedJson =
+        "{\"username\": \"root\", \"password\": \"secret\", \"jdbc_url\": \"jdbc:mariadb://localhost:3306/test\"}";
     ObjectMapper mapper = new ObjectMapper();
     JsonNode config = mapper.readTree(configJson);
 
@@ -25,5 +27,4 @@ public class MariadbColumnstoreDestinationTest {
 
     assertEquals(expected, actual);
   }
-
 }

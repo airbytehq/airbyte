@@ -82,7 +82,8 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     super.setup();
@@ -103,7 +104,8 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return config;
   }
 
-  public JsonNode getConfigWithConnectionProperties(final PostgreSQLContainer<?> psqlDb, final String dbName, final String additionalParameters) {
+  public JsonNode getConfigWithConnectionProperties(
+      final PostgreSQLContainer<?> psqlDb, final String dbName, final String additionalParameters) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(psqlDb))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(psqlDb))
@@ -137,20 +139,25 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
     public PostgresTestSource() {
-      super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+      super(
+          DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-          .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-              config.get(JdbcUtils.HOST_KEY).asText(),
-              config.get(JdbcUtils.PORT_KEY).asInt(),
-              config.get(JdbcUtils.DATABASE_KEY).asText()));
+          .put(
+              JdbcUtils.JDBC_URL_KEY,
+              String.format(
+                  DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+                  config.get(JdbcUtils.HOST_KEY).asText(),
+                  config.get(JdbcUtils.PORT_KEY).asInt(),
+                  config.get(JdbcUtils.DATABASE_KEY).asText()));
 
       if (config.has(JdbcUtils.PASSWORD_KEY)) {
-        configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+        configBuilder.put(
+            JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
       }
 
       return Jsons.jsonNode(configBuilder.build());
@@ -161,7 +168,8 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
     }
 
-    // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
+    // TODO This is a temporary override so that the Postgres source can take advantage of
+    // per-stream
     // state
     @Override
     protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
@@ -169,7 +177,8 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         final AirbyteGlobalState globalState = new AirbyteGlobalState()
             .withSharedState(Jsons.jsonNode(new CdcState()))
             .withStreamStates(List.of());
-        return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+        return List.of(
+            new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
       } else {
         return List.of(new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
@@ -188,14 +197,15 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       new IntegrationRunner(source).run(args);
       LOGGER.info("completed source: {}", PostgresTestSource.class);
     }
-
   }
 
   @Test
   void testCustomParametersOverwriteDefaultParametersExpectException() {
     final String connectionPropertiesUrl = "ssl=false";
-    final JsonNode config = getConfigWithConnectionProperties(PSQL_DB, dbName, connectionPropertiesUrl);
-    final Map<String, String> customParameters = JdbcUtils.parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&");
+    final JsonNode config =
+        getConfigWithConnectionProperties(PSQL_DB, dbName, connectionPropertiesUrl);
+    final Map<String, String> customParameters =
+        JdbcUtils.parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&");
     final Map<String, String> defaultParameters = Map.of(
         "ssl", "true",
         "sslmode", "require");
@@ -203,5 +213,4 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       assertCustomParametersDontOverwriteDefaultParameters(customParameters, defaultParameters);
     });
   }
-
 }

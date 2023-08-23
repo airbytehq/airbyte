@@ -50,10 +50,10 @@ public class JsonlAzureBlobStorageOperations extends AzureBlobStorageOperations 
       jsonSchema.putObject("properties");
     }
 
-    ((ObjectNode) jsonSchema.get("properties")).putPOJO(AzureBlobAdditionalProperties.BLOB_NAME,
-        Map.of("type", "string"));
-    ((ObjectNode) jsonSchema.get("properties")).putPOJO(AzureBlobAdditionalProperties.LAST_MODIFIED,
-        Map.of("type", "string"));
+    ((ObjectNode) jsonSchema.get("properties"))
+        .putPOJO(AzureBlobAdditionalProperties.BLOB_NAME, Map.of("type", "string"));
+    ((ObjectNode) jsonSchema.get("properties"))
+        .putPOJO(AzureBlobAdditionalProperties.LAST_MODIFIED, Map.of("type", "string"));
     return jsonSchema;
   }
 
@@ -65,7 +65,8 @@ public class JsonlAzureBlobStorageOperations extends AzureBlobStorageOperations 
   private List<JsonNode> readBlobs(OffsetDateTime offsetDateTime, Long limit) {
     record DecoratedAzureBlob(AzureBlob azureBlob, BlobClient blobClient) {}
 
-    var blobsStream = limit == null ? listBlobs().stream() : listBlobs().stream().limit(limit);
+    var blobsStream =
+        limit == null ? listBlobs().stream() : listBlobs().stream().limit(limit);
 
     return blobsStream
         .filter(ab -> {
@@ -77,17 +78,21 @@ public class JsonlAzureBlobStorageOperations extends AzureBlobStorageOperations 
         })
         .map(ab -> new DecoratedAzureBlob(ab, blobContainerClient.getBlobClient(ab.name())))
         .map(dab -> {
-          try (
-              var br = new BufferedReader(
-                  new InputStreamReader(dab.blobClient().downloadContent().toStream(), Charset.defaultCharset()))) {
-            return br.lines().map(line -> {
-              var jsonNode =
-                  handleCheckedIOException(objectMapper::readTree, line);
-              ((ObjectNode) jsonNode).put(AzureBlobAdditionalProperties.BLOB_NAME, dab.azureBlob().name());
-              ((ObjectNode) jsonNode).put(AzureBlobAdditionalProperties.LAST_MODIFIED,
-                  dab.azureBlob().lastModified().toString());
-              return jsonNode;
-            })
+          try (var br = new BufferedReader(new InputStreamReader(
+              dab.blobClient().downloadContent().toStream(), Charset.defaultCharset()))) {
+            return br.lines()
+                .map(line -> {
+                  var jsonNode = handleCheckedIOException(objectMapper::readTree, line);
+                  ((ObjectNode) jsonNode)
+                      .put(
+                          AzureBlobAdditionalProperties.BLOB_NAME,
+                          dab.azureBlob().name());
+                  ((ObjectNode) jsonNode)
+                      .put(
+                          AzureBlobAdditionalProperties.LAST_MODIFIED,
+                          dab.azureBlob().lastModified().toString());
+                  return jsonNode;
+                })
                 // need to materialize stream otherwise reader gets closed on return
                 .toList();
           } catch (IOException e) {
@@ -97,5 +102,4 @@ public class JsonlAzureBlobStorageOperations extends AzureBlobStorageOperations 
         .flatMap(List::stream)
         .toList();
   }
-
 }

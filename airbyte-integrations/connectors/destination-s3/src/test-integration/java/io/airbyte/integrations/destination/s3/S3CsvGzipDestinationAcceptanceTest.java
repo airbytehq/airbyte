@@ -18,5 +18,4 @@ public class S3CsvGzipDestinationAcceptanceTest extends S3BaseCsvGzipDestination
   protected JsonNode getBaseConfigJson() {
     return S3DestinationTestUtils.getBaseConfigJsonFilePath();
   }
-
 }

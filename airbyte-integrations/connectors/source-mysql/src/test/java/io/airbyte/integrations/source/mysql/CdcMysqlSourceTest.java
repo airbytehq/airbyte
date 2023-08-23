@@ -85,9 +85,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         "root",
         "test",
         DRIVER_CLASS,
-        String.format("jdbc:mysql://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
+        String.format("jdbc:mysql://%s:%s", container.getHost(), container.getFirstMappedPort()),
         SQLDialect.MYSQL));
 
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
@@ -117,7 +115,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   private void grantCorrectPermissions() {
-    executeQuery("GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO " + container.getUsername() + "@'%';");
+    executeQuery(
+        "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
+            + container.getUsername() + "@'%';");
   }
 
   protected void purgeAllBinaryLogs() {
@@ -139,9 +139,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         "root",
         "test",
         DRIVER_CLASS,
-        String.format("jdbc:mysql://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
+        String.format("jdbc:mysql://%s:%s", container.getHost(), container.getFirstMappedPort()),
         Collections.emptyMap());
     final JdbcDatabase jdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
@@ -150,7 +148,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @Override
   protected MySqlCdcTargetPosition extractPosition(final JsonNode record) {
-    return new MySqlCdcTargetPosition(record.get(CDC_LOG_FILE).asText(), record.get(CDC_LOG_POS).asLong());
+    return new MySqlCdcTargetPosition(
+        record.get(CDC_LOG_FILE).asText(), record.get(CDC_LOG_POS).asLong());
   }
 
   @Override
@@ -189,7 +188,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
-    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
+    final JsonNode airbyteIntegerType =
+        Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
@@ -240,8 +240,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
     revokeReplicationClientPermission();
     final AirbyteConnectionStatus status = getSource().check(getConfig());
-    final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
-        + " for CDC mode.";
+    final String expectedErrorMessage =
+        "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+            + " for CDC mode.";
     assertTrue(status.getStatus().equals(Status.FAILED));
     assertTrue(status.getMessage().contains(expectedErrorMessage));
   }
@@ -252,55 +253,56 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final int recordsToCreate = 20;
     // first batch of records. 20 created here and 6 created in setup method.
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "F-" + recordsCreated));
       writeModelRecord(record);
     }
 
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch =
+        AutoCloseableIterators.toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
     assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterFirstBatch, 1);
-    final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
-        dataFromFirstBatch);
+    final Set<AirbyteRecordMessage> recordsFromFirstBatch =
+        extractRecordMessages(dataFromFirstBatch);
 
     final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
     assertEquals((recordsCreatedBeforeTestCount + recordsToCreate), recordsFromFirstBatch.size());
     // sometimes there can be more than one of these at the end of the snapshot and just before the
     // first incremental.
-    final Set<AirbyteRecordMessage> recordsFromFirstBatchWithoutDuplicates = removeDuplicates(
-        recordsFromFirstBatch);
+    final Set<AirbyteRecordMessage> recordsFromFirstBatchWithoutDuplicates =
+        removeDuplicates(recordsFromFirstBatch);
 
-    assertTrue(recordsCreatedBeforeTestCount < recordsFromFirstBatchWithoutDuplicates.size(),
+    assertTrue(
+        recordsCreatedBeforeTestCount < recordsFromFirstBatchWithoutDuplicates.size(),
         "Expected first sync to include records created while the test was running.");
 
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "F-" + recordsCreated));
       writeModelRecord(record);
     }
 
     purgeAllBinaryLogs();
 
-    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
-    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
-        .toListAndClose(secondBatchIterator);
+    final JsonNode state = Jsons.jsonNode(
+        Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, state);
+    final List<AirbyteMessage> dataFromSecondBatch =
+        AutoCloseableIterators.toListAndClose(secondBatchIterator);
 
-    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    final List<AirbyteStateMessage> stateAfterSecondBatch =
+        extractStateMessages(dataFromSecondBatch);
     assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterSecondBatch, 2);
 
-    final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
-        dataFromSecondBatch);
-    assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount, recordsFromSecondBatch.size(),
+    final Set<AirbyteRecordMessage> recordsFromSecondBatch =
+        extractRecordMessages(dataFromSecondBatch);
+    assertEquals(
+        (recordsToCreate * 2) + recordsCreatedBeforeTestCount,
+        recordsFromSecondBatch.size(),
         "Expected 46 records to be replicated in the second sync.");
   }
 
@@ -316,36 +318,40 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20000;
 
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch =
+        AutoCloseableIterators.toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
 
-    // As first `read` operation is from snapshot, it would generate only one state message at the end
+    // As first `read` operation is from snapshot, it would generate only one state message at the
+    // end
     // of the process.
     assertExpectedStateMessages(stateMessages);
 
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-                             .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                                 "F-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "F-" + recordsCreated));
       writeModelRecord(record);
     }
 
-    final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
-    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
-        .toListAndClose(secondBatchIterator);
+    final JsonNode stateAfterFirstSync =
+        Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromSecondBatch =
+        AutoCloseableIterators.toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
     assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+    assertEquals(
+        stateMessagesCDC.size(),
+        stateMessagesCDC.stream().distinct().count(),
+        "There are duplicated states.");
   }
 
-  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
+  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(
+      final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
     assertExpectedStateMessages(stateMessages);
   }
 }

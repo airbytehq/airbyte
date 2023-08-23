@@ -33,9 +33,11 @@ import org.testcontainers.utility.DockerImageName;
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  */
-public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public abstract class SshMariadbColumnstoreDestinationAcceptanceTest
+    extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(MariadbColumnstoreDestinationAcceptanceTest.class);
   private static final Network network = Network.newNetwork();
 
   private final StandardNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
@@ -79,31 +81,31 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws Exception {
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
-        config,
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-            .query(
-                ctx -> ctx
-                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                    .stream()
-                    .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                    .map(Jsons::deserialize)
-                    .collect(Collectors.toList())));
+        config, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, (CheckedFunction<
+                JsonNode, List<JsonNode>, Exception>)
+            mangledConfig -> getDatabaseFromConfig(mangledConfig).query(ctx -> ctx
+                .fetch(String.format(
+                    "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                    schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .stream()
+                .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+                .map(Jsons::deserialize)
+                .collect(Collectors.toList())));
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
@@ -111,7 +113,8 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MARIADB.getDriverClassName(),
-        String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.MARIADB.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -130,20 +133,25 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     bastion.initAndStartBastion(network);
     startAndInitJdbcContainer();
   }
 
   private void startAndInitJdbcContainer() throws Exception {
-    final DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
-    db = new MariaDBContainer<>(mcsImage)
-        .withNetwork(network);
+    final DockerImageName mcsImage =
+        DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
+    db = new MariaDBContainer<>(mcsImage).withNetwork(network);
     db.start();
 
-    final String createUser = String.format("CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());
-    final String grantAll = String.format("GRANT ALL PRIVILEGES ON *.* TO '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());
-    final String createDb = String.format("CREATE DATABASE %s DEFAULT CHARSET = utf8;", db.getDatabaseName());
+    final String createUser = String.format(
+        "CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());
+    final String grantAll = String.format(
+        "GRANT ALL PRIVILEGES ON *.* TO '%s'@'%%' IDENTIFIED BY '%s';",
+        db.getUsername(), db.getPassword());
+    final String createDb =
+        String.format("CREATE DATABASE %s DEFAULT CHARSET = utf8;", db.getDatabaseName());
     db.execInContainer("mariadb", "-e", createUser + grantAll + createDb);
   }
 
@@ -151,5 +159,4 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
   }
-
 }

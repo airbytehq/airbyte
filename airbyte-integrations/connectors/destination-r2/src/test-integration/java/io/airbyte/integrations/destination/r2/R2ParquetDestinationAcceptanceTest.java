@@ -23,5 +23,4 @@ public class R2ParquetDestinationAcceptanceTest extends S3BaseParquetDestination
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
-
 }

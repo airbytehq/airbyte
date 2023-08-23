@@ -42,7 +42,8 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
 
   @BeforeAll
   protected static void init() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04").acceptLicense();
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04")
+        .acceptLicense();
     db.start();
   }
 
@@ -81,13 +82,13 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
@@ -98,7 +99,8 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
@@ -117,18 +119,20 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null);
-    return new Database(dslContext).query(
-        ctx -> {
-          ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
-          return ctx
-              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-              .map(Jsons::deserialize)
-              .collect(Collectors.toList());
-        });
+    return new Database(dslContext).query(ctx -> {
+      ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
+      return ctx
+          .fetch(String.format(
+              "SELECT * FROM %s.%s ORDER BY %s ASC;",
+              schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .stream()
+          .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+          .map(Jsons::deserialize)
+          .collect(Collectors.toList());
+    });
   }
 
   private static DSLContext getDslContext(final JsonNode config) {
@@ -136,7 +140,8 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d",
+        String.format(
+            "jdbc:sqlserver://%s:%d",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
@@ -147,7 +152,8 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     dslContext = getDslContext(configWithoutDbName);
@@ -155,9 +161,11 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
-      ctx.fetch("INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'), " +
-          " (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+      ctx.fetch(
+          "CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
+      ctx.fetch(
+          "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'), "
+              + " (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
       return null;
     });
 
@@ -179,9 +187,8 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = new MssqlStrictEncryptDestination().spec();
-    final ConnectorSpecification expected =
-        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+    final ConnectorSpecification expected = SshHelpers.injectSshIntoSpec(Jsons.deserialize(
+        MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
-
 }

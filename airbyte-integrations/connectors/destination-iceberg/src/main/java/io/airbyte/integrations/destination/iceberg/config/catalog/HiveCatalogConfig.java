@@ -32,7 +32,8 @@ public class HiveCatalogConfig extends IcebergCatalogConfig {
   public HiveCatalogConfig(JsonNode catalogConfig) {
     String thriftUri = catalogConfig.get(HIVE_THRIFT_URI_CONFIG_KEY).asText();
     if (!thriftUri.startsWith("thrift://")) {
-      throw new IllegalArgumentException(HIVE_THRIFT_URI_CONFIG_KEY + " must start with 'thrift://'");
+      throw new IllegalArgumentException(
+          HIVE_THRIFT_URI_CONFIG_KEY + " must start with 'thrift://'");
     }
     this.thriftUri = thriftUri;
   }
@@ -45,7 +46,9 @@ public class HiveCatalogConfig extends IcebergCatalogConfig {
     configMap.put("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
     configMap.put("spark.sql.catalog." + CATALOG_NAME + ".type", "hive");
     configMap.put("spark.sql.catalog." + CATALOG_NAME + ".uri", this.thriftUri);
-    configMap.put("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions");
+    configMap.put(
+        "spark.sql.extensions",
+        "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions");
     configMap.put("spark.driver.extraJavaOptions", "-Dpackaging.type=jar -Djava.io.tmpdir=/tmp");
 
     configMap.putAll(this.storageConfig.sparkConfigMap(CATALOG_NAME));
@@ -62,5 +65,4 @@ public class HiveCatalogConfig extends IcebergCatalogConfig {
     catalog.initialize("hive", properties);
     return catalog;
   }
-
 }

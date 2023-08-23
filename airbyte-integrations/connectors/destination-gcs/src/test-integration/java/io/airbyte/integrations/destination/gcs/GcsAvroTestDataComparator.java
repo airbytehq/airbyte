@@ -16,7 +16,8 @@ public class GcsAvroTestDataComparator extends AdvancedTestDataComparator {
   @Override
   protected boolean compareDateValues(String expectedValue, String actualValue) {
     LocalDate destinationDate = LocalDate.ofEpochDay(Long.parseLong(actualValue));
-    LocalDate expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
+    LocalDate expectedDate =
+        LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
@@ -32,13 +33,16 @@ public class GcsAvroTestDataComparator extends AdvancedTestDataComparator {
   @Override
   protected boolean compareDateTimeValues(String airbyteMessageValue, String destinationValue) {
     DateTimeFormatter format = DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT);
-    LocalDateTime dateTime = LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
+    LocalDateTime dateTime =
+        LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
     return super.compareDateTimeValues(airbyteMessageValue, format.format(dateTime));
   }
 
   @Override
-  protected boolean compareTimeWithoutTimeZone(final String airbyteMessageValue, final String destinationValue) {
-    LocalTime destinationDate = LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
+  protected boolean compareTimeWithoutTimeZone(
+      final String airbyteMessageValue, final String destinationValue) {
+    LocalTime destinationDate =
+        LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
     LocalTime expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME);
     return expectedDate.equals(destinationDate);
   }
@@ -54,5 +58,4 @@ public class GcsAvroTestDataComparator extends AdvancedTestDataComparator {
     byte[] decoded = Base64.getDecoder().decode(string);
     return new String(decoded, StandardCharsets.UTF_8);
   }
-
 }

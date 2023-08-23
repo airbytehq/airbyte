@@ -20,18 +20,18 @@ public class ConnectionErrorException extends RuntimeException {
     this.exceptionMessage = exception.getMessage();
   }
 
-  public ConnectionErrorException(final String stateCode,
-                                  final String exceptionMessage,
-                                  final Throwable exception) {
+  public ConnectionErrorException(
+      final String stateCode, final String exceptionMessage, final Throwable exception) {
     super(exception);
     this.stateCode = stateCode;
     this.exceptionMessage = exceptionMessage;
   }
 
-  public ConnectionErrorException(final String stateCode,
-                                  final int errorCode,
-                                  final String exceptionMessage,
-                                  final Throwable exception) {
+  public ConnectionErrorException(
+      final String stateCode,
+      final int errorCode,
+      final String exceptionMessage,
+      final Throwable exception) {
     super(exception);
     this.stateCode = stateCode;
     this.errorCode = errorCode;
@@ -49,5 +49,4 @@ public class ConnectionErrorException extends RuntimeException {
   public String getExceptionMessage() {
     return exceptionMessage;
   }
-
 }

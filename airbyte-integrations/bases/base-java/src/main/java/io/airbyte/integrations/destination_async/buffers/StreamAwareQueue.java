@@ -47,7 +47,8 @@ public class StreamAwareQueue {
     return memoryAwareQueue.size();
   }
 
-  public boolean offer(final PartialAirbyteMessage message, final long messageSizeInBytes, final long stateId) {
+  public boolean offer(
+      final PartialAirbyteMessage message, final long messageSizeInBytes, final long stateId) {
     if (memoryAwareQueue.offer(new MessageWithMeta(message, stateId), messageSizeInBytes)) {
       timeOfLastMessage.set(Instant.now());
       return true;
@@ -56,7 +57,8 @@ public class StreamAwareQueue {
     }
   }
 
-  public MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta> take() throws InterruptedException {
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta> take()
+      throws InterruptedException {
     return memoryAwareQueue.take();
   }
 
@@ -64,10 +66,10 @@ public class StreamAwareQueue {
     return memoryAwareQueue.poll();
   }
 
-  public MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta> poll(final long timeout, final TimeUnit unit) throws InterruptedException {
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta> poll(
+      final long timeout, final TimeUnit unit) throws InterruptedException {
     return memoryAwareQueue.poll(timeout, unit);
   }
 
   public record MessageWithMeta(PartialAirbyteMessage message, long stateId) {}
-
 }

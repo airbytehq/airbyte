@@ -27,10 +27,11 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final CassandraCqlProvider cassandraCqlProvider;
 
-  public CassandraMessageConsumer(final CassandraConfig cassandraConfig,
-                                  final ConfiguredAirbyteCatalog configuredCatalog,
-                                  final CassandraCqlProvider provider,
-                                  final Consumer<AirbyteMessage> outputRecordCollector) {
+  public CassandraMessageConsumer(
+      final CassandraConfig cassandraConfig,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final CassandraCqlProvider provider,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.cassandraConfig = cassandraConfig;
     this.outputRecordCollector = outputRecordCollector;
     this.cassandraCqlProvider = provider;
@@ -48,7 +49,8 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void startTracked() {
     cassandraStreams.forEach((k, v) -> {
-      cassandraCqlProvider.createKeySpaceIfNotExists(v.getKeyspace(), cassandraConfig.getReplication());
+      cassandraCqlProvider.createKeySpaceIfNotExists(
+          v.getKeyspace(), cassandraConfig.getReplication());
       cassandraCqlProvider.createTableIfNotExists(v.getKeyspace(), v.getTempTableName());
     });
   }
@@ -63,7 +65,8 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
         throw new IllegalArgumentException("Unrecognized destination stream");
       }
       var data = Jsons.serialize(messageRecord.getData());
-      cassandraCqlProvider.insert(streamConfig.getKeyspace(), streamConfig.getTempTableName(), data);
+      cassandraCqlProvider.insert(
+          streamConfig.getKeyspace(), streamConfig.getTempTableName(), data);
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
       outputRecordCollector.accept(message);
     } else {
@@ -101,7 +104,5 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       }
     });
     cassandraCqlProvider.close();
-
   }
-
 }

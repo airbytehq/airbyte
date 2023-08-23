@@ -17,5 +17,4 @@ public class MariadbColumnstoreNameTransformer extends StandardNameTransformer {
   public String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
-
 }

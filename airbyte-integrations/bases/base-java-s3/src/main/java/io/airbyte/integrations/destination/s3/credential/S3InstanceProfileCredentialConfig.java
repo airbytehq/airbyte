@@ -18,5 +18,4 @@ public class S3InstanceProfileCredentialConfig implements S3CredentialConfig {
   public AWSCredentialsProvider getS3CredentialsProvider() {
     return new InstanceProfileCredentialsProvider(false);
   }
-
 }

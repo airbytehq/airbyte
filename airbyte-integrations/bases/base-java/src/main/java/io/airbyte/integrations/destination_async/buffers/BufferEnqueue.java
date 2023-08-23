@@ -23,9 +23,10 @@ public class BufferEnqueue {
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
   private final GlobalAsyncStateManager stateManager;
 
-  public BufferEnqueue(final GlobalMemoryManager memoryManager,
-                       final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
-                       final GlobalAsyncStateManager stateManager) {
+  public BufferEnqueue(
+      final GlobalMemoryManager memoryManager,
+      final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
+      final GlobalAsyncStateManager stateManager) {
     this.memoryManager = memoryManager;
     this.buffers = buffers;
     this.stateManager = stateManager;
@@ -79,5 +80,4 @@ public class BufferEnqueue {
         .withNamespace(message.getRecord().getNamespace())
         .withName(message.getRecord().getStream());
   }
-
 }

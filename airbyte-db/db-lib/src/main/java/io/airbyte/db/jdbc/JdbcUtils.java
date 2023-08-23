@@ -64,12 +64,28 @@ public class JdbcUtils {
   // Currently, this is used in the logic for emitting
   // estimate trace messages.
   public static final int PLATFORM_DATA_INCREASE_FACTOR = 2;
-  public static final Set<JDBCType> ALLOWED_CURSOR_TYPES =
-      Set.of(TIMESTAMP_WITH_TIMEZONE, TIMESTAMP, TIME_WITH_TIMEZONE, TIME, DATE, TINYINT, SMALLINT, INTEGER,
-          BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
+  public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(
+      TIMESTAMP_WITH_TIMEZONE,
+      TIMESTAMP,
+      TIME_WITH_TIMEZONE,
+      TIME,
+      DATE,
+      TINYINT,
+      SMALLINT,
+      INTEGER,
+      BIGINT,
+      FLOAT,
+      DOUBLE,
+      REAL,
+      NUMERIC,
+      DECIMAL,
+      NVARCHAR,
+      VARCHAR,
+      LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
-  private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
+  private static final JSONFormat defaultJSONFormat =
+      new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
   public static JdbcSourceOperations getDefaultSourceOperations() {
     return defaultSourceOperations;
@@ -83,11 +99,13 @@ public class JdbcUtils {
     return schemaName != null ? schemaName + "." + tableName : tableName;
   }
 
-  public static Map<String, String> parseJdbcParameters(final JsonNode config, final String jdbcUrlParamsKey) {
+  public static Map<String, String> parseJdbcParameters(
+      final JsonNode config, final String jdbcUrlParamsKey) {
     return parseJdbcParameters(config, jdbcUrlParamsKey, "&");
   }
 
-  public static Map<String, String> parseJdbcParameters(final JsonNode config, final String jdbcUrlParamsKey, final String delimiter) {
+  public static Map<String, String> parseJdbcParameters(
+      final JsonNode config, final String jdbcUrlParamsKey, final String delimiter) {
     if (config.has(jdbcUrlParamsKey)) {
       return parseJdbcParameters(config.get(jdbcUrlParamsKey).asText(), delimiter);
     } else {
@@ -100,7 +118,8 @@ public class JdbcUtils {
   }
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
+  public static Map<String, String> parseJdbcParameters(
+      final String jdbcPropertiesString, final String delimiter) {
     final Map<String, String> parameters = new HashMap<>();
     if (!jdbcPropertiesString.isBlank()) {
       final String[] keyValuePairs = jdbcPropertiesString.split(delimiter);
@@ -130,10 +149,7 @@ public class JdbcUtils {
     if (!config.has(SSL_KEY)) {
       if (config.has(SSL_MODE_KEY) && config.get(SSL_MODE_KEY).has(MODE_KEY)) {
         return !SSL_MODE_DISABLE.contains(config.get(SSL_MODE_KEY).get(MODE_KEY).asText());
-      } else
-        return true;
-    } else
-      return config.get(SSL_KEY).asBoolean();
+      } else return true;
+    } else return config.get(SSL_KEY).asBoolean();
   }
-
 }

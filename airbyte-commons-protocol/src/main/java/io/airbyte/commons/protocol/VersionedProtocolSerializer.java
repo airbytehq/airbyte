@@ -19,14 +19,16 @@ public class VersionedProtocolSerializer implements ProtocolSerializer {
   private final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator;
   private final Version protocolVersion;
 
-  public VersionedProtocolSerializer(final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator, final Version protocolVersion) {
+  public VersionedProtocolSerializer(
+      final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator,
+      final Version protocolVersion) {
     this.configuredAirbyteCatalogMigrator = configuredAirbyteCatalogMigrator;
     this.protocolVersion = protocolVersion;
   }
 
   @Override
   public String serialize(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
-    return Jsons.serialize(configuredAirbyteCatalogMigrator.downgrade(configuredAirbyteCatalog, protocolVersion));
+    return Jsons.serialize(
+        configuredAirbyteCatalogMigrator.downgrade(configuredAirbyteCatalog, protocolVersion));
   }
-
 }

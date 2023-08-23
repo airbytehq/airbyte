@@ -12,5 +12,4 @@ public class RedshiftDestinationConstants {
   private RedshiftDestinationConstants() {}
 
   public static final String UPLOADING_METHOD = "uploading_method";
-
 }

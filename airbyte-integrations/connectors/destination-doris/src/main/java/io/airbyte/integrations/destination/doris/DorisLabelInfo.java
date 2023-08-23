@@ -27,5 +27,4 @@ public class DorisLabelInfo {
   public String label(long chkId) {
     return prefix + "_" + chkId;
   }
-
 }

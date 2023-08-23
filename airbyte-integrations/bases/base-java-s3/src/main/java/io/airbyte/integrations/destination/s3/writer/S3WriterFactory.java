@@ -14,10 +14,10 @@ import java.sql.Timestamp;
  */
 public interface S3WriterFactory {
 
-  DestinationFileWriter create(S3DestinationConfig config,
-                               AmazonS3 s3Client,
-                               ConfiguredAirbyteStream configuredStream,
-                               Timestamp uploadTimestamp)
+  DestinationFileWriter create(
+      S3DestinationConfig config,
+      AmazonS3 s3Client,
+      ConfiguredAirbyteStream configuredStream,
+      Timestamp uploadTimestamp)
       throws Exception;
-
 }

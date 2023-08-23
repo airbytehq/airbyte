@@ -35,15 +35,21 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   private final Supplier<DestStateLifecycleManager> internalStateManagerSupplier;
 
   public DefaultDestStateLifecycleManager(final String defaultNamespace) {
-    this(new DestSingleStateLifecycleManager(), new DestStreamStateLifecycleManager(defaultNamespace));
+    this(
+        new DestSingleStateLifecycleManager(),
+        new DestStreamStateLifecycleManager(defaultNamespace));
   }
 
   @VisibleForTesting
-  DefaultDestStateLifecycleManager(final DestStateLifecycleManager singleStateManager, final DestStateLifecycleManager streamStateManager) {
+  DefaultDestStateLifecycleManager(
+      final DestStateLifecycleManager singleStateManager,
+      final DestStateLifecycleManager streamStateManager) {
     stateType = null;
     // allows us to delegate calls to the appropriate underlying state manager.
     internalStateManagerSupplier = () -> {
-      if (stateType == AirbyteStateType.GLOBAL || stateType == AirbyteStateType.LEGACY || stateType == null) {
+      if (stateType == AirbyteStateType.GLOBAL
+          || stateType == AirbyteStateType.LEGACY
+          || stateType == null) {
         return singleStateManager;
       } else if (stateType == AirbyteStateType.STREAM) {
         return streamStateManager;
@@ -55,8 +61,10 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
 
   @Override
   public void addState(final AirbyteMessage message) {
-    Preconditions.checkArgument(message.getType() == Type.STATE, "Messages passed to State Manager must be of type STATE.");
-    Preconditions.checkArgument(isStateTypeCompatible(stateType, message.getState().getType()));
+    Preconditions.checkArgument(
+        message.getType() == Type.STATE, "Messages passed to State Manager must be of type STATE.");
+    Preconditions.checkArgument(
+        isStateTypeCompatible(stateType, message.getState().getType()));
 
     setManagerStateTypeIfNotSet(message);
 
@@ -74,8 +82,11 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
    * @param newStateType - state message of a newly added message
    * @return true if compatible, otherwise false
    */
-  private static boolean isStateTypeCompatible(final AirbyteStateType previousStateType, final AirbyteStateType newStateType) {
-    return previousStateType == null || previousStateType == AirbyteStateType.LEGACY && newStateType == null || previousStateType == newStateType;
+  private static boolean isStateTypeCompatible(
+      final AirbyteStateType previousStateType, final AirbyteStateType newStateType) {
+    return previousStateType == null
+        || previousStateType == AirbyteStateType.LEGACY && newStateType == null
+        || previousStateType == newStateType;
   }
 
   /**
@@ -135,5 +146,4 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   public boolean supportsPerStreamFlush() {
     return internalStateManagerSupplier.get().supportsPerStreamFlush();
   }
-
 }

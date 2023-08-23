@@ -25,11 +25,9 @@ public class SftpFileParserFactory {
     if (SFTP_FILE_PARSER_MAPPING.containsKey(fileExtension)) {
       return SFTP_FILE_PARSER_MAPPING.get(fileExtension);
     } else {
-      throw new IllegalStateException(
-          String.format("Unsupported file type : %s. Please choose from supported types : %s",
-              fileExtension,
-              SFTP_FILE_PARSER_MAPPING));
+      throw new IllegalStateException(String.format(
+          "Unsupported file type : %s. Please choose from supported types : %s",
+          fileExtension, SFTP_FILE_PARSER_MAPPING));
     }
   }
-
 }

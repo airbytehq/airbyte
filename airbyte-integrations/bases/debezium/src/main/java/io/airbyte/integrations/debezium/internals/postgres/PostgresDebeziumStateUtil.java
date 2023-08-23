@@ -59,51 +59,62 @@ public class PostgresDebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDebeziumStateUtil.class);
 
-  public boolean isSavedOffsetAfterReplicationSlotLSN(final JsonNode replicationSlot,
-                                                      final OptionalLong savedOffset) {
+  public boolean isSavedOffsetAfterReplicationSlotLSN(
+      final JsonNode replicationSlot, final OptionalLong savedOffset) {
 
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return true;
     }
 
     if (replicationSlot.has("confirmed_flush_lsn")) {
-      final long confirmedFlushLsnOnServerSide = Lsn.valueOf(replicationSlot.get("confirmed_flush_lsn").asText()).asLong();
-      LOGGER.info("Replication slot confirmed_flush_lsn : " + confirmedFlushLsnOnServerSide + " Saved offset LSN : " + savedOffset.getAsLong());
+      final long confirmedFlushLsnOnServerSide =
+          Lsn.valueOf(replicationSlot.get("confirmed_flush_lsn").asText()).asLong();
+      LOGGER.info("Replication slot confirmed_flush_lsn : " + confirmedFlushLsnOnServerSide
+          + " Saved offset LSN : " + savedOffset.getAsLong());
       return savedOffset.getAsLong() >= confirmedFlushLsnOnServerSide;
     } else if (replicationSlot.has("restart_lsn")) {
-      final long restartLsn = Lsn.valueOf(replicationSlot.get("restart_lsn").asText()).asLong();
-      LOGGER.info("Replication slot restart_lsn : " + restartLsn + " Saved offset LSN : " + savedOffset.getAsLong());
+      final long restartLsn =
+          Lsn.valueOf(replicationSlot.get("restart_lsn").asText()).asLong();
+      LOGGER.info("Replication slot restart_lsn : " + restartLsn + " Saved offset LSN : "
+          + savedOffset.getAsLong());
       return savedOffset.getAsLong() >= restartLsn;
     }
 
-    // We return true when saved offset is not present cause using an empty offset would result in sync
+    // We return true when saved offset is not present cause using an empty offset would result in
+    // sync
     // from scratch anyway
     return true;
   }
 
-  public OptionalLong savedOffset(final Properties baseProperties,
-                                  final ConfiguredAirbyteCatalog catalog,
-                                  final JsonNode cdcState,
-                                  final JsonNode config) {
-    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
+  public OptionalLong savedOffset(
+      final Properties baseProperties,
+      final ConfiguredAirbyteCatalog catalog,
+      final JsonNode cdcState,
+      final JsonNode config) {
+    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(
+        baseProperties,
+        config,
+        catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()),
         Optional.empty());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     return parseSavedOffset(debeziumProperties);
   }
 
-  public void commitLSNToPostgresDatabase(final JsonNode jdbcConfig,
-                                          final OptionalLong savedOffset,
-                                          final String slotName,
-                                          final String publicationName,
-                                          final String plugin) {
+  public void commitLSNToPostgresDatabase(
+      final JsonNode jdbcConfig,
+      final OptionalLong savedOffset,
+      final String slotName,
+      final String publicationName,
+      final String plugin) {
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return;
     }
 
     final LogSequenceNumber logSequenceNumber = LogSequenceNumber.valueOf(savedOffset.getAsLong());
 
-    try (final BaseConnection pgConnection = (BaseConnection) PostgresReplicationConnection.createConnection(jdbcConfig)) {
+    try (final BaseConnection pgConnection =
+        (BaseConnection) PostgresReplicationConnection.createConnection(jdbcConfig)) {
       ChainedLogicalStreamBuilder streamBuilder = pgConnection
           .getReplicationAPI()
           .replicationStream()
@@ -126,12 +137,14 @@ public class PostgresDebeziumStateUtil {
     }
   }
 
-  private ChainedLogicalStreamBuilder addSlotOption(final String publicationName,
-                                                    final String plugin,
-                                                    final BaseConnection pgConnection,
-                                                    ChainedLogicalStreamBuilder streamBuilder) {
+  private ChainedLogicalStreamBuilder addSlotOption(
+      final String publicationName,
+      final String plugin,
+      final BaseConnection pgConnection,
+      ChainedLogicalStreamBuilder streamBuilder) {
     if (plugin.equalsIgnoreCase("pgoutput")) {
-      streamBuilder = streamBuilder.withSlotOption("proto_version", 1)
+      streamBuilder = streamBuilder
+          .withSlotOption("proto_version", 1)
           .withSlotOption("publication_names", publicationName);
 
       if (pgConnection.haveMinimumServerVersion(140000)) {
@@ -169,19 +182,22 @@ public class PostgresDebeziumStateUtil {
       fileOffsetBackingStore.configure(new StandaloneConfig(propertiesMap));
       fileOffsetBackingStore.start();
 
-      final Map<String, String> internalConverterConfig = Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
+      final Map<String, String> internalConverterConfig =
+          Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
       final JsonConverter keyConverter = new JsonConverter();
       keyConverter.configure(internalConverterConfig, true);
       final JsonConverter valueConverter = new JsonConverter();
       valueConverter.configure(internalConverterConfig, false);
 
-      final PostgresConnectorConfig postgresConnectorConfig = new PostgresConnectorConfig(Configuration.from(properties));
+      final PostgresConnectorConfig postgresConnectorConfig =
+          new PostgresConnectorConfig(Configuration.from(properties));
       final PostgresCustomLoader loader = new PostgresCustomLoader(postgresConnectorConfig);
-      final Set<Partition> partitions =
-          Collections.singleton(new PostgresPartition(postgresConnectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
-      offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter,
-          valueConverter);
-      final OffsetReader<Partition, PostgresOffsetContext, Loader> offsetReader = new OffsetReader<>(offsetStorageReader, loader);
+      final Set<Partition> partitions = Collections.singleton(new PostgresPartition(
+          postgresConnectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
+      offsetStorageReader = new OffsetStorageReaderImpl(
+          fileOffsetBackingStore, properties.getProperty("name"), keyConverter, valueConverter);
+      final OffsetReader<Partition, PostgresOffsetContext, Loader> offsetReader =
+          new OffsetReader<>(offsetStorageReader, loader);
       final Map<Partition, PostgresOffsetContext> offsets = offsetReader.offsets(partitions);
 
       return extractLsn(partitions, offsets, loader);
@@ -198,16 +214,18 @@ public class PostgresDebeziumStateUtil {
     }
   }
 
-  private OptionalLong extractLsn(final Set<Partition> partitions,
-                                  final Map<Partition, PostgresOffsetContext> offsets,
-                                  final PostgresCustomLoader loader) {
+  private OptionalLong extractLsn(
+      final Set<Partition> partitions,
+      final Map<Partition, PostgresOffsetContext> offsets,
+      final PostgresCustomLoader loader) {
     boolean found = false;
     for (final Partition partition : partitions) {
       final PostgresOffsetContext postgresOffsetContext = offsets.get(partition);
 
       if (postgresOffsetContext != null) {
         found = true;
-        LOGGER.info("Found previous partition offset {}: {}", partition, postgresOffsetContext.getOffset());
+        LOGGER.info(
+            "Found previous partition offset {}: {}", partition, postgresOffsetContext.getOffset());
       }
     }
 
@@ -230,7 +248,6 @@ public class PostgresDebeziumStateUtil {
     }
 
     return OptionalLong.empty();
-
   }
 
   /**
@@ -239,18 +256,22 @@ public class PostgresDebeziumStateUtil {
    */
   public JsonNode constructInitialDebeziumState(final JdbcDatabase database, final String dbName) {
     try {
-      return format(currentXLogLocation(database), currentTransactionId(database), dbName, Instant.now());
+      return format(
+          currentXLogLocation(database), currentTransactionId(database), dbName, Instant.now());
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
   @VisibleForTesting
-  public JsonNode format(final Long currentXLogLocation, final Long currentTransactionId, final String dbName, final Instant time) {
+  public JsonNode format(
+      final Long currentXLogLocation,
+      final Long currentTransactionId,
+      final String dbName,
+      final Instant time) {
     final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]";
-    final String value =
-        "{\"transaction_id\":null,\"lsn\":" + currentXLogLocation + ",\"txId\":" + currentTransactionId + ",\"ts_usec\":" + Conversions.toEpochMicros(
-            time) + "}";
+    final String value = "{\"transaction_id\":null,\"lsn\":" + currentXLogLocation + ",\"txId\":"
+        + currentTransactionId + ",\"ts_usec\":" + Conversions.toEpochMicros(time) + "}";
 
     final Map<String, String> result = new HashMap<>();
     result.put(key, value);
@@ -266,10 +287,10 @@ public class PostgresDebeziumStateUtil {
   }
 
   private Long currentTransactionId(final JdbcDatabase database) throws SQLException {
-    final List<Long> transactionId = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("select * from txid_current()"),
+    final List<Long> transactionId = database.bufferedResultSetQuery(
+        conn -> conn.createStatement().executeQuery("select * from txid_current()"),
         resultSet -> resultSet.getLong(1));
     Preconditions.checkState(transactionId.size() == 1);
     return transactionId.get(0);
   }
-
 }

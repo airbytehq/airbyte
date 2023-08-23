@@ -40,7 +40,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
         FIELD_OPTIONALLY_ENCLOSED_BY = '"'
         NULL_IF=('')
       )""";
-  private static final String COPY_QUERY = """
+  private static final String COPY_QUERY =
+      """
       COPY INTO %s.%s FROM '@%s/%s'
       file_format = (
         type = csv
@@ -66,20 +67,27 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   @Override
   public String getStageName(final String namespace, final String streamName) {
     if (use1s1t) {
-      return String.join(".",
+      return String.join(
+          ".",
           '"' + nameTransformer.convertStreamName(namespace) + '"',
           '"' + nameTransformer.convertStreamName(streamName) + '"');
     } else {
-      return nameTransformer.applyDefaultCase(String.join(".",
+      return nameTransformer.applyDefaultCase(String.join(
+          ".",
           nameTransformer.convertStreamName(namespace),
           nameTransformer.convertStreamName(streamName)));
     }
   }
 
   @Override
-  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(
+      final UUID connectionId,
+      final String namespace,
+      final String streamName,
+      final DateTime writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
-    return nameTransformer.applyDefaultCase(String.format("%s/%02d/%02d/%02d/%s/",
+    return nameTransformer.applyDefaultCase(String.format(
+        "%s/%02d/%02d/%02d/%s/",
         writeDatetime.year().get(),
         writeDatetime.monthOfYear().get(),
         writeDatetime.dayOfMonth().get(),
@@ -88,11 +96,12 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public String uploadRecordsToStage(final JdbcDatabase database,
-                                     final SerializableBuffer recordsData,
-                                     final String namespace,
-                                     final String stageName,
-                                     final String stagingPath)
+  public String uploadRecordsToStage(
+      final JdbcDatabase database,
+      final SerializableBuffer recordsData,
+      final String namespace,
+      final String stageName,
+      final String stagingPath)
       throws IOException {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     boolean succeeded = false;
@@ -105,37 +114,58 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
         exceptionsThrown.add(e);
       }
       if (!succeeded) {
-        LOGGER.info("Retrying to upload records into stage {} ({}/{}})", stagingPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
+        LOGGER.info(
+            "Retrying to upload records into stage {} ({}/{}})",
+            stagingPath,
+            exceptionsThrown.size(),
+            UPLOAD_RETRY_LIMIT);
       }
     }
     if (!succeeded) {
-      throw new RuntimeException(
-          String.format("Exceptions thrown while uploading records into stage: %s", Strings.join(exceptionsThrown, "\n")));
+      throw new RuntimeException(String.format(
+          "Exceptions thrown while uploading records into stage: %s",
+          Strings.join(exceptionsThrown, "\n")));
     }
-    LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", stagingPath, exceptionsThrown.size());
+    LOGGER.info(
+        "Successfully loaded records to stage {} with {} re-attempt(s)",
+        stagingPath,
+        exceptionsThrown.size());
     return recordsData.getFilename();
   }
 
-  private void uploadRecordsToBucket(final JdbcDatabase database,
-                                     final String stageName,
-                                     final String stagingPath,
-                                     final SerializableBuffer recordsData)
+  private void uploadRecordsToBucket(
+      final JdbcDatabase database,
+      final String stageName,
+      final String stagingPath,
+      final SerializableBuffer recordsData)
       throws Exception {
-    final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
+    final String query =
+        getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
     LOGGER.debug("Executing query: {}", query);
     database.execute(query);
     if (!checkStageObjectExists(database, stageName, stagingPath, recordsData.getFilename())) {
-      LOGGER.error(String.format("Failed to upload data into stage, object @%s not found",
+      LOGGER.error(String.format(
+          "Failed to upload data into stage, object @%s not found",
           (stagingPath + "/" + recordsData.getFilename()).replaceAll("/+", "/")));
       throw new RuntimeException("Upload failed");
     }
   }
 
-  protected String getPutQuery(final String stageName, final String stagingPath, final String filePath) {
-    return String.format(PUT_FILE_QUERY, filePath, stageName, stagingPath, Runtime.getRuntime().availableProcessors());
+  protected String getPutQuery(
+      final String stageName, final String stagingPath, final String filePath) {
+    return String.format(
+        PUT_FILE_QUERY,
+        filePath,
+        stageName,
+        stagingPath,
+        Runtime.getRuntime().availableProcessors());
   }
 
-  private boolean checkStageObjectExists(final JdbcDatabase database, final String stageName, final String stagingPath, final String filename)
+  private boolean checkStageObjectExists(
+      final JdbcDatabase database,
+      final String stageName,
+      final String stagingPath,
+      final String filename)
       throws SQLException {
     final String query = getListQuery(stageName, stagingPath, filename);
     LOGGER.debug("Executing query: {}", query);
@@ -154,12 +184,14 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
    * @param filename name of the file within staging area
    * @return SQL query string
    */
-  protected String getListQuery(final String stageName, final String stagingPath, final String filename) {
+  protected String getListQuery(
+      final String stageName, final String stagingPath, final String filename) {
     return String.format(LIST_STAGE_QUERY, stageName, stagingPath, filename).replaceAll("/+", "/");
   }
 
   @Override
-  public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
+  public void createStageIfNotExists(final JdbcDatabase database, final String stageName)
+      throws Exception {
     final String query = getCreateStageQuery(stageName);
     LOGGER.debug("Executing query: {}", query);
     try {
@@ -181,12 +213,13 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public void copyIntoTableFromStage(final JdbcDatabase database,
-                                     final String stageName,
-                                     final String stagingPath,
-                                     final List<String> stagedFiles,
-                                     final String tableName,
-                                     final String schemaName)
+  public void copyIntoTableFromStage(
+      final JdbcDatabase database,
+      final String stageName,
+      final String stagingPath,
+      final List<String> stagedFiles,
+      final String tableName,
+      final String schemaName)
       throws SQLException {
     try {
       final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
@@ -208,20 +241,32 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
    * @param schemaName name of schema
    * @return SQL query string
    */
-  protected String getCopyQuery(final String stageName,
-                                final String stagingPath,
-                                final List<String> stagedFiles,
-                                final String dstTableName,
-                                final String schemaName) {
+  protected String getCopyQuery(
+      final String stageName,
+      final String stagingPath,
+      final List<String> stagedFiles,
+      final String dstTableName,
+      final String schemaName) {
     if (use1s1t) {
-      return String.format(COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
+      return String.format(
+          COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";",
+          schemaName,
+          dstTableName,
+          stageName,
+          stagingPath);
     } else {
-      return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
+      return String.format(
+          COPY_QUERY + generateFilesList(stagedFiles) + ";",
+          schemaName,
+          dstTableName,
+          stageName,
+          stagingPath);
     }
   }
 
   @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName)
+      throws Exception {
     try {
       final String query = getDropQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
@@ -242,7 +287,9 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
+  public void cleanUpStage(
+      final JdbcDatabase database, final String stageName, final List<String> stagedFiles)
+      throws Exception {
     try {
       final String query = getRemoveQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
@@ -262,5 +309,4 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   protected String getRemoveQuery(final String stageName) {
     return String.format(REMOVE_QUERY, stageName);
   }
-
 }

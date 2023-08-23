@@ -9,5 +9,4 @@ public class UnexpectedSchemaException extends RuntimeException {
   public UnexpectedSchemaException(String message) {
     super(message);
   }
-
 }

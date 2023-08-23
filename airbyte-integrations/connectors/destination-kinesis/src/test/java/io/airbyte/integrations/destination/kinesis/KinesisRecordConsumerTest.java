@@ -24,6 +24,7 @@ public class KinesisRecordConsumerTest extends PerStreamStateMessageTest {
 
   @Mock
   private ConfiguredAirbyteCatalog catalog;
+
   @Mock
   private KinesisStream kinesisStream;
 
@@ -43,5 +44,4 @@ public class KinesisRecordConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return consumer;
   }
-
 }

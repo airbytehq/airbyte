@@ -36,9 +36,10 @@ public class MigrationContainer<T extends Migration> {
    * Downgrade a message from the most recent version to the target version by chaining all the
    * required migrations
    */
-  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message,
-                                                                     final Version target,
-                                                                     final BiFunction<T, Object, Object> applyDowngrade) {
+  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(
+      final CurrentVersion message,
+      final Version target,
+      final BiFunction<T, Object, Object> applyDowngrade) {
     if (target.getMajorVersion().equals(mostRecentMajorVersion)) {
       return (PreviousVersion) message;
     }
@@ -55,9 +56,10 @@ public class MigrationContainer<T extends Migration> {
    * Upgrade a message from the source version to the most recent version by chaining all the required
    * migrations
    */
-  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message,
-                                                                  final Version source,
-                                                                  final BiFunction<T, Object, Object> applyUpgrade) {
+  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(
+      final PreviousVersion message,
+      final Version source,
+      final BiFunction<T, Object, Object> applyUpgrade) {
     if (source.getMajorVersion().equals(mostRecentMajorVersion)) {
       return (CurrentVersion) message;
     }
@@ -92,12 +94,12 @@ public class MigrationContainer<T extends Migration> {
         mostRecentMajorVersion = migration.getCurrentVersion().getMajorVersion();
       }
     } else {
-      throw new RuntimeException("Trying to register a duplicated migration " + migration.getClass().getName());
+      throw new RuntimeException(
+          "Trying to register a duplicated migration " + migration.getClass().getName());
     }
   }
 
   public Set<String> getMigrationKeys() {
     return migrations.keySet();
   }
-
 }

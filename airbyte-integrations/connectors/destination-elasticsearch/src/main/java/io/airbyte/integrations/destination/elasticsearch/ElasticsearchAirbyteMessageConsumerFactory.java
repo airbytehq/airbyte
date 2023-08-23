@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
 
 public class ElasticsearchAirbyteMessageConsumerFactory {
 
-  private static final Logger log = LoggerFactory.getLogger(ElasticsearchAirbyteMessageConsumerFactory.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(ElasticsearchAirbyteMessageConsumerFactory.class);
   private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 32; // 32mib
   private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -43,22 +44,25 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
    */
   private static final Map<String, String> tempIndices = new HashMap<>();
 
-  public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final ElasticsearchConnection connection,
-                                              final List<ElasticsearchWriteConfig> writeConfigs,
-                                              final ConfiguredAirbyteCatalog catalog) {
+  public static AirbyteMessageConsumer create(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final ElasticsearchConnection connection,
+      final List<ElasticsearchWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog) {
 
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(connection, writeConfigs),
-        new InMemoryRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES),
+        new InMemoryRecordBufferingStrategy(
+            recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES),
         onCloseFunction(connection),
         catalog,
         isValidFunction(connection));
   }
 
   // is there any json node that wont fit in the index?
-  private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(final ElasticsearchConnection connection) {
+  private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(
+      final ElasticsearchConnection connection) {
     return jsonNode -> true;
   }
 
@@ -73,14 +77,13 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
   }
 
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(
-                                                                         final ElasticsearchConnection connection,
-                                                                         final List<ElasticsearchWriteConfig> writeConfigs) {
+      final ElasticsearchConnection connection, final List<ElasticsearchWriteConfig> writeConfigs) {
 
     return (pair, records) -> {
       log.info("writing {} records in bulk operation", records.size());
       final var optConfig = writeConfigs.stream()
-          .filter(c -> Objects.equals(c.getStreamName(), pair.getName()) &&
-              Objects.equals(c.getNamespace(), pair.getNamespace()))
+          .filter(c -> Objects.equals(c.getStreamName(), pair.getName())
+              && Objects.equals(c.getNamespace(), pair.getNamespace()))
           .findFirst();
       if (optConfig.isEmpty()) {
         throw new Exception(String.format("missing write config: %s", pair));
@@ -109,17 +112,19 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     });
     final List<String> errorReport = new ArrayList<>();
     errorResult.forEach((index, error) -> {
-
-      final String msg = String.format("""
+      final String msg = String.format(
+          """
                                        failed to write bulk records for index: %s\s
                                        error type: %s
-                                        reason: %s""", index, error.type(), error.reason());
+                                        reason: %s""",
+          index, error.type(), error.reason());
       errorReport.add(msg);
     });
     return errorReport;
   }
 
-  private static OnStartFunction onStartFunction(final ElasticsearchConnection connection, final List<ElasticsearchWriteConfig> writeConfigs) {
+  private static OnStartFunction onStartFunction(
+      final ElasticsearchConnection connection, final List<ElasticsearchWriteConfig> writeConfigs) {
     return () -> {
       for (final var config : writeConfigs) {
         if (config.useTempIndex()) {
@@ -132,5 +137,4 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
       }
     };
   }
-
 }

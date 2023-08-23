@@ -41,7 +41,8 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
   public void configure(final Properties props) {}
 
   @Override
-  public void converterFor(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
+  public void converterFor(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     if (Arrays.stream(DATE_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerDate(field, registration);
     }
@@ -53,7 +54,8 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
 
   // Ref :
   // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-temporal-types
-  private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
+  private void registerDate(
+      final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final var fieldType = field.typeName();
 
     registration.register(SchemaBuilder.string().optional(), x -> {
@@ -86,9 +88,9 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
         case "TIMESTAMP":
           return DateTimeConverter.convertToTimestampWithTimezone(x);
         default:
-          throw new IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
+          throw new IllegalArgumentException(
+              "Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
       }
     });
   }
-
 }

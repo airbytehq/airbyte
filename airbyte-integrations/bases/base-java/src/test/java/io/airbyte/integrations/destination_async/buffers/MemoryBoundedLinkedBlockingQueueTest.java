@@ -17,7 +17,8 @@ public class MemoryBoundedLinkedBlockingQueueTest {
 
   @Test
   void offerAndTakeShouldReturn() throws InterruptedException {
-    final MemoryBoundedLinkedBlockingQueue<String> queue = new MemoryBoundedLinkedBlockingQueue<>(1024);
+    final MemoryBoundedLinkedBlockingQueue<String> queue =
+        new MemoryBoundedLinkedBlockingQueue<>(1024);
 
     queue.offer("abc", 6);
 
@@ -28,13 +29,12 @@ public class MemoryBoundedLinkedBlockingQueueTest {
 
   @Test
   void testBlocksOnFullMemory() throws InterruptedException {
-    final MemoryBoundedLinkedBlockingQueue<String> queue = new MemoryBoundedLinkedBlockingQueue<>(10);
+    final MemoryBoundedLinkedBlockingQueue<String> queue =
+        new MemoryBoundedLinkedBlockingQueue<>(10);
     assertTrue(queue.offer("abc", 6));
     assertFalse(queue.offer("abc", 6));
 
     assertNotNull(queue.poll(1, TimeUnit.NANOSECONDS));
     assertNull(queue.poll(1, TimeUnit.NANOSECONDS));
-
   }
-
 }

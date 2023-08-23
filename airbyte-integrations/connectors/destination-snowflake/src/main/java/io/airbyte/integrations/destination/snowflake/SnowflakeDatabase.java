@@ -38,11 +38,13 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDatabase.class);
-  private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
+  private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN =
+      7; // snowflake access token's TTL is 10min and can't be modified
 
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
-  private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
+  private static final SnowflakeSQLNameTransformer nameTransformer =
+      new SnowflakeSQLNameTransformer();
   private static final String DRIVER_CLASS_NAME = "net.snowflake.client.jdbc.SnowflakeDriver";
 
   private static final String REFRESH_TOKEN_URL = "https://%s/oauth/token-request";
@@ -56,27 +58,32 @@ public class SnowflakeDatabase {
   private static final String CONNECTION_STRING_IDENTIFIER_KEY = "application";
   private static final String CONNECTION_STRING_IDENTIFIER_VAL = "Airbyte_Connector";
 
-  public static HikariDataSource createDataSource(final JsonNode config, final String airbyteEnvironment) {
+  public static HikariDataSource createDataSource(
+      final JsonNode config, final String airbyteEnvironment) {
     final HikariDataSource dataSource = new HikariDataSource();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
-        config.get(JdbcUtils.HOST_KEY).asText()));
+    final StringBuilder jdbcUrl = new StringBuilder(
+        String.format("jdbc:snowflake://%s/?", config.get(JdbcUtils.HOST_KEY).asText()));
     final String username = config.get(JdbcUtils.USERNAME_KEY).asText();
 
     final Properties properties = new Properties();
 
     final JsonNode credentials = config.get("credentials");
-    if (credentials != null && credentials.has("auth_type") && "OAuth2.0".equals(
-        credentials.get("auth_type").asText())) {
+    if (credentials != null
+        && credentials.has("auth_type")
+        && "OAuth2.0".equals(credentials.get("auth_type").asText())) {
       LOGGER.debug("OAuth login mode is used");
       // OAuth login option is selected on UI
       final String accessToken;
       try {
-        // accessToken is only valid for 10 minutes. So we need to get a new one before processing new
+        // accessToken is only valid for 10 minutes. So we need to get a new one before processing
+        // new
         // stream
-        accessToken = getAccessTokenUsingRefreshToken(config.get(JdbcUtils.HOST_KEY).asText(),
+        accessToken = getAccessTokenUsingRefreshToken(
+            config.get(JdbcUtils.HOST_KEY).asText(),
             credentials.get("client_id").asText(),
-            credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
+            credentials.get("client_secret").asText(),
+            credentials.get("refresh_token").asText());
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
@@ -91,8 +98,11 @@ public class SnowflakeDatabase {
       properties.put(JdbcUtils.USERNAME_KEY, username);
 
       // thread to keep the refresh token up to date
-      SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(getRefreshTokenTask(dataSource),
-          PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
+      SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(
+          getRefreshTokenTask(dataSource),
+          PAUSE_BETWEEN_TOKEN_REFRESH_MIN,
+          PAUSE_BETWEEN_TOKEN_REFRESH_MIN,
+          TimeUnit.MINUTES);
 
     } else if (credentials != null && credentials.has(JdbcUtils.PASSWORD_KEY)) {
       LOGGER.debug("User/password login mode is used");
@@ -107,7 +117,8 @@ public class SnowflakeDatabase {
       createPrivateKeyFile(PRIVATE_KEY_FILE_NAME, privateKeyValue);
       properties.put("private_key_file", PRIVATE_KEY_FILE_NAME);
       if (credentials.has(PRIVATE_KEY_PASSWORD)) {
-        properties.put("private_key_file_pwd", credentials.get(PRIVATE_KEY_PASSWORD).asText());
+        properties.put(
+            "private_key_file_pwd", credentials.get(PRIVATE_KEY_PASSWORD).asText());
       }
     } else {
       LOGGER.warn(
@@ -120,7 +131,9 @@ public class SnowflakeDatabase {
     properties.put("warehouse", config.get("warehouse").asText());
     properties.put(JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText());
     properties.put("role", config.get("role").asText());
-    properties.put(JdbcUtils.SCHEMA_KEY, nameTransformer.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText()));
+    properties.put(
+        JdbcUtils.SCHEMA_KEY,
+        nameTransformer.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText()));
 
     properties.put("networkTimeout", Math.toIntExact(NETWORK_TIMEOUT.toSeconds()));
     properties.put("queryTimeout", Math.toIntExact(QUERY_TIMEOUT.toSeconds()));
@@ -153,10 +166,11 @@ public class SnowflakeDatabase {
     }
   }
 
-  private static String getAccessTokenUsingRefreshToken(final String hostName,
-                                                        final String clientId,
-                                                        final String clientSecret,
-                                                        final String refreshCode)
+  private static String getAccessTokenUsingRefreshToken(
+      final String hostName,
+      final String clientId,
+      final String clientSecret,
+      final String refreshCode)
       throws IOException {
     final var refreshTokenUri = String.format(REFRESH_TOKEN_URL, hostName);
     final Map<String, String> requestBody = new HashMap<>();
@@ -179,8 +193,8 @@ public class SnowflakeDatabase {
           .header("Authorization", "Basic " + new String(authorization, StandardCharsets.UTF_8))
           .build();
 
-      final HttpResponse<String> response = httpClient.send(request,
-          HttpResponse.BodyHandlers.ofString());
+      final HttpResponse<String> response =
+          httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
       final JsonNode jsonResponse = Jsons.deserialize(response.body());
       if (jsonResponse.has("access_token")) {
@@ -203,8 +217,10 @@ public class SnowflakeDatabase {
       LOGGER.info("Refresh token process started");
       final var props = dataSource.getDataSourceProperties();
       try {
-        final var token = getAccessTokenUsingRefreshToken(props.getProperty(JdbcUtils.HOST_KEY),
-            props.getProperty("client_id"), props.getProperty("client_secret"),
+        final var token = getAccessTokenUsingRefreshToken(
+            props.getProperty(JdbcUtils.HOST_KEY),
+            props.getProperty("client_id"),
+            props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);
         dataSource.setDataSourceProperties(props);
@@ -215,5 +231,4 @@ public class SnowflakeDatabase {
       }
     };
   }
-
 }

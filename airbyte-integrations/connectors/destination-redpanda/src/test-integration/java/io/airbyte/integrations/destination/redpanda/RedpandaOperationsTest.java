@@ -49,7 +49,8 @@ class RedpandaOperationsTest {
         .put("", false)
         .build());
     this.redpandaOperations = new RedpandaOperations(RedpandaConfig.createConfig(jsonConfig));
-    this.redpandaConsumer = RedpandaConsumerFactory.getInstance(redpandaContainer.getBootstrapServers(), TEST_TOPIC);
+    this.redpandaConsumer =
+        RedpandaConsumerFactory.getInstance(redpandaContainer.getBootstrapServers(), TEST_TOPIC);
   }
 
   @AfterEach
@@ -63,22 +64,33 @@ class RedpandaOperationsTest {
   @Test
   void testPutRecord() {
 
-    redpandaOperations.putRecord(TEST_TOPIC, UUID.randomUUID().toString(), Jsons.jsonNode(Map.of("attr_1", "data1")), e -> {});
-    redpandaOperations.putRecord(TEST_TOPIC, UUID.randomUUID().toString(), Jsons.jsonNode(Map.of("attr_1", "data2")), e -> {});
+    redpandaOperations.putRecord(
+        TEST_TOPIC,
+        UUID.randomUUID().toString(),
+        Jsons.jsonNode(Map.of("attr_1", "data1")),
+        e -> {});
+    redpandaOperations.putRecord(
+        TEST_TOPIC,
+        UUID.randomUUID().toString(),
+        Jsons.jsonNode(Map.of("attr_1", "data2")),
+        e -> {});
     redpandaOperations.flush();
 
     List<JsonNode> records = new ArrayList<>();
     redpandaConsumer.subscribe(Collections.singletonList(TEST_TOPIC));
-    redpandaConsumer.poll(Duration.ofSeconds(5)).iterator().forEachRemaining(r -> records.add(r.value()));
+    redpandaConsumer
+        .poll(Duration.ofSeconds(5))
+        .iterator()
+        .forEachRemaining(r -> records.add(r.value()));
 
-    assertThat(records)
-        .hasSize(2);
+    assertThat(records).hasSize(2);
   }
 
   @Test
   void testCreateTopic() {
 
-    var topicInfo = new RedpandaOperations.TopicInfo(TEST_TOPIC, Optional.of(1), Optional.of((short) 1));
+    var topicInfo =
+        new RedpandaOperations.TopicInfo(TEST_TOPIC, Optional.of(1), Optional.of((short) 1));
     redpandaOperations.createTopic(Set.of(topicInfo));
 
     Set<String> topics = redpandaOperations.listTopics();
@@ -90,7 +102,8 @@ class RedpandaOperationsTest {
   void testDeleteTopic() {
 
     // given
-    var topicInfo = new RedpandaOperations.TopicInfo(TEST_TOPIC, Optional.of(1), Optional.of((short) 1));
+    var topicInfo =
+        new RedpandaOperations.TopicInfo(TEST_TOPIC, Optional.of(1), Optional.of((short) 1));
     redpandaOperations.createTopic(Set.of(topicInfo));
 
     // when
@@ -100,23 +113,24 @@ class RedpandaOperationsTest {
     Set<String> topics = redpandaOperations.listTopics();
 
     assertThat(topics).isEmpty();
-
   }
 
   @Test
   void testPutRecordBlocking() {
 
-    redpandaOperations.putRecordBlocking(TEST_TOPIC, UUID.randomUUID().toString(), Jsons.jsonNode(Map.of("attr_1", "data1")));
-    redpandaOperations.putRecordBlocking(TEST_TOPIC, UUID.randomUUID().toString(), Jsons.jsonNode(Map.of("attr_1", "data2")));
+    redpandaOperations.putRecordBlocking(
+        TEST_TOPIC, UUID.randomUUID().toString(), Jsons.jsonNode(Map.of("attr_1", "data1")));
+    redpandaOperations.putRecordBlocking(
+        TEST_TOPIC, UUID.randomUUID().toString(), Jsons.jsonNode(Map.of("attr_1", "data2")));
     redpandaOperations.flush();
 
     List<JsonNode> records = new ArrayList<>();
     redpandaConsumer.subscribe(Collections.singletonList(TEST_TOPIC));
-    redpandaConsumer.poll(Duration.ofSeconds(5)).iterator().forEachRemaining(r -> records.add(r.value()));
+    redpandaConsumer
+        .poll(Duration.ofSeconds(5))
+        .iterator()
+        .forEachRemaining(r -> records.add(r.value()));
 
-    assertThat(records)
-        .hasSize(2);
-
+    assertThat(records).hasSize(2);
   }
-
 }

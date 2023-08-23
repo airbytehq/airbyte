@@ -25,5 +25,4 @@ public abstract class BaseSheetGenerator implements CsvSheetGenerator {
   }
 
   abstract List<String> getRecordColumns(JsonNode json);
-
 }

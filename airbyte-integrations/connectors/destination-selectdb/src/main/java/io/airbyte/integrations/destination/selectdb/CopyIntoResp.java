@@ -29,5 +29,4 @@ public class CopyIntoResp extends BaseResponse {
   public Map<String, String> getResult() {
     return result;
   }
-
 }

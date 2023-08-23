@@ -46,11 +46,14 @@ class RedshiftStreamCopierTest {
 
   // The full path would be something like
   // "fake-namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
-  // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's
+  // The namespace and stream have their hyphens replaced by underscores. Not super clear that
+  // that's
   // actually required.
-  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case
+  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in
+  // case
   // we need to create multiple files.
-  private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_";
+  private static final String EXPECTED_OBJECT_BEGINNING =
+      "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_";
   private static final String EXPECTED_OBJECT_ENDING = ".csv";
 
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
@@ -69,9 +72,7 @@ class RedshiftStreamCopierTest {
     sqlOperations = mock(SqlOperations.class);
 
     final S3DestinationConfig s3Config = S3DestinationConfig.create(
-        "fake-bucket",
-        "fake-bucketPath",
-        "fake-region")
+            "fake-bucket", "fake-bucketPath", "fake-region")
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
         .get();
@@ -107,55 +108,61 @@ class RedshiftStreamCopierTest {
     copier.copyStagingFileToTemporaryTable();
 
     final AtomicReference<String> manifestUuid = new AtomicReference<>();
-    verify(s3Client).putObject(
-        eq("fake-bucket"),
-        argThat(path -> {
-          final boolean startsCorrectly = path.startsWith("fake-bucketPath/fake-staging-folder/fake-schema/");
-          final boolean endsCorrectly = path.endsWith(".manifest");
-          // Make sure that we have a valid UUID
-          manifestUuid.set(path.replaceFirst("^fake-bucketPath/fake-staging-folder/fake-schema/", "").replaceFirst(".manifest$", ""));
-          UUID.fromString(manifestUuid.get());
+    verify(s3Client)
+        .putObject(
+            eq("fake-bucket"),
+            argThat(path -> {
+              final boolean startsCorrectly =
+                  path.startsWith("fake-bucketPath/fake-staging-folder/fake-schema/");
+              final boolean endsCorrectly = path.endsWith(".manifest");
+              // Make sure that we have a valid UUID
+              manifestUuid.set(
+                  path.replaceFirst("^fake-bucketPath/fake-staging-folder/fake-schema/", "")
+                      .replaceFirst(".manifest$", ""));
+              UUID.fromString(manifestUuid.get());
 
-          return startsCorrectly && endsCorrectly;
-        }),
-        (String) argThat(manifestStr -> {
-          try {
-            final JsonNode manifest = OBJECT_MAPPER.readTree((String) manifestStr);
-            final List<JsonNode> entries = Lists.newArrayList(manifest.get("entries").elements()).stream()
-                .sorted(comparing(entry -> entry.get("url").asText())).toList();
+              return startsCorrectly && endsCorrectly;
+            }),
+            (String) argThat(manifestStr -> {
+              try {
+                final JsonNode manifest = OBJECT_MAPPER.readTree((String) manifestStr);
+                final List<JsonNode> entries =
+                    Lists.newArrayList(manifest.get("entries").elements()).stream()
+                        .sorted(comparing(entry -> entry.get("url").asText()))
+                        .toList();
 
-            boolean entriesAreCorrect = true;
-            for (int i = 0; i < 2; i++) {
-              final String expectedFilename = expectedFiles.get(i);
-              final JsonNode manifestEntry = entries.get(i);
-              entriesAreCorrect &= isManifestEntryCorrect(manifestEntry, expectedFilename);
-              if (!entriesAreCorrect) {
-                LOGGER.error("Invalid entry: {}", manifestEntry);
+                boolean entriesAreCorrect = true;
+                for (int i = 0; i < 2; i++) {
+                  final String expectedFilename = expectedFiles.get(i);
+                  final JsonNode manifestEntry = entries.get(i);
+                  entriesAreCorrect &= isManifestEntryCorrect(manifestEntry, expectedFilename);
+                  if (!entriesAreCorrect) {
+                    LOGGER.error("Invalid entry: {}", manifestEntry);
+                  }
+                }
+
+                return entriesAreCorrect && entries.size() == 2;
+              } catch (final JsonProcessingException e) {
+                throw new RuntimeException(e);
               }
-            }
+            }));
 
-            return entriesAreCorrect && entries.size() == 2;
-          } catch (final JsonProcessingException e) {
-            throw new RuntimeException(e);
-          }
-        }));
-
-    verify(db).execute(String.format(
-        """
+    verify(db)
+        .execute(String.format(
+            """
         COPY fake-schema.%s FROM 's3://fake-bucket/fake-bucketPath/fake-staging-folder/fake-schema/%s.manifest'
         CREDENTIALS 'aws_access_key_id=fake-access-key-id;aws_secret_access_key=fake-secret-access-key'
         CSV REGION 'fake-region' TIMEFORMAT 'auto'
         STATUPDATE OFF
         MANIFEST;""",
-        copier.getTmpTableName(),
-        manifestUuid.get()));
+            copier.getTmpTableName(), manifestUuid.get()));
   }
 
-  private static boolean isManifestEntryCorrect(final JsonNode entry, final String expectedFilename) {
+  private static boolean isManifestEntryCorrect(
+      final JsonNode entry, final String expectedFilename) {
     final String url = entry.get("url").asText();
     final boolean mandatory = entry.get("mandatory").asBoolean();
 
     return ("s3://fake-bucket/" + expectedFilename).equals(url) && mandatory;
   }
-
 }

@@ -35,9 +35,10 @@ public class BufferDequeue {
   private final GlobalAsyncStateManager stateManager;
   private final ConcurrentMap<StreamDescriptor, ReentrantLock> bufferLocks;
 
-  public BufferDequeue(final GlobalMemoryManager memoryManager,
-                       final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
-                       final GlobalAsyncStateManager stateManager) {
+  public BufferDequeue(
+      final GlobalMemoryManager memoryManager,
+      final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
+      final GlobalAsyncStateManager stateManager) {
     this.memoryManager = memoryManager;
     this.buffers = buffers;
     this.stateManager = stateManager;
@@ -51,7 +52,8 @@ public class BufferDequeue {
    * @param optimalBytesToRead bytes to read, if possible
    * @return autocloseable batch object, that frees memory.
    */
-  public MemoryAwareMessageBatch take(final StreamDescriptor streamDescriptor, final long optimalBytesToRead) {
+  public MemoryAwareMessageBatch take(
+      final StreamDescriptor streamDescriptor, final long optimalBytesToRead) {
     final var queue = buffers.get(streamDescriptor);
 
     if (!bufferLocks.containsKey(streamDescriptor)) {
@@ -78,11 +80,7 @@ public class BufferDequeue {
 
       queue.addMaxMemory(-bytesRead.get());
 
-      return new MemoryAwareMessageBatch(
-          output,
-          bytesRead.get(),
-          memoryManager,
-          stateManager);
+      return new MemoryAwareMessageBatch(output, bytesRead.get(), memoryManager, stateManager);
     } finally {
       bufferLocks.get(streamDescriptor).unlock();
     }
@@ -102,7 +100,10 @@ public class BufferDequeue {
   }
 
   public long getTotalGlobalQueueSizeBytes() {
-    return buffers.values().stream().map(StreamAwareQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
+    return buffers.values().stream()
+        .map(StreamAwareQueue::getCurrentMemoryUsage)
+        .mapToLong(Long::longValue)
+        .sum();
   }
 
   public Optional<Long> getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {
@@ -123,5 +124,4 @@ public class BufferDequeue {
     }
     return Optional.empty();
   }
-
 }

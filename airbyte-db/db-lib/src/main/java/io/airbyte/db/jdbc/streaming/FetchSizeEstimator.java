@@ -13,5 +13,4 @@ public interface FetchSizeEstimator extends Consumer<Object> {
    * @return the estimated fetch size when the estimation is ready
    */
   Optional<Integer> getFetchSize();
-
 }

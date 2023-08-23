@@ -22,13 +22,6 @@ class TestDataFactory {
   }
 
   static ScyllaConfig scyllaConfig(String address, int port) {
-    return new ScyllaConfig(
-        "default_keyspace",
-        "usr",
-        "pw",
-        address,
-        port,
-        2);
+    return new ScyllaConfig("default_keyspace", "usr", "pw", address, port, 2);
   }
-
 }

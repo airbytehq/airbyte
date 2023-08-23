@@ -16,5 +16,4 @@ public interface PostLoadExecutor {
    * @throws Exception if unable to perform the additional tasks.
    */
   void execute() throws Exception;
-
 }

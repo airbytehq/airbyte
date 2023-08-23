@@ -25,5 +25,4 @@ public class AlloyDbSource {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: AlloyDB for {}", PostgresSource.class);
   }
-
 }

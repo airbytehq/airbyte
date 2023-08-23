@@ -23,7 +23,8 @@ public class DatabaseConnectionHelper {
    * @return The configured {@link DataSource}.
    */
   public static DataSource createDataSource(final JdbcDatabaseContainer container) {
-    return DataSourceFactory.create(container.getUsername(),
+    return DataSourceFactory.create(
+        container.getUsername(),
         container.getPassword(),
         container.getDriverClassName(),
         container.getJdbcUrl());
@@ -36,7 +37,8 @@ public class DatabaseConnectionHelper {
    * @param dialect The SQL dialect to use with objects created from this context.
    * @return The configured {@link DSLContext}.
    */
-  public static DSLContext createDslContext(final JdbcDatabaseContainer container, final SQLDialect dialect) {
+  public static DSLContext createDslContext(
+      final JdbcDatabaseContainer container, final SQLDialect dialect) {
     return DSLContextFactory.create(
         container.getUsername(),
         container.getPassword(),
@@ -44,5 +46,4 @@ public class DatabaseConnectionHelper {
         container.getJdbcUrl(),
         dialect);
   }
-
 }

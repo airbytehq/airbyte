@@ -45,10 +45,11 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:postgresql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()))
+        .put(
+            JdbcUtils.JDBC_URL_KEY,
+            String.format(
+                "jdbc:postgresql://%s:%s/%s",
+                container.getHost(), container.getFirstMappedPort(), container.getDatabaseName()))
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
@@ -61,7 +62,8 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
 
       database.query(ctx -> {
         ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.fetch(
+            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         return null;
       });
     }
@@ -100,5 +102,4 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

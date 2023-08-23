@@ -24,7 +24,8 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseSqlOperations.class);
 
   @Override
-  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName)
+      throws Exception {
     database.execute(String.format("CREATE DATABASE IF NOT EXISTS %s;\n", schemaName));
   }
 
@@ -34,7 +35,8 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s String,\n"
@@ -43,7 +45,8 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
             + "PRIMARY KEY(%s)\n"
             + ")\n"
             + "ENGINE = MergeTree;\n",
-        schemaName, tableName,
+        schemaName,
+        tableName,
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
@@ -51,7 +54,8 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     // Note: ClickHouse does not support multi query
     for (final String query : queries) {
       database.execute(query);
@@ -59,10 +63,11 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
@@ -94,12 +99,10 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
             Files.delete(tmpFile.toPath());
           }
         } catch (final IOException e) {
-          if (primaryException != null)
-            e.addSuppressed(primaryException);
+          if (primaryException != null) e.addSuppressed(primaryException);
           throw new RuntimeException(e);
         }
       }
     });
   }
-
 }

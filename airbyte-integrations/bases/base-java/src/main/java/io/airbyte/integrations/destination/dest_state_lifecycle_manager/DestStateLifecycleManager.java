@@ -84,5 +84,4 @@ public interface DestStateLifecycleManager {
   Queue<AirbyteMessage> listCommitted();
 
   boolean supportsPerStreamFlush();
-
 }

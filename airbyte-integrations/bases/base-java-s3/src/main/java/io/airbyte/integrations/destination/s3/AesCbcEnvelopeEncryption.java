@@ -15,7 +15,8 @@ import org.apache.commons.lang3.StringUtils;
  * @param key The key to use for encryption.
  * @param keyType Where the key came from.
  */
-public record AesCbcEnvelopeEncryption(@Nonnull byte[] key, @Nonnull KeyType keyType) implements EncryptionConfig {
+public record AesCbcEnvelopeEncryption(@Nonnull byte[] key, @Nonnull KeyType keyType)
+    implements EncryptionConfig {
 
   public enum KeyType {
     EPHEMERAL,
@@ -36,9 +37,11 @@ public record AesCbcEnvelopeEncryption(@Nonnull byte[] key, @Nonnull KeyType key
 
   private static AesCbcEnvelopeEncryption encryptionWithRandomKey() {
     try {
-      final KeyGenerator kekGenerator = KeyGenerator.getInstance(AesCbcEnvelopeEncryptionBlobDecorator.KEY_ENCRYPTING_ALGO);
+      final KeyGenerator kekGenerator =
+          KeyGenerator.getInstance(AesCbcEnvelopeEncryptionBlobDecorator.KEY_ENCRYPTING_ALGO);
       kekGenerator.init(AesCbcEnvelopeEncryptionBlobDecorator.AES_KEY_SIZE_BITS);
-      return new AesCbcEnvelopeEncryption(kekGenerator.generateKey().getEncoded(), KeyType.EPHEMERAL);
+      return new AesCbcEnvelopeEncryption(
+          kekGenerator.generateKey().getEncoded(), KeyType.EPHEMERAL);
     } catch (final NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
@@ -67,5 +70,4 @@ public record AesCbcEnvelopeEncryption(@Nonnull byte[] key, @Nonnull KeyType key
     result = 31 * result + keyType.hashCode();
     return result;
   }
-
 }

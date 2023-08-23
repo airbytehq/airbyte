@@ -27,9 +27,8 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
   protected Database setupDatabase() throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "STANDARD")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "STANDARD").build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
@@ -39,17 +38,17 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
         .put("replication_method", replicationMethod)
         .build());
 
-    final Database database = new Database(
-        DSLContextFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.MYSQL.getDriverClassName(),
-            String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()),
-            SQLDialect.MYSQL,
-            Map.of("zeroDateTimeBehavior", "convertToNull")));
+    final Database database = new Database(DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
+        SQLDialect.MYSQL,
+        Map.of("zeroDateTimeBehavior", "convertToNull")));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -62,5 +61,4 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
   public boolean testCatalog() {
     return true;
   }
-
 }

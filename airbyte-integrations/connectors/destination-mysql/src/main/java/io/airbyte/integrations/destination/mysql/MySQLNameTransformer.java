@@ -25,7 +25,8 @@ public class MySQLNameTransformer extends StandardNameTransformer {
   // 4 charachters for 1 underscore and 3 suffix (e.g. _ab1)
   // 4 charachters for 1 underscore and 3 schema hash
   public static final int TRUNCATE_RESERVED_SIZE = 8;
-  public static final int TRUNCATION_MAX_NAME_LENGTH = MAX_MYSQL_NAME_LENGTH - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE;
+  public static final int TRUNCATION_MAX_NAME_LENGTH =
+      MAX_MYSQL_NAME_LENGTH - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE;
 
   @Override
   public String getIdentifier(final String name) {
@@ -60,5 +61,4 @@ public class MySQLNameTransformer extends StandardNameTransformer {
   public String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
-
 }

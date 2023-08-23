@@ -51,7 +51,9 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.SCHEMA_KEY, "test_schema")
-        .put("ssl_method", Jsons.jsonNode(ImmutableMap.of("ssl_method", "encrypted_trust_server_certificate")))
+        .put(
+            "ssl_method",
+            Jsons.jsonNode(ImmutableMap.of("ssl_method", "encrypted_trust_server_certificate")))
         .build());
   }
 
@@ -74,13 +76,13 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
@@ -91,10 +93,12 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the StandardNameTransformer, see (issue #1785) so we don't
+    // Temporarily disabling the behavior of the StandardNameTransformer, see (issue #1785) so we
+    // don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
     // // Currently, Normalization always quote tables identifiers
@@ -103,22 +107,25 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, SQLDialect.DEFAULT);
-    return new Database(dslContext).query(
-        ctx -> {
-          ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
-          return ctx
-              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .map(this::getJsonFromRecord)
-              .collect(Collectors.toList());
-        });
+    return new Database(dslContext).query(ctx -> {
+      ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
+      return ctx
+          .fetch(String.format(
+              "SELECT * FROM %s.%s ORDER BY %s ASC;",
+              schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .stream()
+          .map(this::getJsonFromRecord)
+          .collect(Collectors.toList());
+    });
   }
 
   @BeforeAll
   protected static void init() {
-    db = new MSSQLServerContainer<>(DockerImageName.parse("airbyte/mssql_ssltest:dev").asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
+    db = new MSSQLServerContainer<>(DockerImageName.parse("airbyte/mssql_ssltest:dev")
+            .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
         .acceptLicense();
     db.start();
   }
@@ -128,7 +135,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d",
+        String.format(
+            "jdbc:sqlserver://%s:%d",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
@@ -142,7 +150,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   // 1. exec into mssql container (not the test container container)
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS)
+      throws SQLException {
     configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     dslContext = getDslContext(configWithoutDbName);
@@ -150,7 +159,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
+      ctx.fetch(
+          "CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
       ctx.fetch(
           "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
       return null;
@@ -190,5 +200,4 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   protected boolean supportObjectDataTypeTest() {
     return true;
   }
-
 }

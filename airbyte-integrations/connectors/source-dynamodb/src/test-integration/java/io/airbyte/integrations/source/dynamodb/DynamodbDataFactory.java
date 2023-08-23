@@ -30,48 +30,41 @@ import software.amazon.awssdk.services.dynamodb.model.TableClass;
 
 public class DynamodbDataFactory {
 
-  private DynamodbDataFactory() {
-
-  }
+  private DynamodbDataFactory() {}
 
   public static List<CreateTableRequest> createTables(String tablePrefix, int tables) {
-    return IntStream.range(0, tables).mapToObj(range -> CreateTableRequest
-        .builder()
-        .tableClass(TableClass.STANDARD)
-        .tableName(tablePrefix + (range + 1))
-        .attributeDefinitions(
-            AttributeDefinition.builder()
-                .attributeName("attr_1")
-                .attributeType(ScalarAttributeType.S)
-                .build(),
-            AttributeDefinition.builder()
-                .attributeName("attr_2")
-                .attributeType(ScalarAttributeType.S)
+    return IntStream.range(0, tables)
+        .mapToObj(range -> CreateTableRequest.builder()
+            .tableClass(TableClass.STANDARD)
+            .tableName(tablePrefix + (range + 1))
+            .attributeDefinitions(
+                AttributeDefinition.builder()
+                    .attributeName("attr_1")
+                    .attributeType(ScalarAttributeType.S)
+                    .build(),
+                AttributeDefinition.builder()
+                    .attributeName("attr_2")
+                    .attributeType(ScalarAttributeType.S)
+                    .build())
+            .keySchema(
+                KeySchemaElement.builder()
+                    .attributeName("attr_1")
+                    .keyType(KeyType.HASH)
+                    .build(),
+                KeySchemaElement.builder()
+                    .attributeName("attr_2")
+                    .keyType(KeyType.RANGE)
+                    .build())
+            .provisionedThroughput(ProvisionedThroughput.builder()
+                .readCapacityUnits(10L)
+                .writeCapacityUnits(10L)
                 .build())
-        .keySchema(
-            KeySchemaElement.builder()
-                .attributeName("attr_1")
-                .keyType(KeyType.HASH)
-                .build(),
-            KeySchemaElement.builder()
-                .attributeName("attr_2")
-                .keyType(KeyType.RANGE)
-                .build())
-        .provisionedThroughput(ProvisionedThroughput.builder()
-            .readCapacityUnits(10L)
-            .writeCapacityUnits(10L).build())
-        .build())
+            .build())
         .toList();
-
   }
 
   public static PutItemRequest putItemRequest(String tableName, Map<String, AttributeValue> item) {
-    return PutItemRequest
-        .builder()
-        .tableName(tableName)
-        .item(item)
-        .build();
-
+    return PutItemRequest.builder().tableName(tableName).item(item).build();
   }
 
   public static JsonNode createJsonConfig(DynamodbContainer dynamodbContainer) {
@@ -85,19 +78,19 @@ public class DynamodbDataFactory {
   }
 
   public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName) {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("attr_timestamp"))
             .withPrimaryKey(List.of(List.of("attr_1", "attr_2")))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                streamName,
-                Field.of("attr_1", JsonSchemaType.STRING),
-                Field.of("attr_2", JsonSchemaType.STRING),
-                Field.of("attr_3", JsonSchemaType.NUMBER),
-                Field.of("attr_timestamp", JsonSchemaType.INTEGER))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                    streamName,
+                    Field.of("attr_1", JsonSchemaType.STRING),
+                    Field.of("attr_2", JsonSchemaType.STRING),
+                    Field.of("attr_3", JsonSchemaType.NUMBER),
+                    Field.of("attr_timestamp", JsonSchemaType.INTEGER))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
-
 }

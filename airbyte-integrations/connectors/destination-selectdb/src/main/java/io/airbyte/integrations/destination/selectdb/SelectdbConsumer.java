@@ -28,9 +28,9 @@ public class SelectdbConsumer extends CommitOnStateAirbyteMessageConsumer {
   private JsonStringEncoder jsonEncoder;
 
   public SelectdbConsumer(
-                          final Map<String, SelectdbWriteConfig> writeConfigs,
-                          final ConfiguredAirbyteCatalog catalog,
-                          final Consumer<AirbyteMessage> outputRecordCollector) {
+      final Map<String, SelectdbWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     super(outputRecordCollector);
     jsonEncoder = JsonStringEncoder.getInstance();
     this.catalog = catalog;
@@ -55,18 +55,20 @@ public class SelectdbConsumer extends CommitOnStateAirbyteMessageConsumer {
     }
     final AirbyteRecordMessage recordMessage = msg.getRecord();
     if (!writeConfigs.containsKey(recordMessage.getStream())) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
+      throw new IllegalArgumentException(String.format(
+          "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+          Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
     }
 
-    writeConfigs.get(recordMessage.getStream()).getWriter().printRecord(
-        UUID.randomUUID(),
-        // new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(recordMessage.getEmittedAt())),
-        recordMessage.getEmittedAt(),
-        new String(jsonEncoder.quoteAsString(Jsons.serialize(recordMessage.getData()))));
-
+    writeConfigs
+        .get(recordMessage.getStream())
+        .getWriter()
+        .printRecord(
+            UUID.randomUUID(),
+            // new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new
+            // Date(recordMessage.getEmittedAt())),
+            recordMessage.getEmittedAt(),
+            new String(jsonEncoder.quoteAsString(Jsons.serialize(recordMessage.getData()))));
   }
 
   @Override
@@ -97,7 +99,8 @@ public class SelectdbConsumer extends CommitOnStateAirbyteMessageConsumer {
           if (writeConfig.getsci().isUpload()) {
             writeConfig.getsci().commitTransaction();
           }
-          LOGGER.info("upload commit (temp file:  {} ) successed ", writeConfig.getsci().getPath());
+          LOGGER.info(
+              "upload commit (temp file:  {} ) successed ", writeConfig.getsci().getPath());
         }
       } else {
         final String message = "Failed to copy into selectdb in destination";
@@ -110,7 +113,5 @@ public class SelectdbConsumer extends CommitOnStateAirbyteMessageConsumer {
         writeConfig.getsci().close();
       }
     }
-
   }
-
 }

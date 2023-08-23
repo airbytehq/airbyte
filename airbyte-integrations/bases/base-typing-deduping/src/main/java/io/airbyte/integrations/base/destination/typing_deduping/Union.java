@@ -32,7 +32,8 @@ public record Union(List<AirbyteType> options) implements AirbyteType {
    * @throws IllegalArgumentException if we cannot extract columns from this schema
    */
   public LinkedHashMap<String, AirbyteType> asColumns() {
-    final long numObjectOptions = options.stream().filter(o -> o instanceof Struct).count();
+    final long numObjectOptions =
+        options.stream().filter(o -> o instanceof Struct).count();
     if (numObjectOptions > 1) {
       LOGGER.error("Can't extract columns from a schema with multiple object options");
       return new LinkedHashMap<>();
@@ -61,5 +62,4 @@ public record Union(List<AirbyteType> options) implements AirbyteType {
 
     return options.stream().min(comparator).orElse(AirbyteProtocolType.UNKNOWN);
   }
-
 }

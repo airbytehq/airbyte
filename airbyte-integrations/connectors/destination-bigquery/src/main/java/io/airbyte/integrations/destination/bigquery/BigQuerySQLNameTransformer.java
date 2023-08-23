@@ -40,5 +40,4 @@ public class BigQuerySQLNameTransformer extends StandardNameTransformer {
     }
     return normalizedName;
   }
-
 }

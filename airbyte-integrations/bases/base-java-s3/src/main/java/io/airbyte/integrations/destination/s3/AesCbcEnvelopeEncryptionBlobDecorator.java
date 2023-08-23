@@ -49,8 +49,10 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
 
-  public static final String ENCRYPTED_CONTENT_ENCRYPTING_KEY = "aes_cbc_envelope_encryption-content-encrypting-key";
-  public static final String INITIALIZATION_VECTOR = "aes_cbc_envelope_encryption-initialization-vector";
+  public static final String ENCRYPTED_CONTENT_ENCRYPTING_KEY =
+      "aes_cbc_envelope_encryption-content-encrypting-key";
+  public static final String INITIALIZATION_VECTOR =
+      "aes_cbc_envelope_encryption-initialization-vector";
 
   public static final int AES_KEY_SIZE_BITS = 256;
   private static final int AES_CBC_INITIALIZATION_VECTOR_SIZE_BYTES = 16;
@@ -63,7 +65,8 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
   // KeyGenerator
   private static final String CONTENT_ENCRYPTING_KEY_ALGO = "AES";
   // Redshift's UNLOAD command uses this cipher mode, so we'll use it here as well.
-  // TODO If we eventually want to expose client-side encryption in destination-s3, we should probably
+  // TODO If we eventually want to expose client-side encryption in destination-s3, we should
+  // probably
   // also implement
   // AES-GCM, since it's mostly superior to CBC mode. (if we do that: make sure that the output is
   // compatible with
@@ -87,7 +90,10 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
   }
 
   @VisibleForTesting
-  AesCbcEnvelopeEncryptionBlobDecorator(final SecretKey keyEncryptingKey, final SecretKey contentEncryptingKey, final byte[] initializationVector) {
+  AesCbcEnvelopeEncryptionBlobDecorator(
+      final SecretKey keyEncryptingKey,
+      final SecretKey contentEncryptingKey,
+      final byte[] initializationVector) {
     this.keyEncryptingKey = keyEncryptingKey;
     this.contentEncryptingKey = contentEncryptingKey;
 
@@ -95,32 +101,49 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
   }
 
   @SuppressFBWarnings(
-                      value = {"PADORA", "CIPINT"},
-                      justification = "We're using this cipher for compatibility with Redshift/Snowflake.")
+      value = {"PADORA", "CIPINT"},
+      justification = "We're using this cipher for compatibility with Redshift/Snowflake.")
   @Override
   public OutputStream wrap(final OutputStream stream) {
     try {
       final Cipher dataCipher = Cipher.getInstance(CONTENT_ENCRYPTING_CIPHER_ALGO);
-      dataCipher.init(Cipher.ENCRYPT_MODE, contentEncryptingKey, new IvParameterSpec(initializationVector));
+      dataCipher.init(
+          Cipher.ENCRYPT_MODE, contentEncryptingKey, new IvParameterSpec(initializationVector));
       return new CipherOutputStream(stream, dataCipher);
-    } catch (final InvalidAlgorithmParameterException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) {
+    } catch (final InvalidAlgorithmParameterException
+        | NoSuchPaddingException
+        | NoSuchAlgorithmException
+        | InvalidKeyException e) {
       throw new RuntimeException(e);
     }
   }
 
   @SuppressFBWarnings(
-                      value = {"CIPINT", "SECECB"},
-                      justification = "We're using this cipher for compatibility with Redshift/Snowflake.")
+      value = {"CIPINT", "SECECB"},
+      justification = "We're using this cipher for compatibility with Redshift/Snowflake.")
   @Override
-  public void updateMetadata(final Map<String, String> metadata, final Map<String, String> metadataKeyMapping) {
+  public void updateMetadata(
+      final Map<String, String> metadata, final Map<String, String> metadataKeyMapping) {
     try {
       final Cipher keyCipher = Cipher.getInstance(KEY_ENCRYPTING_ALGO);
       keyCipher.init(Cipher.ENCRYPT_MODE, keyEncryptingKey);
       final byte[] encryptedCekBytes = keyCipher.doFinal(contentEncryptingKey.getEncoded());
 
-      BlobDecorator.insertMetadata(metadata, metadataKeyMapping, ENCRYPTED_CONTENT_ENCRYPTING_KEY, BASE64_ENCODER.encodeToString(encryptedCekBytes));
-      BlobDecorator.insertMetadata(metadata, metadataKeyMapping, INITIALIZATION_VECTOR, BASE64_ENCODER.encodeToString(initializationVector));
-    } catch (final NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+      BlobDecorator.insertMetadata(
+          metadata,
+          metadataKeyMapping,
+          ENCRYPTED_CONTENT_ENCRYPTING_KEY,
+          BASE64_ENCODER.encodeToString(encryptedCekBytes));
+      BlobDecorator.insertMetadata(
+          metadata,
+          metadataKeyMapping,
+          INITIALIZATION_VECTOR,
+          BASE64_ENCODER.encodeToString(initializationVector));
+    } catch (final NoSuchPaddingException
+        | NoSuchAlgorithmException
+        | InvalidKeyException
+        | IllegalBlockSizeException
+        | BadPaddingException e) {
       throw new RuntimeException(e);
     }
   }
@@ -140,5 +163,4 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
     SECURE_RANDOM.nextBytes(initializationVector);
     return initializationVector;
   }
-
 }

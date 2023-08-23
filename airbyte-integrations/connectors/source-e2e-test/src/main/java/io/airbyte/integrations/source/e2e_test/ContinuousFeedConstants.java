@@ -20,5 +20,4 @@ public final class ContinuousFeedConstants {
       .get();
 
   private ContinuousFeedConstants() {}
-
 }

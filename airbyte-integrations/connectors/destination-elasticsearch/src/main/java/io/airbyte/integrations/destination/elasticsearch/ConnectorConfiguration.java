@@ -17,8 +17,10 @@ public class ConnectorConfiguration {
 
   private String endpoint;
   private boolean upsert;
+
   @JsonProperty("ca_certificate")
   private String caCertificate;
+
   private AuthenticationMethod authenticationMethod = new AuthenticationMethod();
 
   public static ConnectorConfiguration fromJsonNode(JsonNode config) {
@@ -41,7 +43,5 @@ public class ConnectorConfiguration {
         case secret -> Objects.nonNull(this.apiKeyId) && Objects.nonNull(this.apiKeySecret);
       };
     }
-
   }
-
 }

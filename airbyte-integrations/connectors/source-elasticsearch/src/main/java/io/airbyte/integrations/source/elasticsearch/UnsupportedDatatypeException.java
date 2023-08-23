@@ -9,5 +9,4 @@ public class UnsupportedDatatypeException extends Exception {
   public UnsupportedDatatypeException(String message) {
     super(message);
   }
-
 }

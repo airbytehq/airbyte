@@ -18,5 +18,4 @@ public class R2CsvGzipDestinationAcceptanceTest extends S3BaseCsvGzipDestination
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
-
 }

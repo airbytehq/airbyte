@@ -77,7 +77,5 @@ public class MinioContainer extends GenericContainer<MinioContainer> {
     public String getSecretKey() {
       return secretKey;
     }
-
   }
-
 }

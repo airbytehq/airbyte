@@ -25,5 +25,4 @@ public class OracleTestDataComparator extends AdvancedTestDataComparator {
     }
     return result;
   }
-
 }

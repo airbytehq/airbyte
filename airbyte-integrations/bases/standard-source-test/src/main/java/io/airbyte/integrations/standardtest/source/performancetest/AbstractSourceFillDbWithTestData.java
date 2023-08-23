@@ -19,8 +19,10 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBasePerformanceTest {
 
-  private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
-  private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
+  private static final String CREATE_DB_TABLE_TEMPLATE =
+      "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
+  private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE =
+      "INSERT INTO %s.%s (%s) VALUES %s";
   private static final String TEST_DB_FIELD_TYPE = "varchar(10)";
 
   protected static final Logger c = LoggerFactory.getLogger(AbstractSourceFillDbWithTestData.class);
@@ -41,12 +43,13 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
   @Disabled
   @ParameterizedTest
   @MethodSource("provideParameters")
-  public void addTestData(final String dbName,
-                          final String schemaName,
-                          final int numberOfDummyRecords,
-                          final int numberOfBatches,
-                          final int numberOfColumns,
-                          final int numberOfStreams)
+  public void addTestData(
+      final String dbName,
+      final String schemaName,
+      final int numberOfDummyRecords,
+      final int numberOfBatches,
+      final int numberOfColumns,
+      final int numberOfStreams)
       throws Exception {
 
     final Database database = setupDatabase(dbName);
@@ -54,13 +57,13 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
     database.query(ctx -> {
       for (int currentSteamNumber = 0; currentSteamNumber < numberOfStreams; currentSteamNumber++) {
 
-        final String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
+        final String currentTableName =
+            String.format(getTestStreamNameTemplate(), currentSteamNumber);
 
         ctx.fetch(prepareCreateTableQuery(schemaName, numberOfColumns, currentTableName));
         for (int i = 0; i < numberOfBatches; i++) {
-          final String insertQueryTemplate = prepareInsertQueryTemplate(schemaName, i,
-              numberOfColumns,
-              numberOfDummyRecords);
+          final String insertQueryTemplate =
+              prepareInsertQueryTemplate(schemaName, i, numberOfColumns, numberOfDummyRecords);
           ctx.fetch(String.format(insertQueryTemplate, currentTableName));
         }
 
@@ -84,9 +87,8 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
    */
   protected abstract Stream<Arguments> provideParameters();
 
-  protected String prepareCreateTableQuery(final String dbSchemaName,
-                                           final int numberOfColumns,
-                                           final String currentTableName) {
+  protected String prepareCreateTableQuery(
+      final String dbSchemaName, final int numberOfColumns, final String currentTableName) {
 
     final StringJoiner sj = new StringJoiner(",");
     for (int i = 0; i < numberOfColumns; i++) {
@@ -96,10 +98,11 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
     return String.format(CREATE_DB_TABLE_TEMPLATE, dbSchemaName, currentTableName, sj.toString());
   }
 
-  protected String prepareInsertQueryTemplate(final String dbSchemaName,
-                                              final int batchNumber,
-                                              final int numberOfColumns,
-                                              final int recordsNumber) {
+  protected String prepareInsertQueryTemplate(
+      final String dbSchemaName,
+      final int batchNumber,
+      final int numberOfColumns,
+      final int recordsNumber) {
 
     final StringJoiner fieldsNames = new StringJoiner(",");
     fieldsNames.add("id");
@@ -119,14 +122,18 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
     for (int currentRecordNumber = batchMessages;
         currentRecordNumber < recordsNumber + batchMessages;
         currentRecordNumber++) {
-      insertGroupValuesJoiner
-          .add("(" + baseInsertQuery.toString()
-              .replaceAll("id_placeholder", String.valueOf(currentRecordNumber)) + ")");
+      insertGroupValuesJoiner.add("("
+          + baseInsertQuery
+              .toString()
+              .replaceAll("id_placeholder", String.valueOf(currentRecordNumber))
+          + ")");
     }
 
-    return String
-        .format(INSERT_INTO_DB_TABLE_QUERY_TEMPLATE, dbSchemaName, "%s", fieldsNames.toString(),
-            insertGroupValuesJoiner.toString());
+    return String.format(
+        INSERT_INTO_DB_TABLE_QUERY_TEMPLATE,
+        dbSchemaName,
+        "%s",
+        fieldsNames.toString(),
+        insertGroupValuesJoiner.toString());
   }
-
 }

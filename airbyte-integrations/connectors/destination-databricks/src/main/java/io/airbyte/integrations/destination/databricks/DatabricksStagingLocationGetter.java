@@ -32,8 +32,10 @@ import org.slf4j.LoggerFactory;
  */
 public class DatabricksStagingLocationGetter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksStagingLocationGetter.class);
-  private static final String PERSONAL_STAGING_REQUEST_URL = "https://%s/api/2.1/unity-catalog/temporary-stage-credentials";
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(DatabricksStagingLocationGetter.class);
+  private static final String PERSONAL_STAGING_REQUEST_URL =
+      "https://%s/api/2.1/unity-catalog/temporary-stage-credentials";
   private static final String STAGING_URL = "stage://tmp/%s/%s";
 
   private static final HttpClient httpClient = HttpClient.newBuilder()
@@ -54,7 +56,8 @@ public class DatabricksStagingLocationGetter {
   private final String serverHost;
   private final String personalAccessToken;
 
-  public DatabricksStagingLocationGetter(final String username, final String serverHost, final String personalAccessToken) {
+  public DatabricksStagingLocationGetter(
+      final String username, final String serverHost, final String personalAccessToken) {
     this.username = username;
     this.serverHost = serverHost;
     this.personalAccessToken = personalAccessToken;
@@ -64,7 +67,8 @@ public class DatabricksStagingLocationGetter {
    * @param filePath include path and filename: <path>/<filename>.
    * @return the pre-signed URL for the file in the personal staging location on the metastore.
    */
-  public PreSignedUrl getPreSignedUrl(final String filePath) throws IOException, InterruptedException {
+  public PreSignedUrl getPreSignedUrl(final String filePath)
+      throws IOException, InterruptedException {
     final String stagingUrl = String.format(STAGING_URL, username, filePath);
     LOGGER.info("Requesting Databricks personal staging location for {}", stagingUrl);
 
@@ -76,20 +80,21 @@ public class DatabricksStagingLocationGetter {
         .uri(URI.create(String.format(PERSONAL_STAGING_REQUEST_URL, serverHost)))
         .header("Authorization", "Bearer " + personalAccessToken)
         .build();
-    final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    final HttpResponse<String> response =
+        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     final JsonNode jsonResponse = Jsons.deserialize(response.body());
-    if (jsonResponse.has(RESPONSE_PRESIGNED_URL) && jsonResponse.get(RESPONSE_PRESIGNED_URL).has(RESPONSE_URL) && jsonResponse.get(
-        RESPONSE_PRESIGNED_URL).has(RESPONSE_EXPIRATION)) {
+    if (jsonResponse.has(RESPONSE_PRESIGNED_URL)
+        && jsonResponse.get(RESPONSE_PRESIGNED_URL).has(RESPONSE_URL)
+        && jsonResponse.get(RESPONSE_PRESIGNED_URL).has(RESPONSE_EXPIRATION)) {
       return new PreSignedUrl(
           jsonResponse.get(RESPONSE_PRESIGNED_URL).get(RESPONSE_URL).asText(),
           jsonResponse.get(RESPONSE_PRESIGNED_URL).get(RESPONSE_EXPIRATION).asLong());
     } else {
-      final String message = String.format("Failed to get pre-signed URL for %s: %s", stagingUrl, jsonResponse);
+      final String message =
+          String.format("Failed to get pre-signed URL for %s: %s", stagingUrl, jsonResponse);
       LOGGER.error(message);
       throw new RuntimeException(message);
     }
-
   }
-
 }

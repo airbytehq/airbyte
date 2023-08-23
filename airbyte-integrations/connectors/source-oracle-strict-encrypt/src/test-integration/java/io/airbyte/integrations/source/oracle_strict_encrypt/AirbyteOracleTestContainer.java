@@ -20,7 +20,8 @@ import org.testcontainers.utility.DockerImageName;
 public class AirbyteOracleTestContainer extends JdbcDatabaseContainer<AirbyteOracleTestContainer> {
 
   public static final String NAME = "oracle";
-  private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
+  private static final DockerImageName DEFAULT_IMAGE_NAME =
+      DockerImageName.parse("gvenzl/oracle-xe");
 
   static final String DEFAULT_TAG = "18.4.0-slim";
   static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
@@ -42,7 +43,8 @@ public class AirbyteOracleTestContainer extends JdbcDatabaseContainer<AirbyteOra
   static final String APP_USER_PASSWORD = "test";
 
   // Restricted user and database names
-  private static final List<String> ORACLE_SYSTEM_USERS = Arrays.asList(DEFAULT_SYSTEM_USER, DEFAULT_SYS_USER);
+  private static final List<String> ORACLE_SYSTEM_USERS =
+      Arrays.asList(DEFAULT_SYSTEM_USER, DEFAULT_SYS_USER);
 
   private String databaseName = DEFAULT_DATABASE_NAME;
   private String username = APP_USER;
@@ -95,13 +97,15 @@ public class AirbyteOracleTestContainer extends JdbcDatabaseContainer<AirbyteOra
 
   @Override
   public String getJdbcUrl() {
-    return isUsingSid() ? "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + ":" + getSid()
+    return isUsingSid()
+        ? "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + ":" + getSid()
         : "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + "/" + getDatabaseName();
   }
 
   @Override
   public String getUsername() {
-    // An application user is tied to the database, and therefore not authenticated to connect to SID.
+    // An application user is tied to the database, and therefore not authenticated to connect to
+    // SID.
     return isUsingSid() ? DEFAULT_SYSTEM_USER : username;
   }
 
@@ -195,5 +199,4 @@ public class AirbyteOracleTestContainer extends JdbcDatabaseContainer<AirbyteOra
     withEnv("APP_USER", username);
     withEnv("APP_USER_PASSWORD", password);
   }
-
 }

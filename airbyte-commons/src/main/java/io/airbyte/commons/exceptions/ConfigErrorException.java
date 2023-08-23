@@ -25,5 +25,4 @@ public class ConfigErrorException extends RuntimeException {
   public String getDisplayMessage() {
     return displayMessage;
   }
-
 }

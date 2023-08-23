@@ -30,9 +30,8 @@ class RedisDestinationTest {
   @Test
   void testCheckWithStatusSucceeded() {
 
-    var jsonConfiguration = RedisDataFactory.jsonConfig(
-        redisContainer.getHost(),
-        redisContainer.getFirstMappedPort());
+    var jsonConfiguration =
+        RedisDataFactory.jsonConfig(redisContainer.getHost(), redisContainer.getFirstMappedPort());
 
     var connectionStatus = redisDestination.check(jsonConfiguration);
 
@@ -47,7 +46,5 @@ class RedisDestinationTest {
     var connectionStatus = redisDestination.check(jsonConfiguration);
 
     assertThat(connectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.FAILED);
-
   }
-
 }

@@ -38,7 +38,8 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 public class ClickhouseDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseDestinationStrictEncryptAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ClickhouseDestinationStrictEncryptAcceptanceTest.class);
 
   public static final Integer HTTP_PORT = 8123;
   public static final Integer NATIVE_PORT = 9000;
@@ -50,16 +51,21 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   private GenericContainer db;
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
-    final String jdbcStr = String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=NONE",
+    final String jdbcStr = String.format(
+        DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=NONE",
         ClickhouseDestination.HTTPS_PROTOCOL,
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
-    return new DefaultJdbcDatabase(DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        ClickhouseDestination.DRIVER_CLASS,
-        jdbcStr), new ClickhouseTestSourceOperations());
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.has(JdbcUtils.PASSWORD_KEY)
+                ? config.get(JdbcUtils.PASSWORD_KEY).asText()
+                : null,
+            ClickhouseDestination.DRIVER_CLASS,
+            jdbcStr),
+        new ClickhouseTestSourceOperations());
   }
 
   @Override
@@ -126,28 +132,30 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv,
-                                                     final String streamName,
-                                                     final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namespace);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    final String query = String.format(
+        "SELECT * FROM %s.%s ORDER BY %s ASC",
+        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     return jdbcDB.queryJsons(query);
   }
 
@@ -167,21 +175,29 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
-        .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
-        .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
-            .withEnv("TZ", "UTC")
-            .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
-            .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
-            .waitingFor(Wait.forHttp("/ping").forPort(HTTP_PORT)
-                .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+            .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
+            .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
+        .withEnv("TZ", "UTC")
+        .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
+        .withClasspathResourceMapping(
+            "ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
+        .waitingFor(Wait.forHttp("/ping")
+            .forPort(HTTP_PORT)
+            .forStatusCode(200)
+            .withStartupTimeout(Duration.of(60, SECONDS)));
 
     db.start();
 
-    LOGGER.info(String.format("Clickhouse server container port mapping: %d -> %d, %d -> %d, %d -> %d, %d -> %d",
-        HTTP_PORT, db.getMappedPort(HTTP_PORT),
-        HTTPS_PORT, db.getMappedPort(HTTPS_PORT),
-        NATIVE_PORT, db.getMappedPort(NATIVE_PORT),
-        NATIVE_SECURE_PORT, db.getMappedPort(NATIVE_SECURE_PORT)));
+    LOGGER.info(String.format(
+        "Clickhouse server container port mapping: %d -> %d, %d -> %d, %d -> %d, %d -> %d",
+        HTTP_PORT,
+        db.getMappedPort(HTTP_PORT),
+        HTTPS_PORT,
+        db.getMappedPort(HTTPS_PORT),
+        NATIVE_PORT,
+        db.getMappedPort(NATIVE_PORT),
+        NATIVE_SECURE_PORT,
+        db.getMappedPort(NATIVE_SECURE_PORT)));
   }
 
   @Override
@@ -193,9 +209,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   @Override
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
-  public void testDataTypeTestWithNormalization(final String messagesFilename,
-                                                final String catalogFilename,
-                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+  public void testDataTypeTestWithNormalization(
+      final String messagesFilename,
+      final String catalogFilename,
+      final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
       throws Exception {
 
     // arrays are not fully supported yet in jdbc driver
@@ -206,5 +223,4 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
     super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
-
 }

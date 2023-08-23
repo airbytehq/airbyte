@@ -23,15 +23,13 @@ class IncrementalUtilsTest {
 
   private static final String STREAM_NAME = "shoes";
   private static final String UUID_FIELD_NAME = "ascending_inventory_uuid";
-  private static final ConfiguredAirbyteStream STREAM = CatalogHelpers.createConfiguredAirbyteStream(
-      STREAM_NAME,
-      null,
-      Field.of("ascending_inventory_uuid", JsonSchemaType.STRING));
+  private static final ConfiguredAirbyteStream STREAM =
+      CatalogHelpers.createConfiguredAirbyteStream(
+          STREAM_NAME, null, Field.of("ascending_inventory_uuid", JsonSchemaType.STRING));
 
-  private static final ConfiguredAirbyteStream STREAM_V1 = CatalogHelpers.createConfiguredAirbyteStream(
-      STREAM_NAME,
-      null,
-      Field.of("ascending_inventory_uuid", JsonSchemaType.STRING_V1));
+  private static final ConfiguredAirbyteStream STREAM_V1 =
+      CatalogHelpers.createConfiguredAirbyteStream(
+          STREAM_NAME, null, Field.of("ascending_inventory_uuid", JsonSchemaType.STRING_V1));
   private static final String ABC = "abc";
 
   @Test
@@ -43,8 +41,9 @@ class IncrementalUtilsTest {
 
   @Test
   void testGetCursorFieldNoCursorFieldSet() {
-    assertThrows(IllegalStateException.class, () -> Assertions
-        .assertEquals(UUID_FIELD_NAME, IncrementalUtils.getCursorField(STREAM)));
+    assertThrows(
+        IllegalStateException.class,
+        () -> Assertions.assertEquals(UUID_FIELD_NAME, IncrementalUtils.getCursorField(STREAM)));
   }
 
   @Test
@@ -56,48 +55,64 @@ class IncrementalUtilsTest {
 
   @Test
   void testGetCursorType() {
-    Assertions.assertEquals(JsonSchemaPrimitive.STRING, IncrementalUtils.getCursorType(STREAM, UUID_FIELD_NAME));
+    Assertions.assertEquals(
+        JsonSchemaPrimitive.STRING, IncrementalUtils.getCursorType(STREAM, UUID_FIELD_NAME));
   }
 
   @Test
   void testGetCursorType_V1() {
-    Assertions.assertEquals(JsonSchemaPrimitive.STRING_V1, IncrementalUtils.getCursorType(STREAM_V1, UUID_FIELD_NAME));
+    Assertions.assertEquals(
+        JsonSchemaPrimitive.STRING_V1, IncrementalUtils.getCursorType(STREAM_V1, UUID_FIELD_NAME));
   }
 
   @Test
   void testGetCursorTypeNoProperties() {
     final ConfiguredAirbyteStream stream = Jsons.clone(STREAM);
     stream.getStream().setJsonSchema(Jsons.jsonNode(Collections.emptyMap()));
-    assertThrows(IllegalStateException.class, () -> IncrementalUtils.getCursorType(stream, UUID_FIELD_NAME));
+    assertThrows(
+        IllegalStateException.class, () -> IncrementalUtils.getCursorType(stream, UUID_FIELD_NAME));
   }
 
   @Test
   void testGetCursorTypeNoCursor() {
-    assertThrows(IllegalStateException.class, () -> IncrementalUtils.getCursorType(STREAM, "does not exist"));
+    assertThrows(
+        IllegalStateException.class,
+        () -> IncrementalUtils.getCursorType(STREAM, "does not exist"));
   }
 
   @Test
   void testGetCursorTypeCursorHasNoType() {
     final ConfiguredAirbyteStream stream = Jsons.clone(STREAM);
-    ((ObjectNode) stream.getStream().getJsonSchema().get("properties").get(UUID_FIELD_NAME)).remove("type");
-    assertThrows(IllegalStateException.class, () -> IncrementalUtils.getCursorType(stream, UUID_FIELD_NAME));
+    ((ObjectNode) stream.getStream().getJsonSchema().get("properties").get(UUID_FIELD_NAME))
+        .remove("type");
+    assertThrows(
+        IllegalStateException.class, () -> IncrementalUtils.getCursorType(stream, UUID_FIELD_NAME));
   }
 
   @Test
   void testCompareCursors() {
     assertTrue(IncrementalUtils.compareCursors(ABC, "def", JsonSchemaPrimitive.STRING) < 0);
     assertTrue(IncrementalUtils.compareCursors(ABC, "def", JsonSchemaPrimitive.STRING_V1) < 0);
-    Assertions.assertEquals(0, IncrementalUtils.compareCursors(ABC, ABC, JsonSchemaPrimitive.STRING));
+    Assertions.assertEquals(
+        0, IncrementalUtils.compareCursors(ABC, ABC, JsonSchemaPrimitive.STRING));
     assertTrue(IncrementalUtils.compareCursors("1", "2", JsonSchemaPrimitive.NUMBER) < 0);
     assertTrue(IncrementalUtils.compareCursors("1", "2", JsonSchemaPrimitive.INTEGER_V1) < 0);
-    assertTrue(IncrementalUtils.compareCursors("5000000000", "5000000001", JsonSchemaPrimitive.NUMBER) < 0);
+    assertTrue(
+        IncrementalUtils.compareCursors("5000000000", "5000000001", JsonSchemaPrimitive.NUMBER)
+            < 0);
     assertTrue(IncrementalUtils.compareCursors("false", "true", JsonSchemaPrimitive.BOOLEAN) < 0);
     assertTrue(IncrementalUtils.compareCursors(null, "def", JsonSchemaPrimitive.STRING) < 1);
     assertTrue(IncrementalUtils.compareCursors(ABC, null, JsonSchemaPrimitive.STRING) > 0);
-    Assertions.assertEquals(0, IncrementalUtils.compareCursors(null, null, JsonSchemaPrimitive.STRING));
-    assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.ARRAY));
-    assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.OBJECT));
-    assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.NULL));
+    Assertions.assertEquals(
+        0, IncrementalUtils.compareCursors(null, null, JsonSchemaPrimitive.STRING));
+    assertThrows(
+        IllegalStateException.class,
+        () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.ARRAY));
+    assertThrows(
+        IllegalStateException.class,
+        () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.OBJECT));
+    assertThrows(
+        IllegalStateException.class,
+        () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.NULL));
   }
-
 }

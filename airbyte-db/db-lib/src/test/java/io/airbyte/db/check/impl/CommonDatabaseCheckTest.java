@@ -31,7 +31,11 @@ class CommonDatabaseCheckTest {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
 
-    dataSource = DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+    dataSource = DataSourceFactory.create(
+        container.getUsername(),
+        container.getPassword(),
+        container.getDriverClassName(),
+        container.getJdbcUrl());
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
   }
 
@@ -42,5 +46,4 @@ class CommonDatabaseCheckTest {
     dslContext.close();
     container.stop();
   }
-
 }

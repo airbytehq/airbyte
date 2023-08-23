@@ -36,11 +36,6 @@ public class Triplet<V1, V2, V3> {
 
   @Override
   public String toString() {
-    return "Triplet{" +
-        "value1=" + value1 +
-        ", value2=" + value2 +
-        ", value3=" + value3 +
-        '}';
+    return "Triplet{" + "value1=" + value1 + ", value2=" + value2 + ", value3=" + value3 + '}';
   }
-
 }

@@ -15,11 +15,12 @@ public class S3GlueJsonlDestinationAcceptanceTest extends S3BaseJsonlDestination
   protected void tearDown(final TestDestinationEnv testEnv) {
     super.tearDown(testEnv);
 
-    final GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(configJson);
-    try (final var glueTestClient = new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {
+    final GlueDestinationConfig glueDestinationConfig =
+        GlueDestinationConfig.getInstance(configJson);
+    try (final var glueTestClient =
+        new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {
 
       glueTestClient.purgeDatabase(glueDestinationConfig.getDatabase());
-
     }
   }
 
@@ -30,9 +31,10 @@ public class S3GlueJsonlDestinationAcceptanceTest extends S3BaseJsonlDestination
 
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
-  public void testDataTypeTestWithNormalization(final String messagesFilename,
-                                                final String catalogFilename,
-                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+  public void testDataTypeTestWithNormalization(
+      final String messagesFilename,
+      final String catalogFilename,
+      final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
       throws Exception {
 
     if (messagesFilename.contains("array")) {
@@ -41,5 +43,4 @@ public class S3GlueJsonlDestinationAcceptanceTest extends S3BaseJsonlDestination
 
     super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
-
 }

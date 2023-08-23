@@ -39,9 +39,8 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
 
   @Override
   protected Database setupDatabase(final String dbName) {
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "Standard").build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "your_host")
@@ -56,7 +55,8 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+        String.format(
+            "jdbc:sqlserver://%s:%s;databaseName=%s;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             dbName),
@@ -77,8 +77,9 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
    */
   @Override
   protected Stream<Arguments> provideParameters() {
-    return Stream.of(Arguments.of("your_db_name", "dbo", 100, 2, 240, 1000) // "dbo" is a default schema name in MsSQl DB
-    );
+    return Stream.of(
+        Arguments.of(
+            "your_db_name", "dbo", 100, 2, 240, 1000) // "dbo" is a default schema name in MsSQl DB
+        );
   }
-
 }

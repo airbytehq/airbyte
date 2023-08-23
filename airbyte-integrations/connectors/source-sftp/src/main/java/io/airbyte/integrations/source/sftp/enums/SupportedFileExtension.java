@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.sftp.enums;
 
 public enum SupportedFileExtension {
-
   CSV("csv"),
   JSON("json");
 
@@ -14,5 +13,4 @@ public enum SupportedFileExtension {
   SupportedFileExtension(String typeName) {
     this.typeName = typeName;
   }
-
 }

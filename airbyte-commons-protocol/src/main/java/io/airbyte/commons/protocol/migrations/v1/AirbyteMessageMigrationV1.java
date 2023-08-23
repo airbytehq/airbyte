@@ -31,7 +31,9 @@ import java.util.Optional;
 
 // Disable V1 Migration, uncomment to re-enable
 // @Singleton
-public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.airbyte.protocol.models.v0.AirbyteMessage, AirbyteMessage> {
+public class AirbyteMessageMigrationV1
+    implements AirbyteMessageMigration<
+        io.airbyte.protocol.models.v0.AirbyteMessage, AirbyteMessage> {
 
   private final JsonSchemaValidator validator;
 
@@ -45,13 +47,14 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   @Override
-  public io.airbyte.protocol.models.v0.AirbyteMessage downgrade(final AirbyteMessage oldMessage,
-                                                                final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+  public io.airbyte.protocol.models.v0.AirbyteMessage downgrade(
+      final AirbyteMessage oldMessage,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     final io.airbyte.protocol.models.v0.AirbyteMessage newMessage = Jsons.object(
-        Jsons.jsonNode(oldMessage),
-        io.airbyte.protocol.models.v0.AirbyteMessage.class);
+        Jsons.jsonNode(oldMessage), io.airbyte.protocol.models.v0.AirbyteMessage.class);
     if (oldMessage.getType() == Type.CATALOG && oldMessage.getCatalog() != null) {
-      for (final io.airbyte.protocol.models.v0.AirbyteStream stream : newMessage.getCatalog().getStreams()) {
+      for (final io.airbyte.protocol.models.v0.AirbyteStream stream :
+          newMessage.getCatalog().getStreams()) {
         final JsonNode schema = stream.getJsonSchema();
         SchemaMigrationV1.downgradeSchema(schema);
       }
@@ -63,7 +66,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
             .filter(stream -> Objects.equals(stream.getStream().getName(), record.getStream())
                 && Objects.equals(stream.getStream().getNamespace(), record.getNamespace()))
             .findFirst();
-        // If this record doesn't belong to any configured stream, then there's no point downgrading it
+        // If this record doesn't belong to any configured stream, then there's no point downgrading
+        // it
         // So only do the downgrade if we can find its stream
         if (maybeStream.isPresent()) {
           final JsonNode schema = maybeStream.get().getStream().getJsonSchema();
@@ -77,19 +81,21 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   @Override
-  public AirbyteMessage upgrade(final io.airbyte.protocol.models.v0.AirbyteMessage oldMessage,
-                                final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+  public AirbyteMessage upgrade(
+      final io.airbyte.protocol.models.v0.AirbyteMessage oldMessage,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     // We're not introducing any changes to the structure of the record/catalog
     // so just clone a new message object, which we can edit in-place
-    final AirbyteMessage newMessage = Jsons.object(
-        Jsons.jsonNode(oldMessage),
-        AirbyteMessage.class);
-    if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG && oldMessage.getCatalog() != null) {
+    final AirbyteMessage newMessage =
+        Jsons.object(Jsons.jsonNode(oldMessage), AirbyteMessage.class);
+    if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG
+        && oldMessage.getCatalog() != null) {
       for (final AirbyteStream stream : newMessage.getCatalog().getStreams()) {
         final JsonNode schema = stream.getJsonSchema();
         SchemaMigrationV1.upgradeSchema(schema);
       }
-    } else if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD && oldMessage.getRecord() != null) {
+    } else if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD
+        && oldMessage.getRecord() != null) {
       final JsonNode oldData = newMessage.getRecord().getData();
       final JsonNode newData = upgradeRecord(oldData);
       newMessage.getRecord().setData(newData);
@@ -162,7 +168,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
             return new MigratedNode(d, false);
           }
         },
-        data, schema);
+        data,
+        schema);
   }
 
   @Override
@@ -174,5 +181,4 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   public Version getCurrentVersion() {
     return AirbyteProtocolVersion.V1;
   }
-
 }

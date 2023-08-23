@@ -14,7 +14,8 @@ import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDenormalizedDestinationAcceptanceTest {
+public class BigQueryDenormalizedGcsDestinationAcceptanceTest
+    extends BigQueryDenormalizedDestinationAcceptanceTest {
 
   @Override
   protected JsonNode createConfig() throws IOException {
@@ -27,26 +28,32 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
   @Test
   public void testGetFileBufferDefault() {
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
-    assertEquals(destination.getNumberOfFileBuffers(config),
+    assertEquals(
+        destination.getNumberOfFileBuffers(config),
         FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   @Test
   public void testGetFileBufferMaxLimited() {
     final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD))
+        .put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
-    assertEquals(FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER, destination.getNumberOfFileBuffers(defaultConfig));
+    assertEquals(
+        FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER,
+        destination.getNumberOfFileBuffers(defaultConfig));
   }
 
   @Test
   public void testGetMinimumFileBufferCount() {
     final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
+    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD))
+        .put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     // User cannot set number of file counts below the default file buffer count, which is existing
     // behavior
-    assertEquals(FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER, destination.getNumberOfFileBuffers(defaultConfig));
+    assertEquals(
+        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER,
+        destination.getNumberOfFileBuffers(defaultConfig));
   }
-
 }

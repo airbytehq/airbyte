@@ -58,12 +58,16 @@ class BigQueryDenormalizedDestinationTest {
 
   @Mock
   UploaderConfig uploaderConfigMock;
+
   @Mock
   ConfiguredAirbyteStream configuredStreamMock;
+
   @Mock
   AirbyteStream airbyteStreamMock;
+
   @Mock
   DefaultBigQueryDenormalizedRecordFormatter bigQueryRecordFormatterMock;
+
   @Mock
   BigQuery bigQueryMock;
 
@@ -76,8 +80,11 @@ class BigQueryDenormalizedDestinationTest {
 
   @BeforeEach
   void init() {
-    uploaderFactoryMock = Mockito.mockStatic(BigQueryUploaderFactory.class, Mockito.CALLS_REAL_METHODS);
-    uploaderFactoryMock.when(() -> BigQueryUploaderFactory.getUploader(any(UploaderConfig.class))).thenReturn(mock(BigQueryDirectUploader.class));
+    uploaderFactoryMock =
+        Mockito.mockStatic(BigQueryUploaderFactory.class, Mockito.CALLS_REAL_METHODS);
+    uploaderFactoryMock
+        .when(() -> BigQueryUploaderFactory.getUploader(any(UploaderConfig.class)))
+        .thenReturn(mock(BigQueryDirectUploader.class));
   }
 
   @AfterEach
@@ -88,12 +95,17 @@ class BigQueryDenormalizedDestinationTest {
   @Test
   void getFormatterMap() {
     final JsonNode jsonNodeSchema = getSchema();
-    final Map<UploaderType, BigQueryRecordFormatter> formatterMap = bqdd.getFormatterMap(jsonNodeSchema);
+    final Map<UploaderType, BigQueryRecordFormatter> formatterMap =
+        bqdd.getFormatterMap(jsonNodeSchema);
     assertEquals(2, formatterMap.size());
     assertTrue(formatterMap.containsKey(UploaderType.AVRO));
     assertTrue(formatterMap.containsKey(UploaderType.STANDARD));
-    assertThat(formatterMap.get(UploaderType.AVRO), instanceOf(GcsBigQueryDenormalizedRecordFormatter.class));
-    assertThat(formatterMap.get(UploaderType.STANDARD), instanceOf(DefaultBigQueryDenormalizedRecordFormatter.class));
+    assertThat(
+        formatterMap.get(UploaderType.AVRO),
+        instanceOf(GcsBigQueryDenormalizedRecordFormatter.class));
+    assertThat(
+        formatterMap.get(UploaderType.STANDARD),
+        instanceOf(DefaultBigQueryDenormalizedRecordFormatter.class));
   }
 
   @Test
@@ -104,15 +116,17 @@ class BigQueryDenormalizedDestinationTest {
   @Test
   void getRecordFormatterCreator() {
     final BigQuerySQLNameTransformer nameTransformerMock = mock(BigQuerySQLNameTransformer.class);
-    final BigQueryRecordFormatter resultFormatter = bqdd.getRecordFormatterCreator(nameTransformerMock)
-        .apply(mapper.createObjectNode());
+    final BigQueryRecordFormatter resultFormatter =
+        bqdd.getRecordFormatterCreator(nameTransformerMock).apply(mapper.createObjectNode());
 
     assertThat(resultFormatter, instanceOf(GcsBigQueryDenormalizedRecordFormatter.class));
   }
 
   @Test
-  void putStreamIntoUploaderMap_compareSchemas_expectedIsNotNullExistingIsNull() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+  void putStreamIntoUploaderMap_compareSchemas_expectedIsNotNullExistingIsNull()
+      throws IOException {
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final String streamName = "stream_name";
     final String nameSpace = "name_space";
     final Table tableMock = mock(Table.class);
@@ -133,12 +147,14 @@ class BigQueryDenormalizedDestinationTest {
     // run test
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
     // should use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(1)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(1))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_compareSchemas_existingAndExpectedAreNull() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final Table tableMock = mock(Table.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
 
@@ -156,12 +172,14 @@ class BigQueryDenormalizedDestinationTest {
     // run test
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
     // should not use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(0)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(0))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_compareSchemas_expectedSchemaIsNull() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final Table tableMock = mock(Table.class);
     final Schema schemaMock = mock(Schema.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
@@ -181,12 +199,14 @@ class BigQueryDenormalizedDestinationTest {
     // run test
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
     // should use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(1)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(1))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_isDifferenceBetweenFields_equalType() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final Table tableMock = mock(Table.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
     final Schema existingSchemaMock = mock(Schema.class);
@@ -200,20 +220,24 @@ class BigQueryDenormalizedDestinationTest {
     when(airbyteStreamMock.getNamespace()).thenReturn("name_space");
     when(bigQueryMock.getTable(anyString(), anyString())).thenReturn(tableMock);
 
-    final FieldList existingFields = FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).build());
-    final FieldList expectedFields = FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).build());
+    final FieldList existingFields =
+        FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).build());
+    final FieldList expectedFields =
+        FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).build());
     when(existingSchemaMock.getFields()).thenReturn(existingFields);
     when(expectedSchemaMock.getFields()).thenReturn(expectedFields);
 
     // run test
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
     // equal type should not use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(0)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(0))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_isDifferenceBetweenFields_notEqualType() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final Table tableMock = mock(Table.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
     final Schema existingSchemaMock = mock(Schema.class);
@@ -227,8 +251,10 @@ class BigQueryDenormalizedDestinationTest {
     when(airbyteStreamMock.getNamespace()).thenReturn("name_space");
     when(bigQueryMock.getTable(anyString(), anyString())).thenReturn(tableMock);
 
-    final FieldList existingFields = FieldList.of(Field.newBuilder("name", StandardSQLTypeName.DATE).build());
-    final FieldList expectedFields = FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).build());
+    final FieldList existingFields =
+        FieldList.of(Field.newBuilder("name", StandardSQLTypeName.DATE).build());
+    final FieldList expectedFields =
+        FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).build());
     when(existingSchemaMock.getFields()).thenReturn(existingFields);
     when(expectedSchemaMock.getFields()).thenReturn(expectedFields);
 
@@ -236,12 +262,14 @@ class BigQueryDenormalizedDestinationTest {
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
 
     // equal type should not use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(1)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(1))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_isDifferenceBetweenFields_existingFieldIsNull() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final Table tableMock = mock(Table.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
     final Schema existingSchemaMock = mock(Schema.class);
@@ -255,7 +283,8 @@ class BigQueryDenormalizedDestinationTest {
     when(airbyteStreamMock.getNamespace()).thenReturn("name_space");
     when(bigQueryMock.getTable(anyString(), anyString())).thenReturn(tableMock);
 
-    final FieldList expectedFields = FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).build());
+    final FieldList expectedFields =
+        FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).build());
     final FieldList existingFields = mock(FieldList.class);
     when(existingSchemaMock.getFields()).thenReturn(existingFields);
     when(expectedSchemaMock.getFields()).thenReturn(expectedFields);
@@ -265,12 +294,14 @@ class BigQueryDenormalizedDestinationTest {
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
 
     // equal type should not use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(1)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(1))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_compareRepeatedMode_isEqual() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final Table tableMock = mock(Table.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
     final Schema existingSchemaMock = mock(Schema.class);
@@ -285,19 +316,23 @@ class BigQueryDenormalizedDestinationTest {
     when(airbyteStreamMock.getName()).thenReturn("stream_name");
     when(bigQueryMock.getTable(anyString(), anyString())).thenReturn(tableMock);
 
-    final FieldList existingFields = FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).setMode(REPEATED).build());
-    final FieldList expectedFields = FieldList.of(Field.newBuilder("name", StandardSQLTypeName.STRING).setMode(REPEATED).build());
+    final FieldList existingFields = FieldList.of(
+        Field.newBuilder("name", StandardSQLTypeName.STRING).setMode(REPEATED).build());
+    final FieldList expectedFields = FieldList.of(
+        Field.newBuilder("name", StandardSQLTypeName.STRING).setMode(REPEATED).build());
     when(existingSchemaMock.getFields()).thenReturn(existingFields);
     when(expectedSchemaMock.getFields()).thenReturn(expectedFields);
     // run test
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
     // equal mode should not use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(0)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(0))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_compareSubFields_equalType() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final String streamName = "stream_name";
     final String nameSpace = "name_space";
     final Table tableMock = mock(Table.class);
@@ -314,21 +349,29 @@ class BigQueryDenormalizedDestinationTest {
     when(airbyteStreamMock.getName()).thenReturn(streamName);
     when(bigQueryMock.getTable(anyString(), anyString())).thenReturn(tableMock);
 
-    final FieldList expectedSubField = FieldList.of(Field.newBuilder("sub_field_name", StandardSQLTypeName.STRING).build());
-    final FieldList existingSubField = FieldList.of(Field.newBuilder("sub_field_name", StandardSQLTypeName.STRING).build());
-    final Field existingField = Field.newBuilder("field_name", LegacySQLTypeName.RECORD, existingSubField).build();
-    final Field expectedField = Field.newBuilder("field_name", LegacySQLTypeName.RECORD, expectedSubField).build();
+    final FieldList expectedSubField = FieldList.of(
+        Field.newBuilder("sub_field_name", StandardSQLTypeName.STRING).build());
+    final FieldList existingSubField = FieldList.of(
+        Field.newBuilder("sub_field_name", StandardSQLTypeName.STRING).build());
+    final Field existingField = Field.newBuilder(
+            "field_name", LegacySQLTypeName.RECORD, existingSubField)
+        .build();
+    final Field expectedField = Field.newBuilder(
+            "field_name", LegacySQLTypeName.RECORD, expectedSubField)
+        .build();
     when(existingSchemaMock.getFields()).thenReturn(FieldList.of(existingField));
     when(expectedSchemaMock.getFields()).thenReturn(FieldList.of(expectedField));
     // run test
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
     // equal subfield type should not use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(0)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(0))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_compareSubFields_notEqualType() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final String streamName = "stream_name";
     final String nameSpace = "name_space";
     final Table tableMock = mock(Table.class);
@@ -345,25 +388,34 @@ class BigQueryDenormalizedDestinationTest {
     when(airbyteStreamMock.getName()).thenReturn(streamName);
     when(bigQueryMock.getTable(anyString(), anyString())).thenReturn(tableMock);
 
-    final FieldList expectedSubField = FieldList.of(Field.newBuilder("sub_field_name", StandardSQLTypeName.DATE).build());
-    final FieldList existingSubField = FieldList.of(Field.newBuilder("sub_field_name", StandardSQLTypeName.STRING).build());
-    final Field existingField = Field.newBuilder("field_name", LegacySQLTypeName.RECORD, existingSubField).build();
-    final Field expectedField = Field.newBuilder("field_name", LegacySQLTypeName.RECORD, expectedSubField).build();
+    final FieldList expectedSubField = FieldList.of(
+        Field.newBuilder("sub_field_name", StandardSQLTypeName.DATE).build());
+    final FieldList existingSubField = FieldList.of(
+        Field.newBuilder("sub_field_name", StandardSQLTypeName.STRING).build());
+    final Field existingField = Field.newBuilder(
+            "field_name", LegacySQLTypeName.RECORD, existingSubField)
+        .build();
+    final Field expectedField = Field.newBuilder(
+            "field_name", LegacySQLTypeName.RECORD, expectedSubField)
+        .build();
     when(existingSchemaMock.getFields()).thenReturn(FieldList.of(existingField));
     when(expectedSchemaMock.getFields()).thenReturn(FieldList.of(expectedField));
     // run test
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
     // not equal subfield type should use LegacyArrayFormatter
-    verify(bigQueryRecordFormatterMock, times(1)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(1))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
   }
 
   @Test
   void putStreamIntoUploaderMap_existingTableIsNull() throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap =
+        new HashMap<>();
     final String streamName = "stream_name";
     final String nameSpace = "name_space";
     final String targetTableName = "target_table";
-    final AirbyteStreamNameNamespacePair expectedResult = new AirbyteStreamNameNamespacePair(streamName, nameSpace);
+    final AirbyteStreamNameNamespacePair expectedResult =
+        new AirbyteStreamNameNamespacePair(streamName, nameSpace);
 
     mockBigqueryStream();
     when(uploaderConfigMock.getTargetTableName()).thenReturn(targetTableName);
@@ -375,7 +427,8 @@ class BigQueryDenormalizedDestinationTest {
     // run test
     bqdd.putStreamIntoUploaderMap(airbyteStreamMock, uploaderConfigMock, uploaderMap);
 
-    verify(bigQueryRecordFormatterMock, times(0)).setArrayFormatter(any(LegacyArrayFormatter.class));
+    verify(bigQueryRecordFormatterMock, times(0))
+        .setArrayFormatter(any(LegacyArrayFormatter.class));
     assertTrue(uploaderMap.containsKey(expectedResult));
   }
 
@@ -385,5 +438,4 @@ class BigQueryDenormalizedDestinationTest {
     when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
     when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
   }
-
 }

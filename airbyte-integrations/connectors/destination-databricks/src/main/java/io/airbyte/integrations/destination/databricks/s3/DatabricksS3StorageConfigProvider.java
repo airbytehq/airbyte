@@ -17,9 +17,9 @@ public class DatabricksS3StorageConfigProvider extends DatabricksStorageConfigPr
 
   public DatabricksS3StorageConfigProvider(JsonNode config) {
     final S3DestinationConfig.Builder builder = S3DestinationConfig.create(
-        config.get(S3Constants.S_3_BUCKET_NAME).asText(),
-        config.get(S3Constants.S_3_BUCKET_PATH).asText(),
-        config.get(S3Constants.S_3_BUCKET_REGION).asText())
+            config.get(S3Constants.S_3_BUCKET_NAME).asText(),
+            config.get(S3Constants.S_3_BUCKET_PATH).asText(),
+            config.get(S3Constants.S_3_BUCKET_REGION).asText())
         .withAccessKeyCredential(
             config.get(S3Constants.S_3_ACCESS_KEY_ID).asText(),
             config.get(S3Constants.S_3_SECRET_ACCESS_KEY).asText())
@@ -34,5 +34,4 @@ public class DatabricksS3StorageConfigProvider extends DatabricksStorageConfigPr
   public S3DestinationConfig getS3DestinationConfigOrThrow() {
     return s3Config;
   }
-
 }

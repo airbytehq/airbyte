@@ -29,18 +29,24 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot, final Map<String, String> additionalEnvironmentVariables)
+  public void start(
+      final WorkerDestinationConfig destinationConfig,
+      final Path jobRoot,
+      final Map<String, String> additionalEnvironmentVariables)
       throws Exception {
-    consumer =
-        dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(),
-            Jsons.object(Jsons.jsonNode(destinationConfig.getCatalog()), io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class),
-            Destination::defaultOutputRecordCollector);
+    consumer = dest.getConsumer(
+        destinationConfig.getDestinationConnectionConfiguration(),
+        Jsons.object(
+            Jsons.jsonNode(destinationConfig.getCatalog()),
+            io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class),
+        Destination::defaultOutputRecordCollector);
     consumer.start();
   }
 
   @Override
   public void accept(final AirbyteMessage message) throws Exception {
-    consumer.accept(Jsons.object(Jsons.jsonNode(message), io.airbyte.protocol.models.v0.AirbyteMessage.class));
+    consumer.accept(
+        Jsons.object(Jsons.jsonNode(message), io.airbyte.protocol.models.v0.AirbyteMessage.class));
   }
 
   @Override
@@ -73,5 +79,4 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   public Optional<AirbyteMessage> attemptRead() {
     return Optional.empty();
   }
-
 }

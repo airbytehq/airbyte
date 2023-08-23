@@ -24,18 +24,23 @@ class DestStreamStateLifecycleManagerTest {
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("apples")).withStreamState(Jsons.jsonNode("a"))));
+          .withStream(new AirbyteStreamState()
+              .withStreamDescriptor(new StreamDescriptor().withName("apples"))
+              .withStreamState(Jsons.jsonNode("a"))));
   private static final AirbyteMessage STREAM1_MESSAGE2 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("apples")).withStreamState(Jsons.jsonNode("b"))));
+          .withStream(new AirbyteStreamState()
+              .withStreamDescriptor(new StreamDescriptor().withName("apples"))
+              .withStreamState(Jsons.jsonNode("b"))));
   private static final AirbyteMessage STREAM2_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
-          .withStream(
-              new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("bananas")).withStreamState(Jsons.jsonNode("10"))));
+          .withStream(new AirbyteStreamState()
+              .withStreamDescriptor(new StreamDescriptor().withName("bananas"))
+              .withStreamState(Jsons.jsonNode("10"))));
 
   private DestStreamStateLifecycleManager mgr;
 
@@ -78,7 +83,8 @@ class DestStreamStateLifecycleManagerTest {
 
     assertTrue(mgr.listPending().isEmpty());
     assertTrue(mgr.listFlushed().isEmpty());
-    assertEquals(new LinkedList<>(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)), mgr.listCommitted());
+    assertEquals(
+        new LinkedList<>(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)), mgr.listCommitted());
   }
 
   @Test
@@ -129,7 +135,8 @@ class DestStreamStateLifecycleManagerTest {
 
     assertTrue(mgr.listPending().isEmpty());
     assertTrue(mgr.listFlushed().isEmpty());
-    assertEquals(new LinkedList<>(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)), mgr.listCommitted());
+    assertEquals(
+        new LinkedList<>(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)), mgr.listCommitted());
 
     // verify that multiple calls to markFlushedAsCommitted overwrite old states
     mgr.addState(STREAM1_MESSAGE1);
@@ -139,7 +146,8 @@ class DestStreamStateLifecycleManagerTest {
 
     assertTrue(mgr.listPending().isEmpty());
     assertTrue(mgr.listFlushed().isEmpty());
-    assertEquals(new LinkedList<>(List.of(STREAM1_MESSAGE1, STREAM2_MESSAGE1)), mgr.listCommitted());
+    assertEquals(
+        new LinkedList<>(List.of(STREAM1_MESSAGE1, STREAM2_MESSAGE1)), mgr.listCommitted());
   }
 
   /*
@@ -158,5 +166,4 @@ class DestStreamStateLifecycleManagerTest {
     assertTrue(mgr.listPending().isEmpty());
     assertEquals(new LinkedList<>(List.of(STREAM1_MESSAGE1)), mgr.listCommitted());
   }
-
 }

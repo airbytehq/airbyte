@@ -29,7 +29,8 @@ public class StreamDescriptorUtils {
     return fromAirbyteStream(stream.getStream());
   }
 
-  public static Set<StreamDescriptor> fromConfiguredCatalog(final ConfiguredAirbyteCatalog catalog) {
+  public static Set<StreamDescriptor> fromConfiguredCatalog(
+      final ConfiguredAirbyteCatalog catalog) {
     final var pairs = new HashSet<StreamDescriptor>();
 
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -39,5 +40,4 @@ public class StreamDescriptorUtils {
 
     return pairs;
   }
-
 }

@@ -71,9 +71,11 @@ class TestHarnessUtilsTest {
       when(process.isAlive()).thenReturn(true);
       final AtomicInteger recordedBeats = new AtomicInteger(0);
       doAnswer((ignored) -> {
-        recordedBeats.incrementAndGet();
-        return true;
-      }).when(heartbeatMonitor).isBeating();
+            recordedBeats.incrementAndGet();
+            return true;
+          })
+          .when(heartbeatMonitor)
+          .isBeating();
 
       final Thread thread = new Thread(this::runShutdown);
 
@@ -118,24 +120,28 @@ class TestHarnessUtilsTest {
 
       verifyNoInteractions(forceShutdown);
     }
-
   }
 
   @Test
   void testMapStreamNamesToSchemasWithNullNamespace() {
     final ImmutablePair<Void, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     final StandardSyncInput syncInput = syncPair.getValue();
-    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput);
+    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput =
+        TestHarnessUtils.mapStreamNamesToSchemas(syncInput);
     assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", null)));
   }
 
   @Test
   void testMapStreamNamesToSchemasWithMultipleNamespaces() {
-    final ImmutablePair<Void, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig(true);
+    final ImmutablePair<Void, StandardSyncInput> syncPair =
+        TestConfigHelpers.createSyncConfig(true);
     final StandardSyncInput syncInput = syncPair.getValue();
-    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput);
-    assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace")));
-    assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace2")));
+    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput =
+        TestHarnessUtils.mapStreamNamesToSchemas(syncInput);
+    assertNotNull(
+        mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace")));
+    assertNotNull(
+        mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace2")));
   }
 
   /**
@@ -154,12 +160,13 @@ class TestHarnessUtilsTest {
    * @param forcedShutdownDuration - amount of time to wait if a process needs to be destroyed
    *        forcibly.
    */
-  static void gentleCloseWithHeartbeat(final Process process,
-                                       final HeartbeatMonitor heartbeatMonitor,
-                                       final Duration gracefulShutdownDuration,
-                                       final Duration checkHeartbeatDuration,
-                                       final Duration forcedShutdownDuration,
-                                       final BiConsumer<Process, Duration> forceShutdown) {
+  static void gentleCloseWithHeartbeat(
+      final Process process,
+      final HeartbeatMonitor heartbeatMonitor,
+      final Duration gracefulShutdownDuration,
+      final Duration checkHeartbeatDuration,
+      final Duration forcedShutdownDuration,
+      final BiConsumer<Process, Duration> forceShutdown) {
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
         process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
@@ -172,7 +179,8 @@ class TestHarnessUtilsTest {
       try {
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (final InterruptedException e) {
-        LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
+        LOGGER.error(
+            "Exception during grace period for process to finish. This can happen when cancelling jobs.");
       }
     }
 
@@ -181,5 +189,4 @@ class TestHarnessUtilsTest {
       forceShutdown.accept(process, forcedShutdownDuration);
     }
   }
-
 }

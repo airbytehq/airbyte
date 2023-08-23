@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
@@ -23,12 +27,13 @@ import java.util.stream.Collectors;
 
 public class PostgresCdcCtidUtils {
 
-  public static CtidStreams streamsToSyncViaCtid(final CdcStateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog,
+  public static CtidStreams streamsToSyncViaCtid(
+      final CdcStateManager stateManager,
+      final ConfiguredAirbyteCatalog fullCatalog,
       final boolean savedOffsetAfterReplicationSlotLSN) {
     if (!savedOffsetAfterReplicationSlotLSN) {
       return new CtidStreams(
-          fullCatalog.getStreams()
-              .stream()
+          fullCatalog.getStreams().stream()
               .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
               .collect(Collectors.toList()),
           new HashMap<>());
@@ -37,7 +42,9 @@ public class PostgresCdcCtidUtils {
     final AirbyteStateMessage airbyteStateMessage = stateManager.getRawStateMessage();
     final Set<AirbyteStreamNameNamespacePair> streamsStillInCtidSync = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus = new HashMap<>();
-    if (airbyteStateMessage != null && airbyteStateMessage.getGlobal() != null && airbyteStateMessage.getGlobal().getStreamStates() != null) {
+    if (airbyteStateMessage != null
+        && airbyteStateMessage.getGlobal() != null
+        && airbyteStateMessage.getGlobal().getStreamStates() != null) {
       airbyteStateMessage.getGlobal().getStreamStates().forEach(stateMessage -> {
         final JsonNode streamState = stateMessage.getStreamState();
         final StreamDescriptor streamDescriptor = stateMessage.getStreamDescriptor();
@@ -48,8 +55,8 @@ public class PostgresCdcCtidUtils {
         if (streamState.has(STATE_TYPE_KEY)) {
           if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("ctid")) {
             final CtidStatus ctidStatus = Jsons.object(streamState, CtidStatus.class);
-            final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
-                streamDescriptor.getNamespace());
+            final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(
+                streamDescriptor.getName(), streamDescriptor.getNamespace());
             pairToCtidStatus.put(pair, ctidStatus);
             streamsStillInCtidSync.add(pair);
           }
@@ -59,28 +66,33 @@ public class PostgresCdcCtidUtils {
 
     final List<ConfiguredAirbyteStream> streamsForCtidSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
-        .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+        .filter(stream -> streamsStillInCtidSync.contains(
+            AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .forEach(streamsForCtidSync::add);
-    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced());
+    final List<ConfiguredAirbyteStream> newlyAddedStreams =
+        identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced());
     streamsForCtidSync.addAll(newlyAddedStreams);
 
     return new CtidStreams(streamsForCtidSync, pairToCtidStatus);
   }
 
-  private static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
+  private static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(
+      final ConfiguredAirbyteCatalog catalog,
       final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
-    final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
-    final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
+    final Set<AirbyteStreamNameNamespacePair> allStreams =
+        AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+    final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams =
+        new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
     return catalog.getStreams().stream()
         .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
-        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))).map(Jsons::clone)
+        .filter(stream -> newlyAddedStreams.contains(
+            AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+        .map(Jsons::clone)
         .collect(Collectors.toList());
   }
 
-  public record CtidStreams(List<ConfiguredAirbyteStream> streamsForCtidSync,
-                            Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
-
-  }
-
+  public record CtidStreams(
+      List<ConfiguredAirbyteStream> streamsForCtidSync,
+      Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {}
 }

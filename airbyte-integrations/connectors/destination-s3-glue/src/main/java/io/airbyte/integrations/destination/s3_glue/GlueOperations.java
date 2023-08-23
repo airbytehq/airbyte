@@ -39,60 +39,52 @@ public class GlueOperations implements MetastoreOperations {
   }
 
   @Override
-  public void upsertTable(String databaseName,
-                          String tableName,
-                          String location,
-                          JsonNode jsonSchema,
-                          String serializationLibrary) {
+  public void upsertTable(
+      String databaseName,
+      String tableName,
+      String location,
+      JsonNode jsonSchema,
+      String serializationLibrary) {
     try {
-      GetTableRequest getTableRequest = new GetTableRequest()
-          .withDatabaseName(databaseName)
-          .withName(tableName);
+      GetTableRequest getTableRequest =
+          new GetTableRequest().withDatabaseName(databaseName).withName(tableName);
 
       // Will throw EntityNotFoundException if table doesn't exist
       awsGlueClient.getTable(getTableRequest);
 
       UpdateTableRequest updateTableRequest = new UpdateTableRequest()
           .withDatabaseName(databaseName)
-          .withTableInput(
-              new TableInput()
-                  .withName(tableName)
-                  .withTableType("EXTERNAL_TABLE")
-                  .withStorageDescriptor(
-                      new StorageDescriptor()
-                          .withLocation(location)
-                          .withColumns(transformSchema(jsonSchema))
-                          .withInputFormat("org.apache.hadoop.mapred.TextInputFormat")
-                          .withOutputFormat("org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat")
-                          .withSerdeInfo(
-                              new SerDeInfo()
-                                  .withSerializationLibrary(serializationLibrary)
-                                  .withParameters(Map.of("paths", ",")))
-
-                  )
-                  .withPartitionKeys(List.of())
-                  .withParameters(Map.of("classification", "json")));
+          .withTableInput(new TableInput()
+              .withName(tableName)
+              .withTableType("EXTERNAL_TABLE")
+              .withStorageDescriptor(new StorageDescriptor()
+                  .withLocation(location)
+                  .withColumns(transformSchema(jsonSchema))
+                  .withInputFormat("org.apache.hadoop.mapred.TextInputFormat")
+                  .withOutputFormat("org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat")
+                  .withSerdeInfo(new SerDeInfo()
+                      .withSerializationLibrary(serializationLibrary)
+                      .withParameters(Map.of("paths", ","))))
+              .withPartitionKeys(List.of())
+              .withParameters(Map.of("classification", "json")));
 
       awsGlueClient.updateTable(updateTableRequest);
     } catch (EntityNotFoundException enfe) {
       CreateTableRequest createTableRequest = new CreateTableRequest()
           .withDatabaseName(databaseName)
-          .withTableInput(
-              new TableInput()
-                  .withName(tableName)
-                  .withTableType("EXTERNAL_TABLE")
-                  .withStorageDescriptor(
-                      new StorageDescriptor()
-                          .withLocation(location)
-                          .withColumns(transformSchema(jsonSchema))
-                          .withInputFormat("org.apache.hadoop.mapred.TextInputFormat")
-                          .withOutputFormat("org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat")
-                          .withSerdeInfo(
-                              new SerDeInfo()
-                                  .withSerializationLibrary(serializationLibrary)
-                                  .withParameters(Map.of("paths", ","))))
-                  .withPartitionKeys(List.of())
-                  .withParameters(Map.of("classification", "json")));
+          .withTableInput(new TableInput()
+              .withName(tableName)
+              .withTableType("EXTERNAL_TABLE")
+              .withStorageDescriptor(new StorageDescriptor()
+                  .withLocation(location)
+                  .withColumns(transformSchema(jsonSchema))
+                  .withInputFormat("org.apache.hadoop.mapred.TextInputFormat")
+                  .withOutputFormat("org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat")
+                  .withSerdeInfo(new SerDeInfo()
+                      .withSerializationLibrary(serializationLibrary)
+                      .withParameters(Map.of("paths", ","))))
+              .withPartitionKeys(List.of())
+              .withParameters(Map.of("classification", "json")));
 
       awsGlueClient.createTable(createTableRequest);
     }
@@ -101,19 +93,19 @@ public class GlueOperations implements MetastoreOperations {
   @Override
   public void deleteTable(String databaseName, String tableName) {
 
-    DeleteTableRequest deleteTableRequest = new DeleteTableRequest()
-        .withDatabaseName(databaseName)
-        .withName(tableName);
+    DeleteTableRequest deleteTableRequest =
+        new DeleteTableRequest().withDatabaseName(databaseName).withName(tableName);
 
     awsGlueClient.deleteTable(deleteTableRequest);
-
   }
 
   private Collection<Column> transformSchema(JsonNode jsonSchema) {
     if (jsonSchema.has("properties")) {
-      Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
+      Map<String, JsonNode> properties =
+          objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
       return properties.entrySet().stream()
-          .map(es -> new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue())))
+          .map(es ->
+              new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue())))
           .collect(Collectors.toSet());
     } else {
       return Collections.emptySet();
@@ -123,10 +115,11 @@ public class GlueOperations implements MetastoreOperations {
   private String transformSchemaRecursive(JsonNode jsonNode) {
     String type = filterTypes(jsonNode.get("type")).iterator().next();
     return switch (type) {
-      // TODO(itaseski) support date-time and timestamp airbyte types
+        // TODO(itaseski) support date-time and timestamp airbyte types
       case "string" -> "string";
       case "number" -> {
-        if (jsonNode.has("airbyte_type") && jsonNode.get("airbyte_type").asText().equals("integer")) {
+        if (jsonNode.has("airbyte_type")
+            && jsonNode.get("airbyte_type").asText().equals("integer")) {
           yield "int";
         }
         // Default to use decimal as it is a more precise type and allows for large values
@@ -141,20 +134,21 @@ public class GlueOperations implements MetastoreOperations {
         if (jsonNode.has("items")) {
           itemTypes = filterTypes(jsonNode.get("items").get("type"));
           if (itemTypes.size() > 1) {
-            // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
+            // TODO(itaseski) use union instead of array when having multiple types (rare
+            // occurrence)?
             arrayType += "string>";
           } else {
             String subtype = transformSchemaRecursive(jsonNode.get("items"));
             arrayType += (subtype + ">");
           }
-        } else
-          arrayType += "string>";
+        } else arrayType += "string>";
         yield arrayType;
       }
       case "object" -> {
         if (jsonNode.has("properties")) {
           String objectType = "struct<";
-          Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
+          Map<String, JsonNode> properties =
+              objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
           String columnTypes = properties.entrySet().stream()
               .map(p -> p.getKey() + ":" + transformSchemaRecursive(p.getValue()))
               .collect(Collectors.joining(","));
@@ -181,5 +175,4 @@ public class GlueOperations implements MetastoreOperations {
   public void close() {
     awsGlueClient.shutdown();
   }
-
 }

@@ -85,7 +85,8 @@ public class IOs {
       return Collections.emptyList();
     }
 
-    try (final ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
+    try (final ReversedLinesFileReader fileReader =
+        new ReversedLinesFileReader(file, Charsets.UTF_8)) {
       final List<String> lines = new ArrayList<>();
 
       String line = fileReader.readLine();
@@ -119,5 +120,4 @@ public class IOs {
   public static BufferedReader newBufferedReader(final InputStream inputStream) {
     return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
   }
-
 }

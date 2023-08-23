@@ -47,8 +47,11 @@ class MySqlStressTest extends JdbcStressTest {
         .withEnv("MYSQL_ROOT_HOST", "%")
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD.call());
     container.start();
-    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD.call());
-    connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+    final Connection connection =
+        DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD.call());
+    connection
+        .createStatement()
+        .execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 
   @BeforeEach
@@ -65,7 +68,8 @@ class MySqlStressTest extends JdbcStressTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s",
+        String.format(
+            "jdbc:mysql://%s:%s",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asText()),
         SQLDialect.MYSQL);
@@ -109,5 +113,4 @@ class MySqlStressTest extends JdbcStressTest {
   public JsonNode getConfig() {
     return Jsons.clone(config);
   }
-
 }

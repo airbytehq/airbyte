@@ -21,7 +21,8 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final String IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3";
-  private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ElasticsearchDestinationAcceptanceTest.class);
 
   private final ObjectMapper mapper = new ObjectMapper();
   private static ElasticsearchContainer container;
@@ -85,7 +86,9 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   @Override
   protected JsonNode getConfig() throws Exception {
     final var configJson = mapper.createObjectNode();
-    configJson.put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
+    configJson.put(
+        "endpoint",
+        String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
     return configJson;
   }
 
@@ -93,15 +96,18 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   protected JsonNode getFailCheckConfig() throws Exception {
     // should result in a failed connection check
     final var configJson = mapper.createObjectNode();
-    configJson.put("endpoint", String.format("htp::/%s:-%s", container.getHost(), container.getMappedPort(9200)));
+    configJson.put(
+        "endpoint",
+        String.format("htp::/%s:-%s", container.getHost(), container.getMappedPort(9200)));
     return configJson;
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
@@ -110,18 +116,20 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
         .setStreamName(streamName)
         .getIndexName();
 
-    final ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    final ElasticsearchConnection connection =
+        new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     return connection.getRecords(indexName);
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {}
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {}
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    final ElasticsearchConnection connection =
+        new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     connection.allIndices().forEach(connection::deleteIndexIfPresent);
     connection.close();
   }
-
 }

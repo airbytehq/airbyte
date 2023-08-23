@@ -28,7 +28,8 @@ public class TestingLoggerFactory {
     }
 
     final JsonNode logConfig = testDestinationConfig.get("logging_config");
-    final LoggingType loggingType = LoggingType.valueOf(logConfig.get("logging_type").asText());
+    final LoggingType loggingType =
+        LoggingType.valueOf(logConfig.get("logging_type").asText());
     switch (loggingType) {
       case FirstN -> {
         final int maxEntryCount = logConfig.get("max_entry_count").asInt();
@@ -41,12 +42,12 @@ public class TestingLoggerFactory {
       }
       case RandomSampling -> {
         final double samplingRatio = logConfig.get("sampling_ratio").asDouble();
-        final long seed = logConfig.has("seed") ? logConfig.get("seed").asLong() : System.currentTimeMillis();
+        final long seed =
+            logConfig.has("seed") ? logConfig.get("seed").asLong() : System.currentTimeMillis();
         final int maxEntryCount = logConfig.get("max_entry_count").asInt();
         return new RandomSamplingLogger(streamNamePair, samplingRatio, seed, maxEntryCount);
       }
       default -> throw new IllegalArgumentException("Unexpected logging type: " + loggingType);
     }
   }
-
 }

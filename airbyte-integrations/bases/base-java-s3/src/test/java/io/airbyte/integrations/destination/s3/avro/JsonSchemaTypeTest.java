@@ -17,10 +17,9 @@ public class JsonSchemaTypeTest {
 
   @ParameterizedTest
   @ArgumentsSource(JsonSchemaTypeProvider.class)
-  public void testFromJsonSchemaType(String type, String airbyteType, JsonSchemaType expectedJsonSchemaType) {
-    assertEquals(
-        expectedJsonSchemaType,
-        JsonSchemaType.fromJsonSchemaType(type, airbyteType));
+  public void testFromJsonSchemaType(
+      String type, String airbyteType, JsonSchemaType expectedJsonSchemaType) {
+    assertEquals(expectedJsonSchemaType, JsonSchemaType.fromJsonSchemaType(type, airbyteType));
   }
 
   public static class JsonSchemaTypeProvider implements ArgumentsProvider {
@@ -32,12 +31,25 @@ public class JsonSchemaTypeTest {
           Arguments.of("WellKnownTypes.json#/definitions/String", null, JsonSchemaType.STRING_V1),
           Arguments.of("WellKnownTypes.json#/definitions/Integer", null, JsonSchemaType.INTEGER_V1),
           Arguments.of("WellKnownTypes.json#/definitions/Boolean", null, JsonSchemaType.BOOLEAN_V1),
-          Arguments.of("WellKnownTypes.json#/definitions/BinaryData", null, JsonSchemaType.BINARY_DATA_V1),
+          Arguments.of(
+              "WellKnownTypes.json#/definitions/BinaryData", null, JsonSchemaType.BINARY_DATA_V1),
           Arguments.of("WellKnownTypes.json#/definitions/Date", null, JsonSchemaType.DATE_V1),
-          Arguments.of("WellKnownTypes.json#/definitions/TimestampWithTimezone", null, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
-          Arguments.of("WellKnownTypes.json#/definitions/TimestampWithoutTimezone", null, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1),
-          Arguments.of("WellKnownTypes.json#/definitions/TimeWithTimezone", null, JsonSchemaType.TIME_WITH_TIMEZONE_V1),
-          Arguments.of("WellKnownTypes.json#/definitions/TimeWithoutTimezone", null, JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1),
+          Arguments.of(
+              "WellKnownTypes.json#/definitions/TimestampWithTimezone",
+              null,
+              JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
+          Arguments.of(
+              "WellKnownTypes.json#/definitions/TimestampWithoutTimezone",
+              null,
+              JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1),
+          Arguments.of(
+              "WellKnownTypes.json#/definitions/TimeWithTimezone",
+              null,
+              JsonSchemaType.TIME_WITH_TIMEZONE_V1),
+          Arguments.of(
+              "WellKnownTypes.json#/definitions/TimeWithoutTimezone",
+              null,
+              JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1),
           Arguments.of("number", "integer", JsonSchemaType.NUMBER_INT_V0),
           Arguments.of("string", "big_integer", JsonSchemaType.NUMBER_BIGINT_V0),
           Arguments.of("number", "float", JsonSchemaType.NUMBER_FLOAT_V0),
@@ -50,7 +62,5 @@ public class JsonSchemaTypeTest {
           Arguments.of("array", null, JsonSchemaType.ARRAY),
           Arguments.of("combined", null, JsonSchemaType.COMBINED));
     }
-
   }
-
 }

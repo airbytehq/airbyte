@@ -32,12 +32,13 @@ public class KeenRecordConsumerTest extends PerStreamStateMessageTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
 
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createConfiguredAirbyteStream(
+  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog()
+      .withStreams(List.of(CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))));
+
   @Mock
   private Consumer<AirbyteMessage> outputRecordCollector;
 
@@ -61,5 +62,4 @@ public class KeenRecordConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return consumer;
   }
-
 }

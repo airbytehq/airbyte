@@ -13,24 +13,26 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator {
+public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition>
+    implements DestinationV1V2Migrator {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
 
   @Override
   public void migrateIfNecessary(
-                                 final SqlGenerator sqlGenerator,
-                                 final DestinationHandler destinationHandler,
-                                 final StreamConfig streamConfig)
+      final SqlGenerator sqlGenerator,
+      final DestinationHandler destinationHandler,
+      final StreamConfig streamConfig)
       throws TableNotMigratedException, UnexpectedSchemaException {
-    LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
+    LOGGER.info(
+        "Assessing whether migration is necessary for stream {}",
+        streamConfig.id().finalName());
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
       migrate(sqlGenerator, destinationHandler, streamConfig);
     } else {
       LOGGER.info("No Migration Required for stream: {}", streamConfig.id().finalName());
     }
-
   }
 
   /**
@@ -41,12 +43,20 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    */
   protected boolean shouldMigrate(final StreamConfig streamConfig) {
     final var v1RawTable = convertToV1RawName(streamConfig);
-    LOGGER.info("Checking whether v1 raw table {} in dataset {} exists", v1RawTable.tableName(), v1RawTable.namespace());
-    final var syncModeNeedsMigration = isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode());
+    LOGGER.info(
+        "Checking whether v1 raw table {} in dataset {} exists",
+        v1RawTable.tableName(),
+        v1RawTable.namespace());
+    final var syncModeNeedsMigration =
+        isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode());
     final var noValidV2RawTableExists = !doesValidV2RawTableAlreadyExist(streamConfig);
-    final var aValidV1RawTableExists = doesValidV1RawTableExist(v1RawTable.namespace(), v1RawTable.tableName());
-    LOGGER.info("Migration Info: Required for Sync mode: {}, No existing v2 raw tables: {}, A v1 raw table exists: {}",
-        syncModeNeedsMigration, noValidV2RawTableExists, aValidV1RawTableExists);
+    final var aValidV1RawTableExists =
+        doesValidV1RawTableExist(v1RawTable.namespace(), v1RawTable.tableName());
+    LOGGER.info(
+        "Migration Info: Required for Sync mode: {}, No existing v2 raw tables: {}, A v1 raw table exists: {}",
+        syncModeNeedsMigration,
+        noValidV2RawTableExists,
+        aValidV1RawTableExists);
     return syncModeNeedsMigration && noValidV2RawTableExists && aValidV1RawTableExists;
   }
 
@@ -58,19 +68,22 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param destinationHandler the class which executes the sql statements
    * @param streamConfig the stream to migrate the raw table of
    */
-  public void migrate(final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                      final DestinationHandler<DialectTableDefinition> destinationHandler,
-                      final StreamConfig streamConfig)
+  public void migrate(
+      final SqlGenerator<DialectTableDefinition> sqlGenerator,
+      final DestinationHandler<DialectTableDefinition> destinationHandler,
+      final StreamConfig streamConfig)
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);
-    final var migrateAndReset = String.join("\n\n",
-        sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(),
-            namespacedTableName.tableName()),
+    final var migrateAndReset = String.join(
+        "\n\n",
+        sqlGenerator.migrateFromV1toV2(
+            streamConfig.id(), namespacedTableName.namespace(), namespacedTableName.tableName()),
         sqlGenerator.softReset(streamConfig));
     try {
       destinationHandler.execute(migrateAndReset);
     } catch (Exception e) {
-      final var message = "Attempted and failed to migrate stream %s".formatted(streamConfig.id().finalName());
+      final var message = "Attempted and failed to migrate stream %s"
+          .formatted(streamConfig.id().finalName());
       throw new TableNotMigratedException(message, e);
     }
   }
@@ -81,7 +94,8 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param existingV2AirbyteRawTable the v1 raw table
    * @return whether the schema is as expected
    */
-  private boolean doesV1RawTableMatchExpectedSchema(DialectTableDefinition existingV2AirbyteRawTable) {
+  private boolean doesV1RawTableMatchExpectedSchema(
+      DialectTableDefinition existingV2AirbyteRawTable) {
 
     return schemaMatchesExpectation(existingV2AirbyteRawTable, LEGACY_RAW_TABLE_COLUMNS);
   }
@@ -91,9 +105,11 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    *
    * @param existingV2AirbyteRawTable the v2 raw table
    */
-  private void validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable) {
+  private void validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(
+      DialectTableDefinition existingV2AirbyteRawTable) {
     if (!schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES)) {
-      throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
+      throw new UnexpectedSchemaException(
+          "Destination V2 Raw Table does not match expected Schema");
     }
   }
 
@@ -115,8 +131,10 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    */
   private boolean doesValidV2RawTableAlreadyExist(final StreamConfig streamConfig) {
     if (doesAirbyteInternalNamespaceExist(streamConfig)) {
-      final var existingV2Table = getTableIfExists(streamConfig.id().rawNamespace(), streamConfig.id().rawName());
-      existingV2Table.ifPresent(this::validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema);
+      final var existingV2Table =
+          getTableIfExists(streamConfig.id().rawNamespace(), streamConfig.id().rawName());
+      existingV2Table.ifPresent(
+          this::validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema);
       return existingV2Table.isPresent();
     }
     return false;
@@ -131,7 +149,8 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    */
   private boolean doesValidV1RawTableExist(final String namespace, final String tableName) {
     final var existingV1RawTable = getTableIfExists(namespace, tableName);
-    return existingV1RawTable.isPresent() && doesV1RawTableMatchExpectedSchema(existingV1RawTable.get());
+    return existingV1RawTable.isPresent()
+        && doesV1RawTableMatchExpectedSchema(existingV1RawTable.get());
   }
 
   /**
@@ -140,7 +159,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param streamConfig the stream to check
    * @return whether the schema exists
    */
-  abstract protected boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig);
+  protected abstract boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig);
 
   /**
    * Checks a Table's schema and compares it to an expected schema to make sure it matches
@@ -149,7 +168,8 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param columns the expected schema
    * @return whether the existing table schema matches the expectation
    */
-  abstract protected boolean schemaMatchesExpectation(DialectTableDefinition existingTable, Collection<String> columns);
+  protected abstract boolean schemaMatchesExpectation(
+      DialectTableDefinition existingTable, Collection<String> columns);
 
   /**
    * Get a reference ta a table if it exists
@@ -158,7 +178,8 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param tableName
    * @return an optional potentially containing a reference to the table
    */
-  abstract protected Optional<DialectTableDefinition> getTableIfExists(String namespace, String tableName);
+  protected abstract Optional<DialectTableDefinition> getTableIfExists(
+      String namespace, String tableName);
 
   /**
    * We use different naming conventions for raw table names in destinations v2, we need a way to map
@@ -167,6 +188,5 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param streamConfig the stream in question
    * @return the valid v1 name and namespace for the same stream
    */
-  abstract protected NamespacedTableName convertToV1RawName(StreamConfig streamConfig);
-
+  protected abstract NamespacedTableName convertToV1RawName(StreamConfig streamConfig);
 }

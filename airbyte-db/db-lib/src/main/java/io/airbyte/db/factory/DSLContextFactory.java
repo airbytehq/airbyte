@@ -38,12 +38,15 @@ public class DSLContextFactory {
    * @param dialect The SQL dialect to use with objects created from this context.
    * @return The configured {@link DSLContext}.
    */
-  public static DSLContext create(final String username,
-                                  final String password,
-                                  final String driverClassName,
-                                  final String jdbcConnectionString,
-                                  final SQLDialect dialect) {
-    return DSL.using(DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString), dialect);
+  public static DSLContext create(
+      final String username,
+      final String password,
+      final String driverClassName,
+      final String jdbcConnectionString,
+      final SQLDialect dialect) {
+    return DSL.using(
+        DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString),
+        dialect);
   }
 
   /**
@@ -57,13 +60,16 @@ public class DSLContextFactory {
    * @param connectionProperties Additional configuration properties for the underlying driver.
    * @return The configured {@link DSLContext}.
    */
-  public static DSLContext create(final String username,
-                                  final String password,
-                                  final String driverClassName,
-                                  final String jdbcConnectionString,
-                                  final SQLDialect dialect,
-                                  final Map<String, String> connectionProperties) {
-    return DSL.using(DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString, connectionProperties), dialect);
+  public static DSLContext create(
+      final String username,
+      final String password,
+      final String driverClassName,
+      final String jdbcConnectionString,
+      final SQLDialect dialect,
+      final Map<String, String> connectionProperties) {
+    return DSL.using(
+        DataSourceFactory.create(
+            username, password, driverClassName, jdbcConnectionString, connectionProperties),
+        dialect);
   }
-
 }

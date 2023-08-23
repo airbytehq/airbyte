@@ -54,7 +54,8 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
         arguments(getSchemaWithFormats(), getExpectedSchemaWithFormats()),
         arguments(getSchemaWithDateTime(), getExpectedSchemaWithDateTime()),
         arguments(getSchemaWithInvalidArrayType(), getExpectedSchemaWithInvalidArrayType()),
-        arguments(getSchemaWithNestedDatetimeInsideNullObject(),
+        arguments(
+            getSchemaWithNestedDatetimeInsideNullObject(),
             getExpectedSchemaWithNestedDatetimeInsideNullObject()),
         arguments(getSchemaArrays(), getExpectedSchemaArrays()));
   }
@@ -73,13 +74,22 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     final JsonNode jsonNodeSchema = getSchema();
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
-    final Field subFields = Field.newBuilder("big_query_array", LegacySQLTypeName.RECORD,
-        Field.of("domain", LegacySQLTypeName.STRING),
-        Field.of("grants", LegacySQLTypeName.RECORD,
-            Field.newBuilder("big_query_array", StandardSQLTypeName.STRING).setMode(Mode.REPEATED).build()))
-        .setMode(Mode.REPEATED).build();
+    final Field subFields = Field.newBuilder(
+            "big_query_array",
+            LegacySQLTypeName.RECORD,
+            Field.of("domain", LegacySQLTypeName.STRING),
+            Field.of(
+                "grants",
+                LegacySQLTypeName.RECORD,
+                Field.newBuilder("big_query_array", StandardSQLTypeName.STRING)
+                    .setMode(Mode.REPEATED)
+                    .build()))
+        .setMode(Mode.REPEATED)
+        .build();
     final Schema expectedResult = Schema.of(
-        Field.newBuilder("accepts_marketing_updated_at", LegacySQLTypeName.DATETIME).setMode(Mode.NULLABLE).build(),
+        Field.newBuilder("accepts_marketing_updated_at", LegacySQLTypeName.DATETIME)
+            .setMode(Mode.NULLABLE)
+            .build(),
         Field.of("name", LegacySQLTypeName.STRING),
         Field.of("permission_list", LegacySQLTypeName.RECORD, subFields),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
@@ -130,7 +140,10 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     final Schema expectedResult = Schema.of(
         Field.of("updated_at", LegacySQLTypeName.DATETIME),
-        Field.of("items", LegacySQLTypeName.RECORD, Field.of("nested_datetime", LegacySQLTypeName.DATETIME)),
+        Field.of(
+            "items",
+            LegacySQLTypeName.RECORD,
+            Field.of("nested_datetime", LegacySQLTypeName.DATETIME)),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
         Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
 
@@ -146,10 +159,15 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     final Schema expectedResult = Schema.of(
         Field.of("name", LegacySQLTypeName.STRING),
-        Field.newBuilder("permission_list", LegacySQLTypeName.RECORD,
-            Field.of("domain", LegacySQLTypeName.STRING),
-            Field.newBuilder("grants", LegacySQLTypeName.STRING).setMode(Mode.REPEATED).build())
-            .setMode(Mode.REPEATED).build(),
+        Field.newBuilder(
+                "permission_list",
+                LegacySQLTypeName.RECORD,
+                Field.of("domain", LegacySQLTypeName.STRING),
+                Field.newBuilder("grants", LegacySQLTypeName.STRING)
+                    .setMode(Mode.REPEATED)
+                    .build())
+            .setMode(Mode.REPEATED)
+            .build(),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
         Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
 
@@ -179,11 +197,20 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     final Schema expectedResult = Schema.of(
-        Field.newBuilder("name", LegacySQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
-        Field.newBuilder("appointment", LegacySQLTypeName.RECORD,
-            Field.newBuilder("street", LegacySQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
-            Field.newBuilder("expTime", LegacySQLTypeName.DATETIME).setMode(Mode.NULLABLE).build())
-            .setMode(Mode.NULLABLE).build(),
+        Field.newBuilder("name", LegacySQLTypeName.STRING)
+            .setMode(Mode.NULLABLE)
+            .build(),
+        Field.newBuilder(
+                "appointment",
+                LegacySQLTypeName.RECORD,
+                Field.newBuilder("street", LegacySQLTypeName.STRING)
+                    .setMode(Mode.NULLABLE)
+                    .build(),
+                Field.newBuilder("expTime", LegacySQLTypeName.DATETIME)
+                    .setMode(Mode.NULLABLE)
+                    .build())
+            .setMode(Mode.NULLABLE)
+            .build(),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
         Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
 
@@ -194,8 +221,8 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
 
   @Test
   public void testEmittedAtTimeConversion() {
-    final DefaultBigQueryDenormalizedRecordFormatter mockedFormatter = Mockito.mock(
-        DefaultBigQueryDenormalizedRecordFormatter.class, Mockito.CALLS_REAL_METHODS);
+    final DefaultBigQueryDenormalizedRecordFormatter mockedFormatter =
+        Mockito.mock(DefaultBigQueryDenormalizedRecordFormatter.class, Mockito.CALLS_REAL_METHODS);
 
     final ObjectNode objectNode = mapper.createObjectNode();
 
@@ -203,16 +230,19 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     airbyteRecordMessage.setEmittedAt(1602637589000L);
     mockedFormatter.addAirbyteColumns(objectNode, airbyteRecordMessage);
 
-    assertEquals("2020-10-14 01:06:29.000000+00:00",
+    assertEquals(
+        "2020-10-14 01:06:29.000000+00:00",
         objectNode.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).textValue());
   }
 
   @Test
   void formatRecord_objectType() throws JsonProcessingException {
     final JsonNode jsonNodeSchema = getSchema();
-    final DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
-        jsonNodeSchema, new BigQuerySQLNameTransformer());
-    final JsonNode objectNode = mapper.readTree("""
+    final DefaultBigQueryDenormalizedRecordFormatter rf =
+        new DefaultBigQueryDenormalizedRecordFormatter(
+            jsonNodeSchema, new BigQuerySQLNameTransformer());
+    final JsonNode objectNode = mapper.readTree(
+        """
                                                 {"name":"data"}
                                                 """);
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage();
@@ -233,7 +263,8 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     rf.fieldsContainRefDefinitionValue.add("name");
-    final JsonNode objectNode = mapper.readTree("""
+    final JsonNode objectNode = mapper.readTree(
+        """
                                                 {"name":"data"}
                                                 """);
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage();
@@ -253,7 +284,8 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     final JsonNode jsonNodeSchema = getSchemaArrays();
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
-    final JsonNode objectNode = mapper.readTree("""
+    final JsonNode objectNode = mapper.readTree(
+        """
                                                 {"object_with_arrays":["array_3"]}
                                                 """);
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage();
@@ -275,7 +307,8 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     final JsonNode jsonNodeSchema = getSchema();
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
-    final JsonNode arrayNode = mapper.readTree("""
+    final JsonNode arrayNode =
+        mapper.readTree("""
                                                ["one"]""");
 
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage();
@@ -284,5 +317,4 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
 
     assertThrows(IllegalArgumentException.class, () -> rf.formatRecord(airbyteRecordMessage));
   }
-
 }

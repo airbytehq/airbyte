@@ -22,11 +22,11 @@ public class ElasticsearchWriteConfig {
   public ElasticsearchWriteConfig() {}
 
   ElasticsearchWriteConfig(
-                           String namespace,
-                           String streamName,
-                           DestinationSyncMode destinationSyncMode,
-                           List<List<String>> primaryKey,
-                           boolean upsert) {
+      String namespace,
+      String streamName,
+      DestinationSyncMode destinationSyncMode,
+      List<List<String>> primaryKey,
+      boolean upsert) {
     this.namespace = namespace;
     this.streamName = streamName;
     this.syncMode = destinationSyncMode;
@@ -92,11 +92,11 @@ public class ElasticsearchWriteConfig {
     if (Objects.nonNull(namespace) && !namespace.isEmpty()) {
       prefix = String.format("%s_", namespace).toLowerCase();
     }
-    return String.format("%s%s", prefix, namingResolver.getIdentifier(streamName).toLowerCase());
+    return String.format(
+        "%s%s", prefix, namingResolver.getIdentifier(streamName).toLowerCase());
   }
 
   public String getTempIndexName() {
     return String.format("tmp_%s", getIndexName());
   }
-
 }

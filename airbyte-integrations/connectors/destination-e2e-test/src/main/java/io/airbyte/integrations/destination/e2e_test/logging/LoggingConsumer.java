@@ -28,9 +28,10 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, TestingLogger> loggers;
 
-  public LoggingConsumer(final TestingLoggerFactory loggerFactory,
-                         final ConfiguredAirbyteCatalog configuredCatalog,
-                         final Consumer<AirbyteMessage> outputRecordCollector) {
+  public LoggingConsumer(
+      final TestingLoggerFactory loggerFactory,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.loggerFactory = loggerFactory;
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -41,7 +42,8 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
   public void start() {
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
       final AirbyteStream stream = configuredStream.getStream();
-      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream);
+      final AirbyteStreamNameNamespacePair streamNamePair =
+          AirbyteStreamNameNamespacePair.fromAirbyteStream(stream);
       final TestingLogger logger = loggerFactory.create(streamNamePair);
       loggers.put(streamNamePair, logger);
     }
@@ -58,13 +60,13 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
     }
 
     final AirbyteRecordMessage recordMessage = message.getRecord();
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
+    final AirbyteStreamNameNamespacePair pair =
+        AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!loggers.containsKey(pair)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Message contained record from a stream that was not in the catalog.\n  Catalog: %s\n  Message: %s",
-              Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage)));
+      throw new IllegalArgumentException(String.format(
+          "Message contained record from a stream that was not in the catalog.\n  Catalog: %s\n  Message: %s",
+          Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage)));
     }
 
     loggers.get(pair).log(recordMessage);
@@ -72,5 +74,4 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
 
   @Override
   public void close() {}
-
 }

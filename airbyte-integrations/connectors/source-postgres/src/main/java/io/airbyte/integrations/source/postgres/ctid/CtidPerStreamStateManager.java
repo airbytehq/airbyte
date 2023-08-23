@@ -25,23 +25,28 @@ import org.slf4j.LoggerFactory;
 public class CtidPerStreamStateManager extends CtidStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidPerStreamStateManager.class);
-  private final static AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
+  private static final AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
       .withType(AirbyteStateType.STREAM)
       .withStream(new AirbyteStreamState());
 
-  public CtidPerStreamStateManager(final List<AirbyteStateMessage> stateMessages, final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+  public CtidPerStreamStateManager(
+      final List<AirbyteStateMessage> stateMessages,
+      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     super(createPairToCtidStatusMap(stateMessages, fileNodes));
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, CtidStatus> createPairToCtidStatusMap(final List<AirbyteStateMessage> stateMessages,
+  private static Map<AirbyteStreamNameNamespacePair, CtidStatus> createPairToCtidStatusMap(
+      final List<AirbyteStateMessage> stateMessages,
       final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
-        if (stateMessage.getType() == AirbyteStateType.STREAM && !stateMessage.equals(EMPTY_STATE)) {
+        if (stateMessage.getType() == AirbyteStateType.STREAM
+            && !stateMessage.equals(EMPTY_STATE)) {
           LOGGER.info("State message: " + stateMessage);
           final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
-          final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace());
+          final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(
+              streamDescriptor.getName(), streamDescriptor.getNamespace());
           final CtidStatus ctidStatus;
           try {
             ctidStatus = Jsons.object(stateMessage.getStream().getStreamState(), CtidStatus.class);
@@ -64,14 +69,12 @@ public class CtidPerStreamStateManager extends CtidStateManager {
   }
 
   @Override
-  public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
-    final AirbyteStreamState airbyteStreamState =
-        new AirbyteStreamState()
-            .withStreamDescriptor(
-                new StreamDescriptor()
-                    .withName(pair.getName())
-                    .withNamespace(pair.getNamespace()))
-            .withStreamState(Jsons.jsonNode(ctidStatus));
+  public AirbyteStateMessage createCtidStateMessage(
+      final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
+    final AirbyteStreamState airbyteStreamState = new AirbyteStreamState()
+        .withStreamDescriptor(
+            new StreamDescriptor().withName(pair.getName()).withNamespace(pair.getNamespace()))
+        .withStreamState(Jsons.jsonNode(ctidStatus));
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
@@ -79,7 +82,9 @@ public class CtidPerStreamStateManager extends CtidStateManager {
   }
 
   @Override
-  public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
-    return XminStateManager.getAirbyteStateMessage(pair, Jsons.object(streamStateForIncrementalRun, XminStatus.class));
+  public AirbyteStateMessage createFinalStateMessage(
+      final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
+    return XminStateManager.getAirbyteStateMessage(
+        pair, Jsons.object(streamStateForIncrementalRun, XminStatus.class));
   }
 }

@@ -18,5 +18,4 @@ public class S3JsonlDestinationAcceptanceTest extends S3BaseJsonlDestinationAcce
   protected JsonNode getBaseConfigJson() {
     return S3DestinationTestUtils.getBaseConfigJsonFilePath();
   }
-
 }

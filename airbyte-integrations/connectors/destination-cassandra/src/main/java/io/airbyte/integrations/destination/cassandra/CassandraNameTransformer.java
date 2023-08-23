@@ -38,5 +38,4 @@ class CassandraNameTransformer extends StandardNameTransformer {
   String outputColumn(String columnName) {
     return Names.doubleQuote(columnName.toLowerCase());
   }
-
 }

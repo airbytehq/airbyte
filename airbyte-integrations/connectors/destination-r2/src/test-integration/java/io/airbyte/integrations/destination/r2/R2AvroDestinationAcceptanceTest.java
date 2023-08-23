@@ -18,5 +18,4 @@ public class R2AvroDestinationAcceptanceTest extends S3BaseAvroDestinationAccept
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
-
 }

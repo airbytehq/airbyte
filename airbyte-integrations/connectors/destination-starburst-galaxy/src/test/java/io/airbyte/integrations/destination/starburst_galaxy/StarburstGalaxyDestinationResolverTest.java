@@ -52,5 +52,4 @@ public class StarburstGalaxyDestinationResolverTest {
     final StarburstGalaxyStagingStorageType stagingStorageType = getStagingStorageType(config);
     assertEquals(S3, stagingStorageType);
   }
-
 }

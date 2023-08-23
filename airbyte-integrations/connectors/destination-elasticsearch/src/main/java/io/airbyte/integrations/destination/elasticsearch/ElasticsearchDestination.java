@@ -45,11 +45,13 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     final ConnectorConfiguration configObject = convertConfig(config);
     if (Objects.isNull(configObject.getEndpoint())) {
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("endpoint must not be empty");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("endpoint must not be empty");
     }
     if (!configObject.getAuthenticationMethod().isValid()) {
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("authentication options are invalid");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("authentication options are invalid");
     }
 
     final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
@@ -62,15 +64,17 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     if (result) {
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } else {
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to ping elasticsearch");
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("failed to ping elasticsearch");
     }
-
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
 
     final ConnectorConfiguration configObject = convertConfig(config);
     final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
@@ -88,7 +92,11 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
         LOGGER.info("not using DestinationSyncMode.APPEND, so using primary key");
         primaryKey = stream.getPrimaryKey();
       }
-      LOGGER.info("adding write config. namespace: {}, stream: {}, syncMode: {}", namespace, streamName, syncMode);
+      LOGGER.info(
+          "adding write config. namespace: {}, stream: {}, syncMode: {}",
+          namespace,
+          streamName,
+          syncMode);
       writeConfigs.add(new ElasticsearchWriteConfig()
           .setSyncMode(syncMode)
           .setNamespace(namespace)
@@ -97,11 +105,11 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
           .setUpsert(configObject.isUpsert()));
     }
 
-    return ElasticsearchAirbyteMessageConsumerFactory.create(outputRecordCollector, connection, writeConfigs, configuredCatalog);
+    return ElasticsearchAirbyteMessageConsumerFactory.create(
+        outputRecordCollector, connection, writeConfigs, configuredCatalog);
   }
 
   private ConnectorConfiguration convertConfig(JsonNode config) {
     return mapper.convertValue(config, ConnectorConfiguration.class);
   }
-
 }

@@ -16,9 +16,12 @@ public class JavaProcessRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JavaProcessRunner.class);
 
-  public static void runProcess(final String path, final Runtime run, final String... commands) throws IOException, InterruptedException {
+  public static void runProcess(final String path, final Runtime run, final String... commands)
+      throws IOException, InterruptedException {
     LOGGER.info("Running process: " + Arrays.asList(commands));
-    final Process pr = path.equals(System.getProperty("user.dir")) ? run.exec(commands) : run.exec(commands, null, new File(path));
+    final Process pr = path.equals(System.getProperty("user.dir"))
+        ? run.exec(commands)
+        : run.exec(commands, null, new File(path));
     LineGobbler.gobble(pr.getErrorStream(), LOGGER::error);
     LineGobbler.gobble(pr.getInputStream(), LOGGER::info);
     if (!pr.waitFor(10, TimeUnit.MINUTES)) {
@@ -26,5 +29,4 @@ public class JavaProcessRunner {
       throw new RuntimeException("Timeout while executing: " + Arrays.toString(commands));
     }
   }
-
 }

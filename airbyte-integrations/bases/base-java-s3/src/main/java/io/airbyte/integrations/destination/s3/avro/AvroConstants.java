@@ -15,12 +15,12 @@ public class AvroConstants {
 
   public static final String AVRO_EXTRA_PROPS_FIELD = "_airbyte_additional_properties";
   // This set must include _ab_additional_col in source_s3/source_files_abstract/stream.py
-  public static final Set<String> JSON_EXTRA_PROPS_FIELDS = Set.of("_ab_additional_properties", AVRO_EXTRA_PROPS_FIELD);
+  public static final Set<String> JSON_EXTRA_PROPS_FIELDS =
+      Set.of("_ab_additional_properties", AVRO_EXTRA_PROPS_FIELD);
   public static final AvroNameTransformer NAME_TRANSFORMER = new AvroNameTransformer();
   public static final JsonAvroConverter JSON_CONVERTER = JsonAvroConverter.builder()
       .setNameTransformer(NAME_TRANSFORMER::getIdentifier)
       .setJsonAdditionalPropsFieldNames(JSON_EXTRA_PROPS_FIELDS)
       .setAvroAdditionalPropsFieldName(AVRO_EXTRA_PROPS_FIELD)
       .build();
-
 }

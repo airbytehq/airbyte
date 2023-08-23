@@ -11,15 +11,14 @@ import org.testcontainers.utility.DockerImageName;
 public class DynamodbContainer extends LocalStackContainer {
 
   public static DynamodbContainer createWithStart() {
-    var dynamodbContainer = (DynamodbContainer) new DynamodbContainer()
-        .withServices(Service.DYNAMODB);
+    var dynamodbContainer =
+        (DynamodbContainer) new DynamodbContainer().withServices(Service.DYNAMODB);
     dynamodbContainer.start();
     return dynamodbContainer;
   }
 
   public static DynamodbContainer create() {
-    return (DynamodbContainer) new DynamodbContainer()
-        .withServices(Service.DYNAMODB);
+    return (DynamodbContainer) new DynamodbContainer().withServices(Service.DYNAMODB);
   }
 
   public DynamodbContainer() {
@@ -29,5 +28,4 @@ public class DynamodbContainer extends LocalStackContainer {
   public URI getEndpointOverride() {
     return super.getEndpointOverride(Service.DYNAMODB);
   }
-
 }

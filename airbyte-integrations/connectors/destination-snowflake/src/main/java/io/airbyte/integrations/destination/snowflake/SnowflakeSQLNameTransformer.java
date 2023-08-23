@@ -29,5 +29,4 @@ public class SnowflakeSQLNameTransformer extends StandardNameTransformer {
       return "_" + normalizedName;
     }
   }
-
 }

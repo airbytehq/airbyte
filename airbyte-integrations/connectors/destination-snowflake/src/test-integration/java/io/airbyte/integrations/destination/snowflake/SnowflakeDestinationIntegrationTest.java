@@ -39,8 +39,10 @@ class SnowflakeDestinationIntegrationTest {
     // schema
     // this connector should be updated with multiple credentials, each with a clear purpose (valid,
     // invalid: insufficient permissions, invalid: wrong password, etc..)
-    final JsonNode credentialsJsonString = Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
-    final AirbyteConnectionStatus check = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString);
+    final JsonNode credentialsJsonString =
+        Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
+    final AirbyteConnectionStatus check =
+        new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
   }
 
@@ -48,7 +50,8 @@ class SnowflakeDestinationIntegrationTest {
   public void testInvalidSchemaName() throws Exception {
     final JsonNode config = getConfig();
     final String schema = config.get("schema").asText();
-    final DataSource dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
+    final DataSource dataSource =
+        SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     try {
       final JdbcDatabase database = SnowflakeDatabase.getDatabase(dataSource);
       assertDoesNotThrow(() -> syncWithNamingResolver(database, schema));
@@ -58,7 +61,8 @@ class SnowflakeDestinationIntegrationTest {
     }
   }
 
-  public void syncWithNamingResolver(final JdbcDatabase database, final String schema) throws SQLException {
+  public void syncWithNamingResolver(final JdbcDatabase database, final String schema)
+      throws SQLException {
     final String normalizedSchemaName = namingResolver.getIdentifier(schema);
     try {
       database.execute(String.format("CREATE SCHEMA %s", normalizedSchemaName));
@@ -67,7 +71,8 @@ class SnowflakeDestinationIntegrationTest {
     }
   }
 
-  private void syncWithoutNamingResolver(final JdbcDatabase database, final String schema) throws SQLException {
+  private void syncWithoutNamingResolver(final JdbcDatabase database, final String schema)
+      throws SQLException {
     try {
       database.execute(String.format("CREATE SCHEMA %s", schema));
     } finally {
@@ -76,10 +81,11 @@ class SnowflakeDestinationIntegrationTest {
   }
 
   private JsonNode getConfig() throws IOException {
-    final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/insert_config.json")));
-    final String schemaName = "schemaName with whitespace " + Strings.addRandomSuffix("integration_test", "_", 5);
+    final JsonNode config =
+        Jsons.deserialize(Files.readString(Paths.get("secrets/insert_config.json")));
+    final String schemaName =
+        "schemaName with whitespace " + Strings.addRandomSuffix("integration_test", "_", 5);
     ((ObjectNode) config).put("schema", schemaName);
     return config;
   }
-
 }

@@ -17,7 +17,8 @@ public class S3CopyConfigTest {
 
   @Test
   public void setsDefaultValues() throws IOException {
-    final boolean purgeStagingData = S3CopyConfig.shouldPurgeStagingData(OBJECT_MAPPER.readTree("{}"));
+    final boolean purgeStagingData =
+        S3CopyConfig.shouldPurgeStagingData(OBJECT_MAPPER.readTree("{}"));
 
     assertTrue(purgeStagingData);
   }
@@ -33,5 +34,4 @@ public class S3CopyConfigTest {
 
     assertFalse(purgeStagingData);
   }
-
 }

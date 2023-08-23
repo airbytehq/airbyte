@@ -39,13 +39,14 @@ public class DynamodbOperationsTest {
 
     var jsonConfig = DynamodbDataFactory.createJsonConfig(dynamodbContainer);
 
-    this.dynamodbOperations = new DynamodbOperations(DynamodbConfig.createDynamodbConfig(jsonConfig));
-    this.dynamoDbClient = DynamodbUtils.createDynamoDbClient(DynamodbConfig.createDynamodbConfig(jsonConfig));
+    this.dynamodbOperations =
+        new DynamodbOperations(DynamodbConfig.createDynamodbConfig(jsonConfig));
+    this.dynamoDbClient =
+        DynamodbUtils.createDynamoDbClient(DynamodbConfig.createDynamodbConfig(jsonConfig));
 
     this.objectMapper = new ObjectMapper()
         .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
         .configure(SerializationFeature.INDENT_OUTPUT, true);
-
   }
 
   @AfterEach
@@ -64,13 +65,13 @@ public class DynamodbOperationsTest {
 
     List<String> tables = dynamodbOperations.listTables();
 
-    assertThat(tables).hasSize(5)
+    assertThat(tables)
+        .hasSize(5)
         .anyMatch(t -> t.equals(TABLE_NAME + 1))
         .anyMatch(t -> t.equals(TABLE_NAME + 2))
         .anyMatch(t -> t.equals(TABLE_NAME + 3))
         .anyMatch(t -> t.equals(TABLE_NAME + 4))
         .anyMatch(t -> t.equals(TABLE_NAME + 5));
-
   }
 
   @Test
@@ -79,12 +80,13 @@ public class DynamodbOperationsTest {
     var createTableRequests = DynamodbDataFactory.createTables(TABLE_NAME, 1);
     var createTableResponse = dynamoDbClient.createTable(createTableRequests.get(0));
 
-    var primaryKey = dynamodbOperations.primaryKey(createTableResponse.tableDescription().tableName());
+    var primaryKey =
+        dynamodbOperations.primaryKey(createTableResponse.tableDescription().tableName());
 
-    assertThat(primaryKey).hasSize(2)
+    assertThat(primaryKey)
+        .hasSize(2)
         .anyMatch(t -> t.equals("attr_1"))
         .anyMatch(t -> t.equals("attr_2"));
-
   }
 
   @Test
@@ -94,25 +96,31 @@ public class DynamodbOperationsTest {
     var createTableResponse = dynamoDbClient.createTable(createTableRequests.get(0));
     String tableName = createTableResponse.tableDescription().tableName();
 
-    PutItemRequest putItemRequest1 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
-        "attr_1", AttributeValue.builder().s("str_4").build(),
-        "attr_2", AttributeValue.builder().s("str_5").build(),
-        "attr_3", AttributeValue.builder().n("1234").build(),
-        "attr_4", AttributeValue.builder().ns("12.5", "74.5").build()));
+    PutItemRequest putItemRequest1 = DynamodbDataFactory.putItemRequest(
+        tableName,
+        Map.of(
+            "attr_1", AttributeValue.builder().s("str_4").build(),
+            "attr_2", AttributeValue.builder().s("str_5").build(),
+            "attr_3", AttributeValue.builder().n("1234").build(),
+            "attr_4", AttributeValue.builder().ns("12.5", "74.5").build()));
 
     dynamoDbClient.putItem(putItemRequest1);
 
-    PutItemRequest putItemRequest2 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
-        "attr_1", AttributeValue.builder().s("str_6").build(),
-        "attr_2", AttributeValue.builder().s("str_7").build(),
-        "attr_5", AttributeValue.builder().bool(true).build(),
-        "attr_6", AttributeValue.builder().ss("str_1", "str_2").build()));
+    PutItemRequest putItemRequest2 = DynamodbDataFactory.putItemRequest(
+        tableName,
+        Map.of(
+            "attr_1", AttributeValue.builder().s("str_6").build(),
+            "attr_2", AttributeValue.builder().s("str_7").build(),
+            "attr_5", AttributeValue.builder().bool(true).build(),
+            "attr_6", AttributeValue.builder().ss("str_1", "str_2").build()));
 
     dynamoDbClient.putItem(putItemRequest2);
 
     var schema = dynamodbOperations.inferSchema(tableName, 1000);
 
-    JSONAssert.assertEquals(objectMapper.writeValueAsString(schema), """
+    JSONAssert.assertEquals(
+        objectMapper.writeValueAsString(schema),
+        """
                                                                      {
                                                                      	"attr_5": {
                                                                      		"type": ["null","boolean"]
@@ -139,8 +147,8 @@ public class DynamodbOperationsTest {
                                                                      		}
                                                                      	}
                                                                      }
-                                                                     """, true);
-
+                                                                     """,
+        true);
   }
 
   @Test
@@ -150,37 +158,43 @@ public class DynamodbOperationsTest {
     var createTableResponse = dynamoDbClient.createTable(createTableRequests.get(0));
     String tableName = createTableResponse.tableDescription().tableName();
 
-    PutItemRequest putItemRequest1 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
-        "attr_1", AttributeValue.builder().s("str_4").build(),
-        "attr_2", AttributeValue.builder().s("str_5").build(),
-        "name", AttributeValue.builder().s("2017-12-21T17:42:34Z").build(),
-        "attr_4", AttributeValue.builder().ns("12.5", "74.5").build()));
+    PutItemRequest putItemRequest1 = DynamodbDataFactory.putItemRequest(
+        tableName,
+        Map.of(
+            "attr_1", AttributeValue.builder().s("str_4").build(),
+            "attr_2", AttributeValue.builder().s("str_5").build(),
+            "name", AttributeValue.builder().s("2017-12-21T17:42:34Z").build(),
+            "attr_4", AttributeValue.builder().ns("12.5", "74.5").build()));
 
     dynamoDbClient.putItem(putItemRequest1);
 
-    PutItemRequest putItemRequest2 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
-        "attr_1", AttributeValue.builder().s("str_6").build(),
-        "attr_2", AttributeValue.builder().s("str_7").build(),
-        "name", AttributeValue.builder().s("2019-12-21T17:42:34Z").build(),
-        "attr_6", AttributeValue.builder().ss("str_1", "str_2").build()));
+    PutItemRequest putItemRequest2 = DynamodbDataFactory.putItemRequest(
+        tableName,
+        Map.of(
+            "attr_1", AttributeValue.builder().s("str_6").build(),
+            "attr_2", AttributeValue.builder().s("str_7").build(),
+            "name", AttributeValue.builder().s("2019-12-21T17:42:34Z").build(),
+            "attr_6", AttributeValue.builder().ss("str_1", "str_2").build()));
 
     dynamoDbClient.putItem(putItemRequest2);
 
-    var response = dynamodbOperations.scanTable(tableName, Set.of("attr_1", "attr_2", "name"),
-        new DynamodbOperations.FilterAttribute("name", "2018-12-21T17:42:34Z",
-            DynamodbOperations.FilterAttribute.FilterType.S));
+    var response = dynamodbOperations.scanTable(
+        tableName,
+        Set.of("attr_1", "attr_2", "name"),
+        new DynamodbOperations.FilterAttribute(
+            "name", "2018-12-21T17:42:34Z", DynamodbOperations.FilterAttribute.FilterType.S));
 
-    assertThat(response)
-        .hasSize(1);
+    assertThat(response).hasSize(1);
 
-    JSONAssert.assertEquals(objectMapper.writeValueAsString(response.get(0)), """
+    JSONAssert.assertEquals(
+        objectMapper.writeValueAsString(response.get(0)),
+        """
                                                                               {
                                                                               	"name": "2019-12-21T17:42:34Z",
                                                                               	"attr_2": "str_7",
                                                                               	"attr_1": "str_6"
                                                                               }
-                                                                              """, true);
-
+                                                                              """,
+        true);
   }
-
 }

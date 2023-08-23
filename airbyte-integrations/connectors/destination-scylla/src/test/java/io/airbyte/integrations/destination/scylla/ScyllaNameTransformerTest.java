@@ -27,7 +27,6 @@ class ScyllaNameTransformerTest {
     var table = scyllaNameTransformer.outputTable("stream_name");
 
     assertThat(table).matches("airbyte_raw_stream_name");
-
   }
 
   @Test
@@ -36,7 +35,6 @@ class ScyllaNameTransformerTest {
     var table = scyllaNameTransformer.outputTmpTable("stream_name");
 
     assertThat(table).matches("airbyte_tmp_+[a-z]+_stream_name");
-
   }
 
   @Test
@@ -45,7 +43,6 @@ class ScyllaNameTransformerTest {
     var keyspace = scyllaNameTransformer.outputKeyspace("***keyspace^h");
 
     assertThat(keyspace).matches("keyspace_h");
-
   }
 
   @Test
@@ -54,7 +51,5 @@ class ScyllaNameTransformerTest {
     var column = scyllaNameTransformer.outputColumn("_airbyte_data");
 
     assertThat(column).matches("\"_airbyte_data\"");
-
   }
-
 }

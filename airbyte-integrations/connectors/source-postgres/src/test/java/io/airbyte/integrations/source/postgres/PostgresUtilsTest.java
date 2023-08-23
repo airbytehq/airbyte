@@ -31,9 +31,11 @@ class PostgresUtilsTest {
     final ObjectNode config = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder().build());
     assertFalse(PostgresUtils.isCdc(config));
 
-    config.set("replication_method", Jsons.jsonNode(ImmutableMap.of(
-        "replication_slot", "slot",
-        "publication", "ab_pub")));
+    config.set(
+        "replication_method",
+        Jsons.jsonNode(ImmutableMap.of(
+            "replication_slot", "slot",
+            "publication", "ab_pub")));
     assertTrue(PostgresUtils.isCdc(config));
   }
 
@@ -42,26 +44,34 @@ class PostgresUtilsTest {
     final JsonNode emptyConfig = Jsons.jsonNode(Collections.emptyMap());
     assertDoesNotThrow(() -> PostgresUtils.checkFirstRecordWaitTime(emptyConfig));
     assertEquals(Optional.empty(), PostgresUtils.getFirstRecordWaitSeconds(emptyConfig));
-    assertEquals(PostgresUtils.DEFAULT_FIRST_RECORD_WAIT_TIME, PostgresUtils.getFirstRecordWaitTime(emptyConfig));
+    assertEquals(
+        PostgresUtils.DEFAULT_FIRST_RECORD_WAIT_TIME,
+        PostgresUtils.getFirstRecordWaitTime(emptyConfig));
 
-    final JsonNode normalConfig = Jsons.jsonNode(Map.of("replication_method",
-        Map.of("method", "CDC", "initial_waiting_seconds", 500)));
+    final JsonNode normalConfig = Jsons.jsonNode(
+        Map.of("replication_method", Map.of("method", "CDC", "initial_waiting_seconds", 500)));
     assertDoesNotThrow(() -> PostgresUtils.checkFirstRecordWaitTime(normalConfig));
     assertEquals(Optional.of(500), PostgresUtils.getFirstRecordWaitSeconds(normalConfig));
     assertEquals(Duration.ofSeconds(500), PostgresUtils.getFirstRecordWaitTime(normalConfig));
 
     final int tooShortTimeout = (int) MIN_FIRST_RECORD_WAIT_TIME.getSeconds() - 1;
-    final JsonNode tooShortConfig = Jsons.jsonNode(Map.of("replication_method",
-        Map.of("method", "CDC", "initial_waiting_seconds", tooShortTimeout)));
-    assertThrows(IllegalArgumentException.class, () -> PostgresUtils.checkFirstRecordWaitTime(tooShortConfig));
-    assertEquals(Optional.of(tooShortTimeout), PostgresUtils.getFirstRecordWaitSeconds(tooShortConfig));
+    final JsonNode tooShortConfig = Jsons.jsonNode(Map.of(
+        "replication_method", Map.of("method", "CDC", "initial_waiting_seconds", tooShortTimeout)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PostgresUtils.checkFirstRecordWaitTime(tooShortConfig));
+    assertEquals(
+        Optional.of(tooShortTimeout), PostgresUtils.getFirstRecordWaitSeconds(tooShortConfig));
     assertEquals(MIN_FIRST_RECORD_WAIT_TIME, PostgresUtils.getFirstRecordWaitTime(tooShortConfig));
 
     final int tooLongTimeout = (int) MAX_FIRST_RECORD_WAIT_TIME.getSeconds() + 1;
-    final JsonNode tooLongConfig = Jsons.jsonNode(Map.of("replication_method",
-        Map.of("method", "CDC", "initial_waiting_seconds", tooLongTimeout)));
-    assertThrows(IllegalArgumentException.class, () -> PostgresUtils.checkFirstRecordWaitTime(tooLongConfig));
-    assertEquals(Optional.of(tooLongTimeout), PostgresUtils.getFirstRecordWaitSeconds(tooLongConfig));
+    final JsonNode tooLongConfig = Jsons.jsonNode(Map.of(
+        "replication_method", Map.of("method", "CDC", "initial_waiting_seconds", tooLongTimeout)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PostgresUtils.checkFirstRecordWaitTime(tooLongConfig));
+    assertEquals(
+        Optional.of(tooLongTimeout), PostgresUtils.getFirstRecordWaitSeconds(tooLongConfig));
     assertEquals(MAX_FIRST_RECORD_WAIT_TIME, PostgresUtils.getFirstRecordWaitTime(tooLongConfig));
   }
 
@@ -88,11 +98,10 @@ class PostgresUtilsTest {
         .build());
     assertTrue(PostgresUtils.shouldFlushAfterSync(config));
 
-    final JsonNode replicationMethod2 = ((ObjectNode) replicationMethod)
-        .put("lsn_commit_behaviour", "While reading Data");
+    final JsonNode replicationMethod2 =
+        ((ObjectNode) replicationMethod).put("lsn_commit_behaviour", "While reading Data");
     ((ObjectNode) config).put("replication_method", replicationMethod2);
 
     assertFalse(PostgresUtils.shouldFlushAfterSync(config));
   }
-
 }

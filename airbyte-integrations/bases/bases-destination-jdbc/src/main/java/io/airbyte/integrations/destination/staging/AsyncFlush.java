@@ -36,27 +36,39 @@ class AsyncFlush implements DestinationFlushFunction {
   private final TyperDeduper typerDeduper;
   private final long optimalBatchSizeBytes;
 
-  public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
-                    final StagingOperations stagingOperations,
-                    final JdbcDatabase database,
-                    final ConfiguredAirbyteCatalog catalog,
-                    final TypeAndDedupeOperationValve typerDeduperValve,
-                    final TyperDeduper typerDeduper) {
-    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024);
+  public AsyncFlush(
+      final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
+      final StagingOperations stagingOperations,
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final TypeAndDedupeOperationValve typerDeduperValve,
+      final TyperDeduper typerDeduper) {
+    this(
+        streamDescToWriteConfig,
+        stagingOperations,
+        database,
+        catalog,
+        typerDeduperValve,
+        typerDeduper,
+        50 * 1024 * 1024);
   }
 
-  public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
-                    final StagingOperations stagingOperations,
-                    final JdbcDatabase database,
-                    final ConfiguredAirbyteCatalog catalog,
-                    final TypeAndDedupeOperationValve typerDeduperValve,
-                    final TyperDeduper typerDeduper,
-                    // In general, this size is chosen to improve the performance of lower memory connectors. With 1 Gi
-                    // of
-                    // resource the connector will usually at most fill up around 150 MB in a single queue. By lowering
-                    // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
-                    // freed earlier similar to a sliding window effect
-                    long optimalBatchSizeBytes) {
+  public AsyncFlush(
+      final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
+      final StagingOperations stagingOperations,
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final TypeAndDedupeOperationValve typerDeduperValve,
+      final TyperDeduper typerDeduper,
+      // In general, this size is chosen to improve the performance of lower memory connectors. With
+      // 1 Gi
+      // of
+      // resource the connector will usually at most fill up around 150 MB in a single queue. By
+      // lowering
+      // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to
+      // be
+      // freed earlier similar to a sliding window effect
+      long optimalBatchSizeBytes) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.database = database;
@@ -67,7 +79,8 @@ class AsyncFlush implements DestinationFlushFunction {
   }
 
   @Override
-  public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
+  public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream)
+      throws Exception {
     final CsvSerializedBuffer writer;
     try {
       writer = new CsvSerializedBuffer(
@@ -78,8 +91,10 @@ class AsyncFlush implements DestinationFlushFunction {
       // reassign as lambdas require references to be final.
       stream.forEach(record -> {
         try {
-          // todo (cgardens) - most writers just go ahead and re-serialize the contents of the record message.
-          // we should either just pass the raw string or at least have a way to do that and create a default
+          // todo (cgardens) - most writers just go ahead and re-serialize the contents of the
+          // record message.
+          // we should either just pass the raw string or at least have a way to do that and create
+          // a default
           // impl that maintains backwards compatible behavior.
           writer.accept(record.getSerialized(), record.getRecord().getEmittedAt());
         } catch (final Exception e) {
@@ -91,20 +106,28 @@ class AsyncFlush implements DestinationFlushFunction {
     }
 
     writer.flush();
-    log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+    log.info(
+        "Flushing CSV buffer for stream {} ({}) to staging",
+        decs.getName(),
+        FileUtils.byteCountToDisplaySize(writer.getByteCount()));
     if (!streamDescToWriteConfig.containsKey(decs)) {
-      throw new IllegalArgumentException(
-          String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
+      throw new IllegalArgumentException(String.format(
+          "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
+          Jsons.serialize(catalog)));
     }
 
     final WriteConfig writeConfig = streamDescToWriteConfig.get(decs);
     final String schemaName = writeConfig.getOutputSchemaName();
-    final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
-    final String stagingPath =
-        stagingOperations.getStagingPath(StagingConsumerFactory.RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(),
-            writeConfig.getWriteDatetime());
+    final String stageName =
+        stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+    final String stagingPath = stagingOperations.getStagingPath(
+        StagingConsumerFactory.RANDOM_CONNECTION_ID,
+        schemaName,
+        writeConfig.getStreamName(),
+        writeConfig.getWriteDatetime());
     try {
-      final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
+      final String stagedFile = stagingOperations.uploadRecordsToStage(
+          database, writer, schemaName, stageName, stagingPath);
       GeneralStagingFunctions.copyIntoTableFromStage(
           database,
           stageName,
@@ -129,5 +152,4 @@ class AsyncFlush implements DestinationFlushFunction {
   public long getOptimalBatchSizeBytes() {
     return optimalBatchSizeBytes;
   }
-
 }

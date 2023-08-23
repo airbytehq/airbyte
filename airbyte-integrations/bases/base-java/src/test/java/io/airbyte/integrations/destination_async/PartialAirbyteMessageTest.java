@@ -28,7 +28,8 @@ public class PartialAirbyteMessageTest {
             .withEmittedAt(emittedAt)
             .withData(Jsons.jsonNode("data"))));
 
-    final var rec = Jsons.tryDeserialize(serializedRec, PartialAirbyteMessage.class).get();
+    final var rec =
+        Jsons.tryDeserialize(serializedRec, PartialAirbyteMessage.class).get();
     Assertions.assertEquals(AirbyteMessage.Type.RECORD, rec.getType());
     Assertions.assertEquals("users", rec.getRecord().getStream());
     Assertions.assertEquals("public", rec.getRecord().getNamespace());
@@ -40,19 +41,23 @@ public class PartialAirbyteMessageTest {
   void testDeserializeState() {
     final var serializedState = Jsons.serialize(new io.airbyte.protocol.models.AirbyteMessage()
         .withType(io.airbyte.protocol.models.AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withStream(
-            new AirbyteStreamState().withStreamDescriptor(
-                new StreamDescriptor().withName("user").withNamespace("public"))
+        .withState(new AirbyteStateMessage()
+            .withStream(new AirbyteStreamState()
+                .withStreamDescriptor(
+                    new StreamDescriptor().withName("user").withNamespace("public"))
                 .withStreamState(Jsons.jsonNode("data")))
             .withType(AirbyteStateMessage.AirbyteStateType.STREAM)));
 
-    final var rec = Jsons.tryDeserialize(serializedState, PartialAirbyteMessage.class).get();
+    final var rec =
+        Jsons.tryDeserialize(serializedState, PartialAirbyteMessage.class).get();
     Assertions.assertEquals(AirbyteMessage.Type.STATE, rec.getType());
 
     final var streamDesc = rec.getState().getStream().getStreamDescriptor();
     Assertions.assertEquals("user", streamDesc.getName());
     Assertions.assertEquals("public", streamDesc.getNamespace());
-    Assertions.assertEquals(io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType.STREAM, rec.getState().getType());
+    Assertions.assertEquals(
+        io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType.STREAM,
+        rec.getState().getType());
   }
 
   @Test
@@ -62,5 +67,4 @@ public class PartialAirbyteMessageTest {
     final var rec = Jsons.tryDeserialize(badSerialization, PartialAirbyteMessage.class);
     Assertions.assertTrue(rec.isEmpty());
   }
-
 }

@@ -25,5 +25,4 @@ public class AzureBlobStorageCsvFormatConfigTest {
       assertTrue(e instanceof IllegalArgumentException);
     }
   }
-
 }

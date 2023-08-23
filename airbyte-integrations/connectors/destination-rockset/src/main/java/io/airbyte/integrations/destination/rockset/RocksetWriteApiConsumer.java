@@ -60,9 +60,9 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
   private ApiClient client;
 
   public RocksetWriteApiConsumer(
-                                 JsonNode config,
-                                 ConfiguredAirbyteCatalog catalog,
-                                 Consumer<AirbyteMessage> outputRecordCollector) {
+      JsonNode config,
+      ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     this.apiKey = config.get(API_KEY_ID).asText();
     this.apiServer = config.get(API_SERVER_ID).asText();
     this.workspace = config.get(ROCKSET_WORKSPACE_ID).asText();
@@ -78,8 +78,7 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
     LOGGER.info("Creating workspace");
     RocksetUtils.createWorkspaceIfNotExists(client, workspace);
 
-    CompletableFuture<?>[] overwrittenStreams = catalog.getStreams()
-        .stream()
+    CompletableFuture<?>[] overwrittenStreams = catalog.getStreams().stream()
         .filter(s -> s.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE)
         .map(s -> s.getStream().getName())
         .map(nameTransformer::convertStreamName)
@@ -96,8 +95,7 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
         .toArray(CompletableFuture[]::new);
 
     CompletableFuture<?> initStreams = CompletableFuture.allOf(
-        CompletableFuture.allOf(overwrittenStreams),
-        CompletableFuture.allOf(appendStreams));
+        CompletableFuture.allOf(overwrittenStreams), CompletableFuture.allOf(appendStreams));
 
     // Creating and readying many collections at once can be slow
     initStreams.get(30, TimeUnit.MINUTES);
@@ -111,7 +109,8 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       String cname = nameTransformer.convertStreamName(message.getRecord().getStream());
 
-      Map<String, Object> obj = mapper.convertValue(message.getRecord().getData(), new TypeReference<>() {});
+      Map<String, Object> obj =
+          mapper.convertValue(message.getRecord().getData(), new TypeReference<>() {});
       long current = ChronoUnit.MICROS.between(Instant.EPOCH, Instant.now());
 
       // ensure a monotonic timestamp on records at microsecond precision.
@@ -153,42 +152,47 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
   private void sendBatches() {
     List<Map.Entry<String, AddDocumentsRequest>> requests;
     synchronized (this.records) {
-      requests = this.records.entrySet().stream().filter(e -> e.getValue().size() > 0)
+      requests = this.records.entrySet().stream()
+          .filter(e -> e.getValue().size() > 0)
           .map((e) -> {
             AddDocumentsRequest adr = new AddDocumentsRequest();
             e.getValue().forEach(adr::addDataItem);
             return Map.entry(e.getKey(), adr);
-          }
-
-          ).collect(Collectors.toList());
+          })
+          .collect(Collectors.toList());
       this.records.clear();
     }
     List<AddDocumentsResponse> responses;
-    responses = requests.stream().map((e) -> Exceptions.toRuntime(() -> new DocumentsApi(client).add(workspace, e.getKey(), e.getValue())))
+    responses = requests.stream()
+        .map((e) -> Exceptions.toRuntime(
+            () -> new DocumentsApi(client).add(workspace, e.getKey(), e.getValue())))
         .collect(Collectors.toList());
 
-    responses
-        .stream()
+    responses.stream()
         .flatMap(d -> d.getData().stream())
         .collect(Collectors.groupingBy(DocumentStatus::getStatus))
         .entrySet()
         .stream()
-        .forEach((e) -> LOGGER.info("{} documents added with a status of {}", e.getValue().size(), e.getKey()));
+        .forEach((e) ->
+            LOGGER.info("{} documents added with a status of {}", e.getValue().size(), e.getKey()));
   }
 
   private CompletableFuture<Void> emptyCollection(String cname) {
-    return CompletableFuture.runAsync(() -> {
-      RocksetUtils.clearCollectionIfCollectionExists(client, workspace, cname);
-      RocksetUtils.createCollectionIfNotExists(client, workspace, cname);
-      RocksetUtils.waitUntilCollectionReady(client, workspace, cname);
-    }, exec);
+    return CompletableFuture.runAsync(
+        () -> {
+          RocksetUtils.clearCollectionIfCollectionExists(client, workspace, cname);
+          RocksetUtils.createCollectionIfNotExists(client, workspace, cname);
+          RocksetUtils.waitUntilCollectionReady(client, workspace, cname);
+        },
+        exec);
   }
 
   private CompletableFuture<Void> createCollectionIntoReadyState(String cname) {
-    return CompletableFuture.runAsync(() -> {
-      RocksetUtils.createCollectionIfNotExists(client, workspace, cname);
-      RocksetUtils.waitUntilCollectionReady(client, workspace, cname);
-    }, exec);
+    return CompletableFuture.runAsync(
+        () -> {
+          RocksetUtils.createCollectionIfNotExists(client, workspace, cname);
+          RocksetUtils.waitUntilCollectionReady(client, workspace, cname);
+        },
+        exec);
   }
-
 }

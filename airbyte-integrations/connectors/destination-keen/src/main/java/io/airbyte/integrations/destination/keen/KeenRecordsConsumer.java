@@ -43,9 +43,10 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private KafkaProducer<String, String> kafkaProducer;
   private Set<String> streamNames;
 
-  public KeenRecordsConsumer(final JsonNode config,
-                             final ConfiguredAirbyteCatalog catalog,
-                             final Consumer<AirbyteMessage> outputRecordCollector) {
+  public KeenRecordsConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.config = config;
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -83,8 +84,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   private Set<String> getStrippedStreamNames() {
-    return catalog.getStreams()
-        .stream()
+    return catalog.getStreams().stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         .map(KeenCharactersStripper::stripSpecialCharactersFromStreamName)
@@ -97,7 +97,8 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     final List<String> streamsToDelete = this.catalog.getStreams().stream()
         .filter(stream -> stream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE)
-        .map(stream -> KeenCharactersStripper.stripSpecialCharactersFromStreamName(stream.getStream().getName()))
+        .map(stream -> KeenCharactersStripper.stripSpecialCharactersFromStreamName(
+            stream.getStream().getName()))
         .collect(Collectors.toList());
 
     for (final String streamToDelete : streamsToDelete) {
@@ -113,10 +114,9 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
     }
     streamName = KeenCharactersStripper.stripSpecialCharactersFromStreamName(streamName);
     if (!streamNames.contains(streamName)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
+      throw new IllegalArgumentException(String.format(
+          "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+          Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
     }
     return streamName;
   }
@@ -126,5 +126,4 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
     kafkaProducer.flush();
     kafkaProducer.close();
   }
-
 }

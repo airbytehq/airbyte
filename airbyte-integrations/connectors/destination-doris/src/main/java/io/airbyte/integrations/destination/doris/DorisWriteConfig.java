@@ -30,5 +30,4 @@ public class DorisWriteConfig {
   public CSVPrinter getWriter() {
     return writer;
   }
-
 }

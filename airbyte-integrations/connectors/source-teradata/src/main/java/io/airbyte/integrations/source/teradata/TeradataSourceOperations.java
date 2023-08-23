@@ -44,21 +44,15 @@ public class TeradataSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putTimestamp(ObjectNode node,
-                              String columnName,
-                              ResultSet resultSet,
-                              int index)
+  protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index)
       throws SQLException {
     Timestamp timestamp = (Timestamp) resultSet.getObject(index);
     node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(timestamp.toInstant()));
   }
 
   @Override
-  protected void putTimestampWithTimezone(ObjectNode node,
-                                          String columnName,
-                                          ResultSet resultSet,
-                                          int index)
-      throws SQLException {
+  protected void putTimestampWithTimezone(
+      ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     Timestamp timestamp = (Timestamp) resultSet.getObject(index);
     final OffsetDateTime timestamptz = timestamp.toLocalDateTime().atOffset(ZoneOffset.UTC);
     final LocalDate localDate = timestamptz.toLocalDate();
@@ -73,7 +67,8 @@ public class TeradataSourceOperations extends JdbcSourceOperations {
       preparedStatement.setObject(parameterIndex, Date.valueOf(LocalDate.parse(value)));
     } catch (final DateTimeParseException dtpe) {
       try {
-        final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
+        final Timestamp from =
+            Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
         preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
       } catch (final ParseException pe) {
         throw new RuntimeException(pe);
@@ -98,32 +93,30 @@ public class TeradataSourceOperations extends JdbcSourceOperations {
     try {
       preparedStatement.setObject(parameterIndex, Timestamp.valueOf(LocalDateTime.parse(value)));
     } catch (final DateTimeParseException e) {
-      preparedStatement.setObject(parameterIndex, Timestamp.valueOf(OffsetDateTime.parse(value).toLocalDateTime()));
+      preparedStatement.setObject(
+          parameterIndex, Timestamp.valueOf(OffsetDateTime.parse(value).toLocalDateTime()));
     }
   }
 
   @Override
-  protected void setTimeWithTimezone(PreparedStatement preparedStatement,
-                                     int parameterIndex,
-                                     String value)
-      throws SQLException {
+  protected void setTimeWithTimezone(
+      PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
     try {
-      preparedStatement.setObject(parameterIndex, Time.valueOf(OffsetTime.parse(value).toLocalTime()));
+      preparedStatement.setObject(
+          parameterIndex, Time.valueOf(OffsetTime.parse(value).toLocalTime()));
     } catch (final DateTimeParseException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  protected void setTimestampWithTimezone(PreparedStatement preparedStatement,
-                                          int parameterIndex,
-                                          String value)
-      throws SQLException {
+  protected void setTimestampWithTimezone(
+      PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
     try {
-      preparedStatement.setObject(parameterIndex, Timestamp.valueOf(OffsetDateTime.parse(value).toLocalDateTime()));
+      preparedStatement.setObject(
+          parameterIndex, Timestamp.valueOf(OffsetDateTime.parse(value).toLocalDateTime()));
     } catch (final DateTimeParseException e) {
       throw new RuntimeException(e);
     }
   }
-
 }

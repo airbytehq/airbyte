@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -40,22 +44,20 @@ public class BigQueryV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefin
   }
 
   @Override
-  protected boolean schemaMatchesExpectation(TableDefinition existingTable, Collection<String> expectedColumnNames) {
+  protected boolean schemaMatchesExpectation(
+      TableDefinition existingTable, Collection<String> expectedColumnNames) {
     Set<String> existingSchemaColumns = Optional.ofNullable(existingTable.getSchema())
-        .map(schema -> schema.getFields().stream()
-            .map(Field::getName)
-            .collect(Collectors.toSet()))
+        .map(schema -> schema.getFields().stream().map(Field::getName).collect(Collectors.toSet()))
         .orElse(Collections.emptySet());
 
-    return !existingSchemaColumns.isEmpty() &&
-        CollectionUtils.containsAllIgnoreCase(expectedColumnNames, existingSchemaColumns);
+    return !existingSchemaColumns.isEmpty()
+        && CollectionUtils.containsAllIgnoreCase(expectedColumnNames, existingSchemaColumns);
   }
 
   @Override
   protected NamespacedTableName convertToV1RawName(StreamConfig streamConfig) {
     return new NamespacedTableName(
         this.nameTransformer.getNamespace(streamConfig.id().originalNamespace()),
-        this.nameTransformer.getRawTableName(streamConfig.id().originalName())
-    );
+        this.nameTransformer.getRawTableName(streamConfig.id().originalName()));
   }
 }

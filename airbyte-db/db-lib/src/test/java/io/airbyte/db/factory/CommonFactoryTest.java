@@ -30,5 +30,4 @@ class CommonFactoryTest {
   public static void dbDown() {
     container.close();
   }
-
 }

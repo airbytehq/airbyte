@@ -41,5 +41,4 @@ class AvroNameTransformerTest {
       assertEquals(normalized, INSTANCE.getNamespace(raw));
     });
   }
-
 }

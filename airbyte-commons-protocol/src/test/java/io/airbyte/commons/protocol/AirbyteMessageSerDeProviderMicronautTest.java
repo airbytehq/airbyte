@@ -27,5 +27,4 @@ class AirbyteMessageSerDeProviderMicronautTest {
     assertEquals(expectedVersions, serDeProvider.getDeserializerKeys());
     assertEquals(expectedVersions, serDeProvider.getSerializerKeys());
   }
-
 }

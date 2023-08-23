@@ -33,9 +33,11 @@ public abstract class BigQueryRecordFormatter {
    * These parameters are required for the correct operation of denormalize version of the connector.
    */
   protected final Set<String> invalidKeys = new HashSet<>();
+
   protected final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
 
-  public BigQueryRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
+  public BigQueryRecordFormatter(
+      final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     this.namingResolver = namingResolver;
     this.originalJsonSchema = jsonSchema.deepCopy();
     this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
@@ -44,7 +46,8 @@ public abstract class BigQueryRecordFormatter {
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
     // Do nothing by default
     return jsonSchema;
-  };
+  }
+  ;
 
   /***
    * To write to a JSON type, Standard inserts needs the Json to be an object. For Avro however, it
@@ -78,13 +81,9 @@ public abstract class BigQueryRecordFormatter {
 
   public void printAndCleanFieldFails() {
     if (!mapOfFailedFields.isEmpty()) {
-      mapOfFailedFields.forEach(
-          (error, fieldNames) -> LOGGER.warn(
-              "Field(s) fail with error {}. Fields : {} ",
-              error,
-              String.join(", ", fieldNames)));
+      mapOfFailedFields.forEach((error, fieldNames) -> LOGGER.warn(
+          "Field(s) fail with error {}. Fields : {} ", error, String.join(", ", fieldNames)));
       mapOfFailedFields.clear();
     }
   }
-
 }

@@ -33,26 +33,29 @@ public class RedpandaMessageConsumer extends FailureTrackingAirbyteMessageConsum
 
   private final Map<AirbyteStreamNameNamespacePair, RedpandaWriteConfig> redpandaWriteConfigs;
 
-  public RedpandaMessageConsumer(ConfiguredAirbyteCatalog configuredCatalog,
-                                 RedpandaOperations redpandaOperations,
-                                 RedpandaConfig redpandaConfig,
-                                 Consumer<AirbyteMessage> outputRecordCollector) {
+  public RedpandaMessageConsumer(
+      ConfiguredAirbyteCatalog configuredCatalog,
+      RedpandaOperations redpandaOperations,
+      RedpandaConfig redpandaConfig,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
     this.redpandaOperations = redpandaOperations;
     this.redpandaConfig = redpandaConfig;
     this.redpandaWriteConfigs = configuredCatalog.getStreams().stream()
-        .collect(
-            Collectors.toUnmodifiableMap(AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam,
-                str -> new RedpandaWriteConfig(
-                    new RedpandaNameTransformer().topicName(str.getStream().getNamespace(),
-                        str.getStream().getName()),
-                    str.getDestinationSyncMode())));
+        .collect(Collectors.toUnmodifiableMap(
+            AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam,
+            str -> new RedpandaWriteConfig(
+                new RedpandaNameTransformer()
+                    .topicName(str.getStream().getNamespace(), str.getStream().getName()),
+                str.getDestinationSyncMode())));
   }
 
   @Override
   protected void startTracked() {
     redpandaOperations.createTopic(redpandaWriteConfigs.values().stream()
-        .map(wc -> new RedpandaOperations.TopicInfo(wc.topicName(), redpandaConfig.topicNumPartitions(),
+        .map(wc -> new RedpandaOperations.TopicInfo(
+            wc.topicName(),
+            redpandaConfig.topicNumPartitions(),
             redpandaConfig.topicReplicationFactor()))
         .collect(Collectors.toSet()));
   }
@@ -97,5 +100,4 @@ public class RedpandaMessageConsumer extends FailureTrackingAirbyteMessageConsum
   protected void close(boolean hasFailed) {
     redpandaOperations.close();
   }
-
 }

@@ -17,12 +17,13 @@ public class SamplingSizeEstimator extends BaseSizeEstimator implements FetchSiz
   private int counter = 0;
   private boolean hasNewEstimation = false;
 
-  public SamplingSizeEstimator(final long bufferByteSize,
-                               final int sampleFrequency,
-                               final double initialRowByteSize,
-                               final int minFetchSize,
-                               final int defaultFetchSize,
-                               final int maxFetchSize) {
+  public SamplingSizeEstimator(
+      final long bufferByteSize,
+      final int sampleFrequency,
+      final double initialRowByteSize,
+      final int minFetchSize,
+      final int defaultFetchSize,
+      final int maxFetchSize) {
     super(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize);
     this.sampleFrequency = sampleFrequency;
     this.maxRowByteSize = initialRowByteSize;
@@ -52,5 +53,4 @@ public class SamplingSizeEstimator extends BaseSizeEstimator implements FetchSiz
     hasNewEstimation = false;
     return Optional.of(getBoundedFetchSize());
   }
-
 }

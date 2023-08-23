@@ -30,7 +30,8 @@ public class FlushWorkersTest {
     final var desc = new StreamDescriptor().withName("test");
     final var dequeue = mock(BufferDequeue.class);
     when(dequeue.getBufferedStreams()).thenReturn(Set.of(desc));
-    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, null, null));
+    when(dequeue.take(desc, 1000))
+        .thenReturn(new MemoryAwareMessageBatch(List.of(), 10, null, null));
     when(dequeue.getQueueSizeBytes(desc)).thenReturn(Optional.of(10L));
     when(dequeue.getQueueSizeInRecords(desc)).thenAnswer(ignored -> {
       if (hasThrownError.get()) {
@@ -41,7 +42,12 @@ public class FlushWorkersTest {
     });
 
     final var flushFailure = new FlushFailure();
-    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(hasThrownError), m -> {}, flushFailure, mock(GlobalAsyncStateManager.class));
+    final var workers = new FlushWorkers(
+        dequeue,
+        new ErrorOnFlush(hasThrownError),
+        m -> {},
+        flushFailure,
+        mock(GlobalAsyncStateManager.class));
     workers.start();
     workers.close();
 
@@ -58,7 +64,8 @@ public class FlushWorkersTest {
     }
 
     @Override
-    public void flush(final StreamDescriptor desc, final Stream<PartialAirbyteMessage> stream) throws Exception {
+    public void flush(final StreamDescriptor desc, final Stream<PartialAirbyteMessage> stream)
+        throws Exception {
       hasThrownError.set(true);
       throw new IOException("Error on flush");
     }
@@ -67,7 +74,5 @@ public class FlushWorkersTest {
     public long getOptimalBatchSizeBytes() {
       return 1000;
     }
-
   }
-
 }

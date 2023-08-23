@@ -12,5 +12,4 @@ public class SshKeyOracleDestinationAcceptanceTest extends SshOracleDestinationA
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
-
 }

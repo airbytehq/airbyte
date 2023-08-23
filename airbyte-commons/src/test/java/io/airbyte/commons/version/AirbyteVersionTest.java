@@ -42,50 +42,97 @@ class AirbyteVersionTest {
 
   @Test
   void testCompatibleVersionCompareTo() {
-    assertEquals(0, new AirbyteVersion(VERSION_678_OMEGA).compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_GAMMA)));
-    assertEquals(0, new AirbyteVersion(VERSION_678_ALPHA).compatibleVersionCompareTo(new AirbyteVersion(VERSION_679_ALPHA)));
-    assertTrue(0 < new AirbyteVersion(VERSION_680_ALPHA).compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertTrue(0 < new AirbyteVersion("11.8.0-alpha").compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertTrue(0 < new AirbyteVersion(VERSION_6110_ALPHA).compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertTrue(0 > new AirbyteVersion("0.8.0-alpha").compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertEquals(0, new AirbyteVersion(VERSION_123_PROD).compatibleVersionCompareTo(new AirbyteVersion(DEV)));
-    assertEquals(0, new AirbyteVersion(DEV).compatibleVersionCompareTo(new AirbyteVersion(VERSION_123_PROD)));
+    assertEquals(
+        0,
+        new AirbyteVersion(VERSION_678_OMEGA)
+            .compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_GAMMA)));
+    assertEquals(
+        0,
+        new AirbyteVersion(VERSION_678_ALPHA)
+            .compatibleVersionCompareTo(new AirbyteVersion(VERSION_679_ALPHA)));
+    assertTrue(0
+        < new AirbyteVersion(VERSION_680_ALPHA)
+            .compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertTrue(0
+        < new AirbyteVersion("11.8.0-alpha")
+            .compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertTrue(0
+        < new AirbyteVersion(VERSION_6110_ALPHA)
+            .compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertTrue(0
+        > new AirbyteVersion("0.8.0-alpha")
+            .compatibleVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertEquals(
+        0,
+        new AirbyteVersion(VERSION_123_PROD).compatibleVersionCompareTo(new AirbyteVersion(DEV)));
+    assertEquals(
+        0,
+        new AirbyteVersion(DEV).compatibleVersionCompareTo(new AirbyteVersion(VERSION_123_PROD)));
   }
 
   @Test
   void testPatchVersionCompareTo() {
-    assertEquals(0, new AirbyteVersion(VERSION_678_OMEGA).patchVersionCompareTo(new AirbyteVersion(VERSION_678_GAMMA)));
-    assertTrue(0 > new AirbyteVersion(VERSION_678_ALPHA).patchVersionCompareTo(new AirbyteVersion(VERSION_679_ALPHA)));
-    assertTrue(0 > new AirbyteVersion(VERSION_678_ALPHA).patchVersionCompareTo(new AirbyteVersion("6.7.11-alpha")));
-    assertTrue(0 < new AirbyteVersion(VERSION_680_ALPHA).patchVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertTrue(0 < new AirbyteVersion(VERSION_6110_ALPHA).patchVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertTrue(0 > new AirbyteVersion(VERSION_380_ALPHA).patchVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertTrue(0 > new AirbyteVersion(VERSION_380_ALPHA).patchVersionCompareTo(new AirbyteVersion("11.7.8-alpha")));
-    assertEquals(0, new AirbyteVersion(VERSION_123_PROD).patchVersionCompareTo(new AirbyteVersion(DEV)));
-    assertEquals(0, new AirbyteVersion(DEV).patchVersionCompareTo(new AirbyteVersion(VERSION_123_PROD)));
+    assertEquals(
+        0,
+        new AirbyteVersion(VERSION_678_OMEGA)
+            .patchVersionCompareTo(new AirbyteVersion(VERSION_678_GAMMA)));
+    assertTrue(0
+        > new AirbyteVersion(VERSION_678_ALPHA)
+            .patchVersionCompareTo(new AirbyteVersion(VERSION_679_ALPHA)));
+    assertTrue(0
+        > new AirbyteVersion(VERSION_678_ALPHA)
+            .patchVersionCompareTo(new AirbyteVersion("6.7.11-alpha")));
+    assertTrue(0
+        < new AirbyteVersion(VERSION_680_ALPHA)
+            .patchVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertTrue(0
+        < new AirbyteVersion(VERSION_6110_ALPHA)
+            .patchVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertTrue(0
+        > new AirbyteVersion(VERSION_380_ALPHA)
+            .patchVersionCompareTo(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertTrue(0
+        > new AirbyteVersion(VERSION_380_ALPHA)
+            .patchVersionCompareTo(new AirbyteVersion("11.7.8-alpha")));
+    assertEquals(
+        0, new AirbyteVersion(VERSION_123_PROD).patchVersionCompareTo(new AirbyteVersion(DEV)));
+    assertEquals(
+        0, new AirbyteVersion(DEV).patchVersionCompareTo(new AirbyteVersion(VERSION_123_PROD)));
   }
 
   @Test
   void testGreaterThan() {
-    assertFalse(new AirbyteVersion(VERSION_678_OMEGA).greaterThan(new AirbyteVersion(VERSION_678_GAMMA)));
-    assertFalse(new AirbyteVersion(VERSION_678_ALPHA).greaterThan(new AirbyteVersion(VERSION_679_ALPHA)));
-    assertFalse(new AirbyteVersion(VERSION_678_ALPHA).greaterThan(new AirbyteVersion("6.7.11-alpha")));
-    assertTrue(new AirbyteVersion(VERSION_680_ALPHA).greaterThan(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertTrue(new AirbyteVersion(VERSION_6110_ALPHA).greaterThan(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertFalse(new AirbyteVersion(VERSION_380_ALPHA).greaterThan(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertFalse(new AirbyteVersion(VERSION_380_ALPHA).greaterThan(new AirbyteVersion("11.7.8-alpha")));
+    assertFalse(
+        new AirbyteVersion(VERSION_678_OMEGA).greaterThan(new AirbyteVersion(VERSION_678_GAMMA)));
+    assertFalse(
+        new AirbyteVersion(VERSION_678_ALPHA).greaterThan(new AirbyteVersion(VERSION_679_ALPHA)));
+    assertFalse(
+        new AirbyteVersion(VERSION_678_ALPHA).greaterThan(new AirbyteVersion("6.7.11-alpha")));
+    assertTrue(
+        new AirbyteVersion(VERSION_680_ALPHA).greaterThan(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertTrue(
+        new AirbyteVersion(VERSION_6110_ALPHA).greaterThan(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertFalse(
+        new AirbyteVersion(VERSION_380_ALPHA).greaterThan(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertFalse(
+        new AirbyteVersion(VERSION_380_ALPHA).greaterThan(new AirbyteVersion("11.7.8-alpha")));
     assertFalse(new AirbyteVersion(VERSION_123_PROD).greaterThan(new AirbyteVersion(DEV)));
     assertFalse(new AirbyteVersion(DEV).greaterThan(new AirbyteVersion(VERSION_123_PROD)));
   }
 
   @Test
   void testLessThan() {
-    assertFalse(new AirbyteVersion(VERSION_678_OMEGA).lessThan(new AirbyteVersion(VERSION_678_GAMMA)));
-    assertTrue(new AirbyteVersion(VERSION_678_ALPHA).lessThan(new AirbyteVersion(VERSION_679_ALPHA)));
+    assertFalse(
+        new AirbyteVersion(VERSION_678_OMEGA).lessThan(new AirbyteVersion(VERSION_678_GAMMA)));
+    assertTrue(
+        new AirbyteVersion(VERSION_678_ALPHA).lessThan(new AirbyteVersion(VERSION_679_ALPHA)));
     assertTrue(new AirbyteVersion(VERSION_678_ALPHA).lessThan(new AirbyteVersion("6.7.11-alpha")));
-    assertFalse(new AirbyteVersion(VERSION_680_ALPHA).lessThan(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertFalse(new AirbyteVersion(VERSION_6110_ALPHA).lessThan(new AirbyteVersion(VERSION_678_ALPHA)));
-    assertTrue(new AirbyteVersion(VERSION_380_ALPHA).lessThan(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertFalse(
+        new AirbyteVersion(VERSION_680_ALPHA).lessThan(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertFalse(
+        new AirbyteVersion(VERSION_6110_ALPHA).lessThan(new AirbyteVersion(VERSION_678_ALPHA)));
+    assertTrue(
+        new AirbyteVersion(VERSION_380_ALPHA).lessThan(new AirbyteVersion(VERSION_678_ALPHA)));
     assertTrue(new AirbyteVersion(VERSION_380_ALPHA).lessThan(new AirbyteVersion("11.7.8-alpha")));
     assertFalse(new AirbyteVersion(VERSION_123_PROD).lessThan(new AirbyteVersion(DEV)));
     assertFalse(new AirbyteVersion(DEV).lessThan(new AirbyteVersion(VERSION_123_PROD)));
@@ -108,15 +155,21 @@ class AirbyteVersionTest {
   @Test
   void testCheckVersion() {
     AirbyteVersion.assertIsCompatible(new AirbyteVersion("3.2.1"), new AirbyteVersion("3.2.1"));
-    assertThrows(IllegalStateException.class, () -> AirbyteVersion.assertIsCompatible(new AirbyteVersion("1.2.3"), new AirbyteVersion("3.2.1")));
+    assertThrows(
+        IllegalStateException.class,
+        () -> AirbyteVersion.assertIsCompatible(
+            new AirbyteVersion("1.2.3"), new AirbyteVersion("3.2.1")));
   }
 
   @Test
   void testCheckOnlyPatchVersion() {
-    assertFalse(new AirbyteVersion(VERSION_678).checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(VERSION_678)));
-    assertFalse(new AirbyteVersion("6.9.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.8.9")));
-    assertFalse(new AirbyteVersion("7.7.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.11")));
-    assertTrue(new AirbyteVersion("6.7.9").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(VERSION_678)));
+    assertFalse(new AirbyteVersion(VERSION_678)
+        .checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(VERSION_678)));
+    assertFalse(new AirbyteVersion("6.9.8")
+        .checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.8.9")));
+    assertFalse(new AirbyteVersion("7.7.8")
+        .checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.11")));
+    assertTrue(new AirbyteVersion("6.7.9")
+        .checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(VERSION_678)));
   }
-
 }

@@ -99,5 +99,4 @@ public class StreamLoadRespContent {
   public String getErrorURL() {
     return ErrorURL;
   }
-
 }

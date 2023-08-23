@@ -24,40 +24,36 @@ public class BufferEnqueueTest {
   void testAddRecordShouldAdd() {
     final var twoMB = 2 * 1024 * 1024;
     final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>();
-    final var enqueue = new BufferEnqueue(new GlobalMemoryManager(twoMB), streamToBuffer, mock(GlobalAsyncStateManager.class));
+    final var enqueue = new BufferEnqueue(
+        new GlobalMemoryManager(twoMB), streamToBuffer, mock(GlobalAsyncStateManager.class));
 
     final var streamName = "stream";
     final var stream = new StreamDescriptor().withName(streamName);
     final var record = new PartialAirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new PartialAirbyteRecordMessage()
-            .withStream(streamName));
+        .withRecord(new PartialAirbyteRecordMessage().withStream(streamName));
 
     enqueue.addRecord(record, RECORD_SIZE_20_BYTES);
     assertEquals(1, streamToBuffer.get(stream).size());
     assertEquals(20L, streamToBuffer.get(stream).getCurrentMemoryUsage());
-
   }
 
   @Test
   public void testAddRecordShouldExpand() {
     final var oneKb = 1024;
     final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>();
-    final var enqueue =
-        new BufferEnqueue(new GlobalMemoryManager(oneKb), streamToBuffer, mock(GlobalAsyncStateManager.class));
+    final var enqueue = new BufferEnqueue(
+        new GlobalMemoryManager(oneKb), streamToBuffer, mock(GlobalAsyncStateManager.class));
 
     final var streamName = "stream";
     final var stream = new StreamDescriptor().withName(streamName);
     final var record = new PartialAirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new PartialAirbyteRecordMessage()
-            .withStream(streamName));
+        .withRecord(new PartialAirbyteRecordMessage().withStream(streamName));
 
     enqueue.addRecord(record, RECORD_SIZE_20_BYTES);
     enqueue.addRecord(record, RECORD_SIZE_20_BYTES);
     assertEquals(2, streamToBuffer.get(stream).size());
     assertEquals(40, streamToBuffer.get(stream).getCurrentMemoryUsage());
-
   }
-
 }

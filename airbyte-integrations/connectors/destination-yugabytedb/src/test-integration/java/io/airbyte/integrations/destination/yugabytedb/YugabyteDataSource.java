@@ -11,11 +11,10 @@ import javax.sql.DataSource;
 
 public class YugabyteDataSource {
 
-  private YugabyteDataSource() {
+  private YugabyteDataSource() {}
 
-  }
-
-  static DataSource getInstance(String host, int port, String database, String username, String password) {
+  static DataSource getInstance(
+      String host, int port, String database, String username, String password) {
     String jdbcUrl = "jdbc:yugabytedb://" + host + ":" + port + "/" + database;
     return DataSourceFactory.create(
         username,
@@ -24,5 +23,4 @@ public class YugabyteDataSource {
         jdbcUrl,
         Collections.emptyMap());
   }
-
 }

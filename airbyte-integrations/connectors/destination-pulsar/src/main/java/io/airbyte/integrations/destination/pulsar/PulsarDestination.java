@@ -45,7 +45,8 @@ public class PulsarDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final PulsarDestinationConfig pulsarConfig = PulsarDestinationConfig.getPulsarDestinationConfig(config);
+      final PulsarDestinationConfig pulsarConfig =
+          PulsarDestinationConfig.getPulsarDestinationConfig(config);
       final String testTopic = pulsarConfig.getTestTopic();
       if (!testTopic.isBlank()) {
         final String key = UUID.randomUUID().toString();
@@ -54,17 +55,25 @@ public class PulsarDestination extends BaseConnector implements Destination {
             .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
             .set(PulsarDestination.COLUMN_NAME_STREAM, "test-topic-stream")
             .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, System.currentTimeMillis())
-            .set(PulsarDestination.COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value")))
+            .set(
+                PulsarDestination.COLUMN_NAME_DATA,
+                Jsons.jsonNode(ImmutableMap.of("test-key", "test-value")))
             .build();
 
         try (final PulsarClient client = PulsarUtils.buildClient(pulsarConfig.getServiceUrl());
-            final Producer<GenericRecord> producer = PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()),
-                pulsarConfig.getProducerConfig(), pulsarConfig.uriForTopic(testTopic))) {
+            final Producer<GenericRecord> producer = PulsarUtils.buildProducer(
+                client,
+                Schema.generic(PulsarDestinationConfig.getSchemaInfo()),
+                pulsarConfig.getProducerConfig(),
+                pulsarConfig.uriForTopic(testTopic))) {
           final MessageId messageId = producer.send(value);
 
           producer.flush();
 
-          LOGGER.info("Successfully sent message id '{}' to Pulsar brokers for topic '{}'.", messageId, testTopic);
+          LOGGER.info(
+              "Successfully sent message id '{}' to Pulsar brokers for topic '{}'.",
+              messageId,
+              testTopic);
         }
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -72,16 +81,20 @@ public class PulsarDestination extends BaseConnector implements Destination {
       LOGGER.error("Exception attempting to connect to the Pulsar brokers: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Could not connect to the Pulsar brokers with provided configuration. \n" + e.getMessage());
+          .withMessage("Could not connect to the Pulsar brokers with provided configuration. \n"
+              + e.getMessage());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    final PulsarDestinationConfig pulsarConfig = PulsarDestinationConfig.getPulsarDestinationConfig(config);
-    return new PulsarRecordConsumer(pulsarConfig,
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    final PulsarDestinationConfig pulsarConfig =
+        PulsarDestinationConfig.getPulsarDestinationConfig(config);
+    return new PulsarRecordConsumer(
+        pulsarConfig,
         catalog,
         PulsarUtils.buildClient(pulsarConfig.getServiceUrl()),
         outputRecordCollector,
@@ -94,5 +107,4 @@ public class PulsarDestination extends BaseConnector implements Destination {
     new IntegrationRunner(destination).run(args);
     LOGGER.info("Completed destination: {}", PulsarDestination.class);
   }
-
 }

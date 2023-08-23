@@ -22,10 +22,10 @@ public class VersionDeserializer extends StdDeserializer<Version> {
   }
 
   @Override
-  public Version deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+  public Version deserialize(JsonParser p, DeserializationContext ctxt)
+      throws IOException, JacksonException {
     final JsonNode node = p.getCodec().readTree(p);
     final String v = node.get("version").asText();
     return new Version(v);
   }
-
 }

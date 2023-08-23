@@ -36,5 +36,4 @@ public class TimeTriggerTest {
     assertEquals(false, detect.isTimeTriggered(DESC1).getLeft());
     assertEquals(true, detect.isTimeTriggered(DESC1).getLeft());
   }
-
 }

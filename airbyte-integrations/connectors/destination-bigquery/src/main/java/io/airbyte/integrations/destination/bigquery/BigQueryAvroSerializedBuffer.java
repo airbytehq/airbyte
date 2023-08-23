@@ -29,10 +29,11 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
 
   private final BigQueryRecordFormatter recordFormatter;
 
-  public BigQueryAvroSerializedBuffer(final BufferStorage bufferStorage,
-                                      final CodecFactory codecFactory,
-                                      final Schema schema,
-                                      final BigQueryRecordFormatter recordFormatter)
+  public BigQueryAvroSerializedBuffer(
+      final BufferStorage bufferStorage,
+      final CodecFactory codecFactory,
+      final Schema schema,
+      final BigQueryRecordFormatter recordFormatter)
       throws Exception {
     super(bufferStorage, codecFactory, schema);
     this.recordFormatter = recordFormatter;
@@ -43,22 +44,25 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(recordFormatter.formatRecord(record)));
   }
 
-  public static BufferCreateFunction createBufferFunction(final S3AvroFormatConfig config,
-                                                          final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                                          final BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> schemaCreator,
-                                                          final Callable<BufferStorage> createStorageFunction) {
+  public static BufferCreateFunction createBufferFunction(
+      final S3AvroFormatConfig config,
+      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+      final BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema>
+          schemaCreator,
+      final Callable<BufferStorage> createStorageFunction) {
     final CodecFactory codecFactory = config.getCodecFactory();
     return (pair, catalog) -> {
-      final AirbyteStream stream = catalog.getStreams()
-          .stream()
+      final AirbyteStream stream = catalog.getStreams().stream()
           .filter(s -> s.getStream().getName().equals(pair.getName()))
           .findFirst()
-          .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", pair.getNamespace(), pair.getName())))
+          .orElseThrow(() -> new RuntimeException(
+              String.format("No such stream %s.%s", pair.getNamespace(), pair.getName())))
           .getStream();
-      final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
+      final BigQueryRecordFormatter recordFormatter =
+          recordFormatterCreator.apply(stream.getJsonSchema());
       final Schema schema = schemaCreator.apply(recordFormatter, pair);
-      return new BigQueryAvroSerializedBuffer(createStorageFunction.call(), codecFactory, schema, recordFormatter);
+      return new BigQueryAvroSerializedBuffer(
+          createStorageFunction.call(), codecFactory, schema, recordFormatter);
     };
   }
-
 }

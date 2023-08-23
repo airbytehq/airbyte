@@ -15,16 +15,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
-public class StarburstGalaxyS3StagingStorageConfig
-    extends StarburstGalaxyStagingStorageConfig {
+public class StarburstGalaxyS3StagingStorageConfig extends StarburstGalaxyStagingStorageConfig {
 
   private final S3DestinationConfig s3Config;
 
   public StarburstGalaxyS3StagingStorageConfig(JsonNode config) {
     final S3DestinationConfig.Builder builder = S3DestinationConfig.create(
-        config.get(S_3_BUCKET_NAME).asText(),
-        config.get(S_3_BUCKET_PATH).asText(),
-        config.get(S_3_BUCKET_REGION).asText())
+            config.get(S_3_BUCKET_NAME).asText(),
+            config.get(S_3_BUCKET_PATH).asText(),
+            config.get(S_3_BUCKET_REGION).asText())
         .withAccessKeyCredential(
             config.get(S_3_ACCESS_KEY_ID).asText(),
             config.get(S_3_SECRET_ACCESS_KEY).asText())
@@ -36,5 +35,4 @@ public class StarburstGalaxyS3StagingStorageConfig
   public S3DestinationConfig getS3DestinationConfigOrThrow() {
     return s3Config;
   }
-
 }

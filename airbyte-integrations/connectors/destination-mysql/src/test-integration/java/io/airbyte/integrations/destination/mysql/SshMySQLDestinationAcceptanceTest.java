@@ -61,13 +61,13 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
@@ -98,12 +98,13 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
-                                                     final String streamName,
-                                                     final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final var tableName = namingResolver.getIdentifier(streamName);
-    final String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);
+    final String schema = namespace != null
+        ? namingResolver.getIdentifier(namespace)
+        : namingResolver.getIdentifier(schemaName);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
@@ -112,51 +113,46 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s",
+        String.format(
+            "jdbc:mysql://%s:%s",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asText()),
         SQLDialect.MYSQL);
     return new Database(dslContext);
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws Exception {
     final var schema = schemaName == null ? this.schemaName : schemaName;
     return SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-            .query(
-                ctx -> ctx
-                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName.toLowerCase(),
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                    .stream()
-                    .map(this::getJsonFromRecord)
-                    .collect(Collectors.toList())));
+        getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, (CheckedFunction<
+                JsonNode, List<JsonNode>, Exception>)
+            mangledConfig -> getDatabaseFromConfig(mangledConfig).query(ctx -> ctx
+                .fetch(String.format(
+                    "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                    schema, tableName.toLowerCase(), JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .stream()
+                .map(this::getJsonFromRecord)
+                .collect(Collectors.toList())));
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
     final var config = getConfig();
-    SshTunnel.sshWrap(
-        config,
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
-        });
+    SshTunnel.sshWrap(config, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, mangledConfig -> {
+      getDatabaseFromConfig(mangledConfig)
+          .query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
+    });
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
+        getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, mangledConfig -> {
+          getDatabaseFromConfig(mangledConfig)
+              .query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
         });
   }
-
 }

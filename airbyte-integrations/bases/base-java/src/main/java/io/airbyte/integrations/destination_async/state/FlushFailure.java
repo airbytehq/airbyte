@@ -25,5 +25,4 @@ public class FlushFailure {
   public Exception getException() {
     return exceptionAtomicReference.get();
   }
-
 }

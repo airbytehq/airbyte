@@ -31,7 +31,8 @@ class RedpandaConfigTest {
     var redpandaConfig = RedpandaConfig.createConfig(jsonConfig);
 
     assertThat(redpandaConfig)
-        .usingComparatorForFields(new OptionalComparator(), "topicNumPartitions", "topicReplicationFactor")
+        .usingComparatorForFields(
+            new OptionalComparator(), "topicNumPartitions", "topicReplicationFactor")
         .hasFieldOrPropertyWithValue("bootstrapServers", "host1:port1,host2:port2")
         .hasFieldOrPropertyWithValue("bufferMemory", 33554432L)
         .hasFieldOrPropertyWithValue("compressionType", "none")
@@ -41,7 +42,6 @@ class RedpandaConfigTest {
         .hasFieldOrPropertyWithValue("topicReplicationFactor", Optional.of((short) 1))
         .hasFieldOrPropertyWithValue("socketConnectionSetupTimeoutMs", 10000)
         .hasFieldOrPropertyWithValue("socketConnectionSetupTimeoutMaxMs", 30000);
-
   }
 
   private static class OptionalComparator implements Comparator<Optional<Integer>> {
@@ -50,7 +50,5 @@ class RedpandaConfigTest {
     public int compare(Optional<Integer> o1, Optional<Integer> o2) {
       return Integer.compare(o1.get(), o2.get());
     }
-
   }
-
 }

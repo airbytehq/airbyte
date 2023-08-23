@@ -17,7 +17,8 @@ public class SelectdbOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(SelectdbOperations.class);
 
   private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-  private static final String DB_URL_PATTERN = "jdbc:mysql://%s/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8";
+  private static final String DB_URL_PATTERN =
+      "jdbc:mysql://%s/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8";
 
   // private JsonNode config;
   private Connection conn = null;
@@ -39,11 +40,15 @@ public class SelectdbOperations {
     }
   }
 
-  private void checkSelectdbAndConnect(JsonNode config) throws ClassNotFoundException, SQLException {
-    SelectdbConnectionOptions selectdbConnection = SelectdbConnectionOptions.getSelectdbConnection(config, "");
-    String dbUrl = String.format(DB_URL_PATTERN, selectdbConnection.getJdbcUrl(), selectdbConnection.getDb());
+  private void checkSelectdbAndConnect(JsonNode config)
+      throws ClassNotFoundException, SQLException {
+    SelectdbConnectionOptions selectdbConnection =
+        SelectdbConnectionOptions.getSelectdbConnection(config, "");
+    String dbUrl =
+        String.format(DB_URL_PATTERN, selectdbConnection.getJdbcUrl(), selectdbConnection.getDb());
     Class.forName(JDBC_DRIVER);
-    conn = DriverManager.getConnection(dbUrl, selectdbConnection.getUser(), selectdbConnection.getPwd());
+    conn = DriverManager.getConnection(
+        dbUrl, selectdbConnection.getUser(), selectdbConnection.getPwd());
   }
 
   public String truncateTable(String tableName) {
@@ -63,5 +68,4 @@ public class SelectdbOperations {
     LOGGER.info("create selectdb table SQL :  \n " + s);
     return s;
   }
-
 }

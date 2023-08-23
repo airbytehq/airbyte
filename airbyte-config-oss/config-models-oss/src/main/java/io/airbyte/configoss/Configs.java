@@ -16,7 +16,6 @@ package io.airbyte.configoss;
  * <p>
  * 2. 'Alpha support' if a var does not have proper support and should be used with care.
  */
-
 @SuppressWarnings("PMD.BooleanGetMethodName")
 public interface Configs {
 
@@ -30,5 +29,4 @@ public interface Configs {
     OSS,
     CLOUD
   }
-
 }

@@ -77,7 +77,8 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB), %% used: %s",
+        .append(String.format(
+            "  Global Mem Manager -- max: %s, allocated: %s (%s MB), %% used: %s",
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
@@ -86,12 +87,14 @@ public class BufferManager {
 
     for (final var entry : buffers.entrySet()) {
       final var queue = entry.getValue();
-      queueInfo.append(
-          String.format("  Queue name: %s, num records: %d, num bytes: %s",
-              entry.getKey().getName(), queue.size(), AirbyteFileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
+      queueInfo
+          .append(String.format(
+              "  Queue name: %s, num records: %d, num bytes: %s",
+              entry.getKey().getName(),
+              queue.size(),
+              AirbyteFileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
           .append(System.lineSeparator());
     }
     log.info(queueInfo.toString());
   }
-
 }

@@ -16,7 +16,8 @@ public class IntegrationConfig {
   private final Path catalogPath;
   private final Path statePath;
 
-  private IntegrationConfig(final Command command, final Path configPath, final Path catalogPath, final Path statePath) {
+  private IntegrationConfig(
+      final Command command, final Path configPath, final Path catalogPath, final Path statePath) {
     this.command = command;
     this.configPath = configPath;
     this.catalogPath = catalogPath;
@@ -37,7 +38,8 @@ public class IntegrationConfig {
     return new IntegrationConfig(Command.DISCOVER, config, null, null);
   }
 
-  public static IntegrationConfig read(final Path configPath, final Path catalogPath, final Path statePath) {
+  public static IntegrationConfig read(
+      final Path configPath, final Path catalogPath, final Path statePath) {
     Preconditions.checkNotNull(configPath);
     Preconditions.checkNotNull(catalogPath);
     return new IntegrationConfig(Command.READ, configPath, catalogPath, statePath);
@@ -70,12 +72,11 @@ public class IntegrationConfig {
 
   @Override
   public String toString() {
-    return "IntegrationConfig{" +
-        "command=" + command +
-        ", configPath='" + configPath + '\'' +
-        ", catalogPath='" + catalogPath + '\'' +
-        ", statePath='" + statePath + '\'' +
-        '}';
+    return "IntegrationConfig{" + "command="
+        + command + ", configPath='"
+        + configPath + '\'' + ", catalogPath='"
+        + catalogPath + '\'' + ", statePath='"
+        + statePath + '\'' + '}';
   }
 
   @Override
@@ -87,15 +88,14 @@ public class IntegrationConfig {
       return false;
     }
     final IntegrationConfig that = (IntegrationConfig) o;
-    return command == that.command &&
-        Objects.equals(configPath, that.configPath) &&
-        Objects.equals(catalogPath, that.catalogPath) &&
-        Objects.equals(statePath, that.statePath);
+    return command == that.command
+        && Objects.equals(configPath, that.configPath)
+        && Objects.equals(catalogPath, that.catalogPath)
+        && Objects.equals(statePath, that.statePath);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(command, configPath, catalogPath, statePath);
   }
-
 }

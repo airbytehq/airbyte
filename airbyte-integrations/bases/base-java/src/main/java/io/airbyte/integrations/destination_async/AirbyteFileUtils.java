@@ -39,5 +39,4 @@ public class AirbyteFileUtils {
       return df.format((double) sizeInBytes / ONE_TB) + " TB";
     }
   }
-
 }

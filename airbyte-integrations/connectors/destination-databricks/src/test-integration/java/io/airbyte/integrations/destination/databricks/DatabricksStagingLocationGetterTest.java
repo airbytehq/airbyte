@@ -20,13 +20,14 @@ public class DatabricksStagingLocationGetterTest {
   @Test
   public void testGetStagingLocation() throws IOException, InterruptedException {
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
-    final DatabricksStagingLocationGetter stagingLocationGetter = new DatabricksStagingLocationGetter(
-        config.get("databricks_username").asText(),
-        config.get("databricks_server_hostname").asText(),
-        config.get("databricks_personal_access_token").asText());
-    final PreSignedUrl preSignedUrl = stagingLocationGetter.getPreSignedUrl(System.currentTimeMillis() + "/test.csv");
+    final DatabricksStagingLocationGetter stagingLocationGetter =
+        new DatabricksStagingLocationGetter(
+            config.get("databricks_username").asText(),
+            config.get("databricks_server_hostname").asText(),
+            config.get("databricks_personal_access_token").asText());
+    final PreSignedUrl preSignedUrl =
+        stagingLocationGetter.getPreSignedUrl(System.currentTimeMillis() + "/test.csv");
     assertTrue(preSignedUrl.url().startsWith("https://"));
     assertTrue(preSignedUrl.expirationTimeMillis() > 0);
   }
-
 }

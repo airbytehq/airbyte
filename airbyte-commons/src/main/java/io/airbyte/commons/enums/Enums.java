@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 
 public class Enums {
 
-  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> T2 convertTo(final T1 ie, final Class<T2> oe) {
+  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> T2 convertTo(
+      final T1 ie, final Class<T2> oe) {
     if (ie == null) {
       return null;
     }
@@ -24,28 +25,27 @@ public class Enums {
     return Enum.valueOf(oe, ie.name());
   }
 
-  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> List<T2> convertListTo(final List<T1> ies, final Class<T2> oe) {
-    return ies
-        .stream()
-        .map(ie -> convertTo(ie, oe))
-        .collect(Collectors.toList());
+  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> List<T2> convertListTo(
+      final List<T1> ies, final Class<T2> oe) {
+    return ies.stream().map(ie -> convertTo(ie, oe)).collect(Collectors.toList());
   }
 
-  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> boolean isCompatible(final Class<T1> c1,
-                                                                                final Class<T2> c2) {
+  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> boolean isCompatible(
+      final Class<T1> c1, final Class<T2> c2) {
     Preconditions.checkArgument(c1.isEnum());
     Preconditions.checkArgument(c2.isEnum());
     return c1.getEnumConstants().length == c2.getEnumConstants().length
         && Sets.difference(
-            Arrays.stream(c1.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()),
-            Arrays.stream(c2.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()))
+                Arrays.stream(c1.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()),
+                Arrays.stream(c2.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()))
             .isEmpty();
   }
 
   private static final Map<Class<?>, Map<String, ?>> NORMALIZED_ENUMS = Maps.newConcurrentMap();
 
   @SuppressWarnings("unchecked")
-  public static <T extends Enum<T>> Optional<T> toEnum(final String value, final Class<T> enumClass) {
+  public static <T extends Enum<T>> Optional<T> toEnum(
+      final String value, final Class<T> enumClass) {
     Preconditions.checkArgument(enumClass.isEnum());
 
     if (!NORMALIZED_ENUMS.containsKey(enumClass)) {
@@ -68,5 +68,4 @@ public class Enums {
     Preconditions.checkArgument(e.isEnum());
     return Arrays.stream(e.getEnumConstants()).map(Enum::name).collect(Collectors.toSet());
   }
-
 }

@@ -33,9 +33,10 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastMessage = null;
 
-  public RedisMessageConsumer(JsonNode redisConfig,
-                              ConfiguredAirbyteCatalog configuredCatalog,
-                              Consumer<AirbyteMessage> outputRecordCollector) {
+  public RedisMessageConsumer(
+      JsonNode redisConfig,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
     this.redisCache = RedisCacheFactory.newInstance(redisConfig);
@@ -48,8 +49,10 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
         .collect(Collectors.toUnmodifiableMap(
             AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam,
             k -> new RedisStreamConfig(
-                nameTransformer.keyName(k.getStream().getNamespace(), k.getStream().getName()),
-                nameTransformer.tmpKeyName(k.getStream().getNamespace(), k.getStream().getName()),
+                nameTransformer.keyName(
+                    k.getStream().getNamespace(), k.getStream().getName()),
+                nameTransformer.tmpKeyName(
+                    k.getStream().getNamespace(), k.getStream().getName()),
                 k.getDestinationSyncMode())));
   }
 
@@ -64,7 +67,8 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       }
 
       var timestamp = Instant.ofEpochMilli(messageRecord.getEmittedAt());
-      redisCache.insert(streamConfig.getTmpKey(), timestamp, Jsons.serialize(messageRecord.getData()));
+      redisCache.insert(
+          streamConfig.getTmpKey(), timestamp, Jsons.serialize(messageRecord.getData()));
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
       this.lastMessage = message;
     } else {
@@ -96,7 +100,5 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     redisCache.close();
-
   }
-
 }

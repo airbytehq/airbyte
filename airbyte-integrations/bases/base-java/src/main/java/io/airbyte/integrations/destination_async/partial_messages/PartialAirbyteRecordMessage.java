@@ -16,6 +16,7 @@ public class PartialAirbyteRecordMessage {
 
   @JsonProperty("namespace")
   private String namespace;
+
   @JsonProperty("stream")
   private String stream;
 
@@ -109,11 +110,9 @@ public class PartialAirbyteRecordMessage {
 
   @Override
   public String toString() {
-    return "PartialAirbyteRecordMessage{" +
-        "namespace='" + namespace + '\'' +
-        ", stream='" + stream + '\'' +
-        ", emittedAt='" + emittedAt + '\'' +
-        '}';
+    return "PartialAirbyteRecordMessage{" + "namespace='"
+        + namespace + '\'' + ", stream='"
+        + stream + '\'' + ", emittedAt='"
+        + emittedAt + '\'' + '}';
   }
-
 }

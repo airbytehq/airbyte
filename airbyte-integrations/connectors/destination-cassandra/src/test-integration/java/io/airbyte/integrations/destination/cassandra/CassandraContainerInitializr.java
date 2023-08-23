@@ -10,9 +10,7 @@ class CassandraContainerInitializr {
 
   private static ConfiguredCassandraContainer cassandraContainer;
 
-  private CassandraContainerInitializr() {
-
-  }
+  private CassandraContainerInitializr() {}
 
   public static ConfiguredCassandraContainer initContainer() {
     if (cassandraContainer == null) {
@@ -22,13 +20,12 @@ class CassandraContainerInitializr {
     return cassandraContainer;
   }
 
-  public static class ConfiguredCassandraContainer extends CassandraContainer<ConfiguredCassandraContainer> {
+  public static class ConfiguredCassandraContainer
+      extends CassandraContainer<ConfiguredCassandraContainer> {
 
     ConfiguredCassandraContainer() {
       // latest compatible version with the internal testcontainers datastax driver.
       super("cassandra:3.11.11");
     }
-
   }
-
 }

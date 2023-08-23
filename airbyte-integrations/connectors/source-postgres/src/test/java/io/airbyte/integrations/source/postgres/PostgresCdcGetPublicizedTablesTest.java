@@ -47,9 +47,12 @@ class PostgresCdcGetPublicizedTablesTest {
 
   @BeforeAll
   static void init() {
-    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    final DockerImageName myImage =
+        DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
     container = new PostgreSQLContainer<>(myImage)
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("postgresql.conf"),
+            "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
   }
@@ -63,7 +66,8 @@ class PostgresCdcGetPublicizedTablesTest {
   void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
 
     this.config = getConfig(container, dbName);
@@ -74,7 +78,8 @@ class PostgresCdcGetPublicizedTablesTest {
         ctx.execute("create table table_1 (id serial primary key, text_column text);");
         ctx.execute("create table table_2 (id serial primary key, text_column text);");
         ctx.execute("create table table_irrelevant (id serial primary key, text_column text);");
-        ctx.execute("SELECT pg_create_logical_replication_slot('" + REPLICATION_SLOT + "', 'pgoutput');");
+        ctx.execute(
+            "SELECT pg_create_logical_replication_slot('" + REPLICATION_SLOT + "', 'pgoutput');");
         // create a publication including table_1 and table_2, but not table_irrelevant
         ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR TABLE table_1, table_2;");
         return null;
@@ -100,7 +105,8 @@ class PostgresCdcGetPublicizedTablesTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -123,10 +129,13 @@ class PostgresCdcGetPublicizedTablesTest {
       assertEquals(0, PostgresCatalogHelper.getPublicizedTables(database).size());
 
       // when config is cdc
-      ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
-          "replication_slot", REPLICATION_SLOT,
-          "initial_waiting_seconds", INITIAL_WAITING_SECONDS,
-          "publication", PUBLICATION)));
+      ((ObjectNode) config)
+          .set(
+              "replication_method",
+              Jsons.jsonNode(ImmutableMap.of(
+                  "replication_slot", REPLICATION_SLOT,
+                  "initial_waiting_seconds", INITIAL_WAITING_SECONDS,
+                  "publication", PUBLICATION)));
       database.setSourceConfig(config);
       final Set<AirbyteStreamNameNamespacePair> expectedTables = Set.of(
           new AirbyteStreamNameNamespacePair("table_1", SCHEMA_NAME),
@@ -137,5 +146,4 @@ class PostgresCdcGetPublicizedTablesTest {
       throw new RuntimeException(e);
     }
   }
-
 }

@@ -43,12 +43,14 @@ public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final LongPredicate anotherRecordPredicate = config.has("max_records")
         ? recordNumber -> recordNumber < config.get("max_records").asLong()
         : recordNumber -> true;
 
-    final Optional<Long> sleepTime = Optional.ofNullable(config.get("message_interval")).map(JsonNode::asLong);
+    final Optional<Long> sleepTime =
+        Optional.ofNullable(config.get("message_interval")).map(JsonNode::asLong);
 
     final AtomicLong i = new AtomicLong();
 
@@ -78,8 +80,6 @@ public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.of("column1", i))));
       }
-
     });
   }
-
 }

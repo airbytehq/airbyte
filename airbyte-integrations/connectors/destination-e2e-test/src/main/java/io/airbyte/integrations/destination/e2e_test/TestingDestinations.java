@@ -46,13 +46,15 @@ public class TestingDestinations extends BaseConnector implements Destination {
   }
 
   private Destination selectDestination(final JsonNode config) {
-    return destinationMap.get(TestDestinationType.valueOf(config.get("test_destination").get("test_destination_type").asText()));
+    return destinationMap.get(TestDestinationType.valueOf(
+        config.get("test_destination").get("test_destination_type").asText()));
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return selectDestination(config).getConsumer(config, catalog, outputRecordCollector);
   }
@@ -72,5 +74,4 @@ public class TestingDestinations extends BaseConnector implements Destination {
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", TestingDestinations.class);
   }
-
 }

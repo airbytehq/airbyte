@@ -13,7 +13,8 @@ import java.util.function.Supplier;
  * A slightly more complicated way to keep track of when to perform type and dedupe operations per
  * stream
  */
-public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStreamNameNamespacePair, Long> {
+public class TypeAndDedupeOperationValve
+    extends ConcurrentHashMap<AirbyteStreamNameNamespacePair, Long> {
 
   private static final long NEGATIVE_MILLIS = -1;
   private static final long FIFTEEN_MINUTES_MILLIS = 1000 * 60 * 15;
@@ -23,13 +24,19 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
 
   // New users of airbyte likely want to see data flowing into their tables as soon as possible, and
   // we want to catch new errors which might appear early within an incremental sync.
-  // However, as their destination tables grow in size, typing and de-duping data becomes an expensive
+  // However, as their destination tables grow in size, typing and de-duping data becomes an
+  // expensive
   // operation.
-  // To strike a balance between showing data quickly and not slowing down the entire sync, we use an
+  // To strike a balance between showing data quickly and not slowing down the entire sync, we use
+  // an
   // increasing interval based approach, from 0 up to 4 hours.
   // This is not fancy, just hard coded intervals.
-  private static final List<Long> typeAndDedupeIncreasingIntervals =
-      List.of(NEGATIVE_MILLIS, FIFTEEN_MINUTES_MILLIS, ONE_HOUR_MILLIS, TWO_HOURS_MILLIS, FOUR_HOURS_MILLIS);
+  private static final List<Long> typeAndDedupeIncreasingIntervals = List.of(
+      NEGATIVE_MILLIS,
+      FIFTEEN_MINUTES_MILLIS,
+      ONE_HOUR_MILLIS,
+      TWO_HOURS_MILLIS,
+      FOUR_HOURS_MILLIS);
 
   private static final Supplier<Long> SYSTEM_NOW = () -> System.currentTimeMillis();
 
@@ -58,7 +65,6 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
       incrementalIndex.put(key, 0);
     }
     return super.put(key, value);
-
   }
 
   /**
@@ -82,7 +88,8 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
       return false;
     }
 
-    return nowness.get() - get(key) > typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
+    return nowness.get() - get(key)
+        > typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
   }
 
   /**
@@ -121,5 +128,4 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
   public Long getIncrementInterval(final AirbyteStreamNameNamespacePair key) {
     return typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
   }
-
 }

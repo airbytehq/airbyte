@@ -70,5 +70,4 @@ public interface BufferStorage {
    * @return How many concurrent buffers can be handled at once in parallel
    */
   int getMaxConcurrentStreamsInBuffer();
-
 }

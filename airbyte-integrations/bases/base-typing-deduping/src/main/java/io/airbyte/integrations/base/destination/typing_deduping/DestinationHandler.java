@@ -13,5 +13,4 @@ public interface DestinationHandler<DialectTableDefinition> {
   boolean isFinalTableEmpty(StreamId id) throws Exception;
 
   void execute(final String sql) throws Exception;
-
 }

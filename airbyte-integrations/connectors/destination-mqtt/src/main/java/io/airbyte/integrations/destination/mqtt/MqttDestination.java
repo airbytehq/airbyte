@@ -37,18 +37,24 @@ public class MqttDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final MqttDestinationConfig mqttConfig = MqttDestinationConfig.getMqttDestinationConfig(config);
+      final MqttDestinationConfig mqttConfig =
+          MqttDestinationConfig.getMqttDestinationConfig(config);
       final String testTopic = mqttConfig.getTestTopic();
       if (!testTopic.isBlank()) {
-        try (final IMqttAsyncClient client = new MqttAsyncClient(mqttConfig.getServerUri(), mqttConfig.getClientId())) {
+        try (final IMqttAsyncClient client =
+            new MqttAsyncClient(mqttConfig.getServerUri(), mqttConfig.getClientId())) {
           client.connect(mqttConfig.getMqttConnectOptions()).waitForCompletion();
 
           final String key = UUID.randomUUID().toString();
           final JsonNode payload = Jsons.jsonNode(ImmutableMap.of(
-              COLUMN_NAME_AB_ID, key,
-              COLUMN_NAME_STREAM, "test-topic-stream",
-              COLUMN_NAME_EMITTED_AT, System.currentTimeMillis(),
-              COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
+              COLUMN_NAME_AB_ID,
+              key,
+              COLUMN_NAME_STREAM,
+              "test-topic-stream",
+              COLUMN_NAME_EMITTED_AT,
+              System.currentTimeMillis(),
+              COLUMN_NAME_DATA,
+              Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
 
           final MqttMessage message = new MqttMessage(payload.toString().getBytes(Charsets.UTF_8));
           message.setQos(mqttConfig.getQos());
@@ -57,7 +63,10 @@ public class MqttDestination extends BaseConnector implements Destination {
           client.publish(testTopic, message).getMessage();
           client.disconnectForcibly();
 
-          LOGGER.info("Successfully sent message with key '{}' to MQTT broker for topic '{}'.", key, testTopic);
+          LOGGER.info(
+              "Successfully sent message with key '{}' to MQTT broker for topic '{}'.",
+              key,
+              testTopic);
         }
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -65,17 +74,18 @@ public class MqttDestination extends BaseConnector implements Destination {
       LOGGER.error("Exception attempting to connect to the MQTT broker: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Could not connect to the MQTT broker with provided configuration. \n" + e.getMessage());
+          .withMessage("Could not connect to the MQTT broker with provided configuration. \n"
+              + e.getMessage());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new MqttRecordConsumer(MqttDestinationConfig.getMqttDestinationConfig(config),
-        catalog,
-        outputRecordCollector);
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    return new MqttRecordConsumer(
+        MqttDestinationConfig.getMqttDestinationConfig(config), catalog, outputRecordCollector);
   }
 
   public static void main(final String[] args) throws Exception {
@@ -84,5 +94,4 @@ public class MqttDestination extends BaseConnector implements Destination {
     new IntegrationRunner(destination).run(args);
     LOGGER.info("Completed destination: {}", MqttDestination.class);
   }
-
 }

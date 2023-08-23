@@ -17,9 +17,8 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
    * @param streamConfig the stream to assess migration needs
    */
   void migrateIfNecessary(
-                          final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                          final DestinationHandler<DialectTableDefinition> destinationHandler,
-                          final StreamConfig streamConfig)
+      final SqlGenerator<DialectTableDefinition> sqlGenerator,
+      final DestinationHandler<DialectTableDefinition> destinationHandler,
+      final StreamConfig streamConfig)
       throws TableNotMigratedException, UnexpectedSchemaException;
-
 }

@@ -39,43 +39,42 @@ public class S3JsonlFormatConfigTest {
   @Test
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}"));
+    final JsonNode config = ConfigTestUtils.getBaseConfig(
+        Jsons.deserialize("{\n" + "  \"format_type\": \"JSONL\"\n" + "}"));
 
-    final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
-        .getS3DestinationConfig(config);
+    final S3DestinationConfig s3DestinationConfig =
+        S3DestinationConfig.getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
     final S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
     assertEquals("JSONL", formatConfig.getFormat().name());
 
     // Assert that is set properly in config
-    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
-        .create(s3DestinationConfig.getBucketName(), "objectKey", null)
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory.create(
+            s3DestinationConfig.getBucketName(), "objectKey", null)
         .get();
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}"));
+    final JsonNode config = ConfigTestUtils.getBaseConfig(
+        Jsons.deserialize("{\n" + "  \"format_type\": \"JSONL\"\n" + "}"));
 
-    final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
-        .getS3DestinationConfig(config);
+    final S3DestinationConfig s3DestinationConfig =
+        S3DestinationConfig.getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
-    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
-        .create(s3DestinationConfig.getBucketName(), "objectKey", null)
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory.create(
+            s3DestinationConfig.getBucketName(), "objectKey", null)
         .get();
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
-
 }

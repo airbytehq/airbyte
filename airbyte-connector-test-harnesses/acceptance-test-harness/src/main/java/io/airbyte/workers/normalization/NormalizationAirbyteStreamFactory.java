@@ -32,7 +32,8 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.MoreThanOneLogger")
 public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationAirbyteStreamFactory.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(NormalizationAirbyteStreamFactory.class);
 
   private final MdcScope.Builder containerLogMdcBuilder;
   private final Logger logger;
@@ -42,7 +43,8 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
     this(LOGGER, containerLogMdcBuilder);
   }
 
-  NormalizationAirbyteStreamFactory(final Logger logger, final MdcScope.Builder containerLogMdcBuilder) {
+  NormalizationAirbyteStreamFactory(
+      final Logger logger, final MdcScope.Builder containerLogMdcBuilder) {
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
   }
@@ -87,17 +89,21 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
     if (m.isEmpty()) {
       // valid JSON but not an AirbyteMessage, so we assume this is a dbt json log
       try {
-        final String logLevel = (jsonLine.getNodeType() == JsonNodeType.NULL || jsonLine.get("level").isNull())
+        final String logLevel = (jsonLine.getNodeType() == JsonNodeType.NULL
+                || jsonLine.get("level").isNull())
             ? ""
             : jsonLine.get("level").asText();
-        final String logMsg = jsonLine.get("msg").isNull() ? "" : jsonLine.get("msg").asText();
+        final String logMsg =
+            jsonLine.get("msg").isNull() ? "" : jsonLine.get("msg").asText();
         try (final var mdcScope = containerLogMdcBuilder.build()) {
           switch (logLevel) {
             case "debug" -> logger.debug(logMsg);
             case "info" -> logger.info(logMsg);
             case "warn" -> logger.warn(logMsg);
             case "error" -> logAndCollectErrorMessage(logMsg);
-            default -> logger.info(jsonLine.toPrettyString()); // this shouldn't happen but logging it to avoid hiding unexpected lines.
+            default -> logger.info(
+                jsonLine.toPrettyString()); // this shouldn't happen but logging it to avoid hiding
+              // unexpected lines.
           }
         }
       } catch (final Exception e) {
@@ -125,5 +131,4 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
       default -> logger.info(logMessage.getMessage());
     }
   }
-
 }

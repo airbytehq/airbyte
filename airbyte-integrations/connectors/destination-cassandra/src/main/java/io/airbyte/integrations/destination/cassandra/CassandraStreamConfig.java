@@ -19,10 +19,11 @@ class CassandraStreamConfig {
 
   private final DestinationSyncMode destinationSyncMode;
 
-  public CassandraStreamConfig(String keyspace,
-                               String tableName,
-                               String tempTableName,
-                               DestinationSyncMode destinationSyncMode) {
+  public CassandraStreamConfig(
+      String keyspace,
+      String tableName,
+      String tempTableName,
+      DestinationSyncMode destinationSyncMode) {
     this.keyspace = keyspace;
     this.tableName = tableName;
     this.tempTableName = tempTableName;
@@ -47,12 +48,10 @@ class CassandraStreamConfig {
 
   @Override
   public String toString() {
-    return "CassandraStreamConfig{" +
-        "keyspace='" + keyspace + '\'' +
-        ", tableName='" + tableName + '\'' +
-        ", tempTableName='" + tempTableName + '\'' +
-        ", destinationSyncMode=" + destinationSyncMode +
-        '}';
+    return "CassandraStreamConfig{" + "keyspace='"
+        + keyspace + '\'' + ", tableName='"
+        + tableName + '\'' + ", tempTableName='"
+        + tempTableName + '\'' + ", destinationSyncMode="
+        + destinationSyncMode + '}';
   }
-
 }

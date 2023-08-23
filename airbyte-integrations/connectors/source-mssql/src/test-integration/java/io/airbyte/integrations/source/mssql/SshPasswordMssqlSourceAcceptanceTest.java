@@ -14,5 +14,4 @@ public class SshPasswordMssqlSourceAcceptanceTest extends AbstractSshMssqlSource
   public TunnelMethod getTunnelMethod() {
     return TunnelMethod.SSH_PASSWORD_AUTH;
   }
-
 }

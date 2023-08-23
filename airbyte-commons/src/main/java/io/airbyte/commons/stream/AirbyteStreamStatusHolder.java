@@ -19,20 +19,24 @@ public class AirbyteStreamStatusHolder {
 
   private final AirbyteStreamStatus airbyteStreamStatus;
 
-  public AirbyteStreamStatusHolder(final AirbyteStreamNameNamespacePair airbyteStream,
-                                   final AirbyteStreamStatus airbyteStreamStatus) {
+  public AirbyteStreamStatusHolder(
+      final AirbyteStreamNameNamespacePair airbyteStream,
+      final AirbyteStreamStatus airbyteStreamStatus) {
     this.airbyteStream = airbyteStream;
     this.airbyteStreamStatus = airbyteStreamStatus;
   }
 
   public AirbyteTraceMessage toTraceMessage() {
     final AirbyteTraceMessage traceMessage = new AirbyteTraceMessage();
-    final AirbyteStreamStatusTraceMessage streamStatusTraceMessage = new AirbyteStreamStatusTraceMessage()
-        .withStreamDescriptor(new StreamDescriptor().withName(airbyteStream.getName()).withNamespace(airbyteStream.getNamespace()))
-        .withStatus(airbyteStreamStatus);
-    return traceMessage.withEmittedAt(Long.valueOf(System.currentTimeMillis()).doubleValue())
+    final AirbyteStreamStatusTraceMessage streamStatusTraceMessage =
+        new AirbyteStreamStatusTraceMessage()
+            .withStreamDescriptor(new StreamDescriptor()
+                .withName(airbyteStream.getName())
+                .withNamespace(airbyteStream.getNamespace()))
+            .withStatus(airbyteStreamStatus);
+    return traceMessage
+        .withEmittedAt(Long.valueOf(System.currentTimeMillis()).doubleValue())
         .withStreamStatus(streamStatusTraceMessage)
         .withType(AirbyteTraceMessage.Type.STREAM_STATUS);
   }
-
 }

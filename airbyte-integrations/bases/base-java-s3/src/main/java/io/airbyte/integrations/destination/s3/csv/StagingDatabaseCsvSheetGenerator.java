@@ -35,7 +35,9 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   public StagingDatabaseCsvSheetGenerator() {
     use1s1t = TypingAndDedupingFlag.isDestinationV2();
-    this.header = use1s1t ? JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES : JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+    this.header = use1s1t
+        ? JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
+        : JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
   }
 
   // TODO is this even used anywhere?
@@ -55,19 +57,12 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   }
 
   @Override
-  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
+  public List<Object> getDataRow(
+      final UUID id, final String formattedString, final long emittedAt) {
     if (use1s1t) {
-      return List.of(
-          id,
-          Timestamp.from(Instant.ofEpochMilli(emittedAt)),
-          "",
-          formattedString);
+      return List.of(id, Timestamp.from(Instant.ofEpochMilli(emittedAt)), "", formattedString);
     } else {
-      return List.of(
-          id,
-          formattedString,
-          Timestamp.from(Instant.ofEpochMilli(emittedAt)));
+      return List.of(id, formattedString, Timestamp.from(Instant.ofEpochMilli(emittedAt)));
     }
   }
-
 }

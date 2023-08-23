@@ -79,8 +79,11 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .withEnv("MYSQL_ROOT_HOST", "%")
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
-    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", container.getPassword());
-    connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+    final Connection connection =
+        DriverManager.getConnection(container.getJdbcUrl(), "root", container.getPassword());
+    connection
+        .createStatement()
+        .execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 
   @BeforeEach
@@ -100,7 +103,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s?%s",
+        String.format(
+            "jdbc:mysql://%s:%s?%s",
             outerContainerAddress.left,
             outerContainerAddress.right,
             String.join("&", SSL_PARAMETERS)),
@@ -155,39 +159,40 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
-    final ConnectorSpecification expected =
-        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+    final ConnectorSpecification expected = SshHelpers.injectSshIntoSpec(Jsons.deserialize(
+        MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
 
   @Override
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
-    return new AirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
-            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_WITHOUT_PK,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
-            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(Collections.emptyList()),
-        CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_COMPOSITE_PK,
-            defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
-            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(
-                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+    return new AirbyteCatalog()
+        .withStreams(List.of(
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME,
+                    defaultNamespace,
+                    Field.of(COL_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+                .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME_WITHOUT_PK,
+                    defaultNamespace,
+                    Field.of(COL_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+                .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(Collections.emptyList()),
+            CatalogHelpers.createAirbyteStream(
+                    TABLE_NAME_COMPOSITE_PK,
+                    defaultNamespace,
+                    Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                    Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+                .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(
+                    List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
   @Override
@@ -202,42 +207,54 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @Override
   protected List<AirbyteMessage> getTestMessages() {
     return List.of(
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_1,
-                        COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_2,
-                        COL_NAME, "crusher",
-                        COL_UPDATED_AT,
-                        "2005-10-19")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_3,
-                        COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19")))));
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
+                .withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map.of(
+                    COL_ID, ID_VALUE_1,
+                    COL_NAME, "picard",
+                    COL_UPDATED_AT, "2004-10-19")))),
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
+                .withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map.of(
+                    COL_ID, ID_VALUE_2, COL_NAME, "crusher", COL_UPDATED_AT, "2005-10-19")))),
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
+                .withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map.of(
+                    COL_ID, ID_VALUE_3,
+                    COL_NAME, "vash",
+                    COL_UPDATED_AT, "2006-10-19")))));
   }
 
   @Override
   protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_4,
-                    COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_5,
-                    COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19")))));
+    expectedMessages.add(new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(streamName)
+            .withNamespace(namespace)
+            .withData(Jsons.jsonNode(Map.of(
+                COL_ID, ID_VALUE_4,
+                COL_NAME, "riker",
+                COL_UPDATED_AT, "2006-10-19")))));
+    expectedMessages.add(new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(streamName)
+            .withNamespace(namespace)
+            .withData(Jsons.jsonNode(Map.of(
+                COL_ID, ID_VALUE_5,
+                COL_NAME, "data",
+                COL_UPDATED_AT, "2006-10-19")))));
     final DbStreamState state = new DbStreamState()
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
@@ -252,14 +269,13 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   void testStrictSSLUnsecuredNoTunnel() throws Exception {
     final String PASSWORD = "Passw0rd";
     final var certs = MySqlUtils.getCertificate(container, true);
-    final var sslMode = ImmutableMap.builder()
-        .put(JdbcUtils.MODE_KEY, "preferred")
-        .build();
+    final var sslMode =
+        ImmutableMap.builder().put(JdbcUtils.MODE_KEY, "preferred").build();
 
-    final var tunnelMode = ImmutableMap.builder()
-        .put("tunnel_method", "NO_TUNNEL")
-        .build();
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+    final var tunnelMode =
+        ImmutableMap.builder().put("tunnel_method", "NO_TUNNEL").build();
+    ((ObjectNode) config)
+        .put(JdbcUtils.PASSWORD_KEY, "fake")
         .put(JdbcUtils.SSL_KEY, true)
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
@@ -281,10 +297,10 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .put("client_key_password", PASSWORD)
         .build();
 
-    final var tunnelMode = ImmutableMap.builder()
-        .put("tunnel_method", "NO_TUNNEL")
-        .build();
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+    final var tunnelMode =
+        ImmutableMap.builder().put("tunnel_method", "NO_TUNNEL").build();
+    ((ObjectNode) config)
+        .put(JdbcUtils.PASSWORD_KEY, "fake")
         .put(JdbcUtils.SSL_KEY, true)
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
@@ -306,10 +322,10 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .put("client_key_password", PASSWORD)
         .build();
 
-    final var tunnelMode = ImmutableMap.builder()
-        .put("tunnel_method", "SSH_KEY_AUTH")
-        .build();
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+    final var tunnelMode =
+        ImmutableMap.builder().put("tunnel_method", "SSH_KEY_AUTH").build();
+    ((ObjectNode) config)
+        .put(JdbcUtils.PASSWORD_KEY, "fake")
         .put(JdbcUtils.SSL_KEY, true)
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
@@ -323,14 +339,13 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   void testStrictSSLUnsecuredWithTunnel() throws Exception {
     final String PASSWORD = "Passw0rd";
     final var certs = MySqlUtils.getCertificate(container, true);
-    final var sslMode = ImmutableMap.builder()
-        .put(JdbcUtils.MODE_KEY, "preferred")
-        .build();
+    final var sslMode =
+        ImmutableMap.builder().put(JdbcUtils.MODE_KEY, "preferred").build();
 
-    final var tunnelMode = ImmutableMap.builder()
-        .put("tunnel_method", "SSH_KEY_AUTH")
-        .build();
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+    final var tunnelMode =
+        ImmutableMap.builder().put("tunnel_method", "SSH_KEY_AUTH").build();
+    ((ObjectNode) config)
+        .put(JdbcUtils.PASSWORD_KEY, "fake")
         .put(JdbcUtils.SSL_KEY, true)
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
@@ -345,19 +360,24 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0").withNetwork(network)) {
       bastion.initAndStartBastion(network);
       db.start();
-      final JsonNode configWithSSLModeDisabled = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, ImmutableMap.builder()
-          .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(db.getContainerInfo()
-              .getNetworkSettings()
-              .getNetworks()
-              .entrySet().stream()
-              .findFirst()
-              .get().getValue().getIpAddress()))
-          .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
-          .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-          .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
-          .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-          .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-          .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, "disable")), false);
+      final JsonNode configWithSSLModeDisabled = bastion.getTunnelConfig(
+          SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH,
+          ImmutableMap.builder()
+              .put(
+                  JdbcUtils.HOST_KEY,
+                  Objects.requireNonNull(
+                      db.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream()
+                          .findFirst()
+                          .get()
+                          .getValue()
+                          .getIpAddress()))
+              .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
+              .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+              .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
+              .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+              .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+              .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, "disable")),
+          false);
 
       final AirbyteConnectionStatus actual = source.check(configWithSSLModeDisabled);
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, actual.getStatus());
@@ -370,5 +390,4 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   protected boolean supportsPerStream() {
     return true;
   }
-
 }

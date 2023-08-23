@@ -29,26 +29,26 @@ public class MySqlTestDataComparator extends AdvancedTestDataComparator {
 
   @Override
   protected boolean compareBooleanValues(String firstBooleanValue, String secondBooleanValue) {
-    if (secondBooleanValue.equalsIgnoreCase("true") || secondBooleanValue.equalsIgnoreCase("false")) {
+    if (secondBooleanValue.equalsIgnoreCase("true")
+        || secondBooleanValue.equalsIgnoreCase("false")) {
       return super.compareBooleanValues(firstBooleanValue, secondBooleanValue);
     } else {
-      return super.compareBooleanValues(firstBooleanValue,
-          String.valueOf(secondBooleanValue.equals("1")));
+      return super.compareBooleanValues(
+          firstBooleanValue, String.valueOf(secondBooleanValue.equals("1")));
     }
   }
 
   @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseLocalDateTime(actualValue);
-    var expectedDate = LocalDate.parse(expectedValue,
-        DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+    var expectedDate =
+        LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   private LocalDate parseLocalDateTime(String dateTimeValue) {
     if (dateTimeValue != null) {
-      return LocalDate.parse(dateTimeValue,
-          DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
+      return LocalDate.parse(dateTimeValue, DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
     } else {
       return null;
     }
@@ -63,5 +63,4 @@ public class MySqlTestDataComparator extends AdvancedTestDataComparator {
       return AIRBYTE_DATETIME_PARSED_FORMAT;
     }
   }
-
 }

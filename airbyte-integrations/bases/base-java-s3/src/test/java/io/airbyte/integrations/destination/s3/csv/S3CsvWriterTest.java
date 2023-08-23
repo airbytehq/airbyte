@@ -50,17 +50,14 @@ class S3CsvWriterTest {
 
   public static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
       .withDestinationSyncMode(DestinationSyncMode.APPEND)
-      .withStream(new AirbyteStream()
-          .withName("fake-stream")
-          .withNamespace("fake-namespace"));
+      .withStream(new AirbyteStream().withName("fake-stream").withNamespace("fake-namespace"));
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  private static final S3CsvFormatConfig CSV_FORMAT_CONFIG = new S3CsvFormatConfig(Flattening.NO, CompressionType.NO_COMPRESSION);
+  private static final S3CsvFormatConfig CSV_FORMAT_CONFIG =
+      new S3CsvFormatConfig(Flattening.NO, CompressionType.NO_COMPRESSION);
 
   private static final S3DestinationConfig CONFIG = S3DestinationConfig.create(
-      "fake-bucket",
-      "fake-bucketPath",
-      "fake-region")
+          "fake-bucket", "fake-bucketPath", "fake-region")
       .withEndpoint("fake-endpoint")
       .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
       .withFormatConfig(CSV_FORMAT_CONFIG)
@@ -73,9 +70,11 @@ class S3CsvWriterTest {
 
   // The full path would be something like
   // "fake-bucketPath/fake-namespace/fake-stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
-  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case
+  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in
+  // case
   // we need to create multiple files.
-  private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake-namespace/fake-stream/2021_12_09_1639077474000_";
+  private static final String EXPECTED_OBJECT_BEGINNING =
+      "fake-bucketPath/fake-namespace/fake-stream/2021_12_09_1639077474000_";
   private static final String EXPECTED_OBJECT_ENDING = ".csv";
 
   private AmazonS3 s3Client;
@@ -84,9 +83,7 @@ class S3CsvWriterTest {
   private List<StreamTransferManagerArguments> streamTransferManagerConstructorArguments;
   private List<ByteArrayOutputStream> outputStreams;
 
-  private record StreamTransferManagerArguments(String bucket, String object) {
-
-  }
+  private record StreamTransferManagerArguments(String bucket, String object) {}
 
   @BeforeEach
   public void setup() {
@@ -94,50 +91,58 @@ class S3CsvWriterTest {
     outputStreams = new ArrayList<>();
     // This is basically RETURNS_SELF, except with getMultiPartOutputStreams configured correctly.
     // Other non-void methods (e.g. toString()) will return null.
-    streamTransferManagerMockedConstruction = mockConstruction(
-        StreamTransferManager.class,
-        (mock, context) -> {
-          // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so
+    streamTransferManagerMockedConstruction =
+        mockConstruction(StreamTransferManager.class, (mock, context) -> {
+          // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later
+          // on, so
           // manually store them on construction.
           // _PowerMockito_ does, but I didn't want to set up that additional dependency.
           final List<?> arguments = context.arguments();
-          streamTransferManagerConstructorArguments.add(new StreamTransferManagerArguments((String) arguments.get(0), (String) arguments.get(1)));
+          streamTransferManagerConstructorArguments.add(new StreamTransferManagerArguments(
+              (String) arguments.get(0), (String) arguments.get(1)));
 
           doReturn(mock).when(mock).numUploadThreads(anyInt());
           doReturn(mock).when(mock).numStreams(anyInt());
           doReturn(mock).when(mock).queueCapacity(anyInt());
           doReturn(mock).when(mock).partSize(anyLong());
 
-          // We can't write a fake MultiPartOutputStream, because it doesn't have a public constructor.
+          // We can't write a fake MultiPartOutputStream, because it doesn't have a public
+          // constructor.
           // So instead, we'll build a mock that captures its data into a ByteArrayOutputStream.
           final MultiPartOutputStream stream = mock(MultiPartOutputStream.class);
           doReturn(singletonList(stream)).when(mock).getMultiPartOutputStreams();
           final ByteArrayOutputStream capturer = new ByteArrayOutputStream();
           outputStreams.add(capturer);
           doAnswer(invocation -> {
-            capturer.write((int) invocation.getArgument(0));
-            return null;
-          }).when(stream).write(anyInt());
+                capturer.write((int) invocation.getArgument(0));
+                return null;
+              })
+              .when(stream)
+              .write(anyInt());
           doAnswer(invocation -> {
-            capturer.write(invocation.getArgument(0));
-            return null;
-          }).when(stream).write(any(byte[].class));
+                capturer.write(invocation.getArgument(0));
+                return null;
+              })
+              .when(stream)
+              .write(any(byte[].class));
           doAnswer(invocation -> {
-            capturer.write(invocation.getArgument(0), invocation.getArgument(1), invocation.getArgument(2));
-            return null;
-          }).when(stream).write(any(byte[].class), anyInt(), anyInt());
+                capturer.write(
+                    invocation.getArgument(0),
+                    invocation.getArgument(1),
+                    invocation.getArgument(2));
+                return null;
+              })
+              .when(stream)
+              .write(any(byte[].class), anyInt(), anyInt());
         });
 
     s3Client = mock(AmazonS3Client.class);
   }
 
   private Builder writer() {
-    return new Builder(
-        CONFIG,
-        s3Client,
-        CONFIGURED_STREAM,
-        UPLOAD_TIME).uploadThreads(UPLOAD_THREADS)
-            .queueCapacity(QUEUE_CAPACITY);
+    return new Builder(CONFIG, s3Client, CONFIGURED_STREAM, UPLOAD_TIME)
+        .uploadThreads(UPLOAD_THREADS)
+        .queueCapacity(QUEUE_CAPACITY);
   }
 
   @AfterEach
@@ -160,7 +165,8 @@ class S3CsvWriterTest {
 
     assertEquals(1, streamTransferManagerMockedConstruction.constructed().size());
 
-    final StreamTransferManager manager = streamTransferManagerMockedConstruction.constructed().get(0);
+    final StreamTransferManager manager =
+        streamTransferManagerMockedConstruction.constructed().get(0);
     final StreamTransferManagerArguments args = streamTransferManagerConstructorArguments.get(0);
     verify(manager).numUploadThreads(UPLOAD_THREADS);
     verify(manager).queueCapacity(QUEUE_CAPACITY);
@@ -174,7 +180,8 @@ class S3CsvWriterTest {
 
     writer.close(false);
 
-    final List<StreamTransferManager> managers = streamTransferManagerMockedConstruction.constructed();
+    final List<StreamTransferManager> managers =
+        streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager manager = managers.get(0);
     verify(manager).complete();
   }
@@ -185,7 +192,8 @@ class S3CsvWriterTest {
 
     writer.close(true);
 
-    final List<StreamTransferManager> managers = streamTransferManagerMockedConstruction.constructed();
+    final List<StreamTransferManager> managers =
+        streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager manager = managers.get(0);
     verify(manager).abort();
   }
@@ -250,23 +258,18 @@ class S3CsvWriterTest {
   public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
     DestinationConfig.initialize(Jsons.emptyObject());
     final S3DestinationConfig s3Config = S3DestinationConfig.create(
-        "fake-bucket",
-        "fake-bucketPath",
-        "fake-region")
+            "fake-bucket", "fake-bucketPath", "fake-region")
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
         .withFormatConfig(CSV_FORMAT_CONFIG)
         .get();
-    final S3CsvWriter writer = new Builder(
-        s3Config,
-        s3Client,
-        CONFIGURED_STREAM,
-        UPLOAD_TIME).uploadThreads(UPLOAD_THREADS)
-            .queueCapacity(QUEUE_CAPACITY)
-            .withHeader(false)
-            .csvSettings(CSVFormat.DEFAULT)
-            .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
-            .build();
+    final S3CsvWriter writer = new Builder(s3Config, s3Client, CONFIGURED_STREAM, UPLOAD_TIME)
+        .uploadThreads(UPLOAD_THREADS)
+        .queueCapacity(QUEUE_CAPACITY)
+        .withHeader(false)
+        .csvSettings(CSVFormat.DEFAULT)
+        .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
+        .build();
 
     writer.write(
         UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
@@ -288,8 +291,7 @@ class S3CsvWriterTest {
             f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",%s\r
             2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",%s\r
             """,
-            Timestamp.from(Instant.ofEpochMilli(1234)),
-            Timestamp.from(Instant.ofEpochMilli(2345))),
+            Timestamp.from(Instant.ofEpochMilli(1234)), Timestamp.from(Instant.ofEpochMilli(2345))),
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
   }
 
@@ -321,5 +323,4 @@ class S3CsvWriterTest {
         .replaceFirst(EXPECTED_OBJECT_ENDING + "$", "");
     assertDoesNotThrow(() -> UUID.fromString(uuidMaybe), errorMessage);
   }
-
 }

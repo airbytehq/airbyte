@@ -10,14 +10,11 @@ class RedisContainerInitializr {
 
   private static RedisContainer redisContainer;
 
-  private RedisContainerInitializr() {
-
-  }
+  private RedisContainerInitializr() {}
 
   static RedisContainer initContainer() {
     if (redisContainer == null) {
-      redisContainer = new RedisContainer()
-          .withExposedPorts(6379);
+      redisContainer = new RedisContainer().withExposedPorts(6379);
     }
     redisContainer.start();
     return redisContainer;
@@ -29,7 +26,5 @@ class RedisContainerInitializr {
       // latest docker release
       super("redis:6.0");
     }
-
   }
-
 }

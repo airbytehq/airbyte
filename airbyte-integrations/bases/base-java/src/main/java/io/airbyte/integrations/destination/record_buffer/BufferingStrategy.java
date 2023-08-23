@@ -30,12 +30,14 @@ public interface BufferingStrategy extends AutoCloseable {
    *         value means only a record was added
    * @throws Exception throw on failure
    */
-  Optional<BufferFlushType> addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception;
+  Optional<BufferFlushType> addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message)
+      throws Exception;
 
   /**
    * Flush buffered messages in a buffer from a particular stream
    */
-  void flushSingleBuffer(AirbyteStreamNameNamespacePair stream, SerializableBuffer buffer) throws Exception;
+  void flushSingleBuffer(AirbyteStreamNameNamespacePair stream, SerializableBuffer buffer)
+      throws Exception;
 
   /**
    * Flush all buffers that were buffering message data so far.
@@ -46,5 +48,4 @@ public interface BufferingStrategy extends AutoCloseable {
    * Removes all stream buffers.
    */
   void clear() throws Exception;
-
 }

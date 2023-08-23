@@ -10,9 +10,7 @@ import io.airbyte.commons.json.Jsons;
 
 public class KinesisDataFactory {
 
-  private KinesisDataFactory() {
-
-  }
+  private KinesisDataFactory() {}
 
   static JsonNode jsonConfig(String endpoint, String region, String accessKey, String privateKey) {
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -24,5 +22,4 @@ public class KinesisDataFactory {
         .put("bufferSize", 100)
         .build());
   }
-
 }

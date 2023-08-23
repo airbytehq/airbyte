@@ -35,7 +35,8 @@ class ClisTest {
     final Option optionB = Option.builder("b").required(true).hasArg(true).build();
     final Options options = new Options().addOption(optionA).addOption(optionB);
     final String[] args = {"-a", ALPHA, "-b", BETA, "-c", "charlie"};
-    assertThrows(IllegalArgumentException.class, () -> Clis.parse(args, options, new DefaultParser()));
+    assertThrows(
+        IllegalArgumentException.class, () -> Clis.parse(args, options, new DefaultParser()));
   }
 
   @Test
@@ -44,7 +45,9 @@ class ClisTest {
     final Option optionB = Option.builder("b").required(true).hasArg(true).build();
     final Options options = new Options().addOption(optionA).addOption(optionB);
     final String[] args = {"-a", ALPHA, "-b", BETA, "-c", "charlie"};
-    assertThrows(IllegalArgumentException.class, () -> Clis.parse(args, options, new DefaultParser(), "search"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> Clis.parse(args, options, new DefaultParser(), "search"));
   }
 
   @Test
@@ -57,5 +60,4 @@ class ClisTest {
     assertEquals(ALPHA, parsed.getOptions()[0].getValue());
     assertEquals(BETA, parsed.getOptions()[1].getValue());
   }
-
 }

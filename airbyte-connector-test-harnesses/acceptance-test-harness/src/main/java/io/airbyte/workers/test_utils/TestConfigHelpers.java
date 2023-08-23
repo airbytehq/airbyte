@@ -38,7 +38,8 @@ public class TestConfigHelpers {
     return createSyncConfig(false);
   }
 
-  public static ImmutablePair<Void, StandardSyncInput> createSyncConfig(final Boolean multipleNamespaces) {
+  public static ImmutablePair<Void, StandardSyncInput> createSyncConfig(
+      final Boolean multipleNamespaces) {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
@@ -47,17 +48,13 @@ public class TestConfigHelpers {
     final UUID normalizationOperationId = UUID.randomUUID();
     final UUID dbtOperationId = UUID.randomUUID();
 
-    final JsonNode sourceConnection =
-        Jsons.jsonNode(
-            Map.of(
-                "apiKey", "123",
-                "region", "us-east"));
+    final JsonNode sourceConnection = Jsons.jsonNode(Map.of(
+        "apiKey", "123",
+        "region", "us-east"));
 
-    final JsonNode destinationConnection =
-        Jsons.jsonNode(
-            Map.of(
-                "username", "airbyte",
-                "token", "anau81b"));
+    final JsonNode destinationConnection = Jsons.jsonNode(Map.of(
+        "username", "airbyte",
+        "token", "anau81b"));
 
     final SourceConnection sourceConnectionConfig = new SourceConnection()
         .withConfiguration(sourceConnection)
@@ -94,16 +91,19 @@ public class TestConfigHelpers {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog();
     if (multipleNamespaces) {
       final ConfiguredAirbyteStream streamOne = new ConfiguredAirbyteStream()
-          .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, "namespace", Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+          .withStream(CatalogHelpers.createAirbyteStream(
+              STREAM_NAME, "namespace", Field.of(FIELD_NAME, JsonSchemaType.STRING)));
       final ConfiguredAirbyteStream streamTwo = new ConfiguredAirbyteStream()
-          .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, "namespace2", Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+          .withStream(CatalogHelpers.createAirbyteStream(
+              STREAM_NAME, "namespace2", Field.of(FIELD_NAME, JsonSchemaType.STRING)));
 
       final List<ConfiguredAirbyteStream> streams = List.of(streamOne, streamTwo);
       catalog.withStreams(streams);
 
     } else {
       final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-          .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+          .withStream(CatalogHelpers.createAirbyteStream(
+              STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
       catalog.withStreams(Collections.singletonList(stream));
     }
 
@@ -125,5 +125,4 @@ public class TestConfigHelpers {
 
     return new ImmutablePair<>(null, syncInput);
   }
-
 }

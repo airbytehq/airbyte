@@ -43,7 +43,8 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
   private MqttClient client;
 
   @RegisterExtension
-  public final HiveMQTestContainerExtension extension = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:2021.2"));
+  public final HiveMQTestContainerExtension extension =
+      new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:2021.2"));
 
   @Override
   protected String getImageName() {
@@ -112,15 +113,17 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace) {
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace) {
     return retrieveRecords(testEnv, streamName, namespace, null);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
     final String topic = TOPIC_PREFIX + namespace + "/" + streamName + "/" + TOPIC_NAME;
     return recordsPerTopic.getOrDefault(topic, Collections.emptyList());
   }
@@ -133,16 +136,21 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
           .filter(add -> !add.isLoopbackAddress())
           .map(InetAddress::getHostAddress)
           .filter(InetAddresses::isUriInetAddress)
-          .findFirst().orElse(InetAddress.getLocalHost().getHostAddress());
+          .findFirst()
+          .orElse(InetAddress.getLocalHost().getHostAddress());
     } catch (final SocketException e) {
       return InetAddress.getLocalHost().getHostAddress();
     }
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws MqttException {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws MqttException {
     recordsPerTopic.clear();
-    client = new MqttClient("tcp://" + extension.getHost() + ":" + extension.getMqttPort(), UUID.randomUUID().toString(), new MemoryPersistence());
+    client = new MqttClient(
+        "tcp://" + extension.getHost() + ":" + extension.getMqttPort(),
+        UUID.randomUUID().toString(),
+        new MemoryPersistence());
 
     final MqttConnectOptions options = new MqttConnectOptions();
     options.setAutomaticReconnect(true);
@@ -161,5 +169,4 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
     client.disconnectForcibly();
     client.close();
   }
-
 }

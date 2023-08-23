@@ -75,7 +75,8 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
   @Override
   public void markPendingAsCommitted(final AirbyteStreamNameNamespacePair stream) {
     // We declare supportsPerStreamFlush as false, so this method should never be called.
-    throw new IllegalStateException("Committing a single stream state is not supported for this state type.");
+    throw new IllegalStateException(
+        "Committing a single stream state is not supported for this state type.");
   }
 
   @Override
@@ -91,5 +92,4 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
   public boolean supportsPerStreamFlush() {
     return false;
   }
-
 }

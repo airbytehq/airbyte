@@ -20,7 +20,8 @@ import org.junit.jupiter.api.Test;
 
 class JsonPathsTest {
 
-  private static final String JSON = """
+  private static final String JSON =
+      """
                                      {
                                        "one": [0,1,2],
                                        "two": { "nested": 10}
@@ -32,30 +33,56 @@ class JsonPathsTest {
   private static final String JSON_OBJECT_QUERY = "$.two";
   private static final String EMPTY_RETURN_QUERY = "$.three";
   private static final String REPLACEMENT_STRING = "replaced";
-  private static final JsonNode REPLACEMENT_JSON = Jsons.deserialize("{ \"replacement\": \"replaced\" }");
+  private static final JsonNode REPLACEMENT_JSON =
+      Jsons.deserialize("{ \"replacement\": \"replaced\" }");
   private static final String ONE = "one";
 
   @Test
   void testGetValues() {
-    assertEquals(List.of(0, 1, 2), JsonPaths.getValues(JSON_NODE, LIST_ALL_QUERY).stream().map(JsonNode::asInt).collect(Collectors.toList()));
-    assertEquals(List.of(1), JsonPaths.getValues(JSON_NODE, LIST_ONE_QUERY).stream().map(JsonNode::asInt).collect(Collectors.toList()));
-    assertEquals(List.of(10), JsonPaths.getValues(JSON_NODE, NESTED_FIELD_QUERY).stream().map(JsonNode::asInt).collect(Collectors.toList()));
-    assertEquals(JSON_NODE.get("two"), JsonPaths.getValues(JSON_NODE, JSON_OBJECT_QUERY).stream().findFirst().orElse(null));
+    assertEquals(
+        List.of(0, 1, 2),
+        JsonPaths.getValues(JSON_NODE, LIST_ALL_QUERY).stream()
+            .map(JsonNode::asInt)
+            .collect(Collectors.toList()));
+    assertEquals(
+        List.of(1),
+        JsonPaths.getValues(JSON_NODE, LIST_ONE_QUERY).stream()
+            .map(JsonNode::asInt)
+            .collect(Collectors.toList()));
+    assertEquals(
+        List.of(10),
+        JsonPaths.getValues(JSON_NODE, NESTED_FIELD_QUERY).stream()
+            .map(JsonNode::asInt)
+            .collect(Collectors.toList()));
+    assertEquals(
+        JSON_NODE.get("two"),
+        JsonPaths.getValues(JSON_NODE, JSON_OBJECT_QUERY).stream().findFirst().orElse(null));
     assertEquals(Collections.emptyList(), JsonPaths.getValues(JSON_NODE, EMPTY_RETURN_QUERY));
   }
 
   @Test
   void testGetSingleValue() {
-    assertThrows(IllegalArgumentException.class, () -> JsonPaths.getSingleValue(JSON_NODE, LIST_ALL_QUERY));
-    assertEquals(1, JsonPaths.getSingleValue(JSON_NODE, LIST_ONE_QUERY).map(JsonNode::asInt).orElse(null));
-    assertEquals(10, JsonPaths.getSingleValue(JSON_NODE, NESTED_FIELD_QUERY).map(JsonNode::asInt).orElse(null));
-    assertEquals(JSON_NODE.get("two"), JsonPaths.getSingleValue(JSON_NODE, JSON_OBJECT_QUERY).orElse(null));
+    assertThrows(
+        IllegalArgumentException.class, () -> JsonPaths.getSingleValue(JSON_NODE, LIST_ALL_QUERY));
+    assertEquals(
+        1,
+        JsonPaths.getSingleValue(JSON_NODE, LIST_ONE_QUERY).map(JsonNode::asInt).orElse(null));
+    assertEquals(
+        10,
+        JsonPaths.getSingleValue(JSON_NODE, NESTED_FIELD_QUERY)
+            .map(JsonNode::asInt)
+            .orElse(null));
+    assertEquals(
+        JSON_NODE.get("two"),
+        JsonPaths.getSingleValue(JSON_NODE, JSON_OBJECT_QUERY).orElse(null));
     assertNull(JsonPaths.getSingleValue(JSON_NODE, EMPTY_RETURN_QUERY).orElse(null));
   }
 
   @Test
   void testGetPaths() {
-    assertEquals(List.of("$['one'][0]", "$['one'][1]", "$['one'][2]"), JsonPaths.getPaths(JSON_NODE, LIST_ALL_QUERY));
+    assertEquals(
+        List.of("$['one'][0]", "$['one'][1]", "$['one'][2]"),
+        JsonPaths.getPaths(JSON_NODE, LIST_ALL_QUERY));
     assertEquals(List.of("$['one'][1]"), JsonPaths.getPaths(JSON_NODE, LIST_ONE_QUERY));
     assertEquals(List.of("$['two']['nested']"), JsonPaths.getPaths(JSON_NODE, NESTED_FIELD_QUERY));
     assertEquals(List.of("$['two']"), JsonPaths.getPaths(JSON_NODE, JSON_OBJECT_QUERY));
@@ -64,7 +91,8 @@ class JsonPathsTest {
 
   @Test
   void testIsPathPresent() {
-    assertThrows(IllegalArgumentException.class, () -> JsonPaths.isPathPresent(JSON_NODE, LIST_ALL_QUERY));
+    assertThrows(
+        IllegalArgumentException.class, () -> JsonPaths.isPathPresent(JSON_NODE, LIST_ALL_QUERY));
     assertTrue(JsonPaths.isPathPresent(JSON_NODE, LIST_ONE_QUERY));
     assertTrue(JsonPaths.isPathPresent(JSON_NODE, NESTED_FIELD_QUERY));
     assertTrue(JsonPaths.isPathPresent(JSON_NODE, JSON_OBJECT_QUERY));
@@ -77,7 +105,8 @@ class JsonPathsTest {
       final JsonNode expected = Jsons.clone(JSON_NODE);
       ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_STRING);
 
-      final JsonNode actual = JsonPaths.replaceAtStringLoud(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_STRING);
+      final JsonNode actual =
+          JsonPaths.replaceAtStringLoud(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_STRING);
       assertEquals(expected, actual);
     });
   }
@@ -86,7 +115,9 @@ class JsonPathsTest {
   @Test
   void testReplaceAtStringLoudEmptyPathThrows() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
-      assertThrows(PathNotFoundException.class, () -> JsonPaths.replaceAtStringLoud(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_STRING));
+      assertThrows(
+          PathNotFoundException.class,
+          () -> JsonPaths.replaceAtStringLoud(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_STRING));
     });
   }
 
@@ -96,7 +127,8 @@ class JsonPathsTest {
       final JsonNode expected = Jsons.clone(JSON_NODE);
       ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_STRING);
 
-      final JsonNode actual = JsonPaths.replaceAtString(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_STRING);
+      final JsonNode actual =
+          JsonPaths.replaceAtString(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_STRING);
       assertEquals(expected, actual);
     });
   }
@@ -106,7 +138,8 @@ class JsonPathsTest {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
 
-      final JsonNode actual = JsonPaths.replaceAtString(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_STRING);
+      final JsonNode actual =
+          JsonPaths.replaceAtString(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_STRING);
       assertEquals(expected, actual);
     });
   }
@@ -117,7 +150,8 @@ class JsonPathsTest {
       final JsonNode expected = Jsons.clone(JSON_NODE);
       ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_JSON);
 
-      final JsonNode actual = JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_JSON);
+      final JsonNode actual =
+          JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_JSON);
       assertEquals(expected, actual);
     });
   }
@@ -126,7 +160,9 @@ class JsonPathsTest {
   @Test
   void testReplaceAtJsonNodeLoudEmptyPathThrows() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
-      assertThrows(PathNotFoundException.class, () -> JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_JSON));
+      assertThrows(
+          PathNotFoundException.class,
+          () -> JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_JSON));
     });
   }
 
@@ -138,14 +174,17 @@ class JsonPathsTest {
       ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_JSON);
       ((ArrayNode) expected.get(ONE)).set(2, REPLACEMENT_JSON);
 
-      final JsonNode actual = JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, LIST_ALL_QUERY, REPLACEMENT_JSON);
+      final JsonNode actual =
+          JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, LIST_ALL_QUERY, REPLACEMENT_JSON);
       assertEquals(expected, actual);
     });
   }
 
   // todo (cgardens) - this behavior is a little unintuitive, but based on the docs, there's not an
-  // obvious workaround. in this case, i would expect this to silently do nothing instead of throwing.
-  // for now just documenting it with a test. to avoid this, use the non-loud version of this method.
+  // obvious workaround. in this case, i would expect this to silently do nothing instead of
+  // throwing.
+  // for now just documenting it with a test. to avoid this, use the non-loud version of this
+  // method.
   @SuppressWarnings("CodeBlock2Expr")
   @Test
   void testReplaceAtJsonNodeLoudMultipleReplaceSplatInEmptyArrayThrows() {
@@ -153,7 +192,9 @@ class JsonPathsTest {
     ((ArrayNode) expected.get(ONE)).removeAll();
 
     assertOriginalObjectNotModified(expected, () -> {
-      assertThrows(PathNotFoundException.class, () -> JsonPaths.replaceAtJsonNodeLoud(expected, "$.one[*]", REPLACEMENT_JSON));
+      assertThrows(
+          PathNotFoundException.class,
+          () -> JsonPaths.replaceAtJsonNodeLoud(expected, "$.one[*]", REPLACEMENT_JSON));
     });
   }
 
@@ -163,7 +204,8 @@ class JsonPathsTest {
       final JsonNode expected = Jsons.clone(JSON_NODE);
       ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_JSON);
 
-      final JsonNode actual = JsonPaths.replaceAtJsonNode(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_JSON);
+      final JsonNode actual =
+          JsonPaths.replaceAtJsonNode(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_JSON);
       assertEquals(expected, actual);
     });
   }
@@ -173,7 +215,8 @@ class JsonPathsTest {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
 
-      final JsonNode actual = JsonPaths.replaceAtJsonNode(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_JSON);
+      final JsonNode actual =
+          JsonPaths.replaceAtJsonNode(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_JSON);
       assertEquals(expected, actual);
     });
   }
@@ -184,7 +227,8 @@ class JsonPathsTest {
       final JsonNode expected = Jsons.clone(JSON_NODE);
       ((ArrayNode) expected.get(ONE)).set(1, "1-$['one'][1]");
 
-      final JsonNode actual = JsonPaths.replaceAt(JSON_NODE, LIST_ONE_QUERY, (node, path) -> Jsons.jsonNode(node + "-" + path));
+      final JsonNode actual = JsonPaths.replaceAt(
+          JSON_NODE, LIST_ONE_QUERY, (node, path) -> Jsons.jsonNode(node + "-" + path));
       assertEquals(expected, actual);
     });
   }
@@ -197,7 +241,8 @@ class JsonPathsTest {
       ((ArrayNode) expected.get(ONE)).set(1, "1-$['one'][1]");
       ((ArrayNode) expected.get(ONE)).set(2, "2-$['one'][2]");
 
-      final JsonNode actual = JsonPaths.replaceAt(JSON_NODE, LIST_ALL_QUERY, (node, path) -> Jsons.jsonNode(node + "-" + path));
+      final JsonNode actual = JsonPaths.replaceAt(
+          JSON_NODE, LIST_ALL_QUERY, (node, path) -> Jsons.jsonNode(node + "-" + path));
       assertEquals(expected, actual);
     });
   }
@@ -207,7 +252,8 @@ class JsonPathsTest {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
 
-      final JsonNode actual = JsonPaths.replaceAt(JSON_NODE, EMPTY_RETURN_QUERY, (node, path) -> Jsons.jsonNode(node + "-" + path));
+      final JsonNode actual = JsonPaths.replaceAt(
+          JSON_NODE, EMPTY_RETURN_QUERY, (node, path) -> Jsons.jsonNode(node + "-" + path));
       assertEquals(expected, actual);
     });
   }
@@ -219,11 +265,11 @@ class JsonPathsTest {
    * @param json - json object used for testing
    * @param runnable - the rest of the test code that does the replacement
    */
-  private static void assertOriginalObjectNotModified(final JsonNode json, final Runnable runnable) {
+  private static void assertOriginalObjectNotModified(
+      final JsonNode json, final Runnable runnable) {
     final JsonNode originalJsonNode = Jsons.clone(json);
     runnable.run();
     // verify the original object was not mutated.
     assertEquals(originalJsonNode, json);
   }
-
 }

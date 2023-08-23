@@ -19,7 +19,8 @@ public abstract class BlobStorageOperations {
     this.blobDecorators = new ArrayList<>();
   }
 
-  public abstract String getBucketObjectPath(String namespace, String streamName, DateTime writeDatetime, String customFormat);
+  public abstract String getBucketObjectPath(
+      String namespace, String streamName, DateTime writeDatetime, String customFormat);
 
   /**
    * Ensure that the bucket specified in the config exists
@@ -31,13 +32,15 @@ public abstract class BlobStorageOperations {
    *
    * @return the name of the file that was uploaded.
    */
-  public abstract String uploadRecordsToBucket(SerializableBuffer recordsData, String namespace, String streamName, String objectPath)
+  public abstract String uploadRecordsToBucket(
+      SerializableBuffer recordsData, String namespace, String streamName, String objectPath)
       throws Exception;
 
   /**
    * Remove files that were just stored in the bucket
    */
-  public abstract void cleanUpBucketObject(String objectPath, List<String> stagedFiles) throws Exception;
+  public abstract void cleanUpBucketObject(String objectPath, List<String> stagedFiles)
+      throws Exception;
 
   /**
    * Deletes all the bucket objects for the specified bucket path
@@ -47,7 +50,8 @@ public abstract class BlobStorageOperations {
    * @param objectPath file path to where staging files are stored
    * @param pathFormat formatted string for the path
    */
-  public abstract void cleanUpBucketObject(String namespace, String streamName, String objectPath, String pathFormat);
+  public abstract void cleanUpBucketObject(
+      String namespace, String streamName, String objectPath, String pathFormat);
 
   public abstract void dropBucketObject(String objectPath);
 
@@ -58,5 +62,4 @@ public abstract class BlobStorageOperations {
   public void addBlobDecorator(final BlobDecorator blobDecorator) {
     blobDecorators.add(blobDecorator);
   }
-
 }

@@ -21,12 +21,13 @@ public class WriteConfig {
   private final DestinationSyncMode syncMode;
   private final List<String> storedFiles;
 
-  public WriteConfig(final String namespace,
-                     final String streamName,
-                     final String outputBucketPath,
-                     final String pathFormat,
-                     final String fullOutputPath,
-                     final DestinationSyncMode syncMode) {
+  public WriteConfig(
+      final String namespace,
+      final String streamName,
+      final String outputBucketPath,
+      final String pathFormat,
+      final String fullOutputPath,
+      final DestinationSyncMode syncMode) {
     this.namespace = namespace;
     this.streamName = streamName;
     this.outputBucketPath = outputBucketPath;
@@ -74,14 +75,12 @@ public class WriteConfig {
 
   @Override
   public String toString() {
-    return "WriteConfig{" +
-        "streamName=" + streamName +
-        ", namespace=" + namespace +
-        ", outputBucketPath=" + outputBucketPath +
-        ", pathFormat=" + pathFormat +
-        ", fullOutputPath=" + fullOutputPath +
-        ", syncMode=" + syncMode +
-        '}';
+    return "WriteConfig{" + "streamName="
+        + streamName + ", namespace="
+        + namespace + ", outputBucketPath="
+        + outputBucketPath + ", pathFormat="
+        + pathFormat + ", fullOutputPath="
+        + fullOutputPath + ", syncMode="
+        + syncMode + '}';
   }
-
 }

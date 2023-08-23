@@ -77,7 +77,6 @@ public class RedpandaOperations implements Closeable {
     } catch (ExecutionException e) {
       throw new RuntimeException(e);
     }
-
   }
 
   public void putRecord(String topic, String key, JsonNode data, Consumer<Exception> consumer) {
@@ -88,7 +87,6 @@ public class RedpandaOperations implements Closeable {
         consumer.accept(exception);
       }
     }));
-
   }
 
   // used when testing write permissions on check
@@ -116,23 +114,15 @@ public class RedpandaOperations implements Closeable {
     }
   }
 
-  private <T> T syncWrapper(Function<ProducerRecord<String, JsonNode>, Future<T>> asyncFunction,
-                            ProducerRecord<String, JsonNode> producerRecord)
+  private <T> T syncWrapper(
+      Function<ProducerRecord<String, JsonNode>, Future<T>> asyncFunction,
+      ProducerRecord<String, JsonNode> producerRecord)
       throws ExecutionException {
     return syncWrapper(() -> asyncFunction.apply(producerRecord));
   }
 
   public record TopicInfo(
-
-                          String name,
-
-                          Optional<Integer> numPartitions,
-
-                          Optional<Short> replicationFactor
-
-  ) {
-
-  }
+      String name, Optional<Integer> numPartitions, Optional<Short> replicationFactor) {}
 
   @Override
   public void close() {
@@ -140,5 +130,4 @@ public class RedpandaOperations implements Closeable {
     kafkaProducer.close();
     adminClient.close();
   }
-
 }

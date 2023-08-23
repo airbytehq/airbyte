@@ -55,10 +55,7 @@ public class ClickhouseDestinationTest {
       JdbcUtils.DATABASE_KEY, "db");
 
   private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
-      CONFIG_WITH_SSL,
-      ImmutableMap.of(
-          "socket_timeout", "3000000",
-          JdbcUtils.SSL_KEY, "false"));
+      CONFIG_WITH_SSL, ImmutableMap.of("socket_timeout", "3000000", JdbcUtils.SSL_KEY, "false"));
 
   @BeforeAll
   static void init() {
@@ -68,8 +65,8 @@ public class ClickhouseDestinationTest {
 
   @BeforeEach
   void setup() {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createConfiguredAirbyteStream(
+    catalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(CatalogHelpers.createConfiguredAirbyteStream(
             STREAM_NAME,
             DB_NAME,
             Field.of("id", JsonSchemaType.NUMBER),
@@ -95,8 +92,8 @@ public class ClickhouseDestinationTest {
   @Test
   void sanityTest() throws Exception {
     final Destination dest = new ClickhouseDestination();
-    final AirbyteMessageConsumer consumer = dest.getConsumer(config, catalog,
-        Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer =
+        dest.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
     final List<AirbyteMessage> expectedRecords = generateRecords(10);
 
     consumer.start();
@@ -113,26 +110,29 @@ public class ClickhouseDestinationTest {
             .withData(Jsons.jsonNode(ImmutableMap.of(DB_NAME + "." + STREAM_NAME, 10)))));
     consumer.close();
 
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            ClickhouseDestination.DRIVER_CLASS,
-            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-                ClickhouseDestination.HTTP_PROTOCOL,
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText())));
+    final JdbcDatabase database = new DefaultJdbcDatabase(DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        ClickhouseDestination.DRIVER_CLASS,
+        String.format(
+            DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+            ClickhouseDestination.HTTP_PROTOCOL,
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText())));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery(
-            String.format("SELECT * FROM %s.%s;", DB_NAME,
-                namingResolver.getRawTableName(STREAM_NAME))),
+        connection -> connection
+            .createStatement()
+            .executeQuery(String.format(
+                "SELECT * FROM %s.%s;", DB_NAME, namingResolver.getRawTableName(STREAM_NAME))),
         JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     assertEquals(
-        expectedRecords.stream().map(AirbyteMessage::getRecord)
-            .map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
+        expectedRecords.stream()
+            .map(AirbyteMessage::getRecord)
+            .map(AirbyteRecordMessage::getData)
+            .collect(Collectors.toList()),
         actualRecords.stream()
             .map(o -> o.get("_airbyte_data").asText())
             .map(Jsons::deserialize)
@@ -152,5 +152,4 @@ public class ClickhouseDestinationTest {
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "test name " + i)))))
         .collect(Collectors.toList());
   }
-
 }

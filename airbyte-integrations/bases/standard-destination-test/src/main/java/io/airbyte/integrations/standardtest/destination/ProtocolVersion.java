@@ -5,7 +5,6 @@
 package io.airbyte.integrations.standardtest.destination;
 
 public enum ProtocolVersion {
-
   V0("v0"),
   V1("v1");
 
@@ -18,5 +17,4 @@ public enum ProtocolVersion {
   public String getPrefix() {
     return prefix;
   }
-
 }

@@ -23,5 +23,4 @@ public interface AzureBlobStorageWriter {
    * Close the AzureBlobStorage writer for the stream.
    */
   void close(boolean hasFailed) throws IOException;
-
 }

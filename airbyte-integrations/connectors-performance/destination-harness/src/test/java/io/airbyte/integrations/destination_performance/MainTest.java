@@ -20,7 +20,8 @@ class MainTest {
 
   @BeforeAll
   public static void setup() {
-    simpleCatalog = """
+    simpleCatalog =
+        """
                       {
                         "streams": [
                           {
@@ -61,7 +62,9 @@ class MainTest {
     final int duplicateFactor = 10;
     Main.duplicateStreams(duplicateRoot, duplicateFactor);
     assertEquals(duplicateFactor, duplicateRoot.get("streams").size());
-    assertEquals("users9", duplicateRoot.path("streams").get(9).path("stream").path("name").asText());
+    assertEquals(
+        "users9",
+        duplicateRoot.path("streams").get(9).path("stream").path("name").asText());
   }
 
   @Test
@@ -70,8 +73,12 @@ class MainTest {
     final JsonNode root = objectMapper.readTree(simpleCatalog);
     final JsonNode duplicateRoot = root.deepCopy();
     Main.updateSyncMode(duplicateRoot, "incremental");
-    assertEquals(SyncMode.INCREMENTAL.toString(), duplicateRoot.path("streams").get(0).path("sync_mode").asText());
-    assertEquals(DestinationSyncMode.APPEND.toString(), duplicateRoot.path("streams").get(0).path("destination_sync_mode").asText());
+    assertEquals(
+        SyncMode.INCREMENTAL.toString(),
+        duplicateRoot.path("streams").get(0).path("sync_mode").asText());
+    assertEquals(
+        DestinationSyncMode.APPEND.toString(),
+        duplicateRoot.path("streams").get(0).path("destination_sync_mode").asText());
   }
 
   @Test
@@ -81,8 +88,11 @@ class MainTest {
     final JsonNode root = objectMapper.readTree(simpleCatalog);
     final JsonNode duplicateRoot = root.deepCopy();
     Main.updateSyncMode(duplicateRoot, "full_refresh");
-    assertEquals(SyncMode.FULL_REFRESH.toString(), duplicateRoot.path("streams").get(0).path("sync_mode").asText());
-    assertEquals(DestinationSyncMode.OVERWRITE.toString(), duplicateRoot.path("streams").get(0).path("destination_sync_mode").asText());
+    assertEquals(
+        SyncMode.FULL_REFRESH.toString(),
+        duplicateRoot.path("streams").get(0).path("sync_mode").asText());
+    assertEquals(
+        DestinationSyncMode.OVERWRITE.toString(),
+        duplicateRoot.path("streams").get(0).path("destination_sync_mode").asText());
   }
-
 }

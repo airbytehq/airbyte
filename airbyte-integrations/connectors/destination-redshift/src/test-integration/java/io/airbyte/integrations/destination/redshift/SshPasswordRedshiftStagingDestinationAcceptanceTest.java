@@ -16,7 +16,8 @@ import java.nio.file.Path;
  * the S3 Staging mechanism for upload of data and "password" authentication for the SSH bastion
  * configuration.
  */
-public class SshPasswordRedshiftStagingDestinationAcceptanceTest extends SshRedshiftDestinationBaseAcceptanceTest {
+public class SshPasswordRedshiftStagingDestinationAcceptanceTest
+    extends SshRedshiftDestinationBaseAcceptanceTest {
 
   @Override
   public TunnelMethod getTunnelMethod() {
@@ -29,5 +30,4 @@ public class SshPasswordRedshiftStagingDestinationAcceptanceTest extends SshReds
     final String configAsString = IOs.readFile(configPath);
     return Jsons.deserialize(configAsString);
   }
-
 }

@@ -21,15 +21,16 @@ import org.slf4j.MDC;
 
 public class LineGobbler implements VoidCallable {
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(LineGobbler.class);
-  private final static String GENERIC = "generic";
+  private static final Logger LOGGER = LoggerFactory.getLogger(LineGobbler.class);
+  private static final String GENERIC = "generic";
 
   public static void gobble(final InputStream is, final Consumer<String> consumer) {
     gobble(is, consumer, GENERIC, MdcScope.DEFAULT_BUILDER);
   }
 
   public static void gobble(final String message, final Consumer<String> consumer) {
-    final InputStream stringAsSteam = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+    final InputStream stringAsSteam =
+        new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
     gobble(stringAsSteam, consumer);
   }
 
@@ -57,11 +58,18 @@ public class LineGobbler implements VoidCallable {
     gobble("\r\n----- END " + message + " -----\r\n\r\n");
   }
 
-  public static void gobble(final InputStream is, final Consumer<String> consumer, final MdcScope.Builder mdcScopeBuilder) {
+  public static void gobble(
+      final InputStream is,
+      final Consumer<String> consumer,
+      final MdcScope.Builder mdcScopeBuilder) {
     gobble(is, consumer, GENERIC, mdcScopeBuilder);
   }
 
-  public static void gobble(final InputStream is, final Consumer<String> consumer, final String caller, final MdcScope.Builder mdcScopeBuilder) {
+  public static void gobble(
+      final InputStream is,
+      final Consumer<String> consumer,
+      final String caller,
+      final MdcScope.Builder mdcScopeBuilder) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
     final var gobbler = new LineGobbler(is, consumer, executor, mdc, caller, mdcScopeBuilder);
@@ -75,27 +83,30 @@ public class LineGobbler implements VoidCallable {
   private final String caller;
   private final MdcScope.Builder containerLogMdcBuilder;
 
-  LineGobbler(final InputStream is,
-              final Consumer<String> consumer,
-              final ExecutorService executor,
-              final Map<String, String> mdc) {
+  LineGobbler(
+      final InputStream is,
+      final Consumer<String> consumer,
+      final ExecutorService executor,
+      final Map<String, String> mdc) {
     this(is, consumer, executor, mdc, GENERIC, MdcScope.DEFAULT_BUILDER);
   }
 
-  LineGobbler(final InputStream is,
-              final Consumer<String> consumer,
-              final ExecutorService executor,
-              final Map<String, String> mdc,
-              final MdcScope.Builder mdcScopeBuilder) {
+  LineGobbler(
+      final InputStream is,
+      final Consumer<String> consumer,
+      final ExecutorService executor,
+      final Map<String, String> mdc,
+      final MdcScope.Builder mdcScopeBuilder) {
     this(is, consumer, executor, mdc, GENERIC, mdcScopeBuilder);
   }
 
-  LineGobbler(final InputStream is,
-              final Consumer<String> consumer,
-              final ExecutorService executor,
-              final Map<String, String> mdc,
-              final String caller,
-              final MdcScope.Builder mdcScopeBuilder) {
+  LineGobbler(
+      final InputStream is,
+      final Consumer<String> consumer,
+      final ExecutorService executor,
+      final Map<String, String> mdc,
+      final String caller,
+      final MdcScope.Builder mdcScopeBuilder) {
     this.is = IOs.newBufferedReader(is);
     this.consumer = consumer;
     this.executor = executor;
@@ -116,12 +127,14 @@ public class LineGobbler implements VoidCallable {
         line = is.readLine();
       }
     } catch (final IOException i) {
-      LOGGER.warn("{} gobbler IOException: {}. Typically happens when cancelling a job.", caller, i.getMessage());
+      LOGGER.warn(
+          "{} gobbler IOException: {}. Typically happens when cancelling a job.",
+          caller,
+          i.getMessage());
     } catch (final Exception e) {
       LOGGER.error("{} gobbler error when reading stream", caller, e);
     } finally {
       executor.shutdown();
     }
   }
-
 }

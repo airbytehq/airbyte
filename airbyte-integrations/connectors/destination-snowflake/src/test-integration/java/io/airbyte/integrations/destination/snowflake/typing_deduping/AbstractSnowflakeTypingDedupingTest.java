@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,7 +37,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   @Override
   protected JsonNode generateConfig() {
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(getConfigPath())));
-    ((ObjectNode)config).put("schema", "typing_deduping_default_schema" + getUniqueSuffix());
+    ((ObjectNode) config).put("schema", "typing_deduping_default_schema" + getUniqueSuffix());
     databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
     dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     database = SnowflakeDatabase.getDatabase(dataSource);
@@ -41,7 +45,8 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   }
 
   @Override
-  protected List<JsonNode> dumpRawTableRecords(String streamNamespace, final String streamName) throws Exception {
+  protected List<JsonNode> dumpRawTableRecords(String streamNamespace, final String streamName)
+      throws Exception {
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
@@ -50,11 +55,12 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
     return SnowflakeTestUtils.dumpRawTable(
         database,
         // Explicitly wrap in quotes to prevent snowflake from upcasing
-        '"'+ schema + "\".\"" + tableName + '"');
+        '"' + schema + "\".\"" + tableName + '"');
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws Exception {
+  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName)
+      throws Exception {
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
@@ -62,19 +68,19 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   }
 
   @Override
-  protected void teardownStreamAndNamespace(String streamNamespace, final String streamName) throws Exception {
+  protected void teardownStreamAndNamespace(String streamNamespace, final String streamName)
+      throws Exception {
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
-    database.execute(
-        String.format(
-          """
+    database.execute(String.format(
+        """
               DROP TABLE IF EXISTS "%s"."%s";
               DROP SCHEMA IF EXISTS "%s" CASCADE
               """,
-            getRawSchema(),
-            StreamId.concatenateRawTableName(streamNamespace, streamName),
-            streamNamespace));
+        getRawSchema(),
+        StreamId.concatenateRawTableName(streamNamespace, streamName),
+        streamNamespace));
   }
 
   @Override

@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.s3.util;
 
 public enum CompressionType {
-
   NO_COMPRESSION(""),
   GZIP(".gz");
 
@@ -18,5 +17,4 @@ public enum CompressionType {
   public String getFileExtension() {
     return fileExtension;
   }
-
 }

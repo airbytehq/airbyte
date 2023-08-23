@@ -52,8 +52,8 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
 
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createConfiguredAirbyteStream(
+  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog()
+      .withStreams(List.of(CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
@@ -68,7 +68,8 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
 
   @BeforeEach
   public void init() {
-    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaDestinationConfig config =
+        KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     consumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
   }
 
@@ -76,13 +77,15 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
   public void testBuildTopicMap(final String topicPattern, final String expectedTopic) {
-    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(topicPattern));
+    final KafkaDestinationConfig config =
+        KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(topicPattern));
     consumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
 
     final Map<AirbyteStreamNameNamespacePair, String> topicMap = consumer.buildTopicMap();
     assertEquals(1, topicMap.size());
 
-    final AirbyteStreamNameNamespacePair streamNameNamespacePair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
+    final AirbyteStreamNameNamespacePair streamNameNamespacePair =
+        new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
     assertEquals(expectedTopic, topicMap.get(streamNameNamespacePair));
   }
 
@@ -97,7 +100,8 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
 
     consumer.accept(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 0)))));
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 0)))));
     consumer.close();
   }
 
@@ -145,7 +149,6 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
-
   }
 
   @Override
@@ -171,7 +174,5 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
           Arguments.of("{namespace}-{stream}-" + TOPIC_NAME, "public_id_and_name_test_topic"),
           Arguments.of("topic with spaces", "topic_with_spaces"));
     }
-
   }
-
 }

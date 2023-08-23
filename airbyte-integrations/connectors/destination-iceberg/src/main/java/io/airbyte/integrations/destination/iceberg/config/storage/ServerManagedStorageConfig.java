@@ -50,5 +50,4 @@ public class ServerManagedStorageConfig implements StorageConfig {
   public Map<String, String> catalogInitializeProperties() {
     return ImmutableMap.of();
   }
-
 }

@@ -94,7 +94,8 @@ public class NormalizationLogParser {
        * "Running with dbt=1.0.9", "node_info": {}, "pid": 65, "thread_name": "MainThread", "ts":
        * "2023-04-12T21:03:23.079315Z", "type": "log_line" }
        */
-      final String logLevel = (jsonLine.hasNonNull("level")) ? jsonLine.get("level").asText() : "";
+      final String logLevel =
+          (jsonLine.hasNonNull("level")) ? jsonLine.get("level").asText() : "";
       String logMsg = jsonLine.hasNonNull("msg") ? jsonLine.get("msg").asText() : "";
       Level level;
       switch (logLevel) {
@@ -102,7 +103,8 @@ public class NormalizationLogParser {
         case "info" -> level = Level.INFO;
         case "warn" -> level = Level.WARN;
         case "error" -> {
-          // This is also not _amazing_, but we make the assumption that all error logs should be emitted in
+          // This is also not _amazing_, but we make the assumption that all error logs should be
+          // emitted in
           // the trace message
           // In practice, this seems to be a valid assumption.
           level = Level.ERROR;
@@ -120,21 +122,20 @@ public class NormalizationLogParser {
   private static AirbyteMessage logMessage(Level level, String message) {
     return new AirbyteMessage()
         .withType(Type.LOG)
-        .withLog(new AirbyteLogMessage()
-            .withLevel(level)
-            .withMessage(message));
+        .withLog(new AirbyteLogMessage().withLevel(level).withMessage(message));
   }
 
   public static void main(String[] args) {
     final NormalizationLogParser normalizationLogParser = new NormalizationLogParser();
-    final Stream<AirbyteMessage> airbyteMessageStream =
-        normalizationLogParser.create(new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)));
+    final Stream<AirbyteMessage> airbyteMessageStream = normalizationLogParser.create(
+        new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)));
     airbyteMessageStream.forEachOrdered(message -> System.out.println(Jsons.serialize(message)));
 
     final List<String> errors = normalizationLogParser.getDbtErrors();
     final String dbtErrorStack = String.join("\n", errors);
     if (!"".equals(dbtErrorStack)) {
-      final Map<ErrorMapKeys, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
+      final Map<ErrorMapKeys, String> errorMap =
+          SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
       String internalMessage = errorMap.get(ErrorMapKeys.ERROR_MAP_MESSAGE_KEY);
       AirbyteMessage traceMessage = new AirbyteMessage()
           .withType(Type.TRACE)
@@ -143,11 +144,11 @@ public class NormalizationLogParser {
               .withEmittedAt((double) System.currentTimeMillis())
               .withError(new AirbyteErrorTraceMessage()
                   .withFailureType(FailureType.SYSTEM_ERROR)
-                  .withMessage("Normalization failed during the dbt run. This may indicate a problem with the data itself.")
+                  .withMessage(
+                      "Normalization failed during the dbt run. This may indicate a problem with the data itself.")
                   .withStackTrace("AirbyteDbtError: \n" + dbtErrorStack)
                   .withInternalMessage(internalMessage)));
       System.out.println(Jsons.serialize(traceMessage));
     }
   }
-
 }

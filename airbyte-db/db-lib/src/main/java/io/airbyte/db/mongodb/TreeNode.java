@@ -52,5 +52,4 @@ public class TreeNode<T> {
   public void setChildren(final List<TreeNode<T>> children) {
     this.children = children;
   }
-
 }

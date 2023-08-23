@@ -13,20 +13,30 @@ import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
 
 public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWriter> {
 
-  public GcsCsvBigQueryUploader(TableId table,
-                                TableId tmpTable,
-                                GcsCsvWriter writer,
-                                JobInfo.WriteDisposition syncMode,
-                                GcsDestinationConfig gcsDestinationConfig,
-                                BigQuery bigQuery,
-                                boolean isKeepFilesInGcs,
-                                BigQueryRecordFormatter recordFormatter) {
-    super(table, tmpTable, writer, syncMode, gcsDestinationConfig, bigQuery, isKeepFilesInGcs, recordFormatter);
+  public GcsCsvBigQueryUploader(
+      TableId table,
+      TableId tmpTable,
+      GcsCsvWriter writer,
+      JobInfo.WriteDisposition syncMode,
+      GcsDestinationConfig gcsDestinationConfig,
+      BigQuery bigQuery,
+      boolean isKeepFilesInGcs,
+      BigQueryRecordFormatter recordFormatter) {
+    super(
+        table,
+        tmpTable,
+        writer,
+        syncMode,
+        gcsDestinationConfig,
+        bigQuery,
+        isKeepFilesInGcs,
+        recordFormatter);
   }
 
   @Override
   protected LoadJobConfiguration getLoadConfiguration() {
-    final var csvOptions = CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
+    final var csvOptions =
+        CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
 
     return LoadJobConfiguration.builder(tmpTable, writer.getFileLocation())
         .setFormatOptions(csvOptions)
@@ -34,5 +44,4 @@ public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWr
         .setWriteDisposition(syncMode)
         .build();
   }
-
 }

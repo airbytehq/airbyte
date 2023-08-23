@@ -34,7 +34,8 @@ class StarburstGalaxyDestinationConfigTest {
 
   @Test
   public void testConfigCreationFromJsonS3() {
-    final ObjectNode dataSourceConfig = OBJECT_MAPPER.createObjectNode()
+    final ObjectNode dataSourceConfig = OBJECT_MAPPER
+        .createObjectNode()
         .put(OBJECT_STORE_TYPE, "S3")
         .put(S_3_BUCKET_NAME, "bucket_name")
         .put(S_3_BUCKET_PATH, "bucket_path")
@@ -42,7 +43,8 @@ class StarburstGalaxyDestinationConfigTest {
         .put(S_3_ACCESS_KEY_ID, "access_key_id")
         .put(S_3_SECRET_ACCESS_KEY, "secret_access_key");
 
-    final ObjectNode starburstGalaxyConfig = OBJECT_MAPPER.createObjectNode()
+    final ObjectNode starburstGalaxyConfig = OBJECT_MAPPER
+        .createObjectNode()
         .put(SERVER_HOSTNAME, "server_hostname")
         .put(USERNAME, "username")
         .put(PASSWORD, "password")
@@ -65,7 +67,7 @@ class StarburstGalaxyDestinationConfigTest {
     assertEquals(DEFAULT_STARBURST_GALAXY_PORT, config2.galaxyPort());
     assertEquals(CATALOG_SCHEMA, config2.galaxyCatalogSchema());
 
-    assertEquals(StarburstGalaxyS3StagingStorageConfig.class, config2.storageConfig().getClass());
+    assertEquals(
+        StarburstGalaxyS3StagingStorageConfig.class, config2.storageConfig().getClass());
   }
-
 }

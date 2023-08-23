@@ -20,19 +20,12 @@ import java.util.List;
 
 public class TestDataFactory {
 
-  private TestDataFactory() {
+  private TestDataFactory() {}
 
-  }
-
-  static CassandraConfig createCassandraConfig(String username, String password, String address, int port) {
+  static CassandraConfig createCassandraConfig(
+      String username, String password, String address, int port) {
     return new CassandraConfig(
-        "default_keyspace",
-        username,
-        password,
-        address,
-        port,
-        "datacenter1",
-        1);
+        "default_keyspace", username, password, address, port, "datacenter1", 1);
   }
 
   static JsonNode createJsonConfig(String username, String password, String address, int port) {
@@ -47,10 +40,8 @@ public class TestDataFactory {
         .build());
   }
 
-  static AirbyteMessage createAirbyteMessage(AirbyteMessage.Type type,
-                                             String streamName,
-                                             String namespace,
-                                             JsonNode data) {
+  static AirbyteMessage createAirbyteMessage(
+      AirbyteMessage.Type type, String streamName, String namespace, JsonNode data) {
     return new AirbyteMessage()
         .withType(type)
         .withRecord(new AirbyteRecordMessage()
@@ -67,14 +58,13 @@ public class TestDataFactory {
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
   }
 
-  static ConfiguredAirbyteStream createConfiguredAirbyteStream(DestinationSyncMode syncMode, AirbyteStream stream) {
-    return new ConfiguredAirbyteStream()
-        .withDestinationSyncMode(syncMode)
-        .withStream(stream);
+  static ConfiguredAirbyteStream createConfiguredAirbyteStream(
+      DestinationSyncMode syncMode, AirbyteStream stream) {
+    return new ConfiguredAirbyteStream().withDestinationSyncMode(syncMode).withStream(stream);
   }
 
-  static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(ConfiguredAirbyteStream... configuredStreams) {
+  static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(
+      ConfiguredAirbyteStream... configuredStreams) {
     return new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStreams));
   }
-
 }

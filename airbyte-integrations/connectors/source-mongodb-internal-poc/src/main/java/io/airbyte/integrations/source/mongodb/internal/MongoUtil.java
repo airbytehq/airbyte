@@ -51,7 +51,8 @@ public class MongoUtil {
    * @return The set of authorized collection names (may be empty).
    * @throws ConnectionErrorException if unable to perform the authorized collection query.
    */
-  public static Set<String> getAuthorizedCollections(final MongoClient mongoClient, final String databaseName) {
+  public static Set<String> getAuthorizedCollections(
+      final MongoClient mongoClient, final String databaseName) {
     /*
      * db.runCommand ({listCollections: 1.0, authorizedCollections: true, nameOnly: true }) the command
      * returns only those collections for which the user has privileges. For example, if a user has find
@@ -60,14 +61,13 @@ public class MongoUtil {
      * database.
      */
     try {
-      final Document document = mongoClient.getDatabase(databaseName).runCommand(new Document("listCollections", 1)
-          .append("authorizedCollections", true)
-          .append("nameOnly", true))
+      final Document document = mongoClient
+          .getDatabase(databaseName)
+          .runCommand(new Document("listCollections", 1)
+              .append("authorizedCollections", true)
+              .append("nameOnly", true))
           .append("filter", "{ 'type': 'collection' }");
-      return document.toBsonDocument()
-          .get("cursor").asDocument()
-          .getArray("firstBatch")
-          .stream()
+      return document.toBsonDocument().get("cursor").asDocument().getArray("firstBatch").stream()
           .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
           .filter(MongoUtil::isSupportedCollection)
           .collect(Collectors.toSet());
@@ -87,29 +87,39 @@ public class MongoUtil {
    * @return The list of {@link AirbyteStream}s that map to the available collections in the provided
    *         database.
    */
-  public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName) {
+  public static List<AirbyteStream> getAirbyteStreams(
+      final MongoClient mongoClient, final String databaseName) {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
-    return authorizedCollections.parallelStream().map(collectionName -> {
-      /*
-       * Fetch the keys/types from the first N documents and the last N documents from the collection.
-       * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
-       */
-      final Set<Field> discoveredFields = new HashSet<>();
-      final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
-      discoveredFields.addAll(getFieldsInCollection(mongoCollection));
-      return createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields));
-    }).collect(Collectors.toList());
+    return authorizedCollections.parallelStream()
+        .map(collectionName -> {
+          /*
+           * Fetch the keys/types from the first N documents and the last N documents from the collection.
+           * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
+           */
+          final Set<Field> discoveredFields = new HashSet<>();
+          final MongoCollection<Document> mongoCollection =
+              mongoClient.getDatabase(databaseName).getCollection(collectionName);
+          discoveredFields.addAll(getFieldsInCollection(mongoCollection));
+          return createAirbyteStream(
+              collectionName, databaseName, new ArrayList<>(discoveredFields));
+        })
+        .collect(Collectors.toList());
   }
 
-  private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
+  private static AirbyteStream createAirbyteStream(
+      final String collectionName, final String databaseName, final List<Field> fields) {
     return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
   }
 
   private static Set<Field> getFieldsInCollection(final MongoCollection collection) {
     final Set<Field> discoveredFields = new HashSet<>();
-    final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
-        "as", "each",
-        "in", Map.of("k", "$$each.k", "v", Map.of("$type", "$$each.v")));
+    final Map<String, Object> fieldsMap = Map.of(
+        "input",
+        Map.of("$objectToArray", "$$ROOT"),
+        "as",
+        "each",
+        "in",
+        Map.of("k", "$$each.k", "v", Map.of("$type", "$$each.v")));
 
     final Document mapFunction = new Document("$map", fieldsMap);
     final Document arrayToObjectAggregation = new Document("$arrayToObject", mapFunction);
@@ -128,7 +138,8 @@ public class MongoUtil {
 
     try (final MongoCursor<Document> cursor = output.cursor()) {
       while (cursor.hasNext()) {
-        final Map<String, String> fields = ((List<Map<String, String>>) cursor.next().get("fields")).get(0);
+        final Map<String, String> fields =
+            ((List<Map<String, String>>) cursor.next().get("fields")).get(0);
         discoveredFields.addAll(fields.entrySet().stream()
             .map(e -> new MongoField(e.getKey(), convertToSchemaType(e.getValue())))
             .collect(Collectors.toSet()));
@@ -151,5 +162,4 @@ public class MongoUtil {
   private static boolean isSupportedCollection(final String collectionName) {
     return !IGNORED_COLLECTIONS.stream().anyMatch(s -> collectionName.startsWith(s));
   }
-
 }

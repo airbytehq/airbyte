@@ -34,21 +34,26 @@ class PgLsnTest {
 
   @Test
   void testLsnToLong() {
-    TEST_LSNS.forEach(
-        (key, value) -> assertEquals(value, PgLsn.lsnToLong(key), String.format("Conversion failed. lsn: %s long value: %s", key, value)));
+    TEST_LSNS.forEach((key, value) -> assertEquals(
+        value,
+        PgLsn.lsnToLong(key),
+        String.format("Conversion failed. lsn: %s long value: %s", key, value)));
   }
 
   @Test
   void testLongToLsn() {
-    TEST_LSNS.forEach(
-        (key, value) -> assertEquals(key, PgLsn.longToLsn(value), String.format("Conversion failed. lsn: %s long value: %s", key, value)));
+    TEST_LSNS.forEach((key, value) -> assertEquals(
+        key,
+        PgLsn.longToLsn(value),
+        String.format("Conversion failed. lsn: %s long value: %s", key, value)));
   }
 
   // Added Test Case to test .toString() method in PgLsn.java
   @Test
   void testLsnToString() {
-    EXPECTED_TEST_LSNS.forEach(
-        (key, value) -> assertEquals(key, PgLsn.fromLong(value).toString(), String.format("Conversion failed. string: %s lsn: %s", key, value)));
+    EXPECTED_TEST_LSNS.forEach((key, value) -> assertEquals(
+        key,
+        PgLsn.fromLong(value).toString(),
+        String.format("Conversion failed. string: %s lsn: %s", key, value)));
   }
-
 }

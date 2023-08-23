@@ -8,12 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 
-public sealed interface EncryptionConfig permits AesCbcEnvelopeEncryption,NoEncryption {
+public sealed interface EncryptionConfig permits AesCbcEnvelopeEncryption, NoEncryption {
 
   Decoder BASE64_DECODER = Base64.getDecoder();
 
   static EncryptionConfig fromJson(final JsonNode encryptionNode) {
-    // For backwards-compatibility. Preexisting configs which don't contain the "encryption" key will
+    // For backwards-compatibility. Preexisting configs which don't contain the "encryption" key
+    // will
     // pass a null JsonNode into this method.
     if (encryptionNode == null) {
       return new NoEncryption();
@@ -26,5 +27,4 @@ public sealed interface EncryptionConfig permits AesCbcEnvelopeEncryption,NoEncr
       default -> throw new IllegalArgumentException("Invalid encryption type: " + encryptionType);
     };
   }
-
 }

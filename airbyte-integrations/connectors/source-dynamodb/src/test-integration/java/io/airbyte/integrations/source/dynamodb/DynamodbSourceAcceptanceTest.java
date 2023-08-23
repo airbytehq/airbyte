@@ -33,20 +33,22 @@ public class DynamodbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = DynamodbDataFactory.createJsonConfig(dynamodbContainer);
 
-    dynamoDbClient = DynamodbUtils.createDynamoDbClient(DynamodbConfig.createDynamodbConfig(config));
+    dynamoDbClient =
+        DynamodbUtils.createDynamoDbClient(DynamodbConfig.createDynamodbConfig(config));
 
     var createTableRequests = DynamodbDataFactory.createTables(TABLE_NAME, 1);
     var createTableResponse = dynamoDbClient.createTable(createTableRequests.get(0));
     String tableName = createTableResponse.tableDescription().tableName();
 
-    PutItemRequest putItemRequest = DynamodbDataFactory.putItemRequest(tableName, Map.of(
-        "attr_1", AttributeValue.builder().s("str_4").build(),
-        "attr_2", AttributeValue.builder().s("str_5").build(),
-        "attr_3", AttributeValue.builder().n("1234.25").build(),
-        "attr_timestamp", AttributeValue.builder().n("1572268323").build()));
+    PutItemRequest putItemRequest = DynamodbDataFactory.putItemRequest(
+        tableName,
+        Map.of(
+            "attr_1", AttributeValue.builder().s("str_4").build(),
+            "attr_2", AttributeValue.builder().s("str_5").build(),
+            "attr_3", AttributeValue.builder().n("1234.25").build(),
+            "attr_timestamp", AttributeValue.builder().n("1572268323").build()));
 
     dynamoDbClient.putItem(putItemRequest);
-
   }
 
   @Override
@@ -80,5 +82,4 @@ public class DynamodbSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

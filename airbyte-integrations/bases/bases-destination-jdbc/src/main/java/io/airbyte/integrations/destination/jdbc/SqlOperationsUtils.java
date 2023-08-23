@@ -30,12 +30,14 @@ public class SqlOperationsUtils {
    * @param records records to write
    * @throws SQLException exception
    */
-  public static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
-                                                   final String recordQueryComponent,
-                                                   final JdbcDatabase jdbcDatabase,
-                                                   final List<AirbyteRecordMessage> records)
+  public static void insertRawRecordsInSingleQuery(
+      final String insertQueryComponent,
+      final String recordQueryComponent,
+      final JdbcDatabase jdbcDatabase,
+      final List<AirbyteRecordMessage> records)
       throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
+    insertRawRecordsInSingleQuery(
+        insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
   }
 
   /**
@@ -51,21 +53,24 @@ public class SqlOperationsUtils {
    * @param records records to write
    * @throws SQLException exception
    */
-  public static void insertRawRecordsInSingleQueryNoSem(final String insertQueryComponent,
-                                                        final String recordQueryComponent,
-                                                        final JdbcDatabase jdbcDatabase,
-                                                        final List<AirbyteRecordMessage> records)
+  public static void insertRawRecordsInSingleQueryNoSem(
+      final String insertQueryComponent,
+      final String recordQueryComponent,
+      final JdbcDatabase jdbcDatabase,
+      final List<AirbyteRecordMessage> records)
       throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
+    insertRawRecordsInSingleQuery(
+        insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
   }
 
   @VisibleForTesting
-  static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
-                                            final String recordQueryComponent,
-                                            final JdbcDatabase jdbcDatabase,
-                                            final List<AirbyteRecordMessage> records,
-                                            final Supplier<UUID> uuidSupplier,
-                                            final boolean sem)
+  static void insertRawRecordsInSingleQuery(
+      final String insertQueryComponent,
+      final String recordQueryComponent,
+      final JdbcDatabase jdbcDatabase,
+      final List<AirbyteRecordMessage> records,
+      final Supplier<UUID> uuidSupplier,
+      final boolean sem)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -73,15 +78,20 @@ public class SqlOperationsUtils {
 
     jdbcDatabase.execute(connection -> {
 
-      // Strategy: We want to use PreparedStatement because it handles binding values to the SQL query
-      // (e.g. handling formatting timestamps). A PreparedStatement statement is created by supplying the
-      // full SQL string at creation time. Then subsequently specifying which values are bound to the
+      // Strategy: We want to use PreparedStatement because it handles binding values to the SQL
+      // query
+      // (e.g. handling formatting timestamps). A PreparedStatement statement is created by
+      // supplying the
+      // full SQL string at creation time. Then subsequently specifying which values are bound to
+      // the
       // string. Thus there will be two loops below.
       // 1) Loop over records to build the full string.
       // 2) Loop over the records and bind the appropriate values to the string.
-      // We also partition the query to run on 10k records at a time, since some DBs set a max limit on
+      // We also partition the query to run on 10k records at a time, since some DBs set a max limit
+      // on
       // how many records can be inserted at once
-      // TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
+      // TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of
+      // 10k by
       // default
       for (List<AirbyteRecordMessage> partition : Iterables.partition(records, 10_000)) {
         final StringBuilder sql = new StringBuilder(insertQueryComponent);
@@ -96,7 +106,8 @@ public class SqlOperationsUtils {
             // 1-indexed
             statement.setString(i, uuidSupplier.get().toString());
             statement.setString(i + 1, Jsons.serialize(message.getData()));
-            statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
+            statement.setTimestamp(
+                i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
             i += 3;
           }
 
@@ -105,5 +116,4 @@ public class SqlOperationsUtils {
       }
     });
   }
-
 }

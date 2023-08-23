@@ -15,7 +15,8 @@ import java.nio.file.Path;
  * SshKeyRedshiftInsertDestinationAcceptanceTest runs basic Redshift Destination Tests using the SQL
  * Insert mechanism for upload of data and "key" authentication for the SSH bastion configuration.
  */
-public class SshKeyRedshiftInsertDestinationAcceptanceTest extends SshRedshiftDestinationBaseAcceptanceTest {
+public class SshKeyRedshiftInsertDestinationAcceptanceTest
+    extends SshRedshiftDestinationBaseAcceptanceTest {
 
   @Override
   public TunnelMethod getTunnelMethod() {
@@ -27,5 +28,4 @@ public class SshKeyRedshiftInsertDestinationAcceptanceTest extends SshRedshiftDe
     final String configAsString = IOs.readFile(configPath);
     return Jsons.deserialize(configAsString);
   }
-
 }

@@ -100,5 +100,4 @@ public class InMemoryBuffer implements BufferStorage {
   public int getMaxConcurrentStreamsInBuffer() {
     return MAX_CONCURRENT_STREAM_IN_BUFFER;
   }
-
 }

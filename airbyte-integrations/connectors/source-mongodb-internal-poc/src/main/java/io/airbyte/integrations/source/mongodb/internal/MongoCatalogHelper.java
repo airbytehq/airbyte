@@ -37,8 +37,10 @@ public class MongoCatalogHelper {
    * @param fields The fields associated with the stream.
    * @return The configured {@link AirbyteStream} for this source.
    */
-  public static AirbyteStream buildAirbyteStream(final String streamName, final String streamNamespace, final List<Field> fields) {
-    return CatalogHelpers.createAirbyteStream(streamName, streamNamespace, addCdcMetadataColumns(fields))
+  public static AirbyteStream buildAirbyteStream(
+      final String streamName, final String streamNamespace, final List<Field> fields) {
+    return CatalogHelpers.createAirbyteStream(
+            streamName, streamNamespace, addCdcMetadataColumns(fields))
         .withSupportedSyncModes(SUPPORTED_SYNC_MODES)
         .withSourceDefinedCursor(true)
         .withDefaultCursorField(List.of(DEFAULT_CURSOR_FIELD))
@@ -58,5 +60,4 @@ public class MongoCatalogHelper {
     modifiedFields.add(new Field(DebeziumEventUtils.CDC_DELETED_AT, JsonSchemaType.STRING));
     return modifiedFields;
   }
-
 }

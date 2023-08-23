@@ -31,5 +31,4 @@ public interface DestinationWriter {
    * Close the S3 writer for the stream.
    */
   void close(boolean hasFailed) throws IOException;
-
 }

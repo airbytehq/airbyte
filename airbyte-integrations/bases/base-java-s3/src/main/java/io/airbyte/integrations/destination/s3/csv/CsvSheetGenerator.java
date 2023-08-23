@@ -18,7 +18,8 @@ public interface CsvSheetGenerator {
 
   List<String> getHeaderRow();
 
-  // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized recordStrings,
+  // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized
+  // recordStrings,
   // both for performance and lowers memory footprint
   List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage);
 
@@ -28,7 +29,8 @@ public interface CsvSheetGenerator {
 
   final class Factory {
 
-    public static CsvSheetGenerator create(final JsonNode jsonSchema, final S3CsvFormatConfig formatConfig) {
+    public static CsvSheetGenerator create(
+        final JsonNode jsonSchema, final S3CsvFormatConfig formatConfig) {
       if (formatConfig.getFlattening() == Flattening.NO) {
         return new NoFlatteningSheetGenerator();
       } else if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {
@@ -38,7 +40,5 @@ public interface CsvSheetGenerator {
             "Unexpected flattening config: " + formatConfig.getFlattening());
       }
     }
-
   }
-
 }

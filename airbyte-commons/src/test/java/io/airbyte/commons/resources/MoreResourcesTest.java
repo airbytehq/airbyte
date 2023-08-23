@@ -34,12 +34,17 @@ class MoreResourcesTest {
   @Test
   void testResourceReadWithClass() throws IOException {
     assertEquals(CONTENT_1, MoreResources.readResource(MoreResourcesTest.class, RESOURCE_TEST));
-    assertEquals(CONTENT_2, MoreResources.readResource(MoreResourcesTest.class, "subdir/resource_test_sub"));
+    assertEquals(
+        CONTENT_2, MoreResources.readResource(MoreResourcesTest.class, "subdir/resource_test_sub"));
 
     assertEquals(CONTENT_1, MoreResources.readResource(MoreResourcesTest.class, "/resource_test"));
-    assertEquals(CONTENT_2, MoreResources.readResource(MoreResourcesTest.class, "/subdir/resource_test_sub"));
+    assertEquals(
+        CONTENT_2,
+        MoreResources.readResource(MoreResourcesTest.class, "/subdir/resource_test_sub"));
 
-    assertThrows(IllegalArgumentException.class, () -> MoreResources.readResource(MoreResourcesTest.class, "invalid"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> MoreResources.readResource(MoreResourcesTest.class, "invalid"));
   }
 
   @Test
@@ -50,8 +55,11 @@ class MoreResourcesTest {
 
   @Test
   void testReadBytes() throws IOException {
-    assertEquals(CONTENT_1, new String(MoreResources.readBytes(RESOURCE_TEST), StandardCharsets.UTF_8));
-    assertEquals(CONTENT_2, new String(MoreResources.readBytes("subdir/resource_test_sub"), StandardCharsets.UTF_8));
+    assertEquals(
+        CONTENT_1, new String(MoreResources.readBytes(RESOURCE_TEST), StandardCharsets.UTF_8));
+    assertEquals(
+        CONTENT_2,
+        new String(MoreResources.readBytes("subdir/resource_test_sub"), StandardCharsets.UTF_8));
 
     assertThrows(IllegalArgumentException.class, () -> MoreResources.readBytes("invalid"));
   }
@@ -71,5 +79,4 @@ class MoreResourcesTest {
             .map(Path::toString)
             .collect(Collectors.toSet()));
   }
-
 }

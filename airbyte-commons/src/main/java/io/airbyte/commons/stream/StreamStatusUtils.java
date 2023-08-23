@@ -36,9 +36,10 @@ public class StreamStatusUtils {
    * @return A wrapping {@link Consumer} that provides stream status updates when the provided
    *         delegate {@link Consumer} is invoked.
    */
-  public static Consumer<AirbyteMessage> statusTrackingRecordCollector(final AutoCloseableIterator<AirbyteMessage> stream,
-                                                                       final Consumer<AirbyteMessage> delegateRecordCollector,
-                                                                       final Optional<Consumer<AirbyteStreamStatusHolder>> streamStatusEmitter) {
+  public static Consumer<AirbyteMessage> statusTrackingRecordCollector(
+      final AutoCloseableIterator<AirbyteMessage> stream,
+      final Consumer<AirbyteMessage> delegateRecordCollector,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> streamStatusEmitter) {
     return new Consumer<>() {
 
       private boolean firstRead = true;
@@ -54,7 +55,6 @@ public class StreamStatusUtils {
           }
         }
       }
-
     };
   }
 
@@ -64,8 +64,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitRunningStreamStatus(final AutoCloseableIterator<AirbyteMessage> airbyteStream,
-                                             final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitRunningStreamStatus(
+      final AutoCloseableIterator<AirbyteMessage> airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     if (airbyteStream instanceof AirbyteStreamAware) {
       emitRunningStreamStatus((AirbyteStreamAware) airbyteStream, statusEmitter);
     }
@@ -77,8 +78,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitRunningStreamStatus(final AirbyteStreamAware airbyteStream,
-                                             final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitRunningStreamStatus(
+      final AirbyteStreamAware airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     emitRunningStreamStatus(airbyteStream.getAirbyteStream(), statusEmitter);
   }
 
@@ -88,8 +90,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitRunningStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream,
-                                             final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitRunningStreamStatus(
+      final Optional<AirbyteStreamNameNamespacePair> airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     airbyteStream.ifPresent(s -> {
       LOGGER.debug("RUNNING -> {}", s);
       emitStreamStatus(s, AirbyteStreamStatus.RUNNING, statusEmitter);
@@ -102,8 +105,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitStartStreamStatus(final AutoCloseableIterator<AirbyteMessage> airbyteStream,
-                                           final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitStartStreamStatus(
+      final AutoCloseableIterator<AirbyteMessage> airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     if (airbyteStream instanceof AirbyteStreamAware) {
       emitStartStreamStatus((AirbyteStreamAware) airbyteStream, statusEmitter);
     }
@@ -115,8 +119,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitStartStreamStatus(final AirbyteStreamAware airbyteStream,
-                                           final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitStartStreamStatus(
+      final AirbyteStreamAware airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     emitStartStreamStatus(airbyteStream.getAirbyteStream(), statusEmitter);
   }
 
@@ -126,8 +131,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitStartStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream,
-                                           final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitStartStreamStatus(
+      final Optional<AirbyteStreamNameNamespacePair> airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     airbyteStream.ifPresent(s -> {
       LOGGER.debug("STARTING -> {}", s);
       emitStreamStatus(s, AirbyteStreamStatus.STARTED, statusEmitter);
@@ -140,8 +146,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitCompleteStreamStatus(final AutoCloseableIterator<AirbyteMessage> airbyteStream,
-                                              final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitCompleteStreamStatus(
+      final AutoCloseableIterator<AirbyteMessage> airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     if (airbyteStream instanceof AirbyteStreamAware) {
       emitCompleteStreamStatus((AirbyteStreamAware) airbyteStream, statusEmitter);
     }
@@ -153,8 +160,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitCompleteStreamStatus(final AirbyteStreamAware airbyteStream,
-                                              final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitCompleteStreamStatus(
+      final AirbyteStreamAware airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     emitCompleteStreamStatus(airbyteStream.getAirbyteStream(), statusEmitter);
   }
 
@@ -164,8 +172,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitCompleteStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream,
-                                              final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitCompleteStreamStatus(
+      final Optional<AirbyteStreamNameNamespacePair> airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     airbyteStream.ifPresent(s -> {
       LOGGER.debug("COMPLETE -> {}", s);
       emitStreamStatus(s, AirbyteStreamStatus.COMPLETE, statusEmitter);
@@ -178,8 +187,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitIncompleteStreamStatus(final AutoCloseableIterator<AirbyteMessage> airbyteStream,
-                                                final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitIncompleteStreamStatus(
+      final AutoCloseableIterator<AirbyteMessage> airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     if (airbyteStream instanceof AirbyteStreamAware) {
       emitIncompleteStreamStatus((AirbyteStreamAware) airbyteStream, statusEmitter);
     }
@@ -191,8 +201,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitIncompleteStreamStatus(final AirbyteStreamAware airbyteStream,
-                                                final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitIncompleteStreamStatus(
+      final AirbyteStreamAware airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     emitIncompleteStreamStatus(airbyteStream.getAirbyteStream(), statusEmitter);
   }
 
@@ -202,8 +213,9 @@ public class StreamStatusUtils {
    * @param airbyteStream The stream that should be associated with the stream status.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  public static void emitIncompleteStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream,
-                                                final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+  public static void emitIncompleteStreamStatus(
+      final Optional<AirbyteStreamNameNamespacePair> airbyteStream,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     airbyteStream.ifPresent(s -> {
       LOGGER.debug("INCOMPLETE -> {}", s);
       emitStreamStatus(s, AirbyteStreamStatus.INCOMPLETE, statusEmitter);
@@ -217,10 +229,11 @@ public class StreamStatusUtils {
    * @param airbyteStreamStatus The status update.
    * @param statusEmitter The {@link Optional} stream status emitter.
    */
-  private static void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                       final AirbyteStreamStatus airbyteStreamStatus,
-                                       final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
-    statusEmitter.ifPresent(consumer -> consumer.accept(new AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus)));
+  private static void emitStreamStatus(
+      final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+      final AirbyteStreamStatus airbyteStreamStatus,
+      final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
+    statusEmitter.ifPresent(consumer -> consumer.accept(
+        new AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus)));
   }
-
 }

@@ -26,9 +26,14 @@ public class Db2StrictEncryptSource extends SpecModifyingSource implements Sourc
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    // We need to remove the first item from one Of, which is responsible for connecting to the source
+    // We need to remove the first item from one Of, which is responsible for connecting to the
+    // source
     // without encrypted.
-    ((ArrayNode) spec.getConnectionSpecification().get("properties").get("encryption").get("oneOf")).remove(0);
+    ((ArrayNode) spec.getConnectionSpecification()
+            .get("properties")
+            .get("encryption")
+            .get("oneOf"))
+        .remove(0);
     return spec;
   }
 
@@ -38,5 +43,4 @@ public class Db2StrictEncryptSource extends SpecModifyingSource implements Sourc
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", Db2StrictEncryptSource.class);
   }
-
 }

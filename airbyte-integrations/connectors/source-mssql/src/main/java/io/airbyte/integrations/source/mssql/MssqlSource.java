@@ -68,8 +68,7 @@ import org.slf4j.LoggerFactory;
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
-  public static final String DESCRIBE_TABLE_QUERY =
-      """
+  public static final String DESCRIBE_TABLE_QUERY = """
       sp_columns "%s"
       """;
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
@@ -86,7 +85,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedSource(
+        new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   MssqlSource() {
@@ -94,29 +94,38 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final SyncMode syncMode,
-                                                               final Optional<String> cursorField) {
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(
+      final JdbcDatabase database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final SyncMode syncMode,
+      final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records
+    // matters
     // as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
-      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-      final String preparedSqlQuery =
-          String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
-              getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
+      final String newIdentifiers =
+          getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
+      final String preparedSqlQuery = String.format(
+          "SELECT %s FROM %s ORDER BY %s ASC",
+          newIdentifiers,
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
+          quotedCursorField);
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
       return queryTable(database, preparedSqlQuery, tableName, schemaName);
     } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about
+      // ordering
       // of the records.
-      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-      final String preparedSqlQuery =
-          String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
+      final String newIdentifiers =
+          getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
+      final String preparedSqlQuery = String.format(
+          "SELECT %s FROM %s",
+          newIdentifiers,
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
 
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
       return queryTable(database, preparedSqlQuery, tableName, schemaName);
@@ -133,19 +142,20 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
    * @return the list with Column names updated to handle functions (if nay) properly
    */
   @Override
-  protected String getWrappedColumnNames(final JdbcDatabase database,
-                                         final Connection connection,
-                                         final List<String> columnNames,
-                                         final String schemaName,
-                                         final String tableName) {
+  protected String getWrappedColumnNames(
+      final JdbcDatabase database,
+      final Connection connection,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName) {
     final List<String> hierarchyIdColumns = new ArrayList<>();
     try {
       final String identifierQuoteString = database.getMetaData().getIdentifierQuoteString();
-      final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
-          .queryMetadata(String
-              .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
-                  enquoteIdentifierList(columnNames, getQuoteString()),
-                  getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+      final SQLServerResultSetMetaData sqlServerResultSetMetaData =
+          (SQLServerResultSetMetaData) database.queryMetadata(String.format(
+              "SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
+              enquoteIdentifierList(columnNames, getQuoteString()),
+              getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
 
       // metadata will be null if table doesn't contain records
       if (sqlServerResultSetMetaData != null) {
@@ -160,12 +170,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       // Eventually would get columns like this: testColumn.toString as "testColumn"
       // toString function in SQL server is the only way to get human readable value, but not mssql
       // specific HEX value
-      return String.join(", ", columnNames.stream()
-          .map(
-              el -> hierarchyIdColumns.contains(el) ? String
-                  .format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
+      return String.join(
+          ", ",
+          columnNames.stream()
+              .map(el -> hierarchyIdColumns.contains(el)
+                  ? String.format(
+                      "%s.ToString() as %s%s%s",
+                      el, identifierQuoteString, el, identifierQuoteString)
                   : getIdentifierWithQuoting(el, getQuoteString()))
-          .toList());
+              .toList());
     } catch (final SQLException e) {
       LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
       throw new RuntimeException(e);
@@ -176,11 +189,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public JsonNode toDatabaseConfig(final JsonNode mssqlConfig) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
-            mssqlConfig.get(JdbcUtils.PORT_KEY).asText(),
-            mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(
+        "jdbc:sqlserver://%s:%s;databaseName=%s;",
+        mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
+        mssqlConfig.get(JdbcUtils.PORT_KEY).asText(),
+        mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (mssqlConfig.has("schemas") && mssqlConfig.get("schemas").isArray()) {
       schemas = new ArrayList<>();
@@ -203,7 +216,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
     if (mssqlConfig.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+      configBuilder.put(
+          JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 
     final Map<String, String> additionalParams = new HashMap<>();
@@ -250,34 +264,39 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
+      throws Exception {
     final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly filtered (from UI) schemas
-      final List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
-          .stream()
-          .filter(this::isTableInRequestedSchema)
-          .toList();
+      final List<TableInfo<CommonField<JDBCType>>> resultInternals =
+          internals.stream().filter(this::isTableInRequestedSchema).toList();
       for (final TableInfo<CommonField<JDBCType>> info : resultInternals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
       return resultInternals;
     } else {
-      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      LOGGER.info(
+          "No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
       return internals;
     }
   }
 
   @Override
-  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+  protected boolean verifyCursorColumnValues(
+      final JdbcDatabase database,
+      final String schema,
+      final String tableName,
+      final String columnName)
       throws SQLException {
 
     boolean nullValExist = false;
     final String resultColName = "nullValue";
     final String descQuery = String.format(DESCRIBE_TABLE_QUERY, tableName);
-    final Optional<JsonNode> field = database.bufferedResultSetQuery(conn -> conn.createStatement()
-        .executeQuery(descQuery),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
+    final Optional<JsonNode> field = database
+        .bufferedResultSetQuery(
+            conn -> conn.createStatement().executeQuery(descQuery),
+            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
         .stream()
         .peek(x -> LOGGER.info("MsSQL Table Structure {}, {}, {}", x.toString(), schema, tableName))
         .filter(x -> x.get("TABLE_OWNER") != null)
@@ -290,15 +309,20 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final JsonNode isNullable = jsonNode.get("IS_NULLABLE");
       if (isNullable != null) {
         if (isNullable.asText().equalsIgnoreCase("YES")) {
-          final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
-              schema, tableName, columnName, resultColName);
+          final String query = String.format(
+              NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY, schema, tableName, columnName, resultColName);
 
           LOGGER.debug("null value query: {}", query);
-          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+              conn -> conn.createStatement().executeQuery(query),
               resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
           Preconditions.checkState(jsonNodes.size() == 1);
           nullValExist = jsonNodes.get(0).get(resultColName).booleanValue();
-          LOGGER.info("null cursor value for MsSQL source : {}, shema {} , tableName {}, columnName {} ", nullValExist, schema, tableName,
+          LOGGER.info(
+              "null cursor value for MsSQL source : {}, shema {} , tableName {}, columnName {} ",
+              nullValExist,
+              schema,
+              tableName,
               columnName);
         }
       }
@@ -309,16 +333,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
-    return schemas
-        .stream()
-        .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
+    return schemas.stream().anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
   }
 
   @Override
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
       throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
-        super.getCheckOperations(config));
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations =
+        new ArrayList<>(super.getCheckOperations(config));
 
     if (MssqlCdcHelper.isCdc(config)) {
       checkOperations.add(database -> assertCdcEnabledInDb(config, database));
@@ -332,14 +354,17 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
-      LOGGER.info(String.format("Checking that cdc is enabled on database '%s' using the query: '%s'",
-          config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson);
+    final List<JsonNode> queryResponse = database.queryJsons(
+        connection -> {
+          final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
+          final PreparedStatement ps = connection.prepareStatement(sql);
+          ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
+          LOGGER.info(String.format(
+              "Checking that cdc is enabled on database '%s' using the query: '%s'",
+              config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
+          return ps;
+        },
+        sourceOperations::rowToJson);
 
     if (queryResponse.size() < 1) {
       throw new RuntimeException(String.format(
@@ -355,24 +380,27 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      boolean isAzureSQL = false;
+    final List<JsonNode> queryResponse = database.queryJsons(
+        connection -> {
+          boolean isAzureSQL = false;
 
-      try (final Statement stmt = connection.createStatement();
-          final ResultSet editionRS = stmt.executeQuery("SELECT ServerProperty('Edition')")) {
-        isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
-      }
+          try (final Statement stmt = connection.createStatement();
+              final ResultSet editionRS = stmt.executeQuery("SELECT ServerProperty('Edition')")) {
+            isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
+          }
 
-      // Azure SQL does not support USE clause
-      final String sql =
-          isAzureSQL ? "SELECT * FROM cdc.change_tables"
-              : "USE [" + config.get(JdbcUtils.DATABASE_KEY).asText() + "]; SELECT * FROM cdc.change_tables";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      LOGGER.info(String.format(
-          "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
-          config.get(JdbcUtils.USERNAME_KEY).asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson);
+          // Azure SQL does not support USE clause
+          final String sql = isAzureSQL
+              ? "SELECT * FROM cdc.change_tables"
+              : "USE [" + config.get(JdbcUtils.DATABASE_KEY).asText()
+                  + "]; SELECT * FROM cdc.change_tables";
+          final PreparedStatement ps = connection.prepareStatement(sql);
+          LOGGER.info(String.format(
+              "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
+              config.get(JdbcUtils.USERNAME_KEY).asText(), sql));
+          return ps;
+        },
+        sourceOperations::rowToJson);
 
     // Ensure at least one available CDC table
     if (queryResponse.size() < 1) {
@@ -384,13 +412,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   // todo: ensure this works for Azure managed SQL (since it uses different sql server agent)
   protected void assertSqlServerAgentRunning(final JdbcDatabase database) throws SQLException {
     try {
-      final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-        final String sql =
-            "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%' OR [servicename] LIKE 'SQL Server 代理%' ";
-        final PreparedStatement ps = connection.prepareStatement(sql);
-        LOGGER.info(String.format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
-        return ps;
-      }, sourceOperations::rowToJson);
+      final List<JsonNode> queryResponse = database.queryJsons(
+          connection -> {
+            final String sql =
+                "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%' OR [servicename] LIKE 'SQL Server 代理%' ";
+            final PreparedStatement ps = connection.prepareStatement(sql);
+            LOGGER.info(String.format(
+                "Checking that the SQL Server Agent is running using the query: '%s'", sql));
+            return ps;
+          },
+          sourceOperations::rowToJson);
 
       if (!(queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
         throw new RuntimeException(String.format(
@@ -398,7 +429,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
             queryResponse.get(0).get("status_desc").toString()));
       }
     } catch (final Exception e) {
-      if (e.getCause() != null && e.getCause().getClass().equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
+      if (e.getCause() != null
+          && e.getCause()
+              .getClass()
+              .equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
         LOGGER.warn(String.format(
             "Skipping check for whether the SQL Server Agent is running, SQLServerException thrown: '%s'",
             e.getMessage()));
@@ -414,15 +448,18 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       return;
     }
 
-    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
-      LOGGER.info(String.format(
-          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-          config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson);
+    final List<JsonNode> queryResponse = database.queryJsons(
+        connection -> {
+          final String sql =
+              "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
+          final PreparedStatement ps = connection.prepareStatement(sql);
+          ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
+          LOGGER.info(String.format(
+              "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
+              config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
+          return ps;
+        },
+        sourceOperations::rowToJson);
 
     if (queryResponse.size() < 1) {
       throw new RuntimeException(String.format(
@@ -439,31 +476,39 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-      final AirbyteDebeziumHandler<Lsn> handler =
-          new AirbyteDebeziumHandler<>(sourceConfig,
-              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime,
-              OptionalInt.empty());
+      final Duration firstRecordWaitTime =
+          FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+      final AirbyteDebeziumHandler<Lsn> handler = new AirbyteDebeziumHandler<>(
+          sourceConfig,
+          MssqlCdcTargetPosition.getTargetPosition(
+              database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()),
+          true,
+          firstRecordWaitTime,
+          OptionalInt.empty());
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-          new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager),
-          new MssqlCdcConnectorMetadataInjector(),
-          MssqlCdcHelper.getDebeziumProperties(database, catalog),
-          emittedAt, true);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier =
+          () -> handler.getIncrementalIterators(
+              catalog,
+              new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+              new MssqlCdcStateHandler(stateManager),
+              new MssqlCdcConnectorMetadataInjector(),
+              MssqlCdcHelper.getDebeziumProperties(database, catalog),
+              emittedAt,
+              true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super.getIncrementalIterators(
+          database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
@@ -473,7 +518,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    return stream.withSupportedSyncModes(
+        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
   // Note: in place mutation.
@@ -521,8 +567,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         additionalParameters.add("encrypt=true");
 
         // trust store location code found at https://stackoverflow.com/a/56570588
-        final String trustStoreLocation = Optional
-            .ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+        final String trustStoreLocation = Optional.ofNullable(
+                System.getProperty("javax.net.ssl.trustStore"))
             .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
         final File trustStoreFile = new File(trustStoreLocation);
         if (!trustStoreFile.exists()) {
@@ -533,12 +579,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
         additionalParameters.add("trustStore=" + trustStoreLocation);
         if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
-          additionalParameters
-              .add("trustStorePassword=" + config.get("trustStorePassword").asText());
+          additionalParameters.add(
+              "trustStorePassword=" + config.get("trustStorePassword").asText());
         }
         if (config.has("hostNameInCertificate")) {
-          additionalParameters
-              .add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
+          additionalParameters.add(
+              "hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
         }
       }
     }
@@ -550,5 +596,4 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);
   }
-
 }

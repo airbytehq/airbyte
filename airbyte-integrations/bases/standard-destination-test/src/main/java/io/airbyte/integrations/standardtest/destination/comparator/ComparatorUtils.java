@@ -10,9 +10,10 @@ import java.util.function.Function;
 
 public class ComparatorUtils {
 
-  public static JsonNode getActualValueByExpectedKey(final String expectedKey,
-                                                     final JsonNode actualJsonNode,
-                                                     final Function<String, List<String>> nameResolver) {
+  public static JsonNode getActualValueByExpectedKey(
+      final String expectedKey,
+      final JsonNode actualJsonNode,
+      final Function<String, List<String>> nameResolver) {
     for (final String actualKey : nameResolver.apply(expectedKey)) {
       if (actualJsonNode.has(actualKey)) {
         return actualJsonNode.get(actualKey);
@@ -20,5 +21,4 @@ public class ComparatorUtils {
     }
     return null;
   }
-
 }

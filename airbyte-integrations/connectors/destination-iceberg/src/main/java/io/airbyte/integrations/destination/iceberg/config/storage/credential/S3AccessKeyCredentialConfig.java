@@ -40,5 +40,4 @@ public class S3AccessKeyCredentialConfig implements S3CredentialConfig {
   public String getSecretAccessKey() {
     return secretAccessKey;
   }
-
 }

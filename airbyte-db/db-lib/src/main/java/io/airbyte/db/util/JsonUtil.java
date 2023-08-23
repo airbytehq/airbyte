@@ -13,7 +13,8 @@ public class JsonUtil {
 
   private static final String ERROR_MESSAGE = "Can't populate the node type : ";
 
-  public static void putBooleanValueIntoJson(final ContainerNode<?> node, final boolean value, final String fieldName) {
+  public static void putBooleanValueIntoJson(
+      final ContainerNode<?> node, final boolean value, final String fieldName) {
     if (node instanceof ArrayNode) {
       ((ArrayNode) node).add(value);
     } else if (node instanceof ObjectNode) {
@@ -23,7 +24,8 @@ public class JsonUtil {
     }
   }
 
-  public static void putLongValueIntoJson(final ContainerNode<?> node, final long value, final String fieldName) {
+  public static void putLongValueIntoJson(
+      final ContainerNode<?> node, final long value, final String fieldName) {
     if (node instanceof ArrayNode) {
       ((ArrayNode) node).add(value);
     } else if (node instanceof ObjectNode) {
@@ -33,7 +35,8 @@ public class JsonUtil {
     }
   }
 
-  public static void putDoubleValueIntoJson(final ContainerNode<?> node, final double value, final String fieldName) {
+  public static void putDoubleValueIntoJson(
+      final ContainerNode<?> node, final double value, final String fieldName) {
     if (node instanceof ArrayNode) {
       ((ArrayNode) node).add(value);
     } else if (node instanceof ObjectNode) {
@@ -43,7 +46,8 @@ public class JsonUtil {
     }
   }
 
-  public static void putBigDecimalValueIntoJson(final ContainerNode<?> node, final BigDecimal value, final String fieldName) {
+  public static void putBigDecimalValueIntoJson(
+      final ContainerNode<?> node, final BigDecimal value, final String fieldName) {
     if (node instanceof ArrayNode) {
       ((ArrayNode) node).add(value);
     } else if (node instanceof ObjectNode) {
@@ -53,7 +57,8 @@ public class JsonUtil {
     }
   }
 
-  public static void putStringValueIntoJson(final ContainerNode<?> node, final String value, final String fieldName) {
+  public static void putStringValueIntoJson(
+      final ContainerNode<?> node, final String value, final String fieldName) {
     if (node instanceof ArrayNode) {
       ((ArrayNode) node).add(value);
     } else if (node instanceof ObjectNode) {
@@ -63,7 +68,8 @@ public class JsonUtil {
     }
   }
 
-  public static void putBytesValueIntoJson(final ContainerNode<?> node, final byte[] value, final String fieldName) {
+  public static void putBytesValueIntoJson(
+      final ContainerNode<?> node, final byte[] value, final String fieldName) {
     if (node instanceof ArrayNode) {
       ((ArrayNode) node).add(value);
     } else if (node instanceof ObjectNode) {
@@ -72,5 +78,4 @@ public class JsonUtil {
       throw new RuntimeException(ERROR_MESSAGE + node.getClass().getName());
     }
   }
-
 }

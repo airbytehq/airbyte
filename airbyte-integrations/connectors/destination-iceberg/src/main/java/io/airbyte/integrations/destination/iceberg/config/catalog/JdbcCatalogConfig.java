@@ -54,18 +54,25 @@ public class JdbcCatalogConfig extends IcebergCatalogConfig {
     configMap.put("spark.network.timeout", "300000");
     configMap.put("spark.sql.defaultCatalog", CATALOG_NAME);
     configMap.put("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
-    configMap.put("spark.sql.catalog." + CATALOG_NAME + ".catalog-impl", "org.apache.iceberg.jdbc.JdbcCatalog");
-    configMap.put("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions");
+    configMap.put(
+        "spark.sql.catalog." + CATALOG_NAME + ".catalog-impl",
+        "org.apache.iceberg.jdbc.JdbcCatalog");
+    configMap.put(
+        "spark.sql.extensions",
+        "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions");
     configMap.put("spark.driver.extraJavaOptions", "-Dpackaging.type=jar -Djava.io.tmpdir=/tmp");
 
     configMap.put("spark.sql.catalog." + CATALOG_NAME + ".uri", this.jdbcUrl);
-    configMap.put("spark.sql.catalog." + CATALOG_NAME + ".jdbc.verifyServerCertificate",
+    configMap.put(
+        "spark.sql.catalog." + CATALOG_NAME + ".jdbc.verifyServerCertificate",
         String.valueOf(this.verifyServerCertificate));
-    configMap.put("spark.sql.catalog." + CATALOG_NAME + ".jdbc.useSSL", String.valueOf(this.useSSL));
+    configMap.put(
+        "spark.sql.catalog." + CATALOG_NAME + ".jdbc.useSSL", String.valueOf(this.useSSL));
     configMap.put("spark.sql.catalog." + CATALOG_NAME + ".jdbc.user", this.user);
     configMap.put("spark.sql.catalog." + CATALOG_NAME + ".jdbc.password", this.password);
     if (isNotBlank(this.catalogSchema)) {
-      configMap.put("spark.sql.catalog." + CATALOG_NAME + ".jdbc.currentSchema", this.catalogSchema);
+      configMap.put(
+          "spark.sql.catalog." + CATALOG_NAME + ".jdbc.currentSchema", this.catalogSchema);
     }
 
     configMap.putAll(this.storageConfig.sparkConfigMap(CATALOG_NAME));
@@ -75,12 +82,14 @@ public class JdbcCatalogConfig extends IcebergCatalogConfig {
   @Override
   public Catalog genCatalog() {
     JdbcCatalog catalog = new JdbcCatalog();
-    Map<String, String> properties = new HashMap<>(this.storageConfig.catalogInitializeProperties());
+    Map<String, String> properties =
+        new HashMap<>(this.storageConfig.catalogInitializeProperties());
     properties.put(CatalogProperties.URI, this.jdbcUrl);
     properties.put(JdbcCatalog.PROPERTY_PREFIX + "user", this.user);
     properties.put(JdbcCatalog.PROPERTY_PREFIX + "password", this.password);
     properties.put(JdbcCatalog.PROPERTY_PREFIX + "useSSL", String.valueOf(this.useSSL));
-    properties.put(JdbcCatalog.PROPERTY_PREFIX + "verifyServerCertificate",
+    properties.put(
+        JdbcCatalog.PROPERTY_PREFIX + "verifyServerCertificate",
         String.valueOf(this.verifyServerCertificate));
     if (isNotBlank(this.catalogSchema)) {
       properties.put(JdbcCatalog.PROPERTY_PREFIX + "currentSchema", this.catalogSchema);
@@ -89,5 +98,4 @@ public class JdbcCatalogConfig extends IcebergCatalogConfig {
     catalog.initialize(CATALOG_NAME, properties);
     return catalog;
   }
-
 }

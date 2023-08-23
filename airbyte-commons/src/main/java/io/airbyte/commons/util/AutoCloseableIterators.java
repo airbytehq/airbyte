@@ -37,7 +37,8 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return closeable iterator
    */
-  public static <T> AutoCloseableIterator<T> fromIterator(final Iterator<T> iterator, final AirbyteStreamNameNamespacePair airbyteStream) {
+  public static <T> AutoCloseableIterator<T> fromIterator(
+      final Iterator<T> iterator, final AirbyteStreamNameNamespacePair airbyteStream) {
     return new DefaultAutoCloseableIterator<>(iterator, VoidCallable.NOOP, airbyteStream);
   }
 
@@ -50,9 +51,10 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return new autocloseable iterator with the close function appended
    */
-  public static <T> AutoCloseableIterator<T> fromIterator(final Iterator<T> iterator,
-                                                          final VoidCallable onClose,
-                                                          final AirbyteStreamNameNamespacePair airbyteStream) {
+  public static <T> AutoCloseableIterator<T> fromIterator(
+      final Iterator<T> iterator,
+      final VoidCallable onClose,
+      final AirbyteStreamNameNamespacePair airbyteStream) {
     return new DefaultAutoCloseableIterator<>(iterator, onClose::call, airbyteStream);
   }
 
@@ -65,14 +67,16 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return autocloseable iterator
    */
-  public static <T> AutoCloseableIterator<T> fromStream(final Stream<T> stream, final AirbyteStreamNameNamespacePair airbyteStream) {
+  public static <T> AutoCloseableIterator<T> fromStream(
+      final Stream<T> stream, final AirbyteStreamNameNamespacePair airbyteStream) {
     return new DefaultAutoCloseableIterator<>(stream.iterator(), stream::close, airbyteStream);
   }
 
   /**
    * Consumes entire iterator and collect it into a list. Then it closes the iterator.
    */
-  public static <T> List<T> toListAndClose(final AutoCloseableIterator<T> iterator) throws Exception {
+  public static <T> List<T> toListAndClose(final AutoCloseableIterator<T> iterator)
+      throws Exception {
     try (iterator) {
       return MoreIterators.toList(iterator);
     }
@@ -88,8 +92,9 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return autocloseable iterator
    */
-  public static <T> AutoCloseableIterator<T> lazyIterator(final Supplier<AutoCloseableIterator<T>> iteratorSupplier,
-                                                          final AirbyteStreamNameNamespacePair airbyteStream) {
+  public static <T> AutoCloseableIterator<T> lazyIterator(
+      final Supplier<AutoCloseableIterator<T>> iteratorSupplier,
+      final AirbyteStreamNameNamespacePair airbyteStream) {
     return new LazyAutoCloseableIterator<>(iteratorSupplier, airbyteStream);
   }
 
@@ -101,11 +106,15 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return new autocloseable iterator with the close function appended
    */
-  public static <T> AutoCloseableIterator<T> appendOnClose(final AutoCloseableIterator<T> autoCloseableIterator, final VoidCallable voidCallable) {
-    return new DefaultAutoCloseableIterator<>(autoCloseableIterator, () -> {
-      autoCloseableIterator.close();
-      voidCallable.call();
-    }, null);
+  public static <T> AutoCloseableIterator<T> appendOnClose(
+      final AutoCloseableIterator<T> autoCloseableIterator, final VoidCallable voidCallable) {
+    return new DefaultAutoCloseableIterator<>(
+        autoCloseableIterator,
+        () -> {
+          autoCloseableIterator.close();
+          voidCallable.call();
+        },
+        null);
   }
 
   /**
@@ -116,13 +125,16 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return new autocloseable iterator with the close function appended
    */
-  public static <T> AutoCloseableIterator<T> appendOnClose(final AutoCloseableIterator<T> autoCloseableIterator,
-                                                           final VoidCallable voidCallable,
-                                                           final AirbyteStreamNameNamespacePair airbyteStream) {
-    return new DefaultAutoCloseableIterator<>(autoCloseableIterator, () -> {
-      autoCloseableIterator.close();
-      voidCallable.call();
-    },
+  public static <T> AutoCloseableIterator<T> appendOnClose(
+      final AutoCloseableIterator<T> autoCloseableIterator,
+      final VoidCallable voidCallable,
+      final AirbyteStreamNameNamespacePair airbyteStream) {
+    return new DefaultAutoCloseableIterator<>(
+        autoCloseableIterator,
+        () -> {
+          autoCloseableIterator.close();
+          voidCallable.call();
+        },
         airbyteStream);
   }
 
@@ -136,9 +148,11 @@ public class AutoCloseableIterators {
    * @param <T> output type
    * @return mapped autocloseable iterator
    */
-  public static <F, T> AutoCloseableIterator<T> transform(final AutoCloseableIterator<F> fromIterator,
-                                                          final Function<? super F, ? extends T> function) {
-    return new DefaultAutoCloseableIterator<>(Iterators.transform(fromIterator, function::apply), fromIterator::close, null);
+  public static <F, T> AutoCloseableIterator<T> transform(
+      final AutoCloseableIterator<F> fromIterator,
+      final Function<? super F, ? extends T> function) {
+    return new DefaultAutoCloseableIterator<>(
+        Iterators.transform(fromIterator, function::apply), fromIterator::close, null);
   }
 
   /**
@@ -151,10 +165,12 @@ public class AutoCloseableIterators {
    * @param <T> output type
    * @return mapped autocloseable iterator
    */
-  public static <F, T> AutoCloseableIterator<T> transform(final AutoCloseableIterator<F> fromIterator,
-                                                          final AirbyteStreamNameNamespacePair airbyteStream,
-                                                          final Function<? super F, ? extends T> function) {
-    return new DefaultAutoCloseableIterator<>(Iterators.transform(fromIterator, function::apply), fromIterator::close, airbyteStream);
+  public static <F, T> AutoCloseableIterator<T> transform(
+      final AutoCloseableIterator<F> fromIterator,
+      final AirbyteStreamNameNamespacePair airbyteStream,
+      final Function<? super F, ? extends T> function) {
+    return new DefaultAutoCloseableIterator<>(
+        Iterators.transform(fromIterator, function::apply), fromIterator::close, airbyteStream);
   }
 
   /**
@@ -168,26 +184,32 @@ public class AutoCloseableIterators {
    * @return autocloseable iterator that still has the close functionality of the original input
    *         iterator but is transformed by the iterator output by the iteratorCreator
    */
-  public static <T> AutoCloseableIterator<T> transform(final Function<AutoCloseableIterator<T>, Iterator<T>> iteratorCreator,
-                                                       final AutoCloseableIterator<T> autoCloseableIterator,
-                                                       final AirbyteStreamNameNamespacePair airbyteStream) {
-    return new DefaultAutoCloseableIterator<>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close, airbyteStream);
+  public static <T> AutoCloseableIterator<T> transform(
+      final Function<AutoCloseableIterator<T>, Iterator<T>> iteratorCreator,
+      final AutoCloseableIterator<T> autoCloseableIterator,
+      final AirbyteStreamNameNamespacePair airbyteStream) {
+    return new DefaultAutoCloseableIterator<>(
+        iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close, airbyteStream);
   }
 
-  public static <T, F> AutoCloseableIterator<F> transformIterator(final Function<AutoCloseableIterator<T>, Iterator<F>> iteratorCreator,
-                                                                  final AutoCloseableIterator<T> autoCloseableIterator,
-                                                                  final AirbyteStreamNameNamespacePair airbyteStream) {
-    return new DefaultAutoCloseableIterator<F>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close, airbyteStream);
+  public static <T, F> AutoCloseableIterator<F> transformIterator(
+      final Function<AutoCloseableIterator<T>, Iterator<F>> iteratorCreator,
+      final AutoCloseableIterator<T> autoCloseableIterator,
+      final AirbyteStreamNameNamespacePair airbyteStream) {
+    return new DefaultAutoCloseableIterator<F>(
+        iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close, airbyteStream);
   }
 
   @SafeVarargs
-  public static <T> CompositeIterator<T> concatWithEagerClose(final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer,
-                                                              final AutoCloseableIterator<T>... iterators) {
+  public static <T> CompositeIterator<T> concatWithEagerClose(
+      final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer,
+      final AutoCloseableIterator<T>... iterators) {
     return concatWithEagerClose(List.of(iterators), airbyteStreamStatusConsumer);
   }
 
   @SafeVarargs
-  public static <T> CompositeIterator<T> concatWithEagerClose(final AutoCloseableIterator<T>... iterators) {
+  public static <T> CompositeIterator<T> concatWithEagerClose(
+      final AutoCloseableIterator<T>... iterators) {
     return concatWithEagerClose(List.of(iterators), null);
   }
 
@@ -200,13 +222,14 @@ public class AutoCloseableIterators {
    * @return A {@link CompositeIterator}.
    * @param <T> The type of data contained in each iterator.
    */
-  public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators,
-                                                              final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
+  public static <T> CompositeIterator<T> concatWithEagerClose(
+      final List<AutoCloseableIterator<T>> iterators,
+      final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
     return new CompositeIterator<>(iterators, airbyteStreamStatusConsumer);
   }
 
-  public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators) {
+  public static <T> CompositeIterator<T> concatWithEagerClose(
+      final List<AutoCloseableIterator<T>> iterators) {
     return concatWithEagerClose(iterators, null);
   }
-
 }

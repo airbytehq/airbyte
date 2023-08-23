@@ -44,7 +44,8 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
 
   @Override
   public boolean isFinalTableEmpty(StreamId id) {
-    return BigInteger.ZERO.equals(bq.getTable(TableId.of(id.finalNamespace(), id.finalName())).getNumRows());
+    return BigInteger.ZERO.equals(
+        bq.getTable(TableId.of(id.finalNamespace(), id.finalName())).getNumRows());
   }
 
   @Override
@@ -59,15 +60,19 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery doesn't do a good job of
     inferring the query location. Pass it in explicitly.
      */
-    Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(sql).build()));
+    Job job = bq.create(JobInfo.of(
+        JobId.newBuilder().setLocation(datasetLocation).build(),
+        QueryJobConfiguration.newBuilder(sql).build()));
     job = job.waitFor();
-    // waitFor() seems to throw an exception if the query failed, but javadoc says we're supposed to handle this case
+    // waitFor() seems to throw an exception if the query failed, but javadoc says we're supposed to
+    // handle this case
     if (job.getStatus().getError() != null) {
       throw new RuntimeException(job.getStatus().getError().toString());
     }
 
     JobStatistics.QueryStatistics statistics = job.getStatistics();
-    LOGGER.info("Root-level job {} completed in {} ms; processed {} bytes; billed for {} bytes",
+    LOGGER.info(
+        "Root-level job {} completed in {} ms; processed {} bytes; billed for {} bytes",
         queryId,
         statistics.getEndTime() - statistics.getStartTime(),
         statistics.getTotalBytesProcessed(),
@@ -76,7 +81,8 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     // SQL transactions can spawn child jobs, which are billed individually. Log their stats too.
     if (statistics.getNumChildJobs() != null) {
       // There isn't (afaict) anything resembling job.getChildJobs(), so we have to ask bq for them
-      bq.listJobs(BigQuery.JobListOption.parentJobId(job.getJobId().getJob())).streamAll()
+      bq.listJobs(BigQuery.JobListOption.parentJobId(job.getJobId().getJob()))
+          .streamAll()
           .sorted(Comparator.comparing(childJob -> childJob.getStatistics().getEndTime()))
           .forEach(childJob -> {
             JobConfiguration configuration = childJob.getConfiguration();
@@ -89,7 +95,8 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
               if (!truncatedQuery.equals(qc.getQuery())) {
                 truncatedQuery += "...";
               }
-              LOGGER.info("Child sql {} completed in {} ms; processed {} bytes; billed for {} bytes",
+              LOGGER.info(
+                  "Child sql {} completed in {} ms; processed {} bytes; billed for {} bytes",
                   truncatedQuery,
                   childQueryStats.getEndTime() - childQueryStats.getStartTime(),
                   childQueryStats.getTotalBytesProcessed(),
@@ -98,12 +105,12 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
               // other job types are extract/copy/load
               // we're probably not using them, but handle just in case?
               JobStatistics childJobStats = childJob.getStatistics();
-              LOGGER.info("Non-query child job ({}) completed in {} ms",
+              LOGGER.info(
+                  "Non-query child job ({}) completed in {} ms",
                   configuration.getType(),
                   childJobStats.getEndTime() - childJobStats.getStartTime());
             }
           });
     }
   }
-
 }

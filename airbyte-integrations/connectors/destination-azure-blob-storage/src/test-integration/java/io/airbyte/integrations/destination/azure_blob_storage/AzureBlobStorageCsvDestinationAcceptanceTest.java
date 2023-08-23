@@ -25,8 +25,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 
-public class AzureBlobStorageCsvDestinationAcceptanceTest extends
-    AzureBlobStorageDestinationAcceptanceTest {
+public class AzureBlobStorageCsvDestinationAcceptanceTest
+    extends AzureBlobStorageDestinationAcceptanceTest {
 
   public AzureBlobStorageCsvDestinationAcceptanceTest() {
     super(AzureBlobStorageFormat.CSV);
@@ -54,7 +54,8 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
     return fieldTypes;
   }
 
-  private static JsonNode getJsonNode(final Map<String, String> input, final Map<String, String> fieldTypes) {
+  private static JsonNode getJsonNode(
+      final Map<String, String> input, final Map<String, String> fieldTypes) {
     final ObjectNode json = MAPPER.createObjectNode();
 
     if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
@@ -63,8 +64,8 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
 
     for (final Entry<String, String> entry : input.entrySet()) {
       final String key = entry.getKey();
-      if (key.equals(JavaBaseConstants.COLUMN_NAME_AB_ID) || key
-          .equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)) {
+      if (key.equals(JavaBaseConstants.COLUMN_NAME_AB_ID)
+          || key.equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)) {
         continue;
       }
       final String value = entry.getValue();
@@ -93,10 +94,11 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
     final String allSyncedObjects = getAllSyncedObjects(streamName);
 
@@ -138,5 +140,4 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
       return "";
     }
   }
-
 }

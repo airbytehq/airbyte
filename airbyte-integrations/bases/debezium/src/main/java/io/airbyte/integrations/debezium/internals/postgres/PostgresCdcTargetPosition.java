@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcTargetPosition.class);
+
   @VisibleForTesting
   public final PgLsn targetLsn;
 
@@ -64,7 +65,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
       final PgLsn eventLsn = extractLsn(changeEventWithMetadata.eventValueAsJson());
       boolean isEventLSNAfter = targetLsn.compareTo(eventLsn) <= 0;
       if (isEventLSNAfter) {
-        LOGGER.info("Signalling close because record's LSN : " + eventLsn + " is after target LSN : " + targetLsn);
+        LOGGER.info("Signalling close because record's LSN : " + eventLsn
+            + " is after target LSN : " + targetLsn);
       }
       return isEventLSNAfter;
     }
@@ -72,7 +74,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   @Override
   public boolean reachedTargetPosition(final Long positionFromHeartbeat) {
-    return positionFromHeartbeat != null && positionFromHeartbeat.compareTo(targetLsn.asLong()) >= 0;
+    return positionFromHeartbeat != null
+        && positionFromHeartbeat.compareTo(targetLsn.asLong()) >= 0;
   }
 
   private PgLsn extractLsn(final JsonNode valueAsJson) {
@@ -94,21 +97,25 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
   }
 
   @Override
-  public boolean isEventAheadOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
+  public boolean isEventAheadOffset(
+      final Map<String, String> offset, final ChangeEventWithMetadata event) {
     if (offset.size() != 1) {
       return false;
     }
 
     final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
 
-    final String offset_lsn =
-        offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : String.valueOf(offsetJson.get("lsn"));
-    final String event_lsn = String.valueOf(event.eventValueAsJson().get("source").get("lsn"));
+    final String offset_lsn = offsetJson.get("lsn_commit") != null
+        ? String.valueOf(offsetJson.get("lsn_commit"))
+        : String.valueOf(offsetJson.get("lsn"));
+    final String event_lsn =
+        String.valueOf(event.eventValueAsJson().get("source").get("lsn"));
     return Long.parseLong(event_lsn) > Long.parseLong(offset_lsn);
   }
 
   @Override
-  public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
+  public boolean isSameOffset(
+      final Map<String, String> offsetA, final Map<String, String> offsetB) {
     if (offsetA == null || offsetA.size() != 1) {
       return false;
     }
@@ -118,12 +125,13 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
     final JsonNode offsetJsonA = Jsons.deserialize((String) offsetA.values().toArray()[0]);
     final JsonNode offsetJsonB = Jsons.deserialize((String) offsetB.values().toArray()[0]);
 
-    final String lsnA =
-        offsetJsonA.get("lsn_commit") != null ? String.valueOf(offsetJsonA.get("lsn_commit")) : String.valueOf(offsetJsonA.get("lsn"));
-    final String lsnB =
-        offsetJsonB.get("lsn_commit") != null ? String.valueOf(offsetJsonB.get("lsn_commit")) : String.valueOf(offsetJsonB.get("lsn"));
+    final String lsnA = offsetJsonA.get("lsn_commit") != null
+        ? String.valueOf(offsetJsonA.get("lsn_commit"))
+        : String.valueOf(offsetJsonA.get("lsn"));
+    final String lsnB = offsetJsonB.get("lsn_commit") != null
+        ? String.valueOf(offsetJsonB.get("lsn_commit"))
+        : String.valueOf(offsetJsonB.get("lsn"));
 
     return Long.parseLong(lsnA) == Long.parseLong(lsnB);
   }
-
 }

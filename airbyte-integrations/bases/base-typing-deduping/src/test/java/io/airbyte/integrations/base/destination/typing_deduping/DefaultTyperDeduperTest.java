@@ -38,7 +38,8 @@ public class DefaultTyperDeduperTest {
 
     ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
         new StreamConfig(
-            new StreamId("overwrite_ns", "overwrite_stream", null, null, "overwrite_ns", "overwrite_stream"),
+            new StreamId(
+                "overwrite_ns", "overwrite_stream", null, null, "overwrite_ns", "overwrite_stream"),
             null,
             DestinationSyncMode.OVERWRITE,
             null,
@@ -59,7 +60,8 @@ public class DefaultTyperDeduperTest {
             null,
             null)));
 
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator);
+    typerDeduper =
+        new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator);
   }
 
   /**
@@ -161,7 +163,9 @@ public class DefaultTyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
-    verify(destinationHandler).execute("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp");
+    verify(destinationHandler)
+        .execute(
+            "OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
@@ -184,9 +188,9 @@ public class DefaultTyperDeduperTest {
 
   @Test
   void nonexistentStream() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> typerDeduper.typeAndDedupe("nonexistent_ns", "nonexistent_stream"));
     verifyNoInteractions(ignoreStubs(destinationHandler));
   }
-
 }

@@ -25,9 +25,12 @@ public abstract class PerStreamStateMessageTest {
 
   @Test
   void ensureAllStateMessageAreEmitted() throws Exception {
-    final AirbyteMessage airbyteMessage1 = AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one");
-    final AirbyteMessage airbyteMessage2 = AirbyteMessageCreator.createStreamStateMessage("name_two", "state_two");
-    final AirbyteMessage airbyteMessage3 = AirbyteMessageCreator.createStreamStateMessage("name_three", "state_three");
+    final AirbyteMessage airbyteMessage1 =
+        AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one");
+    final AirbyteMessage airbyteMessage2 =
+        AirbyteMessageCreator.createStreamStateMessage("name_two", "state_two");
+    final AirbyteMessage airbyteMessage3 =
+        AirbyteMessageCreator.createStreamStateMessage("name_three", "state_three");
     final FailureTrackingAirbyteMessageConsumer messageConsumer = getMessageConsumer();
 
     messageConsumer.accept(airbyteMessage1);
@@ -47,17 +50,11 @@ public abstract class PerStreamStateMessageTest {
     public static AirbyteMessage createStreamStateMessage(final String name, final String value) {
       return new AirbyteMessage()
           .withType(Type.STATE)
-          .withState(
-              new AirbyteStateMessage()
-                  .withType(AirbyteStateType.STREAM)
-                  .withStream(
-                      new AirbyteStreamState()
-                          .withStreamDescriptor(
-                              new StreamDescriptor()
-                                  .withName(name))
-                          .withStreamState(Jsons.jsonNode(value))));
+          .withState(new AirbyteStateMessage()
+              .withType(AirbyteStateType.STREAM)
+              .withStream(new AirbyteStreamState()
+                  .withStreamDescriptor(new StreamDescriptor().withName(name))
+                  .withStreamState(Jsons.jsonNode(value))));
     }
-
   }
-
 }

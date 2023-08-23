@@ -8,4 +8,5 @@ import io.airbyte.configoss.ConnectorJobOutput;
 import io.airbyte.configoss.StandardDiscoverCatalogInput;
 import io.airbyte.workers.TestHarness;
 
-public interface DiscoverCatalogTestHarness extends TestHarness<StandardDiscoverCatalogInput, ConnectorJobOutput> {}
+public interface DiscoverCatalogTestHarness
+    extends TestHarness<StandardDiscoverCatalogInput, ConnectorJobOutput> {}

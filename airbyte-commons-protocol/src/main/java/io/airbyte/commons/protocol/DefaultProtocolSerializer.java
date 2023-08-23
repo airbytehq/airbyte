@@ -13,5 +13,4 @@ public class DefaultProtocolSerializer implements ProtocolSerializer {
   public String serialize(ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
     return Jsons.serialize(configuredAirbyteCatalog);
   }
-
 }

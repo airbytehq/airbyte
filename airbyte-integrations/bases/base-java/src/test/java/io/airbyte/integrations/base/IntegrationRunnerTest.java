@@ -81,8 +81,10 @@ class IntegrationRunnerTest {
   private static final Long EMITTED_AT = Instant.now().toEpochMilli();
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
+      .withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG =
+      CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
 
   private IntegrationCliParser cliParser;
@@ -104,12 +106,12 @@ class IntegrationRunnerTest {
     configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
-    configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
+    configuredCatalogPath =
+        IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
 
     final String testName = Thread.currentThread().getName();
-    ThreadUtils.getAllThreads()
-        .stream()
+    ThreadUtils.getAllThreads().stream()
         .filter(runningThread -> !runningThread.isDaemon())
         .forEach(runningThread -> runningThread.setName(testName));
   }
@@ -117,7 +119,8 @@ class IntegrationRunnerTest {
   @Test
   void testSpecSource() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
+    final ConnectorSpecification output =
+        new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.spec()).thenReturn(output);
@@ -131,7 +134,8 @@ class IntegrationRunnerTest {
   @Test
   void testSpecDestination() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
+    final ConnectorSpecification output =
+        new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.spec()).thenReturn(output);
@@ -145,7 +149,8 @@ class IntegrationRunnerTest {
   @Test
   void testCheckSource() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
+    final AirbyteConnectionStatus output =
+        new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.check(CONFIG)).thenReturn(output);
@@ -157,14 +162,16 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
-    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(stdoutConsumer)
+        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
   void testCheckDestination() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
+    final AirbyteConnectionStatus output =
+        new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.check(CONFIG)).thenReturn(output);
@@ -175,10 +182,12 @@ class IntegrationRunnerTest {
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator)
+        .run(ARGS);
 
     verify(destination).check(CONFIG);
-    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(stdoutConsumer)
+        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
@@ -205,12 +214,16 @@ class IntegrationRunnerTest {
 
   @Test
   void testRead() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath,
-        statePath);
-    final AirbyteMessage message1 = new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))));
-    final AirbyteMessage message2 = new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage()
-        .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
+    final IntegrationConfig intConfig =
+        IntegrationConfig.read(configPath, configuredCatalogPath, statePath);
+    final AirbyteMessage message1 = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(
+            new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))));
+    final AirbyteMessage message2 = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.read(CONFIG, CONFIGURED_CATALOG, STATE))
@@ -232,9 +245,10 @@ class IntegrationRunnerTest {
 
   @Test
   void testReadException() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath,
-        statePath);
-    final ConfigErrorException configErrorException = new ConfigErrorException("Invalid configuration");
+    final IntegrationConfig intConfig =
+        IntegrationConfig.read(configPath, configuredCatalogPath, statePath);
+    final ConfigErrorException configErrorException =
+        new ConfigErrorException("Invalid configuration");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.read(CONFIG, CONFIGURED_CATALOG, STATE)).thenThrow(configErrorException);
@@ -244,7 +258,9 @@ class IntegrationRunnerTest {
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    final Throwable throwable = catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS));
+    final Throwable throwable = catchThrowable(
+        () -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator)
+            .run(ARGS));
 
     assertThat(throwable).isInstanceOf(ConfigErrorException.class);
     // noinspection resource
@@ -254,9 +270,13 @@ class IntegrationRunnerTest {
   @Test
   void testCheckNestedException() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Invalid configuration");
-    final ConfigErrorException configErrorException = new ConfigErrorException("Invalid configuration");
-    final RuntimeException runtimeException = new RuntimeException(new RuntimeException(configErrorException));
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus()
+        .withStatus(Status.FAILED)
+        .withMessage("Invalid configuration");
+    final ConfigErrorException configErrorException =
+        new ConfigErrorException("Invalid configuration");
+    final RuntimeException runtimeException =
+        new RuntimeException(new RuntimeException(configErrorException));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.check(CONFIG)).thenThrow(runtimeException);
@@ -268,15 +288,17 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
-    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(stdoutConsumer)
+        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
   void testCheckRuntimeException() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output =
-        new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, "Runtime Error"));
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus()
+        .withStatus(Status.FAILED)
+        .withMessage(String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, "Runtime Error"));
     final RuntimeException runtimeException = new RuntimeException("Runtime Error");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
@@ -289,16 +311,19 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
-    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(stdoutConsumer)
+        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
   void testWrite() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
-    final SerializedAirbyteMessageConsumer consumerMock = mock(SerializedAirbyteMessageConsumer.class);
+    final SerializedAirbyteMessageConsumer consumerMock =
+        mock(SerializedAirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(consumerMock);
+    when(destination.getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer))
+        .thenReturn(consumerMock);
 
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
@@ -306,7 +331,8 @@ class IntegrationRunnerTest {
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
-    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
+    final IntegrationRunner runner = spy(
+        new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
     runner.run(ARGS);
 
     verify(destination).getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
@@ -329,19 +355,32 @@ class IntegrationRunnerTest {
             .withEmittedAt(EMITTED_AT));
     final AirbyteMessage stateMessage = new AirbyteMessage()
         .withType(Type.STATE)
-        .withState(new AirbyteStateMessage()
-            .withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
+        .withState(
+            new AirbyteStateMessage().withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n"
-        + Jsons.serialize(message2) + "\n"
-        + Jsons.serialize(stateMessage)).getBytes(StandardCharsets.UTF_8)));
+            + Jsons.serialize(message2) + "\n"
+            + Jsons.serialize(stateMessage))
+        .getBytes(StandardCharsets.UTF_8)));
 
-    try (final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock = mock(SerializedAirbyteMessageConsumer.class)) {
+    try (final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock =
+        mock(SerializedAirbyteMessageConsumer.class)) {
       IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
       final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message1), Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
-      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message2), Jsons.serialize(message2).getBytes(StandardCharsets.UTF_8).length);
-      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(stateMessage),
-          Jsons.serialize(stateMessage).getBytes(StandardCharsets.UTF_8).length);
+      inOrder
+          .verify(airbyteMessageConsumerMock)
+          .accept(
+              Jsons.serialize(message1),
+              Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
+      inOrder
+          .verify(airbyteMessageConsumerMock)
+          .accept(
+              Jsons.serialize(message2),
+              Jsons.serialize(message2).getBytes(StandardCharsets.UTF_8).length);
+      inOrder
+          .verify(airbyteMessageConsumerMock)
+          .accept(
+              Jsons.serialize(stateMessage),
+              Jsons.serialize(stateMessage).getBytes(StandardCharsets.UTF_8).length);
     }
   }
 
@@ -359,14 +398,26 @@ class IntegrationRunnerTest {
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes(StandardCharsets.UTF_8)));
+    System.setIn(
+        new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2))
+            .getBytes(StandardCharsets.UTF_8)));
 
-    try (final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock = mock(SerializedAirbyteMessageConsumer.class)) {
-      doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(Jsons.serialize(message1),
-          Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
-      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+    try (final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock =
+        mock(SerializedAirbyteMessageConsumer.class)) {
+      doThrow(new IOException("error"))
+          .when(airbyteMessageConsumerMock)
+          .accept(
+              Jsons.serialize(message1),
+              Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
+      assertThrows(
+          IOException.class,
+          () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
       final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message1), Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
+      inOrder
+          .verify(airbyteMessageConsumerMock)
+          .accept(
+              Jsons.serialize(message1),
+              Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
       inOrder.verifyNoMoreInteractions();
     }
   }
@@ -376,9 +427,7 @@ class IntegrationRunnerTest {
     final List<Exception> caughtExceptions = new ArrayList<>();
     startSleepingThread(caughtExceptions, false);
     IntegrationRunner.stopOrphanedThreads(
-        Assertions::fail,
-        3, TimeUnit.SECONDS,
-        10, TimeUnit.SECONDS);
+        Assertions::fail, 3, TimeUnit.SECONDS, 10, TimeUnit.SECONDS);
     try {
       TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
@@ -398,9 +447,7 @@ class IntegrationRunnerTest {
     final AtomicBoolean exitCalled = new AtomicBoolean(false);
     startSleepingThread(caughtExceptions, true);
     IntegrationRunner.stopOrphanedThreads(
-        () -> exitCalled.set(true),
-        3, TimeUnit.SECONDS,
-        10, TimeUnit.SECONDS);
+        () -> exitCalled.set(true), 3, TimeUnit.SECONDS, 10, TimeUnit.SECONDS);
     try {
       TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
@@ -416,7 +463,8 @@ class IntegrationRunnerTest {
     assertTrue(exitCalled.get());
   }
 
-  private void startSleepingThread(final List<Exception> caughtExceptions, final boolean ignoreInterrupt) {
+  private void startSleepingThread(
+      final List<Exception> caughtExceptions, final boolean ignoreInterrupt) {
     final ExecutorService executorService = Executors.newFixedThreadPool(1, r -> {
       // Create a thread that should be identified as orphaned if still running during shutdown
       final Thread thread = new Thread(r);
@@ -444,15 +492,19 @@ class IntegrationRunnerTest {
   void testParseConnectorImage() {
     assertEquals("unknown", IntegrationRunner.parseConnectorVersion(null));
     assertEquals("unknown", IntegrationRunner.parseConnectorVersion(""));
-    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:1.0.1-alpha"));
+    assertEquals(
+        "1.0.1-alpha",
+        IntegrationRunner.parseConnectorVersion("airbyte/destination-test:1.0.1-alpha"));
     assertEquals("dev", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:dev"));
-    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha"));
+    assertEquals(
+        "1.0.1-alpha", IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha"));
     assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion(":1.0.1-alpha"));
   }
 
   @Test
   void testConsumptionOfInvalidStateMessage() {
-    final String invalidStateMessage = """
+    final String invalidStateMessage =
+        """
                                        {
                                          "type" : "STATE",
                                          "state" : {
@@ -475,7 +527,8 @@ class IntegrationRunnerTest {
 
   @Test
   void testConsumptionOfInvalidNonStateMessage() {
-    final String invalidNonStateMessage = """
+    final String invalidNonStateMessage =
+        """
                                           {
                                             "type" : "NOT_RECOGNIZED",
                                             "record" : {
@@ -493,5 +546,4 @@ class IntegrationRunnerTest {
       }
     });
   }
-
 }

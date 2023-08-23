@@ -28,9 +28,11 @@ import org.slf4j.LoggerFactory;
  */
 public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRecordBufferingStrategy.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(InMemoryRecordBufferingStrategy.class);
 
-  private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer = new HashMap<>();
+  private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer =
+      new HashMap<>();
   private final RecordWriter<AirbyteRecordMessage> recordWriter;
   private final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter;
   private String fileName;
@@ -39,14 +41,15 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
 
-  public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
-                                         final long maxQueueSizeInBytes) {
+  public InMemoryRecordBufferingStrategy(
+      final RecordWriter<AirbyteRecordMessage> recordWriter, final long maxQueueSizeInBytes) {
     this(recordWriter, null, maxQueueSizeInBytes);
   }
 
-  public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
-                                         final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
-                                         final long maxQueueSizeInBytes) {
+  public InMemoryRecordBufferingStrategy(
+      final RecordWriter<AirbyteRecordMessage> recordWriter,
+      final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
+      final long maxQueueSizeInBytes) {
     this.recordWriter = recordWriter;
     this.checkAndRemoveRecordWriter = checkAndRemoveRecordWriter;
 
@@ -56,7 +59,8 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public Optional<BufferFlushType> addRecord(
+      final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
     Optional<BufferFlushType> flushed = Optional.empty();
 
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
@@ -65,7 +69,8 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
       flushed = Optional.of(BufferFlushType.FLUSH_ALL);
     }
 
-    final List<AirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
+    final List<AirbyteRecordMessage> bufferedRecords =
+        streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
     bufferedRecords.add(message.getRecord());
     bufferSizeInBytes += messageSizeInBytes;
 
@@ -73,16 +78,25 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public void flushSingleBuffer(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer) throws Exception {
-    LOGGER.info("Flushing single stream {}: {} records", stream.getName(), streamBuffer.get(stream).size());
+  public void flushSingleBuffer(
+      final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer)
+      throws Exception {
+    LOGGER.info(
+        "Flushing single stream {}: {} records",
+        stream.getName(),
+        streamBuffer.get(stream).size());
     recordWriter.accept(stream, streamBuffer.get(stream));
     LOGGER.info("Flushing completed for {}", stream.getName());
   }
 
   @Override
   public void flushAllBuffers() throws Exception {
-    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
-      LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
+    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry :
+        streamBuffer.entrySet()) {
+      LOGGER.info(
+          "Flushing {}: {} records ({})",
+          entry.getKey().getName(),
+          entry.getValue().size(),
           FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
       recordWriter.accept(entry.getKey(), entry.getValue());
       if (checkAndRemoveRecordWriter != null) {
@@ -102,5 +116,4 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
   @Override
   public void close() throws Exception {}
-
 }

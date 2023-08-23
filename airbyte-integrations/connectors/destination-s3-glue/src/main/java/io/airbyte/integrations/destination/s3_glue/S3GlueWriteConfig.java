@@ -14,14 +14,15 @@ public class S3GlueWriteConfig extends WriteConfig {
 
   private final String location;
 
-  public S3GlueWriteConfig(String namespace,
-                           String streamName,
-                           String outputBucketPath,
-                           String pathFormat,
-                           String fullOutputPath,
-                           DestinationSyncMode syncMode,
-                           JsonNode jsonSchema,
-                           String location) {
+  public S3GlueWriteConfig(
+      String namespace,
+      String streamName,
+      String outputBucketPath,
+      String pathFormat,
+      String fullOutputPath,
+      DestinationSyncMode syncMode,
+      JsonNode jsonSchema,
+      String location) {
     super(namespace, streamName, outputBucketPath, pathFormat, fullOutputPath, syncMode);
     this.jsonSchema = jsonSchema;
     this.location = location;
@@ -34,5 +35,4 @@ public class S3GlueWriteConfig extends WriteConfig {
   public String getLocation() {
     return location;
   }
-
 }

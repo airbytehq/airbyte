@@ -37,14 +37,15 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   private final ObjectMapper objectMapper;
   private String manifestFilePath = null;
 
-  public RedshiftStreamCopier(final String stagingFolder,
-                              final String schema,
-                              final AmazonS3 client,
-                              final JdbcDatabase db,
-                              final S3CopyConfig config,
-                              final StandardNameTransformer nameTransformer,
-                              final SqlOperations sqlOperations,
-                              final ConfiguredAirbyteStream configuredAirbyteStream) {
+  public RedshiftStreamCopier(
+      final String stagingFolder,
+      final String schema,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3CopyConfig config,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final ConfiguredAirbyteStream configuredAirbyteStream) {
     this(
         stagingFolder,
         schema,
@@ -58,16 +59,18 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   }
 
   @VisibleForTesting
-  RedshiftStreamCopier(final String stagingFolder,
-                       final String schema,
-                       final AmazonS3 client,
-                       final JdbcDatabase db,
-                       final S3CopyConfig config,
-                       final StandardNameTransformer nameTransformer,
-                       final SqlOperations sqlOperations,
-                       final Timestamp uploadTime,
-                       final ConfiguredAirbyteStream configuredAirbyteStream) {
-    super(stagingFolder,
+  RedshiftStreamCopier(
+      final String stagingFolder,
+      final String schema,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3CopyConfig config,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final Timestamp uploadTime,
+      final ConfiguredAirbyteStream configuredAirbyteStream) {
+    super(
+        stagingFolder,
         schema,
         client,
         db,
@@ -83,20 +86,25 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() {
     final var possibleManifest = Optional.ofNullable(createManifest());
-    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    possibleManifest.stream()
-        .map(this::putManifest)
-        .forEach(this::executeCopy);
-    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+    LOGGER.info(
+        "Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .",
+        tmpTableName,
+        streamName,
+        schemaName);
+    possibleManifest.stream().map(this::putManifest).forEach(this::executeCopy);
+    LOGGER.info(
+        "Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
   @Override
-  public void copyS3CsvFileIntoTable(final JdbcDatabase database,
-                                     final String s3FileLocation,
-                                     final String schema,
-                                     final String tableName,
-                                     final S3DestinationConfig s3Config) {
-    throw new RuntimeException("Redshift Stream Copier should not copy individual files without use of a manifest");
+  public void copyS3CsvFileIntoTable(
+      final JdbcDatabase database,
+      final String s3FileLocation,
+      final String schema,
+      final String tableName,
+      final S3DestinationConfig s3Config) {
+    throw new RuntimeException(
+        "Redshift Stream Copier should not copy individual files without use of a manifest");
   }
 
   @Override
@@ -137,8 +145,12 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    * @return the path where the manifest file was placed in S3
    */
   private String putManifest(final String manifestContents) {
-    manifestFilePath =
-        String.join("/", s3Config.getBucketPath(), stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
+    manifestFilePath = String.join(
+        "/",
+        s3Config.getBucketPath(),
+        stagingFolder,
+        schemaName,
+        String.format("%s.manifest", UUID.randomUUID()));
 
     s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
 
@@ -151,7 +163,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    * @param manifestPath the path in S3 to the manifest file
    */
   private void executeCopy(final String manifestPath) {
-    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
+    final S3AccessKeyCredentialConfig credentialConfig =
+        (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
     final var copyQuery = String.format(
         "COPY %s.%s FROM '%s'\n"
             + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
@@ -167,5 +180,4 @@ public class RedshiftStreamCopier extends S3StreamCopier {
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }
-
 }

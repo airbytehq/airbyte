@@ -41,26 +41,27 @@ public class GeneratorTest {
   public static class GeneratorSchemaProvider implements ArgumentsProvider {
 
     @Override
-    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
-      final JsonNode testCases = Jsons.deserialize(MoreResources.readResource("generator_test_cases.json"));
-      return MoreIterators.toList(testCases.elements()).stream().map(testCase -> Arguments.of(
-          testCase.get("testCase").asText(),
-          testCase.get("schema")));
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
+        throws Exception {
+      final JsonNode testCases =
+          Jsons.deserialize(MoreResources.readResource("generator_test_cases.json"));
+      return MoreIterators.toList(testCases.elements()).stream()
+          .map(testCase -> Arguments.of(testCase.get("testCase").asText(), testCase.get("schema")));
     }
-
   }
 
   @ParameterizedTest
   @ArgumentsSource(GeneratorSchemaProvider.class)
-  public void testComplexObjectGeneration(final String testCase, final JsonNode jsonSchema) throws Exception {
+  public void testComplexObjectGeneration(final String testCase, final JsonNode jsonSchema)
+      throws Exception {
     final SchemaStore schemaStore = new SchemaStore(true);
     final Schema schema = schemaStore.loadSchemaJson(Jsons.serialize(jsonSchema));
     final Generator generator = new Generator(CONFIG, schemaStore, RANDOM);
     for (int i = 0; i < 10; ++i) {
-      final JsonNode json = Jsons.jsonNode(generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE));
+      final JsonNode json = Jsons.jsonNode(
+          generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE));
       assertTrue(JSON_VALIDATOR.test(jsonSchema, json), testCase);
     }
-
   }
 
   @Test
@@ -71,7 +72,8 @@ public class GeneratorTest {
 
     final Stopwatch generatorStopwatch = Stopwatch.createStarted();
     for (int i = 0; i < 10000; ++i) {
-      final Object generate = generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE);
+      final Object generate =
+          generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE);
       System.out.println("generate = " + generate);
     }
     generatorStopwatch.stop();
@@ -87,12 +89,14 @@ public class GeneratorTest {
     }
     simpleStopwatch.stop();
 
-    System.out.println("generatorStopwatch.elapsed() = " + generatorStopwatch.elapsed().toMillis());
-    System.out.println("simpleStopwatch.elapsed() = " + simpleStopwatch.elapsed().toMillis());
-
+    System.out.println(
+        "generatorStopwatch.elapsed() = " + generatorStopwatch.elapsed().toMillis());
+    System.out.println(
+        "simpleStopwatch.elapsed() = " + simpleStopwatch.elapsed().toMillis());
   }
 
-  private static final String SIMPLE_SCHEMA2 = """
+  private static final String SIMPLE_SCHEMA2 =
+      """
                                                    {
                                                          "type": "object",
                                                          "properties": {
@@ -102,5 +106,4 @@ public class GeneratorTest {
                                                          }
                                                        }
                                                """;
-
 }

@@ -40,5 +40,4 @@ public abstract class AbstractSourceBasePerformanceTest extends AbstractSourceCo
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     // DO NOTHING. Mandatory to override. DB will be setup as part of each test
   }
-
 }

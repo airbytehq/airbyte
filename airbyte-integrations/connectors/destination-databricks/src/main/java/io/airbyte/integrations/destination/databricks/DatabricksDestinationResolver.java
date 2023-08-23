@@ -18,24 +18,29 @@ public class DatabricksDestinationResolver {
     if (dataSourceConfigIsNotProvided(config)) {
       throw new IllegalArgumentException("Data Source type configurations must be provided");
     }
-    return DatabricksStorageType.valueOf(
-        config.get(DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY).get(DatabricksConstants.DATABRICKS_DATA_SOURCE_TYPE_KEY).asText());
+    return DatabricksStorageType.valueOf(config
+        .get(DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY)
+        .get(DatabricksConstants.DATABRICKS_DATA_SOURCE_TYPE_KEY)
+        .asText());
   }
 
   private static boolean dataSourceConfigIsNotProvided(JsonNode config) {
-    return !config.hasNonNull(DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY) ||
-        !config.get(DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY).hasNonNull(DatabricksConstants.DATABRICKS_DATA_SOURCE_TYPE_KEY);
+    return !config.hasNonNull(DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY)
+        || !config
+            .get(DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY)
+            .hasNonNull(DatabricksConstants.DATABRICKS_DATA_SOURCE_TYPE_KEY);
   }
 
   public static Map<DatabricksStorageType, Destination> getTypeToDestination() {
-    final DatabricksManagedTablesDestination managedTablesDestination = new DatabricksManagedTablesDestination();
+    final DatabricksManagedTablesDestination managedTablesDestination =
+        new DatabricksManagedTablesDestination();
     final DatabricksS3Destination s3Destination = new DatabricksS3Destination();
-    final DatabricksAzureBlobStorageDestination azureBlobStorageDestination = new DatabricksAzureBlobStorageDestination();
+    final DatabricksAzureBlobStorageDestination azureBlobStorageDestination =
+        new DatabricksAzureBlobStorageDestination();
 
     return ImmutableMap.of(
         DatabricksStorageType.MANAGED_TABLES_STORAGE, managedTablesDestination,
         DatabricksStorageType.S3_STORAGE, s3Destination,
         DatabricksStorageType.AZURE_BLOB_STORAGE, azureBlobStorageDestination);
   }
-
 }

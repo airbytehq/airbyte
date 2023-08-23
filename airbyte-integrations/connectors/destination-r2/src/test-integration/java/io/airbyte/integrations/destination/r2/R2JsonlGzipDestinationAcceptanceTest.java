@@ -18,5 +18,4 @@ public class R2JsonlGzipDestinationAcceptanceTest extends S3BaseJsonlGzipDestina
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
-
 }

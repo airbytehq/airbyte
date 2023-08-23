@@ -17,8 +17,8 @@ import java.sql.Statement;
  * feeds it to the estimator. If the estimator has a new estimate, it updates the fetch size.
  */
 
-public interface JdbcStreamingQueryConfig extends CheckedBiConsumer<ResultSet, Object, SQLException> {
+public interface JdbcStreamingQueryConfig
+    extends CheckedBiConsumer<ResultSet, Object, SQLException> {
 
   void initialize(final Connection connection, final Statement statement) throws SQLException;
-
 }

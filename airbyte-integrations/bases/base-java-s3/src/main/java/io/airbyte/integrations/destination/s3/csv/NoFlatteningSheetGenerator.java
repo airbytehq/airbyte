@@ -28,5 +28,4 @@ public class NoFlatteningSheetGenerator extends BaseSheetGenerator implements Cs
   List<String> getRecordColumns(final JsonNode json) {
     return Collections.singletonList(Jsons.serialize(json));
   }
-
 }

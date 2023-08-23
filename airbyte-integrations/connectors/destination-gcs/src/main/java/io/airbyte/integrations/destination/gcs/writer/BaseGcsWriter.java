@@ -43,9 +43,10 @@ public abstract class BaseGcsWriter implements DestinationFileWriter {
   protected final DestinationSyncMode syncMode;
   protected final String outputPrefix;
 
-  protected BaseGcsWriter(final GcsDestinationConfig config,
-                          final AmazonS3 s3Client,
-                          final ConfiguredAirbyteStream configuredStream) {
+  protected BaseGcsWriter(
+      final GcsDestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -72,20 +73,21 @@ public abstract class BaseGcsWriter implements DestinationFileWriter {
       if (syncMode == DestinationSyncMode.OVERWRITE) {
         LOGGER.info("Overwrite mode");
         final List<KeyVersion> keysToDelete = new LinkedList<>();
-        final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
-            .getObjectSummaries();
+        final List<S3ObjectSummary> objects =
+            s3Client.listObjects(bucket, outputPrefix).getObjectSummaries();
         for (final S3ObjectSummary object : objects) {
           keysToDelete.add(new KeyVersion(object.getKey()));
         }
 
         if (keysToDelete.size() > 0) {
-          LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...", stream.getName());
+          LOGGER.info(
+              "Purging non-empty output path for stream '{}' under OVERWRITE mode...",
+              stream.getName());
           // Google Cloud Storage doesn't accept request to delete multiple objects
           for (final KeyVersion keyToDelete : keysToDelete) {
             s3Client.deleteObject(bucket, keyToDelete.getKey());
           }
-          LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(),
-              stream.getName());
+          LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(), stream.getName());
         }
         LOGGER.info("Overwrite is finished");
       }
@@ -139,13 +141,10 @@ public abstract class BaseGcsWriter implements DestinationFileWriter {
 
   // Filename: <upload-date>_<upload-millis>_0.<format-extension>
   public static String getOutputFilename(final Timestamp timestamp, final S3Format format) {
-    final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    final DateFormat formatter =
+        new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
-        "%s_%d_0.%s",
-        formatter.format(timestamp),
-        timestamp.getTime(),
-        format.getFileExtension());
+        "%s_%d_0.%s", formatter.format(timestamp), timestamp.getTime(), format.getFileExtension());
   }
-
 }

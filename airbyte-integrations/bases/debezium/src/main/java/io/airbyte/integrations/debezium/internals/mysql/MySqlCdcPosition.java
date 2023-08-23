@@ -19,7 +19,8 @@ public class MySqlCdcPosition {
   @Override
   public boolean equals(final Object obj) {
     if (obj instanceof final MySqlCdcPosition mySqlCdcPosition) {
-      return fileName.equals(mySqlCdcPosition.fileName) && mySqlCdcPosition.position.equals(position);
+      return fileName.equals(mySqlCdcPosition.fileName)
+          && mySqlCdcPosition.position.equals(position);
     }
     return false;
   }
@@ -33,5 +34,4 @@ public class MySqlCdcPosition {
   public String toString() {
     return "FileName: " + fileName + ", Position : " + position;
   }
-
 }

@@ -33,10 +33,10 @@ public class AdaptiveSourceRunner {
       this.deploymentMode = deploymentMode;
     }
 
-    public <OT extends Source> CloudSourceBuilder<OT> withOssSource(final Supplier<OT> ossSourceSupplier) {
+    public <OT extends Source> CloudSourceBuilder<OT> withOssSource(
+        final Supplier<OT> ossSourceSupplier) {
       return new CloudSourceBuilder<>(deploymentMode, ossSourceSupplier);
     }
-
   }
 
   public static final class CloudSourceBuilder<OT extends Source> {
@@ -49,10 +49,10 @@ public class AdaptiveSourceRunner {
       this.ossSourceSupplier = ossSourceSupplier;
     }
 
-    public <CT extends Source> Runner<OT, CT> withCloudSource(final Supplier<CT> cloudSourceSupplier) {
+    public <CT extends Source> Runner<OT, CT> withCloudSource(
+        final Supplier<CT> cloudSourceSupplier) {
       return new Runner<>(deploymentMode, ossSourceSupplier, cloudSourceSupplier);
     }
-
   }
 
   public static final class Runner<OT extends Source, CT extends Source> {
@@ -61,9 +61,10 @@ public class AdaptiveSourceRunner {
     private final Supplier<OT> ossSourceSupplier;
     private final Supplier<CT> cloudSourceSupplier;
 
-    public Runner(final String deploymentMode,
-                  final Supplier<OT> ossSourceSupplier,
-                  final Supplier<CT> cloudSourceSupplier) {
+    public Runner(
+        final String deploymentMode,
+        final Supplier<OT> ossSourceSupplier,
+        final Supplier<CT> cloudSourceSupplier) {
       this.deploymentMode = deploymentMode;
       this.ossSourceSupplier = ossSourceSupplier;
       this.cloudSourceSupplier = cloudSourceSupplier;
@@ -86,7 +87,5 @@ public class AdaptiveSourceRunner {
       new IntegrationRunner(source).run(args);
       LOGGER.info("Completed source: {}", source.getClass().getName());
     }
-
   }
-
 }

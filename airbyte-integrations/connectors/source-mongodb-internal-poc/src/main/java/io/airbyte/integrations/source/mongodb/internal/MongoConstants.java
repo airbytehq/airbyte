@@ -16,5 +16,4 @@ public class MongoConstants {
   public static final String USER_CONFIGURATION_KEY = "user";
 
   private MongoConstants() {}
-
 }

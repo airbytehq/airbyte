@@ -64,20 +64,27 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void assertFullRefreshMessages(final List<AirbyteMessage> allMessages) throws IOException {
-    final List<String> regexTests = Streams.stream(runExecutable(Command.GET_REGEX_TESTS).withArray("tests").elements())
-        .map(JsonNode::textValue).toList();
-    final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).toList();
+  protected void assertFullRefreshMessages(final List<AirbyteMessage> allMessages)
+      throws IOException {
+    final List<String> regexTests = Streams.stream(
+            runExecutable(Command.GET_REGEX_TESTS).withArray("tests").elements())
+        .map(JsonNode::textValue)
+        .toList();
+    final List<String> stringMessages =
+        allMessages.stream().map(Jsons::serialize).toList();
     LOGGER.info("Running " + regexTests.size() + " regex tests...");
     regexTests.forEach(regex -> {
       LOGGER.info("Looking for [" + regex + "]");
-      assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex)), "Failed to find regex: " + regex);
+      assertTrue(
+          stringMessages.stream().anyMatch(line -> line.matches(regex)),
+          "Failed to find regex: " + regex);
     });
   }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
+    testRoot =
+        Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
     runExecutableVoid(Command.SETUP);
   }
 
@@ -110,22 +117,21 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private Path runExecutableInternal(final Command cmd) throws IOException {
     LOGGER.info("testRoot = " + testRoot);
-    final List<String> dockerCmd =
-        Lists.newArrayList(
-            "docker",
-            "run",
-            "--rm",
-            "-i",
-            "-v",
-            String.format("%s:%s", testRoot, "/test_root"),
-            "-w",
-            testRoot.toString(),
-            "--network",
-            "host",
-            PYTHON_CONTAINER_NAME,
-            cmd.toString().toLowerCase(),
-            "--out",
-            "/test_root");
+    final List<String> dockerCmd = Lists.newArrayList(
+        "docker",
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        String.format("%s:%s", testRoot, "/test_root"),
+        "-w",
+        testRoot.toString(),
+        "--network",
+        "host",
+        PYTHON_CONTAINER_NAME,
+        cmd.toString().toLowerCase(),
+        "--out",
+        "/test_root");
 
     final Process process = new ProcessBuilder(dockerCmd).start();
     LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -140,5 +146,4 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
 
     return testRoot;
   }
-
 }

@@ -33,26 +33,35 @@ public class LegacyArrayFormatterTest {
   void findArrays() throws JsonProcessingException {
     final JsonNode schemaArrays = getSchemaArrays();
     final List<JsonNode> expectedResult = List.of(
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":"integer"}}"""),
         mapper.readTree(
             """
             {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree("""
+        mapper.readTree(
+            """
                         {"type":["array"],"items":{"type":"integer"}}"""));
 
     final List<JsonNode> result = formatter.findArrays(schemaArrays);
@@ -82,5 +91,4 @@ public class LegacyArrayFormatterTest {
 
     assertEquals(expectedArrayNode, result);
   }
-
 }

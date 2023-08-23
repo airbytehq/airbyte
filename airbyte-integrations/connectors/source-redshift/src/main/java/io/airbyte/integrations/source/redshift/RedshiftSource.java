@@ -47,12 +47,16 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-            redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
-            redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
-            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+        .put(
+            JdbcUtils.JDBC_URL_KEY,
+            String.format(
+                DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
+                redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
+                redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    if (redshiftConfig.has(JdbcUtils.SCHEMAS_KEY) && redshiftConfig.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
+    if (redshiftConfig.has(JdbcUtils.SCHEMAS_KEY)
+        && redshiftConfig.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
       for (final JsonNode schema : redshiftConfig.get(JdbcUtils.SCHEMAS_KEY)) {
         schemas.add(schema.asText());
@@ -65,14 +69,15 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
 
     addSsl(additionalProperties);
 
-    if (redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      additionalProperties.addAll(List.of(redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
+    if (redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null
+        && !redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      additionalProperties.addAll(
+          List.of(redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
     }
 
     builder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, String.join("&", additionalProperties));
 
-    return Jsons.jsonNode(builder
-        .build());
+    return Jsons.jsonNode(builder.build());
   }
 
   private void addSsl(final List<String> additionalProperties) {
@@ -81,7 +86,8 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
+      throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
@@ -94,7 +100,8 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
       }
       return internals;
     } else {
-      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      LOGGER.info(
+          "No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
       return super.discoverInternal(database);
     }
   }
@@ -105,7 +112,8 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(
+      final JdbcDatabase database, final String schema) throws SQLException {
     return new HashSet<>(database.bufferedResultSetQuery(
         connection -> {
           connection.setAutoCommit(true);
@@ -136,5 +144,4 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", RedshiftSource.class);
   }
-
 }

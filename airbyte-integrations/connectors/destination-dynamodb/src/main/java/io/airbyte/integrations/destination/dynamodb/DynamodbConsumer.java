@@ -33,21 +33,23 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, DynamodbWriter> streamNameAndNamespaceToWriters;
 
-  public DynamodbConsumer(final DynamodbDestinationConfig dynamodbDestinationConfig,
-                          final ConfiguredAirbyteCatalog configuredCatalog,
-                          final Consumer<AirbyteMessage> outputRecordCollector) {
+  public DynamodbConsumer(
+      final DynamodbDestinationConfig dynamodbDestinationConfig,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.dynamodbDestinationConfig = dynamodbDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
-    this.streamNameAndNamespaceToWriters = new HashMap<>(configuredCatalog.getStreams().size());
+    this.streamNameAndNamespaceToWriters =
+        new HashMap<>(configuredCatalog.getStreams().size());
   }
 
   @Override
   protected void startTracked() throws Exception {
 
     final var endpoint = dynamodbDestinationConfig.getEndpoint();
-    final AWSCredentials awsCreds =
-        new BasicAWSCredentials(dynamodbDestinationConfig.getAccessKeyId(), dynamodbDestinationConfig.getSecretAccessKey());
+    final AWSCredentials awsCreds = new BasicAWSCredentials(
+        dynamodbDestinationConfig.getAccessKeyId(), dynamodbDestinationConfig.getSecretAccessKey());
     AmazonDynamoDB amazonDynamodb = null;
 
     if (endpoint.isEmpty()) {
@@ -59,9 +61,9 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
       final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSDynamodbSignerType");
 
-      amazonDynamodb = AmazonDynamoDBClientBuilder
-          .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, dynamodbDestinationConfig.getRegion()))
+      amazonDynamodb = AmazonDynamoDBClientBuilder.standard()
+          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(
+              endpoint, dynamodbDestinationConfig.getRegion()))
           .withClientConfiguration(clientConfiguration)
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .build();
@@ -70,11 +72,12 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
     final var uploadTimestamp = System.currentTimeMillis();
 
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      final var writer = new DynamodbWriter(dynamodbDestinationConfig, amazonDynamodb, configuredStream, uploadTimestamp);
+      final var writer = new DynamodbWriter(
+          dynamodbDestinationConfig, amazonDynamodb, configuredStream, uploadTimestamp);
 
       final AirbyteStream stream = configuredStream.getStream();
-      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
-          .fromAirbyteStream(stream);
+      final AirbyteStreamNameNamespacePair streamNamePair =
+          AirbyteStreamNameNamespacePair.fromAirbyteStream(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
@@ -89,14 +92,13 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
-        .fromRecordMessage(recordMessage);
+    final AirbyteStreamNameNamespacePair pair =
+        AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage)));
+      throw new IllegalArgumentException(String.format(
+          "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+          Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage)));
     }
 
     streamNameAndNamespaceToWriters.get(pair).write(UUID.randomUUID(), recordMessage);
@@ -108,5 +110,4 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
       handler.close(hasFailed);
     }
   }
-
 }

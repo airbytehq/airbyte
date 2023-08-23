@@ -8,7 +8,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -28,7 +27,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
-public class SnowflakeInternalStagingDestinationAcceptanceTest extends SnowflakeInsertDestinationAcceptanceTest {
+public class SnowflakeInternalStagingDestinationAcceptanceTest
+    extends SnowflakeInsertDestinationAcceptanceTest {
 
   public JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
@@ -38,8 +38,8 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
   @Test
   public void testCheckWithNoProperStagingPermissionConnection() throws Exception {
     // Config to user (creds) that has no permission to write
-    final JsonNode config = Jsons.deserialize(IOs.readFile(
-        Path.of("secrets/copy_insufficient_staging_roles_config.json")));
+    final JsonNode config = Jsons.deserialize(
+        IOs.readFile(Path.of("secrets/copy_insufficient_staging_roles_config.json")));
 
     final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
@@ -51,8 +51,8 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
   @Test
   public void testCheckWithNoActiveWarehouseConnection() throws Exception {
     // Config to user(creds) that has no warehouse assigned
-    final JsonNode config = Jsons.deserialize(IOs.readFile(
-        Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
+    final JsonNode config = Jsons.deserialize(
+        IOs.readFile(Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
 
     final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
@@ -62,33 +62,42 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
 
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithNormalizationWithKeyPairAuth(final String messagesFilename, final String catalogFilename) throws Exception {
-    testSyncWithNormalizationWithKeyPairAuth(messagesFilename, catalogFilename, "secrets/config_key_pair.json");
+  public void testSyncWithNormalizationWithKeyPairAuth(
+      final String messagesFilename, final String catalogFilename) throws Exception {
+    testSyncWithNormalizationWithKeyPairAuth(
+        messagesFilename, catalogFilename, "secrets/config_key_pair.json");
   }
 
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithNormalizationWithKeyPairEncrypt(final String messagesFilename, final String catalogFilename) throws Exception {
-    testSyncWithNormalizationWithKeyPairAuth(messagesFilename, catalogFilename, "secrets/config_key_pair_encrypted.json");
+  public void testSyncWithNormalizationWithKeyPairEncrypt(
+      final String messagesFilename, final String catalogFilename) throws Exception {
+    testSyncWithNormalizationWithKeyPairAuth(
+        messagesFilename, catalogFilename, "secrets/config_key_pair_encrypted.json");
   }
 
-  private void testSyncWithNormalizationWithKeyPairAuth(final String messagesFilename, final String catalogFilename, final String configName)
+  private void testSyncWithNormalizationWithKeyPairAuth(
+      final String messagesFilename, final String catalogFilename, final String configName)
       throws Exception {
     if (!normalizationFromDefinition()) {
       return;
     }
 
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename)
+        .lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
 
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(configName)));
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
     final String defaultSchema = getDefaultSchema(config);
-    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    final List<AirbyteRecordMessage> actualMessages =
+        retrieveNormalizedRecords(catalog, defaultSchema);
     assertSameMessages(messages, actualMessages, true);
   }
-
 }

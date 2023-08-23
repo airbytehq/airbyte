@@ -51,9 +51,6 @@ public class PartialAirbyteStreamState {
 
   @Override
   public String toString() {
-    return "PartialAirbyteStreamState{" +
-        "streamDescriptor=" + streamDescriptor +
-        '}';
+    return "PartialAirbyteStreamState{" + "streamDescriptor=" + streamDescriptor + '}';
   }
-
 }

@@ -26,8 +26,10 @@ public class DynamodbDestinationStrictEncryptTest {
    */
   @Test
   public void checkPassCustomEndpointIsHttpsOnly() {
-    final DynamodbDestination destinationWithHttpsOnlyEndpoint = new DynamodbDestinationStrictEncrypt();
-    final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(getBaseConfigJson());
+    final DynamodbDestination destinationWithHttpsOnlyEndpoint =
+        new DynamodbDestinationStrictEncrypt();
+    final AirbyteConnectionStatus status =
+        destinationWithHttpsOnlyEndpoint.check(getBaseConfigJson());
     assertEquals(Status.SUCCEEDED, status.getStatus());
   }
 
@@ -36,16 +38,19 @@ public class DynamodbDestinationStrictEncryptTest {
    */
   @Test
   public void checkFailCustomEndpointIsHttpsOnly() {
-    final DynamodbDestination destinationWithHttpsOnlyEndpoint = new DynamodbDestinationStrictEncrypt();
-    final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(getUnsecureConfig());
+    final DynamodbDestination destinationWithHttpsOnlyEndpoint =
+        new DynamodbDestinationStrictEncrypt();
+    final AirbyteConnectionStatus status =
+        destinationWithHttpsOnlyEndpoint.check(getUnsecureConfig());
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertEquals(NON_SECURE_URL_ERR_MSG, status.getMessage());
   }
 
   protected JsonNode getBaseConfigJson() {
     if (!Files.exists(secretFilePath)) {
-      throw new IllegalStateException("Secret config file doesn't exist. Get a valid secret (for airbyter: "
-          + "get secret from GSM) and put to ../destination-dynamodb/secrets/secret.json file");
+      throw new IllegalStateException(
+          "Secret config file doesn't exist. Get a valid secret (for airbyter: "
+              + "get secret from GSM) and put to ../destination-dynamodb/secrets/secret.json file");
     }
     return Jsons.deserialize(IOs.readFile(secretFilePath));
   }
@@ -59,5 +64,4 @@ public class DynamodbDestinationStrictEncryptTest {
         .put("secret_access_key", "dummy_secret_access_key")
         .build());
   }
-
 }

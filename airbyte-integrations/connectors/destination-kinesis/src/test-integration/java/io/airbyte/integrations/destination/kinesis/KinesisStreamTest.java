@@ -52,10 +52,7 @@ class KinesisStreamTest {
     var records = kinesisStream.getRecords(streamName);
 
     // then
-    assertThat(records)
-        .isNotNull()
-        .hasSize(0);
-
+    assertThat(records).isNotNull().hasSize(0);
   }
 
   @Test
@@ -85,7 +82,6 @@ class KinesisStreamTest {
     // then
     assertThrows(ResourceNotFoundException.class, () -> kinesisStream.getRecords(streamName1));
     assertThrows(ResourceNotFoundException.class, () -> kinesisStream.getRecords(streamName2));
-
   }
 
   @Test
@@ -95,12 +91,12 @@ class KinesisStreamTest {
     kinesisStream.createStream(streamName);
 
     var partitionKey1 = KinesisUtils.buildPartitionKey();
-    kinesisStream.putRecord(streamName, partitionKey1, createData(partitionKey1, "{\"property\":\"data1\"}"),
-        e -> {});
+    kinesisStream.putRecord(
+        streamName, partitionKey1, createData(partitionKey1, "{\"property\":\"data1\"}"), e -> {});
 
     var partitionKey2 = KinesisUtils.buildPartitionKey();
-    kinesisStream.putRecord(streamName, partitionKey2, createData(partitionKey2, "{\"property\":\"data2\"}"),
-        e -> {});
+    kinesisStream.putRecord(
+        streamName, partitionKey2, createData(partitionKey2, "{\"property\":\"data2\"}"), e -> {});
 
     kinesisStream.flush(e -> {});
 
@@ -122,5 +118,4 @@ class KinesisStreamTest {
         KinesisRecord.COLUMN_NAME_EMITTED_AT, Instant.now()));
     return Jsons.serialize(kinesisRecord);
   }
-
 }

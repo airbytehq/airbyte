@@ -29,9 +29,11 @@ import org.slf4j.LoggerFactory;
  * issue is tracked in <a href="https://github.com/airbytehq/airbyte/issues/18026">#18026</a>.
  */
 @Disabled
-public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends DatabricksDestinationAcceptanceTest {
+public class DatabricksAzureBlobStorageDestinationAcceptanceTest
+    extends DatabricksDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksAzureBlobStorageDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(DatabricksAzureBlobStorageDestinationAcceptanceTest.class);
   private static final String SECRETS_CONFIG_JSON = "secrets/azure_config.json";
 
   private AzureBlobStorageConfig azureBlobStorageConfig;
@@ -54,19 +56,23 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
     final JsonNode configJson = Jsons.clone(baseConfigJson);
     ((ObjectNode) configJson).put(DATABRICKS_SCHEMA_KEY, "integration_test_" + randomString);
     final JsonNode dataSource = configJson.get(DATABRICKS_DATA_SOURCE_KEY);
-    ((ObjectNode) dataSource).put("azure_blob_storage_container_name", "test-" + randomString.toLowerCase());
+    ((ObjectNode) dataSource)
+        .put("azure_blob_storage_container_name", "test-" + randomString.toLowerCase());
 
     this.configJson = configJson;
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
-    this.azureBlobStorageConfig = databricksConfig.storageConfig().getAzureBlobStorageConfigOrThrow();
-    LOGGER.info("Test full path: {}/{}", azureBlobStorageConfig.getEndpointUrl(), azureBlobStorageConfig.getContainerName(),
+    this.azureBlobStorageConfig =
+        databricksConfig.storageConfig().getAzureBlobStorageConfigOrThrow();
+    LOGGER.info(
+        "Test full path: {}/{}",
+        azureBlobStorageConfig.getEndpointUrl(),
+        azureBlobStorageConfig.getContainerName(),
         azureBlobStorageConfig);
 
     this.specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
         .endpoint(azureBlobStorageConfig.getEndpointUrl())
         .sasToken(azureBlobStorageConfig.getSasToken())
-        .containerName(
-            azureBlobStorageConfig.getContainerName());// Like user\schema in DB
+        .containerName(azureBlobStorageConfig.getContainerName()); // Like user\schema in DB
   }
 
   @Override
@@ -76,8 +82,8 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
         .sasToken(azureBlobStorageConfig.getSasToken())
         .buildClient();
 
-    final BlobContainerClient blobContainerClient = storageClient
-        .getBlobContainerClient(azureBlobStorageConfig.getContainerName());
+    final BlobContainerClient blobContainerClient =
+        storageClient.getBlobContainerClient(azureBlobStorageConfig.getContainerName());
 
     if (blobContainerClient.exists()) {
       LOGGER.info("Deleting test env: " + azureBlobStorageConfig.getContainerName());
@@ -86,5 +92,4 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
 
     super.tearDown(testEnv);
   }
-
 }

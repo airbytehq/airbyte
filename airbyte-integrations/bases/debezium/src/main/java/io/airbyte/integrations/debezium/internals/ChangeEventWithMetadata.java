@@ -17,7 +17,8 @@ public class ChangeEventWithMetadata {
   public ChangeEventWithMetadata(final ChangeEvent<String, String> event) {
     this.event = event;
     this.eventValueAsJson = Jsons.deserialize(event.value());
-    this.snapshotMetadata = SnapshotMetadata.fromString(eventValueAsJson.get("source").get("snapshot").asText());
+    this.snapshotMetadata = SnapshotMetadata.fromString(
+        eventValueAsJson.get("source").get("snapshot").asText());
   }
 
   public ChangeEvent<String, String> event() {
@@ -35,5 +36,4 @@ public class ChangeEventWithMetadata {
   public SnapshotMetadata snapshotMetadata() {
     return snapshotMetadata;
   }
-
 }

@@ -84,7 +84,8 @@ class IcebergHiveCatalogConfigTest {
     final InitiateMultipartUploadResult uploadResult = mock(InitiateMultipartUploadResult.class);
     final UploadPartResult uploadPartResult = mock(UploadPartResult.class);
     when(s3.uploadPart(any(UploadPartRequest.class))).thenReturn(uploadPartResult);
-    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class))).thenReturn(uploadResult);
+    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class)))
+        .thenReturn(uploadResult);
 
     TableScan tableScan = mock(TableScan.class);
     when(tableScan.schema()).thenReturn(null);
@@ -104,7 +105,6 @@ class IcebergHiveCatalogConfigTest {
       public Catalog genCatalog() {
         return catalog;
       }
-
     };
     config.setStorageConfig(S3Config.builder()
         .warehouseUri(FAKE_WAREHOUSE_URI)
@@ -113,10 +113,12 @@ class IcebergHiveCatalogConfigTest {
         .endpointWithSchema(FAKE_ENDPOINT_WITH_SCHEMA)
         .accessKeyId(FAKE_ACCESS_KEY_ID)
         .secretKey(FAKE_SECRET_ACCESS_KEY)
-        .credentialConfig(new S3AccessKeyCredentialConfig(FAKE_ACCESS_KEY_ID, FAKE_SECRET_ACCESS_KEY))
+        .credentialConfig(
+            new S3AccessKeyCredentialConfig(FAKE_ACCESS_KEY_ID, FAKE_SECRET_ACCESS_KEY))
         .s3Client(s3)
         .build());
-    config.setFormatConfig(new FormatConfig(Jsons.jsonNode(ImmutableMap.of(FORMAT_TYPE_CONFIG_KEY, "Parquet"))));
+    config.setFormatConfig(
+        new FormatConfig(Jsons.jsonNode(ImmutableMap.of(FORMAT_TYPE_CONFIG_KEY, "Parquet"))));
     config.setDefaultOutputDatabase("default");
 
     factory = new IcebergCatalogConfigFactory() {
@@ -125,7 +127,6 @@ class IcebergHiveCatalogConfigTest {
       public IcebergCatalogConfig fromJsonNodeConfig(final @NotNull JsonNode jsonConfig) {
         return config;
       }
-
     };
   }
 
@@ -135,29 +136,37 @@ class IcebergHiveCatalogConfigTest {
   @Test
   public void checksHiveCatalogWithoutS3ListObjectPermission() {
     final IcebergDestination destinationFail = new IcebergDestination(factory);
-    doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
+    doThrow(new AmazonS3Exception("Access Denied"))
+        .when(s3)
+        .listObjects(any(ListObjectsRequest.class));
     final AirbyteConnectionStatus status = destinationFail.check(null);
     log.info("status={}", status);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
-    assertTrue(status.getMessage().contains("Access Denied"), "Connection check returned wrong failure message");
+    assertTrue(
+        status.getMessage().contains("Access Denied"),
+        "Connection check returned wrong failure message");
   }
 
   @Test
   public void checksTempTableAlreadyExists() {
     final IcebergDestination destinationFail = new IcebergDestination(factory);
-    doThrow(new AlreadyExistsException("Table already exists: temp_1123412341234")).when(catalog)
+    doThrow(new AlreadyExistsException("Table already exists: temp_1123412341234"))
+        .when(catalog)
         .createTable(any(TableIdentifier.class), any(Schema.class));
     final AirbyteConnectionStatus status = destinationFail.check(null);
     log.info("status={}", status);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
-    assertTrue(status.getMessage().contains("Table already exists"),
+    assertTrue(
+        status.getMessage().contains("Table already exists"),
         "Connection check returned wrong failure message");
   }
 
   @Test
   public void checksHiveThriftUri() throws IllegalAccessException {
     final IcebergDestination destinationFail = new IcebergDestination();
-    final AirbyteConnectionStatus status = destinationFail.check(Jsons.deserialize("""
+    final AirbyteConnectionStatus status = destinationFail.check(
+        Jsons.deserialize(
+            """
                                                                                    {
                                                                                      "catalog_config": {
                                                                                        "catalog_type": "Hive",
@@ -178,7 +187,8 @@ class IcebergHiveCatalogConfigTest {
                                                                                    }"""));
     log.info("status={}", status);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
-    assertTrue(status.getMessage().contains("hive_thrift_uri must start with 'thrift://'"),
+    assertTrue(
+        status.getMessage().contains("hive_thrift_uri must start with 'thrift://'"),
         "Connection check returned wrong failure message");
   }
 
@@ -204,8 +214,10 @@ class IcebergHiveCatalogConfigTest {
     assertEquals(S3FileIO.class.getName(), sparkConfig.get("spark.sql.catalog.iceberg.io-impl"));
     assertEquals(FAKE_WAREHOUSE_URI, sparkConfig.get("spark.sql.catalog.iceberg.warehouse"));
     assertEquals(FAKE_ACCESS_KEY_ID, sparkConfig.get("spark.sql.catalog.iceberg.s3.access-key-id"));
-    assertEquals(FAKE_SECRET_ACCESS_KEY, sparkConfig.get("spark.sql.catalog.iceberg.s3.secret-access-key"));
-    assertEquals(FAKE_ENDPOINT_WITH_SCHEMA, sparkConfig.get("spark.sql.catalog.iceberg.s3.endpoint"));
+    assertEquals(
+        FAKE_SECRET_ACCESS_KEY, sparkConfig.get("spark.sql.catalog.iceberg.s3.secret-access-key"));
+    assertEquals(
+        FAKE_ENDPOINT_WITH_SCHEMA, sparkConfig.get("spark.sql.catalog.iceberg.s3.endpoint"));
     assertEquals("false", sparkConfig.get("spark.sql.catalog.iceberg.s3.path-style-access"));
 
     // hadoop config
@@ -227,5 +239,4 @@ class IcebergHiveCatalogConfigTest {
     assertEquals(FAKE_SECRET_ACCESS_KEY, properties.get("s3.secret-access-key"));
     assertEquals("false", properties.get("s3.path-style-access"));
   }
-
 }

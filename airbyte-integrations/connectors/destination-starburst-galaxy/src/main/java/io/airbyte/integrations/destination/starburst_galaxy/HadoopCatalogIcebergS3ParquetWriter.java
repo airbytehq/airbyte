@@ -42,7 +42,8 @@ import org.slf4j.LoggerFactory;
 
 public class HadoopCatalogIcebergS3ParquetWriter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(HadoopCatalogIcebergS3ParquetWriter.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(HadoopCatalogIcebergS3ParquetWriter.class);
 
   private final DataWriter<Record> parquetWriter;
   private final Table table;
@@ -53,28 +54,29 @@ public class HadoopCatalogIcebergS3ParquetWriter {
   private final String tableStorageRelativePath;
 
   public HadoopCatalogIcebergS3ParquetWriter(
-                                             final S3DestinationConfig config,
-                                             final ConfiguredAirbyteStream configuredStream,
-                                             final Schema schema,
-                                             final String schemaName,
-                                             final String tableName,
-                                             final Timestamp uploadTime)
+      final S3DestinationConfig config,
+      final ConfiguredAirbyteStream configuredStream,
+      final Schema schema,
+      final String schemaName,
+      final String tableName,
+      final Timestamp uploadTime)
       throws IOException {
 
     this.config = config;
     this.stream = configuredStream.getStream();
     this.s3Client = config.getS3Client();
 
-    String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
-        .builder()
+    String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject.builder()
         .s3Format(S3Format.PARQUET)
         .timestamp(uploadTime)
         .fileExtension(S3Format.PARQUET.getFileExtension())
         .build());
 
-    String warehousePath = String.format("s3a://%s/%s", this.config.getBucketName(), this.config.getBucketPath());
+    String warehousePath =
+        String.format("s3a://%s/%s", this.config.getBucketName(), this.config.getBucketPath());
 
-    this.tableStorageRelativePath = String.join("/", this.config.getBucketPath(), schemaName, tableName);
+    this.tableStorageRelativePath =
+        String.join("/", this.config.getBucketPath(), schemaName, tableName);
     initializeS3Storage();
 
     this.catalog = createCatalog(warehousePath);
@@ -82,7 +84,8 @@ public class HadoopCatalogIcebergS3ParquetWriter {
     Namespace namespace = Namespace.of(schemaName);
     TableIdentifier name = TableIdentifier.of(namespace, tableName);
     catalog.createTable(name, schema);
-    // Create table may change the column ids of given schema before committing to metadata file which
+    // Create table may change the column ids of given schema before committing to metadata file
+    // which
     // brings inconsistencies between table schema and the schema used by parquetWriter.
     // For sharing consistent schema between parquetWriter and a table, loadTable is used to get the
     // updated schema which can be used by the parquetWriter
@@ -133,8 +136,7 @@ public class HadoopCatalogIcebergS3ParquetWriter {
     parquetWriter.close();
   }
 
-  public void close(final boolean hasFailed)
-      throws IOException {
+  public void close(final boolean hasFailed) throws IOException {
     try {
       if (hasFailed) {
         LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
@@ -152,7 +154,8 @@ public class HadoopCatalogIcebergS3ParquetWriter {
   }
 
   private HadoopCatalog createCatalog(String warehousePath) {
-    S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) config.getS3CredentialConfig();
+    S3AccessKeyCredentialConfig credentialConfig =
+        (S3AccessKeyCredentialConfig) config.getS3CredentialConfig();
 
     System.setProperty("aws.region", config.getBucketRegion());
 
@@ -163,7 +166,8 @@ public class HadoopCatalogIcebergS3ParquetWriter {
     properties.put(S3FILEIO_SECRET_ACCESS_KEY, credentialConfig.getSecretAccessKey());
 
     Configuration configuration = new Configuration();
-    configuration.set(AWS_CREDENTIALS_PROVIDER, "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
+    configuration.set(
+        AWS_CREDENTIALS_PROVIDER, "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     configuration.set(ACCESS_KEY, credentialConfig.getAccessKeyId());
     configuration.set(SECRET_KEY, credentialConfig.getSecretAccessKey());
     configuration.set(SECURE_CONNECTIONS, "true");
@@ -175,5 +179,4 @@ public class HadoopCatalogIcebergS3ParquetWriter {
 
     return hadoopCatalog;
   }
-
 }

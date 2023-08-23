@@ -35,23 +35,28 @@ public class AirbyteTraceMessageUtilityTest {
 
   @Test
   void testEmitSystemErrorTrace() {
-    AirbyteTraceMessageUtility.emitSystemErrorTrace(Mockito.mock(RuntimeException.class), "this is a system error");
+    AirbyteTraceMessageUtility.emitSystemErrorTrace(
+        Mockito.mock(RuntimeException.class), "this is a system error");
     JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
     assertJsonNodeIsTraceMessage(outJson);
-    Assertions.assertEquals("system_error", outJson.get("trace").get("error").get("failure_type").asText());
+    Assertions.assertEquals(
+        "system_error", outJson.get("trace").get("error").get("failure_type").asText());
   }
 
   @Test
   void testEmitConfigErrorTrace() {
-    AirbyteTraceMessageUtility.emitConfigErrorTrace(Mockito.mock(RuntimeException.class), "this is a config error");
+    AirbyteTraceMessageUtility.emitConfigErrorTrace(
+        Mockito.mock(RuntimeException.class), "this is a config error");
     JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
     assertJsonNodeIsTraceMessage(outJson);
-    Assertions.assertEquals("config_error", outJson.get("trace").get("error").get("failure_type").asText());
+    Assertions.assertEquals(
+        "config_error", outJson.get("trace").get("error").get("failure_type").asText());
   }
 
   @Test
   void testEmitErrorTrace() {
-    AirbyteTraceMessageUtility.emitErrorTrace(Mockito.mock(RuntimeException.class), "this is an error", FailureType.SYSTEM_ERROR);
+    AirbyteTraceMessageUtility.emitErrorTrace(
+        Mockito.mock(RuntimeException.class), "this is an error", FailureType.SYSTEM_ERROR);
     assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8)));
   }
 
@@ -63,12 +68,12 @@ public class AirbyteTraceMessageUtilityTest {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "you exploded the universe");
     }
     JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
-    Assertions.assertTrue(outJson.get("trace").get("error").get("stack_trace").asText().contains("\n\tat"));
+    Assertions.assertTrue(
+        outJson.get("trace").get("error").get("stack_trace").asText().contains("\n\tat"));
   }
 
   @AfterEach
   public void revertOut() {
     System.setOut(originalOut);
   }
-
 }

@@ -13,7 +13,8 @@ class VersionTest {
 
   @Test
   void testJsonSerializationDeserialization() {
-    final String jsonString = """
+    final String jsonString =
+        """
                               {"version": "1.2.3"}
                               """;
     final Version expectedVersion = new Version("1.2.3");
@@ -21,8 +22,8 @@ class VersionTest {
     final Version deserializedVersion = Jsons.deserialize(jsonString, Version.class);
     assertEquals(expectedVersion, deserializedVersion);
 
-    final Version deserializedVersionLoop = Jsons.deserialize(Jsons.serialize(deserializedVersion), Version.class);
+    final Version deserializedVersionLoop =
+        Jsons.deserialize(Jsons.serialize(deserializedVersion), Version.class);
     assertEquals(expectedVersion, deserializedVersionLoop);
   }
-
 }

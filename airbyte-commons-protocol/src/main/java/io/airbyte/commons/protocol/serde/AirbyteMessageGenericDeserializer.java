@@ -13,6 +13,7 @@ public class AirbyteMessageGenericDeserializer<T> implements AirbyteMessageDeser
 
   @Getter
   final Version targetVersion;
+
   final Class<T> typeClass;
 
   public AirbyteMessageGenericDeserializer(final Version targetVersion, final Class<T> typeClass) {
@@ -24,5 +25,4 @@ public class AirbyteMessageGenericDeserializer<T> implements AirbyteMessageDeser
   public T deserialize(JsonNode json) {
     return Jsons.object(json, typeClass);
   }
-
 }

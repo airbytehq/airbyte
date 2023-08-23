@@ -28,10 +28,11 @@ public class ThrottledDestinationTest {
   void test() throws Exception {
     final Consumer<AirbyteMessage> outputRecordCollector = mock(Consumer.class);
 
-    final JsonNode config = Jsons.jsonNode(
-        Collections.singletonMap("test_destination", Collections.singletonMap("millis_per_record", 10)));
+    final JsonNode config = Jsons.jsonNode(Collections.singletonMap(
+        "test_destination", Collections.singletonMap("millis_per_record", 10)));
 
-    final AirbyteMessageConsumer consumer = new ThrottledDestination().getConsumer(config, null, outputRecordCollector);
+    final AirbyteMessageConsumer consumer =
+        new ThrottledDestination().getConsumer(config, null, outputRecordCollector);
 
     consumer.accept(getAnotherRecord());
     consumer.accept(getAnotherRecord());
@@ -46,7 +47,7 @@ public class ThrottledDestinationTest {
         .withRecord(new AirbyteRecordMessage()
             .withStream("data")
             .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.of("column1", "contents1 " + Instant.now().toEpochMilli()))));
+            .withData(Jsons.jsonNode(
+                ImmutableMap.of("column1", "contents1 " + Instant.now().toEpochMilli()))));
   }
-
 }

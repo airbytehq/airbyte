@@ -21,10 +21,11 @@ public class StreamTransferManagerWithMetadata extends StreamTransferManager {
 
   private final Map<String, String> userMetadata;
 
-  public StreamTransferManagerWithMetadata(final String bucketName,
-                                           final String putKey,
-                                           final AmazonS3 s3Client,
-                                           final Map<String, String> userMetadata) {
+  public StreamTransferManagerWithMetadata(
+      final String bucketName,
+      final String putKey,
+      final AmazonS3 s3Client,
+      final Map<String, String> userMetadata) {
     super(bucketName, putKey, s3Client);
     this.userMetadata = userMetadata;
   }
@@ -40,5 +41,4 @@ public class StreamTransferManagerWithMetadata extends StreamTransferManager {
       request.setObjectMetadata(objectMetadata);
     }
   }
-
 }

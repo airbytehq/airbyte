@@ -37,8 +37,8 @@ import org.junit.jupiter.api.Test;
 
 public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  protected static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST_"
-      + RandomStringUtils.randomAlphanumeric(4).toUpperCase();
+  protected static final String SCHEMA_NAME =
+      "SOURCE_INTEGRATION_TEST_" + RandomStringUtils.randomAlphanumeric(4).toUpperCase();
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
 
@@ -63,32 +63,34 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   JsonNode getStaticConfig() {
-    return Jsons
-        .deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("ID"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME1, SCHEMA_NAME,
-                Field.of("ID", JsonSchemaType.NUMBER),
-                Field.of("NAME", JsonSchemaType.STRING))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2, SCHEMA_NAME,
-                Field.of("ID", JsonSchemaType.NUMBER),
-                Field.of("NAME", JsonSchemaType.STRING))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withCursorField(Lists.newArrayList("ID"))
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME1,
+                        SCHEMA_NAME,
+                        Field.of("ID", JsonSchemaType.NUMBER),
+                        Field.of("NAME", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.FULL_REFRESH)
+                .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME2,
+                        SCHEMA_NAME,
+                        Field.of("ID", JsonSchemaType.NUMBER),
+                        Field.of("NAME", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -102,18 +104,16 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
     dataSource = createDataSource();
     database = new DefaultJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations());
     final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
-    final String createTableQuery1 = String
-        .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
-            STREAM_NAME1);
-    final String createTableQuery2 = String
-        .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
-            STREAM_NAME2);
-    final String insertIntoTableQuery1 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME1);
-    final String insertIntoTableQuery2 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME2);
+    final String createTableQuery1 = String.format(
+        "CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
+    final String createTableQuery2 = String.format(
+        "CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
+    final String insertIntoTableQuery1 = String.format(
+        "INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+        SCHEMA_NAME, STREAM_NAME1);
+    final String insertIntoTableQuery2 = String.format(
+        "INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+        SCHEMA_NAME, STREAM_NAME2);
 
     database.execute(createSchemaQuery);
     database.execute(createTableQuery1);
@@ -125,8 +125,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     try {
-      final String dropSchemaQuery = String
-          .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
+      final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
       database.execute(dropSchemaQuery);
     } finally {
       DataSourceFactory.close(dataSource);
@@ -139,10 +138,16 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
         config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("credentials").get(JdbcUtils.PASSWORD_KEY).asText(),
         SnowflakeSource.DRIVER_CLASS,
-        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get(JdbcUtils.HOST_KEY).asText()),
-        Map.of("role", config.get("role").asText(),
-            "warehouse", config.get("warehouse").asText(),
-            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()));
+        String.format(
+            DatabaseDriver.SNOWFLAKE.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText()),
+        Map.of(
+            "role",
+            config.get("role").asText(),
+            "warehouse",
+            config.get("warehouse").asText(),
+            JdbcUtils.DATABASE_KEY,
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
   }
 
   @Test
@@ -155,7 +160,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
     ((ObjectNode) deprecatedStyleConfig).set(JdbcUtils.PASSWORD_KEY, password);
     ((ObjectNode) deprecatedStyleConfig).set(JdbcUtils.USERNAME_KEY, username);
 
-    assertEquals("SUCCEEDED", runCheckAndGetStatusAsString(deprecatedStyleConfig).toUpperCase());
+    assertEquals(
+        "SUCCEEDED", runCheckAndGetStatusAsString(deprecatedStyleConfig).toUpperCase());
   }
-
 }

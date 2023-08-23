@@ -35,14 +35,17 @@ import java.util.Map;
 public class YamlListToStandardDefinitions {
 
   private static final Map<String, String> CLASS_NAME_TO_ID_NAME = Map.ofEntries(
-      new SimpleImmutableEntry<>(StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
-      new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
+      new SimpleImmutableEntry<>(
+          StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
+      new SimpleImmutableEntry<>(
+          StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
 
   public static List<StandardSourceDefinition> toStandardSourceDefinitions(final String yamlStr) {
     return verifyAndConvertToModelList(StandardSourceDefinition.class, yamlStr);
   }
 
-  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(final String yamlStr) {
+  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(
+      final String yamlStr) {
     return verifyAndConvertToModelList(StandardDestinationDefinition.class, yamlStr);
   }
 
@@ -60,7 +63,8 @@ public class YamlListToStandardDefinitions {
     return toStandardXDefinitions(jsonNode.elements(), klass);
   }
 
-  private static void checkYamlIsPresentWithNoDuplicates(final JsonNode deserialize, final String idName) {
+  private static void checkYamlIsPresentWithNoDuplicates(
+      final JsonNode deserialize, final String idName) {
     final var presentDestList = !deserialize.elements().equals(ClassUtil.emptyIterator());
     Preconditions.checkState(presentDestList, "Definition list is empty");
     checkNoDuplicateNames(deserialize.elements());
@@ -79,7 +83,8 @@ public class YamlListToStandardDefinitions {
     }
   }
 
-  private static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator, final String idName) {
+  private static void checkNoDuplicateIds(
+      final Iterator<JsonNode> fileIterator, final String idName) {
     final var ids = new HashSet<String>();
     while (fileIterator.hasNext()) {
       final var element = Jsons.clone(fileIterator.next());
@@ -91,7 +96,8 @@ public class YamlListToStandardDefinitions {
     }
   }
 
-  private static <T> List<T> toStandardXDefinitions(final Iterator<JsonNode> iter, final Class<T> c) {
+  private static <T> List<T> toStandardXDefinitions(
+      final Iterator<JsonNode> iter, final Class<T> c) {
     final Iterable<JsonNode> iterable = () -> iter;
     final var defList = new ArrayList<T>();
     for (final JsonNode n : iterable) {
@@ -100,5 +106,4 @@ public class YamlListToStandardDefinitions {
     }
     return defList;
   }
-
 }

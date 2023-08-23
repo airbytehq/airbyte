@@ -47,8 +47,8 @@ public class JsonSchemas {
   private static final String ALL_OF_TYPE = "allOf";
   private static final String ANY_OF_TYPE = "anyOf";
 
-  private static final Set<String> COMPOSITE_KEYWORDS = Set.of(ONE_OF_TYPE, ALL_OF_TYPE,
-      ANY_OF_TYPE);
+  private static final Set<String> COMPOSITE_KEYWORDS =
+      Set.of(ONE_OF_TYPE, ALL_OF_TYPE, ANY_OF_TYPE);
 
   /**
    * JsonSchema supports to ways of declaring type. `type: "string"` and `type: ["null", "string"]`.
@@ -58,7 +58,8 @@ public class JsonSchemas {
    * @param jsonNode - a json object with children that contain types.
    */
   public static void mutateTypeToArrayStandard(final JsonNode jsonNode) {
-    if (jsonNode.get(JSON_SCHEMA_TYPE_KEY) != null && !jsonNode.get(JSON_SCHEMA_TYPE_KEY).isArray()) {
+    if (jsonNode.get(JSON_SCHEMA_TYPE_KEY) != null
+        && !jsonNode.get(JSON_SCHEMA_TYPE_KEY).isArray()) {
       final JsonNode type = jsonNode.get(JSON_SCHEMA_TYPE_KEY);
       ((ObjectNode) jsonNode).putArray(JSON_SCHEMA_TYPE_KEY).add(type);
     }
@@ -73,7 +74,8 @@ public class JsonSchemas {
     try {
       final List<String> filenames;
       try (final Stream<Path> resources = MoreResources.listResources(klass, resourceDir)) {
-        filenames = resources.map(p -> p.getFileName().toString())
+        filenames = resources
+            .map(p -> p.getFileName().toString())
             .filter(p -> p.endsWith(".yaml"))
             .collect(Collectors.toList());
       }
@@ -99,7 +101,8 @@ public class JsonSchemas {
    * @param jsonSchema - JsonSchema object to traverse
    * @param consumer - accepts the current node and the path to that node.
    */
-  public static void traverseJsonSchema(final JsonNode jsonSchema, final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
+  public static void traverseJsonSchema(
+      final JsonNode jsonSchema, final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
     traverseJsonSchemaInternal(jsonSchema, new ArrayList<>(), consumer);
   }
 
@@ -114,11 +117,13 @@ public class JsonSchemas {
    *         Collection } because there is no order or uniqueness guarantee so neither List nor Set
    *         make sense.
    */
-  public static <T> List<T> traverseJsonSchemaWithCollector(final JsonNode jsonSchema, final BiFunction<JsonNode, List<FieldNameOrList>, T> mapper) {
-    // for the sake of code reuse, use the filtered collector method but makes sure the filter always
+  public static <T> List<T> traverseJsonSchemaWithCollector(
+      final JsonNode jsonSchema, final BiFunction<JsonNode, List<FieldNameOrList>, T> mapper) {
+    // for the sake of code reuse, use the filtered collector method but makes sure the filter
+    // always
     // returns true.
-    return traverseJsonSchemaWithFilteredCollector(jsonSchema,
-        (node, path) -> Optional.ofNullable(mapper.apply(node, path)));
+    return traverseJsonSchemaWithFilteredCollector(
+        jsonSchema, (node, path) -> Optional.ofNullable(mapper.apply(node, path)));
   }
 
   /**
@@ -132,11 +137,12 @@ public class JsonSchemas {
    * @return - collection of all items that were collected during the traversal. Returns values in
    *         preoorder traversal order.
    */
-  public static <T> List<T> traverseJsonSchemaWithFilteredCollector(final JsonNode jsonSchema,
-                                                                    final BiFunction<JsonNode, List<FieldNameOrList>, Optional<T>> mapper) {
+  public static <T> List<T> traverseJsonSchemaWithFilteredCollector(
+      final JsonNode jsonSchema,
+      final BiFunction<JsonNode, List<FieldNameOrList>, Optional<T>> mapper) {
     final List<T> collector = new ArrayList<>();
-    traverseJsonSchema(jsonSchema,
-        (node, path) -> mapper.apply(node, path).ifPresent(collector::add));
+    traverseJsonSchema(
+        jsonSchema, (node, path) -> mapper.apply(node, path).ifPresent(collector::add));
     return collector.stream().toList(); // make list unmodifiable
   }
 
@@ -149,7 +155,8 @@ public class JsonSchemas {
    * @param predicate - predicate to determine if the path for a node should be collected.
    * @return - collection of all paths that were collected during the traversal.
    */
-  public static List<List<FieldNameOrList>> collectPathsThatMeetCondition(final JsonNode obj, final Predicate<JsonNode> predicate) {
+  public static List<List<FieldNameOrList>> collectPathsThatMeetCondition(
+      final JsonNode obj, final Predicate<JsonNode> predicate) {
     return traverseJsonSchemaWithFilteredCollector(obj, (node, path) -> {
       if (predicate.test(node)) {
         return Optional.of(path);
@@ -169,12 +176,14 @@ public class JsonSchemas {
    *        the node from the root of the object passed at the root level invocation
    */
   @SuppressWarnings("PMD.ForLoopCanBeForeach")
-  private static void traverseJsonSchemaInternal(final JsonNode jsonSchemaNode,
-                                                 final List<FieldNameOrList> path,
-                                                 final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
+  private static void traverseJsonSchemaInternal(
+      final JsonNode jsonSchemaNode,
+      final List<FieldNameOrList> path,
+      final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
     if (!jsonSchemaNode.isObject()) {
-      throw new IllegalArgumentException(
-          String.format("json schema nodes should always be object nodes. path: %s actual: %s", path, jsonSchemaNode));
+      throw new IllegalArgumentException(String.format(
+          "json schema nodes should always be object nodes. path: %s actual: %s",
+          path, jsonSchemaNode));
     }
     consumer.accept(jsonSchemaNode, path);
     // if type is missing assume object. not official JsonSchema, but it seems to be a common
@@ -183,22 +192,27 @@ public class JsonSchemas {
 
     for (final String nodeType : nodeTypes) {
       switch (nodeType) {
-        // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after consumer.accept above.
+          // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after
+          // consumer.accept above.
         case ARRAY_TYPE -> {
           final List<FieldNameOrList> newPath = new ArrayList<>(List.copyOf(path));
           newPath.add(FieldNameOrList.list());
           if (jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)) {
             // hit every node.
-            traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
+            traverseJsonSchemaInternal(
+                jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
           } else {
-            log.warn("The array is missing an items field. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
+            log.warn(
+                "The array is missing an items field. The traversal is silently stopped. Current schema: "
+                    + jsonSchemaNode);
           }
         }
         case OBJECT_TYPE -> {
           final Optional<String> comboKeyWordOptional = getKeywordIfComposite(jsonSchemaNode);
           if (jsonSchemaNode.has(JSON_SCHEMA_PROPERTIES_KEY)) {
-            for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(
-                JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {
+            for (final Iterator<Entry<String, JsonNode>> it =
+                    jsonSchemaNode.get(JSON_SCHEMA_PROPERTIES_KEY).fields();
+                it.hasNext(); ) {
               final Entry<String, JsonNode> child = it.next();
               final List<FieldNameOrList> newPath = new ArrayList<>(List.copyOf(path));
               newPath.add(FieldNameOrList.fieldName(child.getKey()));
@@ -209,7 +223,9 @@ public class JsonSchemas {
               traverseJsonSchemaInternal(arrayItem, path, consumer);
             }
           } else {
-            log.warn("The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
+            log.warn(
+                "The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: "
+                    + jsonSchemaNode);
           }
         }
       }
@@ -259,8 +275,7 @@ public class JsonSchemas {
   public static List<String> getType(final JsonNode jsonSchema) {
     if (jsonSchema.has(JSON_SCHEMA_TYPE_KEY)) {
       if (jsonSchema.get(JSON_SCHEMA_TYPE_KEY).isArray()) {
-        return MoreIterators.toList(jsonSchema.get(JSON_SCHEMA_TYPE_KEY).iterator())
-            .stream()
+        return MoreIterators.toList(jsonSchema.get(JSON_SCHEMA_TYPE_KEY).iterator()).stream()
             .map(JsonNode::asText)
             .collect(Collectors.toList());
       } else {
@@ -332,12 +347,7 @@ public class JsonSchemas {
 
     @Override
     public String toString() {
-      return "FieldNameOrList{" +
-          "fieldName='" + fieldName + '\'' +
-          ", isList=" + isList +
-          '}';
+      return "FieldNameOrList{" + "fieldName='" + fieldName + '\'' + ", isList=" + isList + '}';
     }
-
   }
-
 }

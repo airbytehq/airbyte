@@ -22,15 +22,18 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
       "\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT.toUpperCase() + "\"";
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    String query = String.format("""
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
+    String query = String.format(
+        """
                                  CREATE TABLE IF NOT EXISTS %s.%s (
                                    %s VARCHAR(64),
                                    %s VARCHAR(2000000),
                                    %s TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                    PRIMARY KEY(%s)
                                  )""",
-        schemaName, tableName,
+        schemaName,
+        tableName,
         ExasolSqlOperations.COLUMN_NAME_AB_ID,
         ExasolSqlOperations.COLUMN_NAME_DATA,
         ExasolSqlOperations.COLUMN_NAME_EMITTED_AT,
@@ -40,23 +43,30 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     database.executeWithinTransaction(queries);
   }
 
   @Override
-  protected void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName)
+  protected void insertRecordsInternal(
+      JdbcDatabase database,
+      List<AirbyteRecordMessage> records,
+      String schemaName,
+      String tableName)
       throws Exception {
     if (records.isEmpty()) {
       return;
     }
     Path tmpFile = createBatchFile(tableName, records);
     try {
-      String importStatement = String.format("""
+      String importStatement = String.format(
+          """
                                              IMPORT INTO %s.%s
                                              FROM LOCAL CSV FILE '%s'
                                              ROW SEPARATOR = 'CRLF'
-                                             COLUMN SEPARATOR = ','""", schemaName, tableName, tmpFile.toAbsolutePath());
+                                             COLUMN SEPARATOR = ','""",
+          schemaName, tableName, tmpFile.toAbsolutePath());
       LOGGER.info("IMPORT statement: {}", importStatement);
       database.execute(connection -> connection.createStatement().execute(importStatement));
     } finally {
@@ -64,10 +74,10 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
     }
   }
 
-  private Path createBatchFile(String tableName, List<AirbyteRecordMessage> records) throws Exception {
+  private Path createBatchFile(String tableName, List<AirbyteRecordMessage> records)
+      throws Exception {
     Path tmpFile = Files.createTempFile(tableName + "-", ".tmp");
     writeBatchToFile(tmpFile.toFile(), records);
     return tmpFile;
   }
-
 }

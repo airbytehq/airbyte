@@ -41,5 +41,4 @@ public class GcsHmacKeyCredentialConfig implements GcsCredentialConfig {
   public Optional<S3CredentialConfig> getS3CredentialConfig() {
     return Optional.of(new S3AccessKeyCredentialConfig(hmacKeyAccessId, hmacKeySecret));
   }
-
 }

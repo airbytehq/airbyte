@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(YugabytedbDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(YugabytedbDestinationAcceptanceTest.class);
 
   private YugabytedbContainerInitializr.YugabytedbContainer yugabytedbContainer;
 
@@ -49,7 +50,8 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     jsonConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", yugabytedbContainer.getHost())
         .put("port", yugabytedbContainer.getMappedPort(5433))
@@ -65,7 +67,6 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
         yugabytedbContainer.getDatabaseName(),
         yugabytedbContainer.getUsername(),
         yugabytedbContainer.getPassword()));
-
   }
 
   @Override
@@ -126,10 +127,11 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws SQLException {
 
     final String tableName = namingResolver.getRawTableName(streamName);
@@ -144,11 +146,10 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
     return database.bufferedResultSetQuery(
         connection -> {
           final var statement = connection.createStatement();
-          return statement.executeQuery(
-              String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+          return statement.executeQuery(String.format(
+              "SELECT * FROM %s.%s ORDER BY %s ASC;",
+              schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
         },
         rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
   }
-
 }

@@ -64,10 +64,13 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   void setup() {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("postgresql.conf"),
+            "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
 
@@ -94,7 +97,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -103,10 +107,13 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
 
       database.query(ctx -> {
         ctx.execute("CREATE TABLE id_and_name(id INTEGER  primary key, name VARCHAR(200));");
-        ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.execute(
+            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         ctx.execute("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));");
-        ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-        ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
+        ctx.execute(
+            "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        ctx.execute(
+            "SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
         ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
         return null;
       });
@@ -133,55 +140,59 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
      * We should also specify the primary keys for INCREMENTAL tables checkout
      * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
      */
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                NAMESPACE,
-                Field.of("id", JsonSchemaType.INTEGER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                NAMESPACE,
-                Field.of("id", JsonSchemaType.INTEGER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME,
+                        NAMESPACE,
+                        Field.of("id", JsonSchemaType.INTEGER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSourceDefinedCursor(true)
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME2,
+                        NAMESPACE,
+                        Field.of("id", JsonSchemaType.INTEGER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSourceDefinedCursor(true)
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   protected ConfiguredAirbyteCatalog getConfiguredCatalogWithPartialColumns() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                NAMESPACE,
-                Field.of("id", JsonSchemaType.INTEGER)
-            /* no name field */)
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                NAMESPACE,
-                /* no id field */
-                Field.of("name", JsonSchemaType.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME, NAMESPACE, Field.of("id", JsonSchemaType.INTEGER)
+                        /* no name field */ )
+                    .withSourceDefinedCursor(true)
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        STREAM_NAME2,
+                        NAMESPACE,
+                        /* no id field */
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSourceDefinedCursor(true)
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -191,7 +202,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
 
   @Test
   public void testFullRefreshReadSelectedColumns() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalogWithPartialColumns());
+    final ConfiguredAirbyteCatalog catalog =
+        withFullRefreshSyncModes(getConfiguredCatalogWithPartialColumns());
     final List<AirbyteMessage> allMessages = runRead(catalog);
 
     final List<AirbyteRecordMessage> records = filterRecords(allMessages);
@@ -211,14 +223,15 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
     verifyFieldNotExist(records, STREAM_NAME2, "id");
   }
 
-  private void verifyFieldNotExist(final List<AirbyteRecordMessage> records, final String stream, final String field) {
-    assertTrue(records.stream()
-        .filter(r -> {
-          return r.getStream().equals(stream)
-              && r.getData().get(field) != null;
-        })
-        .collect(Collectors.toList())
-        .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
+  private void verifyFieldNotExist(
+      final List<AirbyteRecordMessage> records, final String stream, final String field) {
+    assertTrue(
+        records.stream()
+            .filter(r -> {
+              return r.getStream().equals(stream) && r.getData().get(field) != null;
+            })
+            .collect(Collectors.toList())
+            .isEmpty(),
+        "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
-
 }

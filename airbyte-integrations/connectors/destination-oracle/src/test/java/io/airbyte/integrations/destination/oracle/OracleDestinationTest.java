@@ -49,7 +49,8 @@ public class OracleDestinationTest {
 
   @Test
   void testNoEncryption() {
-    final Map<String, String> properties = destination.getDefaultConnectionProperties(createConfig());
+    final Map<String, String> properties =
+        destination.getDefaultConnectionProperties(createConfig());
     assertNull(properties.get(JdbcUtils.ENCRYPTION_KEY));
     assertNull(properties.get("javax.net.ssl.trustStorePassword"));
 
@@ -59,8 +60,10 @@ public class OracleDestinationTest {
 
   @Test
   void testUnencrypted() {
-    final Map<String, Object> encryptionNode = ImmutableMap.of(OracleDestination.ENCRYPTION_METHOD_KEY, "unencrypted");
-    final JsonNode inputConfig = createConfig(ImmutableMap.of(JdbcUtils.ENCRYPTION_KEY, encryptionNode));
+    final Map<String, Object> encryptionNode =
+        ImmutableMap.of(OracleDestination.ENCRYPTION_METHOD_KEY, "unencrypted");
+    final JsonNode inputConfig =
+        createConfig(ImmutableMap.of(JdbcUtils.ENCRYPTION_KEY, encryptionNode));
     final Map<String, String> properties = destination.getDefaultConnectionProperties(inputConfig);
     assertNull(properties.get(JdbcUtils.ENCRYPTION_KEY));
     assertNull(properties.get("javax.net.ssl.trustStorePassword"));
@@ -73,12 +76,13 @@ public class OracleDestinationTest {
   void testClientNne() {
     final String algorithm = "AES256";
     final Map<String, Object> encryptionNode = ImmutableMap.of(
-        OracleDestination.ENCRYPTION_METHOD_KEY, "client_nne",
-        "encryption_algorithm", algorithm);
-    final JsonNode inputConfig = createConfig(ImmutableMap.of(JdbcUtils.ENCRYPTION_KEY, encryptionNode));
+        OracleDestination.ENCRYPTION_METHOD_KEY, "client_nne", "encryption_algorithm", algorithm);
+    final JsonNode inputConfig =
+        createConfig(ImmutableMap.of(JdbcUtils.ENCRYPTION_KEY, encryptionNode));
     final Map<String, String> properties = destination.getDefaultConnectionProperties(inputConfig);
     assertEquals(properties.get("oracle.net.encryption_client"), "REQUIRED");
-    assertEquals(properties.get("oracle.net.encryption_types_client"), String.format("( %s )", algorithm));
+    assertEquals(
+        properties.get("oracle.net.encryption_types_client"), String.format("( %s )", algorithm));
     assertNull(properties.get("javax.net.ssl.trustStorePassword"));
 
     final Protocol protocol = destination.obtainConnectionProtocol(inputConfig);
@@ -88,8 +92,12 @@ public class OracleDestinationTest {
   @Test
   void testEncryptedVerifyCertificate() {
     final Map<String, Object> encryptionNode = ImmutableMap.of(
-        OracleDestination.ENCRYPTION_METHOD_KEY, "encrypted_verify_certificate", "ssl_certificate", "certificate");
-    final JsonNode inputConfig = createConfig(ImmutableMap.of(JdbcUtils.ENCRYPTION_KEY, encryptionNode));
+        OracleDestination.ENCRYPTION_METHOD_KEY,
+        "encrypted_verify_certificate",
+        "ssl_certificate",
+        "certificate");
+    final JsonNode inputConfig =
+        createConfig(ImmutableMap.of(JdbcUtils.ENCRYPTION_KEY, encryptionNode));
     final Map<String, String> properties = destination.getDefaultConnectionProperties(inputConfig);
     assertEquals(properties.get("javax.net.ssl.trustStore"), OracleDestination.KEY_STORE_FILE_PATH);
     assertEquals(properties.get("javax.net.ssl.trustStoreType"), "JKS");
@@ -101,10 +109,12 @@ public class OracleDestinationTest {
 
   @Test
   void testInvalidEncryptionMethod() {
-    final Map<String, Object> encryptionNode = ImmutableMap.of(
-        OracleDestination.ENCRYPTION_METHOD_KEY, "invalid_encryption_method");
-    final JsonNode inputConfig = createConfig(ImmutableMap.of(JdbcUtils.ENCRYPTION_KEY, encryptionNode));
-    assertThrows(RuntimeException.class, () -> destination.getDefaultConnectionProperties(inputConfig));
+    final Map<String, Object> encryptionNode =
+        ImmutableMap.of(OracleDestination.ENCRYPTION_METHOD_KEY, "invalid_encryption_method");
+    final JsonNode inputConfig =
+        createConfig(ImmutableMap.of(JdbcUtils.ENCRYPTION_KEY, encryptionNode));
+    assertThrows(
+        RuntimeException.class, () -> destination.getDefaultConnectionProperties(inputConfig));
     assertThrows(RuntimeException.class, () -> destination.obtainConnectionProtocol(inputConfig));
   }
 
@@ -114,7 +124,8 @@ public class OracleDestinationTest {
     JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
     final JsonNode jdbcConfig = new OracleDestination().toJdbcConfig(config);
     assertNotNull(jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
-    assertEquals(extraParam, jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(
+        extraParam, jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
   }
 
   @Test
@@ -123,8 +134,8 @@ public class OracleDestinationTest {
     JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
     final JsonNode jdbcConfig = new OracleDestination().toJdbcConfig(config);
     assertNotNull(jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
-    assertEquals(extraParam, jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
-
+    assertEquals(
+        extraParam, jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
@@ -138,5 +149,4 @@ public class OracleDestinationTest {
         "password", "verysecure",
         "jdbc_url_params", extraParam));
   }
-
 }

@@ -9,7 +9,8 @@ import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
 
-public class MySqlSslCaCertificateSourceAcceptanceTest extends AbstractMySqlSslCertificateSourceAcceptanceTest {
+public class MySqlSslCaCertificateSourceAcceptanceTest
+    extends AbstractMySqlSslCertificateSourceAcceptanceTest {
 
   @Override
   public MySqlUtils.Certificate getCertificates() throws IOException, InterruptedException {
@@ -24,5 +25,4 @@ public class MySqlSslCaCertificateSourceAcceptanceTest extends AbstractMySqlSslC
         .put("client_key_password", PASSWORD)
         .build();
   }
-
 }

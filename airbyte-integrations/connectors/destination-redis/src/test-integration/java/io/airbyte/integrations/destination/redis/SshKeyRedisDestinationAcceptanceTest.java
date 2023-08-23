@@ -12,5 +12,4 @@ public class SshKeyRedisDestinationAcceptanceTest extends SshRedisDestinationAcc
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
-
 }

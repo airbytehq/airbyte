@@ -11,5 +11,4 @@ import java.util.Optional;
 public interface GcsCredentialConfig extends BlobStorageCredentialConfig<GcsCredentialType> {
 
   Optional<S3CredentialConfig> getS3CredentialConfig();
-
 }

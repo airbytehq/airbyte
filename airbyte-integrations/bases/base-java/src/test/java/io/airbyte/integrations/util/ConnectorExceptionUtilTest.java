@@ -17,21 +17,24 @@ import org.junit.jupiter.api.Test;
 class ConnectorExceptionUtilTest {
 
   public static final String CONFIG_EXCEPTION_MESSAGE = "test message";
-  public static final String RECOVERY_EXCEPTION_MESSAGE = "FATAL: terminating connection due to conflict with recovery";
+  public static final String RECOVERY_EXCEPTION_MESSAGE =
+      "FATAL: terminating connection due to conflict with recovery";
   public static final String COMMON_EXCEPTION_MESSAGE = "something happens with connection";
-  public static final String CONNECTION_ERROR_MESSAGE_TEMPLATE = "State code: %s; Error code: %s; Message: %s";
-  public static final String UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE = "Unknown column 'table.column' in 'field list'";
+  public static final String CONNECTION_ERROR_MESSAGE_TEMPLATE =
+      "State code: %s; Error code: %s; Message: %s";
+  public static final String UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE =
+      "Unknown column 'table.column' in 'field list'";
 
   @Test()
   void isConfigErrorForConfigException() {
     ConfigErrorException configErrorException = new ConfigErrorException(CONFIG_EXCEPTION_MESSAGE);
     assertTrue(ConnectorExceptionUtil.isConfigError(configErrorException));
-
   }
 
   @Test
   void isConfigErrorForConnectionException() {
-    ConnectionErrorException connectionErrorException = new ConnectionErrorException(CONFIG_EXCEPTION_MESSAGE);
+    ConnectionErrorException connectionErrorException =
+        new ConnectionErrorException(CONFIG_EXCEPTION_MESSAGE);
     assertTrue(ConnectorExceptionUtil.isConfigError(connectionErrorException));
   }
 
@@ -43,7 +46,8 @@ class ConnectorExceptionUtilTest {
 
   @Test
   void isConfigErrorForUnknownColumnSQLSyntaxErrorException() {
-    SQLSyntaxErrorException unknownColumnSQLSyntaxErrorException = new SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE);
+    SQLSyntaxErrorException unknownColumnSQLSyntaxErrorException =
+        new SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE);
     assertTrue(ConnectorExceptionUtil.isConfigError(unknownColumnSQLSyntaxErrorException));
   }
 
@@ -69,9 +73,14 @@ class ConnectorExceptionUtilTest {
   void getDisplayMessageForConnectionError() {
     String testCode = "test code";
     int errorCode = -1;
-    ConnectionErrorException connectionErrorException = new ConnectionErrorException(testCode, errorCode, CONFIG_EXCEPTION_MESSAGE, new Exception());
-    String actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(connectionErrorException);
-    assertEquals(String.format(CONNECTION_ERROR_MESSAGE_TEMPLATE, testCode, errorCode, CONFIG_EXCEPTION_MESSAGE), actualDisplayMessage);
+    ConnectionErrorException connectionErrorException = new ConnectionErrorException(
+        testCode, errorCode, CONFIG_EXCEPTION_MESSAGE, new Exception());
+    String actualDisplayMessage =
+        ConnectorExceptionUtil.getDisplayMessage(connectionErrorException);
+    assertEquals(
+        String.format(
+            CONNECTION_ERROR_MESSAGE_TEMPLATE, testCode, errorCode, CONFIG_EXCEPTION_MESSAGE),
+        actualDisplayMessage);
   }
 
   @Test
@@ -83,8 +92,10 @@ class ConnectorExceptionUtilTest {
 
   @Test
   void getDisplayMessageForUnknownSQLErrorException() {
-    SQLSyntaxErrorException unknownColumnSQLSyntaxErrorException = new SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE);
-    String actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(unknownColumnSQLSyntaxErrorException);
+    SQLSyntaxErrorException unknownColumnSQLSyntaxErrorException =
+        new SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE);
+    String actualDisplayMessage =
+        ConnectorExceptionUtil.getDisplayMessage(unknownColumnSQLSyntaxErrorException);
     assertEquals(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE, actualDisplayMessage);
   }
 
@@ -92,7 +103,9 @@ class ConnectorExceptionUtilTest {
   void getDisplayMessageForCommonException() {
     Exception exception = new SQLException(COMMON_EXCEPTION_MESSAGE);
     String actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(exception);
-    assertEquals(String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, COMMON_EXCEPTION_MESSAGE), actualDisplayMessage);
+    assertEquals(
+        String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, COMMON_EXCEPTION_MESSAGE),
+        actualDisplayMessage);
   }
 
   @Test
@@ -107,7 +120,8 @@ class ConnectorExceptionUtilTest {
   @Test
   void getRootConfigErrorFromRecoverySQLException() {
     SQLException recoveryException = new SQLException(RECOVERY_EXCEPTION_MESSAGE);
-    RuntimeException runtimeException = new RuntimeException(COMMON_EXCEPTION_MESSAGE, recoveryException);
+    RuntimeException runtimeException =
+        new RuntimeException(COMMON_EXCEPTION_MESSAGE, recoveryException);
     Exception exception = new Exception(runtimeException);
 
     Throwable actualRootConfigError = ConnectorExceptionUtil.getRootConfigError(exception);
@@ -116,8 +130,10 @@ class ConnectorExceptionUtilTest {
 
   @Test
   void getRootConfigErrorFromUnknownSQLErrorException() {
-    SQLException unknownSQLErrorException = new SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE);
-    RuntimeException runtimeException = new RuntimeException(COMMON_EXCEPTION_MESSAGE, unknownSQLErrorException);
+    SQLException unknownSQLErrorException =
+        new SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE);
+    RuntimeException runtimeException =
+        new RuntimeException(COMMON_EXCEPTION_MESSAGE, unknownSQLErrorException);
     Exception exception = new Exception(runtimeException);
 
     Throwable actualRootConfigError = ConnectorExceptionUtil.getRootConfigError(exception);
@@ -132,5 +148,4 @@ class ConnectorExceptionUtilTest {
     Throwable actualRootConfigError = ConnectorExceptionUtil.getRootConfigError(exception);
     assertEquals(exception, actualRootConfigError);
   }
-
 }

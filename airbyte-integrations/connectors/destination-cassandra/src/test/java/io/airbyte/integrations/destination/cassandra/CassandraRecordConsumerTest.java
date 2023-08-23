@@ -23,10 +23,13 @@ public class CassandraRecordConsumerTest extends PerStreamStateMessageTest {
 
   @InjectMocks
   private CassandraMessageConsumer consumer;
+
   @Mock
   private CassandraConfig config;
+
   @Mock
   private ConfiguredAirbyteCatalog catalog;
+
   @Mock
   private CassandraCqlProvider provider;
 
@@ -44,5 +47,4 @@ public class CassandraRecordConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return consumer;
   }
-
 }

@@ -50,7 +50,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName), false);
+    return bastion.getTunnelConfig(
+        getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName), false);
   }
 
   @Override
@@ -61,13 +62,13 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
@@ -98,35 +99,38 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return new Database(
-        DSLContextFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()),
-            SQLDialect.POSTGRES));
+    return new Database(DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
+        SQLDialect.POSTGRES));
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws Exception {
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
-        config,
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-            .query(ctx -> {
+        config, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, (CheckedFunction<
+                JsonNode, List<JsonNode>, Exception>)
+            mangledConfig -> getDatabaseFromConfig(mangledConfig).query(ctx -> {
               ctx.execute("set time zone 'UTC';");
-              return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              return ctx
+                  .fetch(String.format(
+                      "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                      schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                   .stream()
                   .map(this::getJsonFromRecord)
                   .collect(Collectors.toList());
@@ -134,16 +138,15 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS)
+      throws Exception {
 
     startTestContainers();
     // do everything in a randomly generated schema so that we can wipe it out at the end.
     SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
+        getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, mangledConfig -> {
+          getDatabaseFromConfig(mangledConfig)
+              .query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
           TEST_SCHEMAS.add(schemaName);
         });
   }
@@ -154,8 +157,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   private void initAndStartJdbcContainer() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withNetwork(network);
+    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(network);
     db.start();
   }
 
@@ -163,14 +165,11 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     // blow away the test schema at the end.
     SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
+        getConfig(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, mangledConfig -> {
+          getDatabaseFromConfig(mangledConfig)
+              .query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
         });
 
     bastion.stopAndCloseContainers(db);
   }
-
 }

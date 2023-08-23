@@ -49,10 +49,12 @@ public class PostgresSslConnectionUtils {
       var keyStorePassword = checkOrCreatePassword(encryption);
       switch (method) {
         case VERIFY_CA -> {
-          additionalParameters.putAll(obtainConnectionCaOptions(encryption, method, keyStorePassword));
+          additionalParameters.putAll(
+              obtainConnectionCaOptions(encryption, method, keyStorePassword));
         }
         case VERIFY_FULL -> {
-          additionalParameters.putAll(obtainConnectionFullOptions(encryption, method, keyStorePassword));
+          additionalParameters.putAll(
+              obtainConnectionFullOptions(encryption, method, keyStorePassword));
         }
         default -> {
           additionalParameters.put(PARAM_SSL, TRUE_STRING_VALUE);
@@ -64,7 +66,9 @@ public class PostgresSslConnectionUtils {
   }
 
   private static String checkOrCreatePassword(final JsonNode encryption) {
-    String sslPassword = encryption.has(PARAM_CLIENT_KEY_PASSWORD) ? encryption.get(PARAM_CLIENT_KEY_PASSWORD).asText() : "";
+    String sslPassword = encryption.has(PARAM_CLIENT_KEY_PASSWORD)
+        ? encryption.get(PARAM_CLIENT_KEY_PASSWORD).asText()
+        : "";
     var keyStorePassword = RandomStringUtils.randomAlphanumeric(10);
     if (sslPassword.isEmpty()) {
       var file = new File(ENCRYPT_FILE_NAME);
@@ -94,13 +98,15 @@ public class PostgresSslConnectionUtils {
     }
   }
 
-  private static Map<String, String> obtainConnectionFullOptions(final JsonNode encryption,
-                                                                 final String method,
-                                                                 final String clientKeyPassword) {
+  private static Map<String, String> obtainConnectionFullOptions(
+      final JsonNode encryption, final String method, final String clientKeyPassword) {
     final Map<String, String> additionalParameters = new HashMap<>();
     try {
-      convertAndImportFullCertificate(encryption.get(PARAM_CA_CERTIFICATE).asText(),
-          encryption.get(PARAM_CLIENT_CERTIFICATE).asText(), encryption.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
+      convertAndImportFullCertificate(
+          encryption.get(PARAM_CA_CERTIFICATE).asText(),
+          encryption.get(PARAM_CLIENT_CERTIFICATE).asText(),
+          encryption.get(PARAM_CLIENT_KEY).asText(),
+          clientKeyPassword);
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
@@ -113,12 +119,12 @@ public class PostgresSslConnectionUtils {
     return additionalParameters;
   }
 
-  private static Map<String, String> obtainConnectionCaOptions(final JsonNode encryption,
-                                                               final String method,
-                                                               final String clientKeyPassword) {
+  private static Map<String, String> obtainConnectionCaOptions(
+      final JsonNode encryption, final String method, final String clientKeyPassword) {
     final Map<String, String> additionalParameters = new HashMap<>();
     try {
-      convertAndImportCaCertificate(encryption.get(PARAM_CA_CERTIFICATE).asText(), clientKeyPassword);
+      convertAndImportCaCertificate(
+          encryption.get(PARAM_CA_CERTIFICATE).asText(), clientKeyPassword);
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
@@ -129,42 +135,48 @@ public class PostgresSslConnectionUtils {
     return additionalParameters;
   }
 
-  private static void convertAndImportFullCertificate(final String caCertificate,
-                                                      final String clientCertificate,
-                                                      final String clientKey,
-                                                      final String clientKeyPassword)
+  private static void convertAndImportFullCertificate(
+      final String caCertificate,
+      final String clientCertificate,
+      final String clientKey,
+      final String clientKeyPassword)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     createCaCertificate(caCertificate, clientKeyPassword, run);
     createCertificateFile(CLIENT_CERTIFICATE, clientCertificate);
     createCertificateFile(CLIENT_KEY, clientKey);
     // add client certificate to the custom keystore
-    runProcess("keytool -alias client-certificate -keystore customkeystore"
-        + " -import -file " + CLIENT_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+    runProcess(
+        "keytool -alias client-certificate -keystore customkeystore" + " -import -file "
+            + CLIENT_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt",
+        run);
     // convert client.key to client.pk8 based on the documentation
-    runProcess("openssl pkcs8 -topk8 -inform PEM -in " + CLIENT_KEY + " -outform DER -out "
-        + CLIENT_ENCRYPTED_KEY + " -nocrypt", run);
+    runProcess(
+        "openssl pkcs8 -topk8 -inform PEM -in " + CLIENT_KEY + " -outform DER -out "
+            + CLIENT_ENCRYPTED_KEY + " -nocrypt",
+        run);
     runProcess("rm " + CLIENT_KEY, run);
 
     updateTrustStoreSystemProperty(clientKeyPassword);
   }
 
-  private static void convertAndImportCaCertificate(final String caCertificate,
-                                                    final String clientKeyPassword)
+  private static void convertAndImportCaCertificate(
+      final String caCertificate, final String clientKeyPassword)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     createCaCertificate(caCertificate, clientKeyPassword, run);
     updateTrustStoreSystemProperty(clientKeyPassword);
   }
 
-  private static void createCaCertificate(final String caCertificate,
-                                          final String clientKeyPassword,
-                                          final Runtime run)
+  private static void createCaCertificate(
+      final String caCertificate, final String clientKeyPassword, final Runtime run)
       throws IOException, InterruptedException {
     createCertificateFile(CA_CERTIFICATE, caCertificate);
     // add CA certificate to the custom keystore
-    runProcess("keytool -import -alias rds-root -keystore customkeystore"
-        + " -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+    runProcess(
+        "keytool -import -alias rds-root -keystore customkeystore" + " -file " + CA_CERTIFICATE
+            + " -storepass " + clientKeyPassword + " -noprompt",
+        run);
   }
 
   private static void updateTrustStoreSystemProperty(final String clientKeyPassword) {
@@ -179,12 +191,12 @@ public class PostgresSslConnectionUtils {
     }
   }
 
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+  private static void runProcess(final String cmd, final Runtime run)
+      throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
   }
-
 }

@@ -39,20 +39,28 @@ public class AirbyteMessageMigrator {
    * Downgrade a message from the most recent version to the target version by chaining all the
    * required migrations
    */
-  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message,
-                                                                     final Version target,
-                                                                     final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
-    return migrationContainer.downgrade(message, target, (migration, msg) -> applyDowngrade(migration, msg, configuredAirbyteCatalog));
+  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(
+      final CurrentVersion message,
+      final Version target,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+    return migrationContainer.downgrade(
+        message,
+        target,
+        (migration, msg) -> applyDowngrade(migration, msg, configuredAirbyteCatalog));
   }
 
   /**
    * Upgrade a message from the source version to the most recent version by chaining all the required
    * migrations
    */
-  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message,
-                                                                  final Version source,
-                                                                  final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
-    return migrationContainer.upgrade(message, source, (migration, msg) -> applyUpgrade(migration, msg, configuredAirbyteCatalog));
+  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(
+      final PreviousVersion message,
+      final Version source,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+    return migrationContainer.upgrade(
+        message,
+        source,
+        (migration, msg) -> applyUpgrade(migration, msg, configuredAirbyteCatalog));
   }
 
   public Version getMostRecentVersion() {
@@ -60,16 +68,18 @@ public class AirbyteMessageMigrator {
   }
 
   // Helper function to work around type casting
-  private static <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration,
-                                                                                  final Object message,
-                                                                                  final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+  private static <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(
+      final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration,
+      final Object message,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     return migration.downgrade((CurrentVersion) message, configuredAirbyteCatalog);
   }
 
   // Helper function to work around type casting
-  private static <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration,
-                                                                               final Object message,
-                                                                               final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+  private static <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(
+      final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration,
+      final Object message,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     return migration.upgrade((PreviousVersion) message, configuredAirbyteCatalog);
   }
 
@@ -78,5 +88,4 @@ public class AirbyteMessageMigrator {
   Set<String> getMigrationKeys() {
     return migrationContainer.getMigrationKeys();
   }
-
 }

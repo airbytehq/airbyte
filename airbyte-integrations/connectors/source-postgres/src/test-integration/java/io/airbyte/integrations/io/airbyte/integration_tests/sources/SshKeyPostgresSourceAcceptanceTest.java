@@ -12,5 +12,4 @@ public class SshKeyPostgresSourceAcceptanceTest extends AbstractSshPostgresSourc
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
-
 }

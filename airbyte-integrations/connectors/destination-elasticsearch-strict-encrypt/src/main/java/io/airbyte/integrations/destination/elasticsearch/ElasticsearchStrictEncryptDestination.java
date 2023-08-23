@@ -21,9 +21,11 @@ import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ElasticsearchStrictEncryptDestination extends SpecModifyingDestination implements Destination {
+public class ElasticsearchStrictEncryptDestination extends SpecModifyingDestination
+    implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchStrictEncryptDestination.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ElasticsearchStrictEncryptDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
   private static final String NON_EMPTY_URL_ERR_MSG = "Server Endpoint is a required field";
   private static final String NON_SECURE_URL_ERR_MSG = "Server Endpoint requires HTTPS";
@@ -42,8 +44,13 @@ public class ElasticsearchStrictEncryptDestination extends SpecModifyingDestinat
   @Override
   public ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) throws Exception {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ArrayNode authMethod = (ArrayNode) spec.getConnectionSpecification().get("properties").get("authenticationMethod").get("oneOf");
-    IntStream.range(0, authMethod.size()).filter(i -> authMethod.get(i).get("title").asText().equals("None")).findFirst()
+    ArrayNode authMethod = (ArrayNode) spec.getConnectionSpecification()
+        .get("properties")
+        .get("authenticationMethod")
+        .get("oneOf");
+    IntStream.range(0, authMethod.size())
+        .filter(i -> authMethod.get(i).get("title").asText().equals("None"))
+        .findFirst()
         .ifPresent(authMethod::remove);
     return spec;
   }
@@ -70,5 +77,4 @@ public class ElasticsearchStrictEncryptDestination extends SpecModifyingDestinat
   private ConnectorConfiguration convertConfig(JsonNode config) {
     return mapper.convertValue(config, ConnectorConfiguration.class);
   }
-
 }

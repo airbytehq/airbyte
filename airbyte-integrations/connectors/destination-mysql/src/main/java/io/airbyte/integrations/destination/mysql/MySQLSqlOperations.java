@@ -19,22 +19,25 @@ import java.sql.Statement;
 import java.util.List;
 
 @SuppressFBWarnings(
-                    value = {"SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"},
-                    justification = "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement.")
+    value = {"SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"},
+    justification =
+        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement.")
 public class MySQLSqlOperations extends JdbcSqlOperations {
 
   private boolean isLocalFileEnabled = false;
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     database.executeWithinTransaction(queries);
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -52,11 +55,12 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     }
   }
 
-  private void loadDataIntoTable(final JdbcDatabase database,
-                                 final List<AirbyteRecordMessage> records,
-                                 final String schemaName,
-                                 final String tmpTableName,
-                                 final File tmpFile)
+  private void loadDataIntoTable(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName,
+      final File tmpFile)
       throws SQLException {
     database.execute(connection -> {
       try {
@@ -121,14 +125,17 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
     final List<String> localFiles = database.queryStrings(
-        connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
+        connection ->
+            connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
         resultSet -> resultSet.getString("Value"));
     return localFiles.get(0).equalsIgnoreCase("on");
   }
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the column,
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
+    // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the
+    // column,
     // 256 is enough
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
@@ -136,7 +143,11 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
             + "%s JSON,\n"
             + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
             + ");\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   public static class VersionCompatibility {
@@ -156,7 +167,5 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     public boolean isCompatible() {
       return isCompatible;
     }
-
   }
-
 }

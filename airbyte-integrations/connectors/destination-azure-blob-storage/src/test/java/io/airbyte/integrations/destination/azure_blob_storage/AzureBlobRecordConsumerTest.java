@@ -36,7 +36,8 @@ public class AzureBlobRecordConsumerTest extends PerStreamStateMessageTest {
 
   @BeforeEach
   public void init() {
-    consumer = new AzureBlobStorageConsumer(azureBlobStorageDestinationConfig, configuredCatalog, writerFactory, outputRecordCollector);
+    consumer = new AzureBlobStorageConsumer(
+        azureBlobStorageDestinationConfig, configuredCatalog, writerFactory, outputRecordCollector);
   }
 
   @Override
@@ -48,5 +49,4 @@ public class AzureBlobRecordConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return consumer;
   }
-
 }

@@ -70,8 +70,10 @@ public class MongoUtils {
 
   // Shared constants
   public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&ssl=%s";
-  public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
-  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
+  public static final String MONGODB_CLUSTER_URL =
+      "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
+  public static final String MONGODB_REPLICA_URL =
+      "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
   public static final String USER = "user";
   public static final String INSTANCE_TYPE = "instance_type";
   public static final String INSTANCE = "instance";
@@ -88,8 +90,8 @@ public class MongoUtils {
   // MongodbSource specific constants
   public static final String AUTH_SOURCE = "auth_source";
   public static final String PRIMARY_KEY = "_id";
-  public static final Set<BsonType> ALLOWED_CURSOR_TYPES = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
-      INT32, TIMESTAMP, INT64, DECIMAL128);
+  public static final Set<BsonType> ALLOWED_CURSOR_TYPES =
+      Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME, INT32, TIMESTAMP, INT64, DECIMAL128);
 
   private static final String MISSING_TYPE = "missing";
   private static final String NULL_TYPE = "null";
@@ -101,7 +103,14 @@ public class MongoUtils {
     return switch (dataType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case INT32, INT64, DOUBLE, DECIMAL128 -> JsonSchemaType.NUMBER;
-      case STRING, SYMBOL, BINARY, DATE_TIME, TIMESTAMP, OBJECT_ID, REGULAR_EXPRESSION, JAVASCRIPT -> JsonSchemaType.STRING;
+      case STRING,
+          SYMBOL,
+          BINARY,
+          DATE_TIME,
+          TIMESTAMP,
+          OBJECT_ID,
+          REGULAR_EXPRESSION,
+          JAVASCRIPT -> JsonSchemaType.STRING;
       case ARRAY -> JsonSchemaType.ARRAY;
       case DOCUMENT, JAVASCRIPT_WITH_SCOPE -> JsonSchemaType.OBJECT;
       default -> JsonSchemaType.STRING;
@@ -129,22 +138,26 @@ public class MongoUtils {
         default -> value;
       };
     } catch (final Exception e) {
-      LOGGER.error(String.format("Failed to get BsonValue for field type %s", type), e.getMessage());
+      LOGGER.error(
+          String.format("Failed to get BsonValue for field type %s", type), e.getMessage());
       return value;
     }
   }
 
-  public static CommonField<BsonType> nodeToCommonField(final TreeNode<CommonField<BsonType>> node) {
+  public static CommonField<BsonType> nodeToCommonField(
+      final TreeNode<CommonField<BsonType>> node) {
     final CommonField<BsonType> field = node.getData();
     if (node.hasChildren()) {
-      final List<CommonField<BsonType>> subFields = node.getChildren().stream().map(MongoUtils::nodeToCommonField).toList();
+      final List<CommonField<BsonType>> subFields =
+          node.getChildren().stream().map(MongoUtils::nodeToCommonField).toList();
       return new CommonField<>(field.getName(), field.getType(), subFields);
     } else {
       return new CommonField<>(field.getName(), field.getType());
     }
   }
 
-  private static void formatDocument(final Document document, final ObjectNode objectNode, final List<String> columnNames) {
+  private static void formatDocument(
+      final Document document, final ObjectNode objectNode, final List<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames);
@@ -154,14 +167,17 @@ public class MongoUtils {
     }
   }
 
-  private static ObjectNode readDocument(final BsonReader reader, final ObjectNode jsonNodes, final List<String> columnNames) {
+  private static ObjectNode readDocument(
+      final BsonReader reader, final ObjectNode jsonNodes, final List<String> columnNames) {
     reader.readStartDocument();
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
       final var fieldName = reader.readName();
       final var fieldType = reader.getCurrentBsonType();
       if (DOCUMENT.equals(fieldType)) {
         // recursion in used to parse inner documents
-        jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
+        jsonNodes.set(
+            fieldName,
+            readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
       } else if (ARRAY.equals(fieldType)) {
         jsonNodes.set(fieldName, readArray(reader, columnNames, fieldName));
       } else {
@@ -177,24 +193,32 @@ public class MongoUtils {
   /**
    * Determines whether TLS/SSL should be enabled for a standalone instance of MongoDB.
    */
-  public static boolean tlsEnabledForStandaloneInstance(final JsonNode config, final JsonNode instanceConfig) {
-    return config.has(JdbcUtils.TLS_KEY) ? config.get(JdbcUtils.TLS_KEY).asBoolean()
-        : (instanceConfig.has(JdbcUtils.TLS_KEY) ? instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean() : true);
+  public static boolean tlsEnabledForStandaloneInstance(
+      final JsonNode config, final JsonNode instanceConfig) {
+    return config.has(JdbcUtils.TLS_KEY)
+        ? config.get(JdbcUtils.TLS_KEY).asBoolean()
+        : (instanceConfig.has(JdbcUtils.TLS_KEY)
+            ? instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean()
+            : true);
   }
 
-  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
+  public static void transformToStringIfMarked(
+      final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
     if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
       final JsonNode data = jsonNodes.get(fieldName);
       if (data != null) {
         jsonNodes.remove(fieldName);
-        jsonNodes.put(fieldName + AIRBYTE_SUFFIX, data.isTextual() ? data.asText() : data.toString());
+        jsonNodes.put(
+            fieldName + AIRBYTE_SUFFIX, data.isTextual() ? data.asText() : data.toString());
       } else {
-        LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
+        LOGGER.debug(
+            "WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
       }
     }
   }
 
-  private static JsonNode readArray(final BsonReader reader, final List<String> columnNames, final String fieldName) {
+  private static JsonNode readArray(
+      final BsonReader reader, final List<String> columnNames, final String fieldName) {
     reader.readStartArray();
     final var elements = Lists.newArrayList();
 
@@ -202,12 +226,18 @@ public class MongoUtils {
       final var arrayFieldType = reader.getCurrentBsonType();
       if (DOCUMENT.equals(arrayFieldType)) {
         // recursion is used to read inner doc
-        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
+        elements.add(
+            readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
       } else if (ARRAY.equals(arrayFieldType)) {
         // recursion is used to read inner array
         elements.add(readArray(reader, columnNames, fieldName));
       } else {
-        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, fieldName, arrayFieldType);
+        final var element = readField(
+            reader,
+            (ObjectNode) Jsons.jsonNode(Collections.emptyMap()),
+            columnNames,
+            fieldName,
+            arrayFieldType);
         elements.add(element.get(fieldName));
       }
     }
@@ -215,19 +245,23 @@ public class MongoUtils {
     return Jsons.jsonNode(MoreIterators.toList(elements.iterator()));
   }
 
-  private static ObjectNode readField(final BsonReader reader,
-                                      final ObjectNode o,
-                                      final List<String> columnNames,
-                                      final String fieldName,
-                                      final BsonType fieldType) {
+  private static ObjectNode readField(
+      final BsonReader reader,
+      final ObjectNode o,
+      final List<String> columnNames,
+      final String fieldName,
+      final BsonType fieldType) {
     switch (fieldType) {
       case BOOLEAN -> o.put(fieldName, reader.readBoolean());
       case INT32 -> o.put(fieldName, reader.readInt32());
       case INT64 -> o.put(fieldName, reader.readInt64());
       case DOUBLE -> o.put(fieldName, reader.readDouble());
       case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
-      case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
-      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
+      case TIMESTAMP -> o.put(
+          fieldName,
+          DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
+      case DATE_TIME -> o.put(
+          fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
       case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
       case SYMBOL -> o.put(fieldName, reader.readSymbol());
       case STRING -> o.put(fieldName, reader.readString());
@@ -247,18 +281,21 @@ public class MongoUtils {
    * @param collection mongo collection
    * @return map of unique fields and its type
    */
-  public static List<TreeNode<CommonField<BsonType>>> getUniqueFields(final MongoCollection<Document> collection) {
+  public static List<TreeNode<CommonField<BsonType>>> getUniqueFields(
+      final MongoCollection<Document> collection) {
     final var allkeys = new HashSet<>(getFieldsName(collection));
 
-    return allkeys.stream().map(key -> {
-      final var types = getTypes(collection, key);
-      final var type = getUniqueType(types);
-      final var fieldNode = new TreeNode<>(new CommonField<>(transformName(types, key), type));
-      if (type.equals(DOCUMENT)) {
-        setSubFields(collection, fieldNode, key);
-      }
-      return fieldNode;
-    }).toList();
+    return allkeys.stream()
+        .map(key -> {
+          final var types = getTypes(collection, key);
+          final var type = getUniqueType(types);
+          final var fieldNode = new TreeNode<>(new CommonField<>(transformName(types, key), type));
+          if (type.equals(DOCUMENT)) {
+            setSubFields(collection, fieldNode, key);
+          }
+          return fieldNode;
+        })
+        .toList();
   }
 
   /**
@@ -273,14 +310,16 @@ public class MongoUtils {
     return types.size() != 1 ? name + AIRBYTE_SUFFIX : name;
   }
 
-  private static void setSubFields(final MongoCollection<Document> collection,
-                                   final TreeNode<CommonField<BsonType>> parentNode,
-                                   final String pathToField) {
+  private static void setSubFields(
+      final MongoCollection<Document> collection,
+      final TreeNode<CommonField<BsonType>> parentNode,
+      final String pathToField) {
     final var nestedKeys = getFieldsName(collection, pathToField);
     nestedKeys.forEach(key -> {
       final var types = getTypes(collection, pathToField + "." + key);
       final var nestedType = getUniqueType(types);
-      final var childNode = parentNode.addChild(new CommonField<>(transformName(types, key), nestedType));
+      final var childNode =
+          parentNode.addChild(new CommonField<>(transformName(types, key), nestedType));
       if (nestedType.equals(DOCUMENT)) {
         setSubFields(collection, childNode, pathToField + "." + key);
       }
@@ -291,12 +330,18 @@ public class MongoUtils {
     return getFieldsName(collection, "$ROOT");
   }
 
-  private static List<String> getFieldsName(final MongoCollection<Document> collection, final String fieldName) {
+  private static List<String> getFieldsName(
+      final MongoCollection<Document> collection, final String fieldName) {
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
-        new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$" + fieldName))),
+        new Document(
+            "$project",
+            new Document("arrayofkeyvalue", new Document("$objectToArray", "$" + fieldName))),
         new Document("$unwind", "$arrayofkeyvalue"),
-        new Document("$group", new Document(ID, null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
+        new Document(
+            "$group",
+            new Document(ID, null)
+                .append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
     if (output.cursor().hasNext()) {
       return (List) output.cursor().next().get("allkeys");
     } else {
@@ -304,13 +349,17 @@ public class MongoUtils {
     }
   }
 
-  private static List<String> getTypes(final MongoCollection<Document> collection, final String name) {
+  private static List<String> getTypes(
+      final MongoCollection<Document> collection, final String name) {
     final var fieldName = "$" + name;
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
-        new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", fieldName))),
-        new Document("$group", new Document(ID, new Document("fieldType", "$fieldType"))
-            .append("count", new Document("$sum", 1)))));
+        new Document(
+            "$project", new Document(ID, 0).append("fieldType", new Document("$type", fieldName))),
+        new Document(
+            "$group",
+            new Document(ID, new Document("fieldType", "$fieldType"))
+                .append("count", new Document("$sum", 1)))));
     final var listOfTypes = new ArrayList<String>();
     final var cursor = output.cursor();
     while (cursor.hasNext()) {
@@ -361,17 +410,16 @@ public class MongoUtils {
 
   private static BsonDocument toBsonDocument(final Document document) {
     try {
-      final CodecRegistry customCodecRegistry =
-          fromProviders(asList(
-              new ValueCodecProvider(),
-              new BsonValueCodecProvider(),
-              new DocumentCodecProvider(),
-              new IterableCodecProvider(),
-              new MapCodecProvider(),
-              new Jsr310CodecProvider(),
-              new JsonObjectCodecProvider(),
-              new BsonCodecProvider(),
-              new DBRefCodecProvider()));
+      final CodecRegistry customCodecRegistry = fromProviders(asList(
+          new ValueCodecProvider(),
+          new BsonValueCodecProvider(),
+          new DocumentCodecProvider(),
+          new IterableCodecProvider(),
+          new MapCodecProvider(),
+          new Jsr310CodecProvider(),
+          new JsonObjectCodecProvider(),
+          new BsonCodecProvider(),
+          new DBRefCodecProvider()));
 
       // Override the default codec registry
       return document.toBsonDocument(BsonDocument.class, customCodecRegistry);
@@ -393,14 +441,18 @@ public class MongoUtils {
     return value == null ? null : value.getData();
   }
 
-  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName, final List<String> columnNames) {
+  private static void readJavaScriptWithScope(
+      final ObjectNode o,
+      final BsonReader reader,
+      final String fieldName,
+      final List<String> columnNames) {
     final var code = reader.readJavaScriptWithScope();
-    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames);
+    final var scope =
+        readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames);
     o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
   }
 
   public enum MongoInstanceType {
-
     STANDALONE("standalone"),
     REPLICA("replica"),
     ATLAS("atlas");
@@ -423,7 +475,5 @@ public class MongoUtils {
       }
       throw new IllegalArgumentException("Unknown instance type value: " + value);
     }
-
   }
-
 }

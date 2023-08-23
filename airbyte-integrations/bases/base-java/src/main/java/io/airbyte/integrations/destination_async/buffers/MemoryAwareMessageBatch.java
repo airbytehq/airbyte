@@ -33,10 +33,11 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
   private final GlobalMemoryManager memoryManager;
   private final GlobalAsyncStateManager stateManager;
 
-  public MemoryAwareMessageBatch(final List<MessageWithMeta> batch,
-                                 final long sizeInBytes,
-                                 final GlobalMemoryManager memoryManager,
-                                 final GlobalAsyncStateManager stateManager) {
+  public MemoryAwareMessageBatch(
+      final List<MessageWithMeta> batch,
+      final long sizeInBytes,
+      final GlobalMemoryManager memoryManager,
+      final GlobalAsyncStateManager stateManager) {
     this.batch = batch;
     this.sizeInBytes = sizeInBytes;
     this.memoryManager = memoryManager;
@@ -68,5 +69,4 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
     stateIdToCount.forEach(stateManager::decrement);
     return stateManager.flushStates();
   }
-
 }

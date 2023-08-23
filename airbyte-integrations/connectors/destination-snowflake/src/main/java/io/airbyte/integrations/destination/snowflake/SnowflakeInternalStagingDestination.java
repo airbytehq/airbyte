@@ -37,9 +37,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
+public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
+    implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
   private static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
   private final String airbyteEnvironment;
 
@@ -47,7 +49,8 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
   }
 
-  public SnowflakeInternalStagingDestination(final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
+  public SnowflakeInternalStagingDestination(
+      final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
     super("", nameTransformer, new SnowflakeInternalStagingSqlOperations(nameTransformer));
     this.airbyteEnvironment = airbyteEnvironment;
   }
@@ -55,14 +58,17 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final NamingConventionTransformer nameTransformer = getNamingResolver();
-    final SnowflakeInternalStagingSqlOperations snowflakeInternalStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(nameTransformer);
+    final SnowflakeInternalStagingSqlOperations snowflakeInternalStagingSqlOperations =
+        new SnowflakeInternalStagingSqlOperations(nameTransformer);
     final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = nameTransformer.getIdentifier(config.get("schema").asText());
-      attemptTableOperations(outputSchema, database, nameTransformer,
-          snowflakeInternalStagingSqlOperations, true);
-      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
+      final String outputSchema =
+          nameTransformer.getIdentifier(config.get("schema").asText());
+      attemptTableOperations(
+          outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations, true);
+      attemptStageOperations(
+          outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -78,14 +84,16 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     }
   }
 
-  private static void attemptStageOperations(final String outputSchema,
-                                             final JdbcDatabase database,
-                                             final NamingConventionTransformer namingResolver,
-                                             final SnowflakeInternalStagingSqlOperations sqlOperations)
+  private static void attemptStageOperations(
+      final String outputSchema,
+      final JdbcDatabase database,
+      final NamingConventionTransformer namingResolver,
+      final SnowflakeInternalStagingSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage
-    final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
+    final String outputTableName = namingResolver.getIdentifier(
+        "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
     final String stageName = sqlOperations.getStageName(outputSchema, outputTableName);
     sqlOperations.createStageIfNotExists(database, stageName);
 
@@ -120,9 +128,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
-                                                                       final ConfiguredAirbyteCatalog catalog,
-                                                                       final Consumer<AirbyteMessage> outputRecordCollector) {
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final String defaultNamespace = config.get("schema").asText();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
@@ -136,34 +145,38 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final JdbcDatabase database = getDatabase(getDataSource(config));
     if (TypingAndDedupingFlag.isDestinationV2()) {
       final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-      final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
+      final SnowflakeDestinationHandler snowflakeDestinationHandler =
+          new SnowflakeDestinationHandler(databaseName, database);
       final CatalogParser catalogParser;
       if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
-        catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
+        catalogParser = new CatalogParser(
+            sqlGenerator,
+            TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
       } else {
         catalogParser = new CatalogParser(sqlGenerator);
       }
       parsedCatalog = catalogParser.parseCatalog(catalog);
       // TODO make a SnowflakeV1V2Migrator
       NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
+      typerDeduper = new DefaultTyperDeduper<>(
+          sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
     } else {
       parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
     }
 
-    return new StagingConsumerFactory().createAsync(
-        outputRecordCollector,
-        database,
-        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
-        getNamingResolver(),
-        config,
-        catalog,
-        true,
-        new TypeAndDedupeOperationValve(),
-        typerDeduper,
-        parsedCatalog,
-        defaultNamespace);
+    return new StagingConsumerFactory()
+        .createAsync(
+            outputRecordCollector,
+            database,
+            new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+            getNamingResolver(),
+            config,
+            catalog,
+            true,
+            new TypeAndDedupeOperationValve(),
+            typerDeduper,
+            parsedCatalog,
+            defaultNamespace);
   }
-
 }

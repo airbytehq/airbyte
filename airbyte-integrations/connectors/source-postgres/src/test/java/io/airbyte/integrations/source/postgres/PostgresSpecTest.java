@@ -50,7 +50,9 @@ public class PostgresSpecTest {
   @BeforeAll
   static void init() throws IOException {
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec).toFile();
+    final File schemaFile = IOs.writeFile(
+            Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec)
+        .toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
@@ -129,7 +131,8 @@ public class PostgresSpecTest {
   @Test
   void testJdbcAdditionalProperty() throws Exception {
     final ConnectorSpecification spec = new PostgresSource().spec();
-    assertNotNull(spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+    assertNotNull(
+        spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
   }
 
   @ParameterizedTest
@@ -193,5 +196,4 @@ public class PostgresSpecTest {
     ((ObjectNode) config).remove(JdbcUtils.PORT_KEY);
     assertFalse(validator.test(schema, config));
   }
-
 }

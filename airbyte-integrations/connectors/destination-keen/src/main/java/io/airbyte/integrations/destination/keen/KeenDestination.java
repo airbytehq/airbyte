@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
 public class KeenDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KeenDestination.class);
-  private static final String KAFKA_BROKER = "b1.kafka-in.keen.io:9092,b2.kafka-in.keen.io:9092,b3.kafka-in.keen.io:9092";
+  private static final String KAFKA_BROKER =
+      "b1.kafka-in.keen.io:9092,b2.kafka-in.keen.io:9092,b3.kafka-in.keen.io:9092";
 
   static final String KEEN_BASE_API_PATH = "https://api.keen.io/3.0";
   static final String CONFIG_PROJECT_ID = "project_id";
@@ -57,9 +58,10 @@ public class KeenDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return new KeenRecordsConsumer(config, catalog, outputRecordCollector);
   }
@@ -73,9 +75,12 @@ public class KeenDestination extends BaseConnector implements Destination {
 
   public static class KafkaProducerFactory {
 
-    public static KafkaProducer<String, String> create(final String projectId, final String apiKey) {
-      final String jaasConfig = String.format("org.apache.kafka.common.security.plain.PlainLoginModule " +
-          "required username=\"%s\" password=\"%s\";", projectId, apiKey);
+    public static KafkaProducer<String, String> create(
+        final String projectId, final String apiKey) {
+      final String jaasConfig = String.format(
+          "org.apache.kafka.common.security.plain.PlainLoginModule "
+              + "required username=\"%s\" password=\"%s\";",
+          projectId, apiKey);
 
       final Properties props = new Properties();
       props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKER);
@@ -87,7 +92,5 @@ public class KeenDestination extends BaseConnector implements Destination {
       props.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
       return new KafkaProducer<>(props);
     }
-
   }
-
 }

@@ -22,29 +22,23 @@ public class TestSourceMain {
   private static final Logger LOGGER = LoggerFactory.getLogger(TestSourceMain.class);
 
   public static void main(final String[] args) {
-    final ArgumentParser parser = ArgumentParsers.newFor(TestSourceMain.class.getName()).build()
+    final ArgumentParser parser = ArgumentParsers.newFor(TestSourceMain.class.getName())
+        .build()
         .defaultHelp(true)
         .description("Run standard source tests");
 
-    parser.addArgument("--imageName")
+    parser
+        .addArgument("--imageName")
         .required(true)
         .help("Name of the source connector image e.g: airbyte/source-mailchimp");
 
-    parser.addArgument("--spec")
-        .required(true)
-        .help("Path to file that contains spec json");
+    parser.addArgument("--spec").required(true).help("Path to file that contains spec json");
 
-    parser.addArgument("--config")
-        .required(true)
-        .help("Path to file that contains config json");
+    parser.addArgument("--config").required(true).help("Path to file that contains config json");
 
-    parser.addArgument("--catalog")
-        .required(true)
-        .help("Path to file that contains catalog json");
+    parser.addArgument("--catalog").required(true).help("Path to file that contains catalog json");
 
-    parser.addArgument("--state")
-        .required(false)
-        .help("Path to the file containing state");
+    parser.addArgument("--state").required(false).help("Path to the file containing state");
 
     Namespace ns = null;
     try {
@@ -69,5 +63,4 @@ public class TestSourceMain {
 
     TestRunner.runTestClass(ExecutableTestSource.class);
   }
-
 }

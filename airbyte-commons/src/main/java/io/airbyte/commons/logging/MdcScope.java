@@ -28,7 +28,7 @@ import org.slf4j.MDC;
  */
 public class MdcScope implements AutoCloseable {
 
-  public final static MdcScope.Builder DEFAULT_BUILDER = new Builder();
+  public static final MdcScope.Builder DEFAULT_BUILDER = new Builder();
 
   private final Map<String, String> originalContextMap;
 
@@ -62,7 +62,8 @@ public class MdcScope implements AutoCloseable {
     }
 
     // Use this to disable simple logging for things in an MdcScope.
-    // If you're using this, you're probably starting to use MdcScope outside of container labelling.
+    // If you're using this, you're probably starting to use MdcScope outside of container
+    // labelling.
     // If so, consider changing the defaults / builder / naming.
     public Builder setSimple(final boolean simple) {
       this.simple = simple;
@@ -81,14 +82,13 @@ public class MdcScope implements AutoCloseable {
         extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, potentiallyColoredLog);
 
         if (simple) {
-          // outputs much less information for this line. see log4j2.xml to see exactly what this does
+          // outputs much less information for this line. see log4j2.xml to see exactly what this
+          // does
           extraMdcEntries.put("simple", "true");
         }
       });
 
       return new MdcScope(extraMdcEntries);
     }
-
   }
-
 }

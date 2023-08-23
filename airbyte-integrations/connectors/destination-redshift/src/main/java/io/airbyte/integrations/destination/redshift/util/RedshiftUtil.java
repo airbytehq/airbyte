@@ -35,5 +35,4 @@ public class RedshiftUtil {
   private static boolean isNullOrEmpty(final JsonNode jsonNode) {
     return null == jsonNode || "".equals(jsonNode.asText());
   }
-
 }

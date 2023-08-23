@@ -37,13 +37,14 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final CountDownLatch engineLatch;
   private final DebeziumPropertiesManager debeziumPropertiesManager;
 
-  public DebeziumRecordPublisher(final Properties properties,
-                                 final JsonNode config,
-                                 final ConfiguredAirbyteCatalog catalog,
-                                 final AirbyteFileOffsetBackingStore offsetManager,
-                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
-    this.debeziumPropertiesManager = new DebeziumPropertiesManager(properties, config, catalog, offsetManager,
-        schemaHistoryManager);
+  public DebeziumRecordPublisher(
+      final Properties properties,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final AirbyteFileOffsetBackingStore offsetManager,
+      final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+    this.debeziumPropertiesManager = new DebeziumPropertiesManager(
+        properties, config, catalog, offsetManager, schemaHistoryManager);
     this.hasClosed = new AtomicBoolean(false);
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
@@ -56,7 +57,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         .using(debeziumPropertiesManager.getDebeziumProperties())
         .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
         .notifying(e -> {
-          // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
+          // debezium outputs a tombstone event that has a value of null. this is an artifact of how
+          // it
           // interacts with kafka. we want to ignore it.
           // more on the tombstone:
           // https://debezium.io/documentation/reference/2.2/transformations/event-flattening.html
@@ -107,5 +109,4 @@ public class DebeziumRecordPublisher implements AutoCloseable {
       }
     }
   }
-
 }

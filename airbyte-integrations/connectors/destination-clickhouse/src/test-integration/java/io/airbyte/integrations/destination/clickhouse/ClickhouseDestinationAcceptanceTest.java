@@ -98,28 +98,30 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv,
-                                                     final String streamName,
-                                                     final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namespace);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    final String query = String.format(
+        "SELECT * FROM %s.%s ORDER BY %s ASC",
+        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     return jdbcDB.queryJsons(query);
   }
 
@@ -127,9 +129,12 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
             config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+            config.has(JdbcUtils.PASSWORD_KEY)
+                ? config.get(JdbcUtils.PASSWORD_KEY).asText()
+                : null,
             ClickhouseDestination.DRIVER_CLASS,
-            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+            String.format(
+                DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 ClickhouseDestination.HTTP_PROTOCOL,
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
@@ -140,8 +145,10 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
-        .waitingFor(Wait.forHttp("/ping").forPort(8123)
-            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+        .waitingFor(Wait.forHttp("/ping")
+            .forPort(8123)
+            .forStatusCode(200)
+            .withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
   }
 
@@ -153,9 +160,10 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
-  public void testDataTypeTestWithNormalization(final String messagesFilename,
-                                                final String catalogFilename,
-                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+  public void testDataTypeTestWithNormalization(
+      final String messagesFilename,
+      final String catalogFilename,
+      final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
       throws Exception {
 
     // arrays are not fully supported yet in jdbc driver
@@ -166,5 +174,4 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
     super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
-
 }

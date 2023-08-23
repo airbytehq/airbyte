@@ -101,39 +101,42 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     try (final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         db.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
         SQLDialect.MYSQL)) {
-      return new Database(dslContext).query(
-          ctx -> ctx
-              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .map(this::getJsonFromRecord)
-              .collect(Collectors.toList()));
+      return new Database(dslContext).query(ctx -> ctx
+          .fetch(String.format(
+              "SELECT * FROM %s.%s ORDER BY %s ASC;",
+              schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .stream()
+          .map(this::getJsonFromRecord)
+          .collect(Collectors.toList()));
     }
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -158,7 +161,8 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   }
 
   private void grantCorrectPermissions() {
-    executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery(
+        "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
   }
 
   private void executeQuery(final String query) {
@@ -166,14 +170,13 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
         "root",
         "test",
         db.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
         SQLDialect.MYSQL)) {
-      new Database(dslContext).query(
-          ctx -> ctx
-              .execute(query));
+      new Database(dslContext).query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
@@ -214,7 +217,8 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
         + "}\n";
 
     final AirbyteCatalog catalog = Jsons.deserialize(catalogAsText, AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
@@ -223,11 +227,14 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.builder()
                     .put("id", 1)
-                    .put("data", "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}")
+                    .put(
+                        "data",
+                        "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}")
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
-            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
+            .withState(new AirbyteStateMessage()
+                .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
@@ -249,5 +256,4 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
       assertEquals(expectedValue, actualValue);
     }
   }
-
 }

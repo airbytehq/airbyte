@@ -82,5 +82,4 @@ public class StandardNameTransformer implements NamingConventionTransformer {
       return root;
     }
   }
-
 }

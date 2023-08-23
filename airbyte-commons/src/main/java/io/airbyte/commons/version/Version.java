@@ -27,7 +27,8 @@ public class Version {
   public Version(final String version) {
     Preconditions.checkNotNull(version);
     this.version = version;
-    final String[] parsedVersion = version.replace("\n", "").strip().split("-")[0].split("\\.");
+    final String[] parsedVersion =
+        version.replace("\n", "").strip().split("-")[0].split("\\.");
 
     if (isDev()) {
       this.major = null;
@@ -70,8 +71,7 @@ public class Version {
    * Only the major and minor part of the Version is taken into account.
    */
   public int compatibleVersionCompareTo(final Version another) {
-    if (isDev() || another.isDev())
-      return 0;
+    if (isDev() || another.isDev()) return 0;
     final int majorDiff = compareVersion(major, another.major);
     if (majorDiff != 0) {
       return majorDiff;
@@ -155,12 +155,11 @@ public class Version {
 
   @Override
   public String toString() {
-    return "Version{" +
-        "version='" + version + '\'' +
-        ", major='" + major + '\'' +
-        ", minor='" + minor + '\'' +
-        ", patch='" + patch + '\'' +
-        '}';
+    return "Version{" + "version='"
+        + version + '\'' + ", major='"
+        + major + '\'' + ", minor='"
+        + minor + '\'' + ", patch='"
+        + patch + '\'' + '}';
   }
 
   @Override
@@ -172,7 +171,9 @@ public class Version {
       return false;
     }
     final Version that = (Version) o;
-    return Objects.equals(version, that.version) && Objects.equals(major, that.major) && Objects.equals(minor, that.minor)
+    return Objects.equals(version, that.version)
+        && Objects.equals(major, that.major)
+        && Objects.equals(minor, that.minor)
         && Objects.equals(patch, that.patch);
   }
 
@@ -180,5 +181,4 @@ public class Version {
   public int hashCode() {
     return Objects.hash(version, major, minor, patch);
   }
-
 }

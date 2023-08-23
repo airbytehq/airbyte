@@ -112,9 +112,12 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    final DockerImageName myImage =
+        DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
     container = new PostgreSQLContainer<>(myImage)
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("postgresql.conf"),
+            "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
@@ -122,7 +125,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
 
     config = getConfig(dbName, container.getUsername(), container.getPassword());
@@ -131,15 +135,16 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     database = getDatabase(dslContext);
     super.setup();
     database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
+      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '"
+          + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
 
       return null;
     });
-
   }
 
-  private JsonNode getConfig(final String dbName, final String userName, final String userPassword) {
+  private JsonNode getConfig(
+      final String dbName, final String userName, final String userPassword) {
     final JsonNode replicationMethod = getReplicationMethod(dbName);
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -175,7 +180,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -220,8 +226,12 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
     final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertEquals(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-        String.format(PostgresReplicationConnection.REPLICATION_PRIVILEGE_ERROR_MESSAGE, test_config.get("username").asText())),
+    assertEquals(
+        String.format(
+            ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
+            String.format(
+                PostgresReplicationConnection.REPLICATION_PRIVILEGE_ERROR_MESSAGE,
+                test_config.get("username").asText())),
         status.getMessage());
   }
 
@@ -235,7 +245,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   @Test
   void testCheckWithoutReplicationSlot() throws Exception {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
-    database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
+    database.query(
+        ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
 
     final AirbyteConnectionStatus status = source.check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
@@ -248,12 +259,14 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(
+      final List<AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
     assertStateTypes(stateAfterFirstBatch, 24);
   }
 
-  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
+  private void assertStateTypes(
+      final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -277,28 +290,37 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
+  protected void assertStateMessagesForNewTableSnapshotTest(
+      final List<AirbyteStateMessage> stateMessages,
       final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size());
     for (int i = 0; i <= 4; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessage.getType());
-      assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+      assertEquals(
+          stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
           stateMessage.getGlobal().getSharedState());
-      final Set<StreamDescriptor> streamsInSnapshotState = stateMessage.getGlobal().getStreamStates()
-          .stream()
-          .map(AirbyteStreamState::getStreamDescriptor)
-          .collect(Collectors.toSet());
+      final Set<StreamDescriptor> streamsInSnapshotState =
+          stateMessage.getGlobal().getStreamStates().stream()
+              .map(AirbyteStreamState::getStreamDescriptor)
+              .collect(Collectors.toSet());
       assertEquals(2, streamsInSnapshotState.size());
-      assertTrue(
-          streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor()
+          .withName(MODELS_STREAM_NAME + "_random")
+          .withNamespace(randomTableSchema())));
+      assertTrue(streamsInSnapshotState.contains(
+          new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
 
       stateMessage.getGlobal().getStreamStates().forEach(s -> {
         final JsonNode streamState = s.getStreamState();
-        if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema()))) {
+        if (s.getStreamDescriptor()
+            .equals(new StreamDescriptor()
+                .withName(MODELS_STREAM_NAME + "_random")
+                .withNamespace(randomTableSchema()))) {
           assertEquals("ctid", streamState.get(STATE_TYPE_KEY).asText());
-        } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA))) {
+        } else if (s.getStreamDescriptor()
+            .equals(
+                new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA))) {
           assertFalse(streamState.has(STATE_TYPE_KEY));
         } else {
           throw new RuntimeException("Unknown stream");
@@ -308,34 +330,41 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
     final AirbyteStateMessage secondLastSateMessage = stateMessages.get(5);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, secondLastSateMessage.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+    assertEquals(
+        stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
         secondLastSateMessage.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSnapshotState = secondLastSateMessage.getGlobal().getStreamStates()
-        .stream()
-        .map(AirbyteStreamState::getStreamDescriptor)
-        .collect(Collectors.toSet());
+    final Set<StreamDescriptor> streamsInSnapshotState =
+        secondLastSateMessage.getGlobal().getStreamStates().stream()
+            .map(AirbyteStreamState::getStreamDescriptor)
+            .collect(Collectors.toSet());
     assertEquals(2, streamsInSnapshotState.size());
-    assertTrue(
-        streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor()
+        .withName(MODELS_STREAM_NAME + "_random")
+        .withNamespace(randomTableSchema())));
+    assertTrue(streamsInSnapshotState.contains(
+        new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     secondLastSateMessage.getGlobal().getStreamStates().forEach(s -> {
       final JsonNode streamState = s.getStreamState();
       assertFalse(streamState.has(STATE_TYPE_KEY));
     });
 
     final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
-    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+    assertEquals(
+        AirbyteStateMessage.AirbyteStateType.GLOBAL,
+        stateMessageEmittedAfterSecondSyncCompletion.getType());
+    assertNotEquals(
+        stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
         stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
-        .stream()
-        .map(AirbyteStreamState::getStreamDescriptor)
-        .collect(Collectors.toSet());
+    final Set<StreamDescriptor> streamsInSyncCompletionState =
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates().stream()
+            .map(AirbyteStreamState::getStreamDescriptor)
+            .collect(Collectors.toSet());
     assertEquals(2, streamsInSnapshotState.size());
-    assertTrue(
-        streamsInSyncCompletionState.contains(
-            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor()
+        .withName(MODELS_STREAM_NAME + "_random")
+        .withNamespace(randomTableSchema())));
+    assertTrue(streamsInSyncCompletionState.contains(
+        new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
@@ -351,12 +380,16 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
-        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
+    createTable(
+        MODELS_SCHEMA,
+        MODELS_STREAM_NAME + "_2",
+        columnClause(
+            ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"),
+            Optional.of(COL_ID)));
 
     for (final JsonNode recordJson : MODEL_RECORDS_2) {
-      writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID,
-          COL_MAKE_ID, COL_MODEL);
+      writeRecords(
+          recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID, COL_MAKE_ID, COL_MODEL);
     }
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
@@ -366,8 +399,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
                 Field.of(COL_ID, JsonSchemaType.INTEGER),
                 Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
                 Field.of(COL_MODEL, JsonSchemaType.STRING))
-            .withSupportedSyncModes(
-                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
 
@@ -375,8 +407,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     streams.add(airbyteStream);
     configuredCatalog.withStreams(streams);
 
-    final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
-        .read(getConfig(), configuredCatalog, null);
+    final AutoCloseableIterator<AirbyteMessage> read1 =
+        getSource().read(getConfig(), configuredCatalog, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
 
     final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
@@ -412,7 +444,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       } else if (i <= 10) {
-        // 6th to 10th is the ctid state message for the 2nd stream but final state message for 1st stream
+        // 6th to 10th is the ctid state message for the 2nd stream but final state message for 1st
+        // stream
         assertEquals(2, global.getStreamStates().size());
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
@@ -432,18 +465,24 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Set<String> names = new HashSet<>(STREAM_NAMES);
     names.add(MODELS_STREAM_NAME + "_2");
-    assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
+    assertExpectedRecords(
+        Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
             .collect(Collectors.toSet()),
         recordMessages1,
         names,
         names,
         MODELS_SCHEMA);
 
-    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA), firstStreamInState);
+    assertEquals(
+        new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA),
+        firstStreamInState);
 
     // Triggering a sync with a ctid state for 1 stream and complete state for other stream
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
-        .read(getConfig(), configuredCatalog, Jsons.jsonNode(Collections.singletonList(stateMessages1.get(6))));
+        .read(
+            getConfig(),
+            configuredCatalog,
+            Jsons.jsonNode(Collections.singletonList(stateMessages1.get(6))));
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
@@ -459,7 +498,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
       if (i <= 3) {
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
-          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first time
+          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the
+          // first time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
@@ -475,7 +515,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
     assertEquals(5, recordMessages2.size());
-    assertExpectedRecords(new HashSet<>(MODEL_RECORDS_2.subList(1, MODEL_RECORDS_2.size())),
+    assertExpectedRecords(
+        new HashSet<>(MODEL_RECORDS_2.subList(1, MODEL_RECORDS_2.size())),
         recordMessages2,
         names,
         names,
@@ -483,27 +524,29 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesForNoData(
+      final List<AirbyteStateMessage> stateMessages) {
     assertEquals(2, stateMessages.size());
   }
 
   @Override
-  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesFromIncrementalSync(
+      final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
   }
 
   @Override
   protected PostgresCdcTargetPosition cdcLatestTargetPosition() {
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText())));
+    final JdbcDatabase database = new DefaultJdbcDatabase(DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText())));
 
     return PostgresCdcTargetPosition.targetPosition(database);
   }
@@ -548,7 +591,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     properties.set(CDC_LSN, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
-
   }
 
   @Override
@@ -585,24 +627,34 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   void testDiscoverFiltersNonPublication() throws Exception {
     // Drop the default publication (which is created for all tables). Create a publication for the
     // models table. By default,
-    // the tests create a models_schema.models table and models_schema_random.models_random table. We
+    // the tests create a models_schema.models table and models_schema_random.models_random table.
+    // We
     // will create a publication
-    // for one of the tests and assert that both streams end up in the catalog. However, the stream that
+    // for one of the tests and assert that both streams end up in the catalog. However, the stream
+    // that
     // is not associated with
     // a publication should only have SyncMode.FULL_REFRESH as a supported sync mode.
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
-    database.query(ctx -> ctx.execute(String.format("CREATE PUBLICATION " + PUBLICATION + " FOR TABLE %s.%s", MODELS_SCHEMA, "models")));
+    database.query(ctx -> ctx.execute(String.format(
+        "CREATE PUBLICATION " + PUBLICATION + " FOR TABLE %s.%s", MODELS_SCHEMA, "models")));
 
     final AirbyteCatalog catalog = source.discover(getConfig());
     assertEquals(catalog.getStreams().size(), 2);
-    final AirbyteStream streamInPublication =
-        catalog.getStreams().stream().filter(stream -> stream.getName().equals("models")).findFirst().get();
-    final AirbyteStream streamNotInPublication =
-        catalog.getStreams().stream().filter(stream -> !stream.getName().equals("models")).findFirst().get();
+    final AirbyteStream streamInPublication = catalog.getStreams().stream()
+        .filter(stream -> stream.getName().equals("models"))
+        .findFirst()
+        .get();
+    final AirbyteStream streamNotInPublication = catalog.getStreams().stream()
+        .filter(stream -> !stream.getName().equals("models"))
+        .findFirst()
+        .get();
 
-    // The stream that has an associated publication should have support for source-defined incremental
+    // The stream that has an associated publication should have support for source-defined
+    // incremental
     // sync.
-    assertEquals(streamInPublication.getSupportedSyncModes(), List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    assertEquals(
+        streamInPublication.getSupportedSyncModes(),
+        List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
     assertFalse(streamInPublication.getSourceDefinedPrimaryKey().isEmpty());
     assertTrue(streamInPublication.getSourceDefinedCursor());
 
@@ -616,55 +668,61 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   @Test
   public void testTableWithTimestampColDefault() throws Exception {
     createAndPopulateTimestampTable();
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createAirbyteStream("time_stamp_table", MODELS_SCHEMA,
-            Field.of("id", JsonSchemaType.NUMBER),
-            Field.of("name", JsonSchemaType.STRING),
-            Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+    final AirbyteCatalog catalog = new AirbyteCatalog()
+        .withStreams(List.of(CatalogHelpers.createAirbyteStream(
+                "time_stamp_table",
+                MODELS_SCHEMA,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
-        .toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
 
     // set all streams to incremental.
     configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), configuredCatalog, null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator =
+        getSource().read(getConfig(), configuredCatalog, null);
+    final List<AirbyteMessage> dataFromFirstBatch =
+        AutoCloseableIterators.toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
     assertExpectedStateMessages(stateAfterFirstBatch);
-    final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
-        dataFromFirstBatch);
+    final Set<AirbyteRecordMessage> recordsFromFirstBatch =
+        extractRecordMessages(dataFromFirstBatch);
 
     assertEquals(6, recordsFromFirstBatch.size());
   }
 
   private void createAndPopulateTimestampTable() {
-    createTable(MODELS_SCHEMA, "time_stamp_table",
-        columnClause(ImmutableMap.of("id", "INTEGER", "name", "VARCHAR(200)", "created_at", "TIMESTAMPTZ NOT NULL DEFAULT NOW()"),
+    createTable(
+        MODELS_SCHEMA,
+        "time_stamp_table",
+        columnClause(
+            ImmutableMap.of(
+                "id",
+                "INTEGER",
+                "name",
+                "VARCHAR(200)",
+                "created_at",
+                "TIMESTAMPTZ NOT NULL DEFAULT NOW()"),
             Optional.of("id")));
     final List<JsonNode> timestampRecords = ImmutableList.of(
-        Jsons
-            .jsonNode(ImmutableMap
-                .of("id", 11000, "name", "blah1")),
-        Jsons.jsonNode(ImmutableMap
-            .of("id", 12000, "name", "blah2")),
-        Jsons
-            .jsonNode(ImmutableMap
-                .of("id", 13000, "name", "blah3")),
-        Jsons.jsonNode(ImmutableMap
-            .of("id", 14000, "name", "blah4")),
-        Jsons.jsonNode(ImmutableMap
-            .of("id", 15000, "name", "blah5")),
-        Jsons
-            .jsonNode(ImmutableMap
-                .of("id", 16000, "name", "blah6")));
+        Jsons.jsonNode(ImmutableMap.of("id", 11000, "name", "blah1")),
+        Jsons.jsonNode(ImmutableMap.of("id", 12000, "name", "blah2")),
+        Jsons.jsonNode(ImmutableMap.of("id", 13000, "name", "blah3")),
+        Jsons.jsonNode(ImmutableMap.of("id", 14000, "name", "blah4")),
+        Jsons.jsonNode(ImmutableMap.of("id", 15000, "name", "blah5")),
+        Jsons.jsonNode(ImmutableMap.of("id", 16000, "name", "blah6")));
     for (final JsonNode recordJson : timestampRecords) {
-      executeQuery(
-          String.format("INSERT INTO %s.%s (%s, %s) VALUES (%s, '%s');", MODELS_SCHEMA, "time_stamp_table",
-              "id", "name",
-              recordJson.get("id").asInt(), recordJson.get("name").asText()));
+      executeQuery(String.format(
+          "INSERT INTO %s.%s (%s, %s) VALUES (%s, '%s');",
+          MODELS_SCHEMA,
+          "time_stamp_table",
+          "id",
+          "name",
+          recordJson.get("id").asInt(),
+          recordJson.get("name").asText()));
     }
   }
 
@@ -674,59 +732,59 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final int recordsToCreate = 20;
 
     final JsonNode config = getConfig();
-    final JsonNode replicationMethod = ((ObjectNode) getReplicationMethod(config.get(JdbcUtils.DATABASE_KEY).asText())).put("lsn_commit_behaviour",
-        "While reading Data");
+    final JsonNode replicationMethod = ((ObjectNode)
+            getReplicationMethod(config.get(JdbcUtils.DATABASE_KEY).asText()))
+        .put("lsn_commit_behaviour", "While reading Data");
     ((ObjectNode) config).put("replication_method", replicationMethod);
 
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(config, CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator =
+        getSource().read(config, CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch =
+        AutoCloseableIterators.toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
     assertExpectedStateMessages(stateAfterFirstBatch);
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "F-" + recordsCreated));
       writeModelRecord(record);
     }
 
     // Extract the last state message
-    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(config, CONFIGURED_CATALOG, state);
-    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
-        .toListAndClose(secondBatchIterator);
-    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    final JsonNode state = Jsons.jsonNode(
+        Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator =
+        getSource().read(config, CONFIGURED_CATALOG, state);
+    final List<AirbyteMessage> dataFromSecondBatch =
+        AutoCloseableIterators.toListAndClose(secondBatchIterator);
+    final List<AirbyteStateMessage> stateAfterSecondBatch =
+        extractStateMessages(dataFromSecondBatch);
     assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch);
 
     for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "H-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "H-" + recordsCreated));
       writeModelRecord(record);
     }
 
     // Triggering sync with the first sync's state only which would mimic a scenario that the second
     // sync failed on destination end, and we didn't save state
-    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
-        .read(config, CONFIGURED_CATALOG, state);
+    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator =
+        getSource().read(config, CONFIGURED_CATALOG, state);
 
-    final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
-        .toListAndClose(thirdBatchIterator);
+    final List<AirbyteMessage> dataFromThirdBatch =
+        AutoCloseableIterators.toListAndClose(thirdBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
     assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterThirdBatch);
-    final Set<AirbyteRecordMessage> recordsFromThirdBatch = extractRecordMessages(
-        dataFromThirdBatch);
+    final Set<AirbyteRecordMessage> recordsFromThirdBatch =
+        extractRecordMessages(dataFromThirdBatch);
 
     assertEquals(MODEL_RECORDS.size() + recordsToCreate + 1, recordsFromThirdBatch.size());
   }
 
-  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(
+      final List<AirbyteStateMessage> stateMessages) {
     assertEquals(28, stateMessages.size());
     assertStateTypes(stateMessages, 25);
   }
@@ -749,106 +807,130 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     final JdbcDatabase defaultJdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
-    final Long replicationSlotAtTheBeginning = PgLsn.fromPgString(
-        source.getReplicationSlot(defaultJdbcDatabase, getConfig()).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    final Long replicationSlotAtTheBeginning = PgLsn.fromPgString(source
+            .getReplicationSlot(defaultJdbcDatabase, getConfig())
+            .get(0)
+            .get("confirmed_flush_lsn")
+            .asText())
+        .asLong();
 
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch =
+        AutoCloseableIterators.toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
 
-    final Long replicationSlotAfterFirstSync = PgLsn.fromPgString(
-        source.getReplicationSlot(defaultJdbcDatabase, getConfig()).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    final Long replicationSlotAfterFirstSync = PgLsn.fromPgString(source
+            .getReplicationSlot(defaultJdbcDatabase, getConfig())
+            .get(0)
+            .get("confirmed_flush_lsn")
+            .asText())
+        .asLong();
 
     // First sync should not make any change to the replication slot status
-    assertLsnPositionForSyncShouldIncrementLSN(replicationSlotAtTheBeginning, replicationSlotAfterFirstSync, 1);
+    assertLsnPositionForSyncShouldIncrementLSN(
+        replicationSlotAtTheBeginning, replicationSlotAfterFirstSync, 1);
 
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "F-" + recordsCreated));
       writeModelRecord(record);
     }
 
-    final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
-    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
-        .toListAndClose(secondBatchIterator);
-    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    final JsonNode stateAfterFirstSync = Jsons.jsonNode(
+        Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromSecondBatch =
+        AutoCloseableIterators.toListAndClose(secondBatchIterator);
+    final List<AirbyteStateMessage> stateAfterSecondBatch =
+        extractStateMessages(dataFromSecondBatch);
     assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch);
 
-    final Long replicationSlotAfterSecondSync = PgLsn.fromPgString(
-        source.getReplicationSlot(defaultJdbcDatabase, getConfig()).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    final Long replicationSlotAfterSecondSync = PgLsn.fromPgString(source
+            .getReplicationSlot(defaultJdbcDatabase, getConfig())
+            .get(0)
+            .get("confirmed_flush_lsn")
+            .asText())
+        .asLong();
 
     // Second sync should move the replication slot ahead
-    assertLsnPositionForSyncShouldIncrementLSN(replicationSlotAfterFirstSync, replicationSlotAfterSecondSync, 2);
+    assertLsnPositionForSyncShouldIncrementLSN(
+        replicationSlotAfterFirstSync, replicationSlotAfterSecondSync, 2);
 
     for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "H-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "H-" + recordsCreated));
       writeModelRecord(record);
     }
 
     // Triggering sync with the first sync's state only which would mimic a scenario that the second
     // sync failed on destination end, and we didn't save state
-    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
-    final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
-        .toListAndClose(thirdBatchIterator);
+    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromThirdBatch =
+        AutoCloseableIterators.toListAndClose(thirdBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
     assertExpectedStateMessagesFromIncrementalSync(stateAfterThirdBatch);
-    final Set<AirbyteRecordMessage> recordsFromThirdBatch = extractRecordMessages(
-        dataFromThirdBatch);
+    final Set<AirbyteRecordMessage> recordsFromThirdBatch =
+        extractRecordMessages(dataFromThirdBatch);
 
-    final Long replicationSlotAfterThirdSync = PgLsn.fromPgString(
-        source.getReplicationSlot(defaultJdbcDatabase, getConfig()).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    final Long replicationSlotAfterThirdSync = PgLsn.fromPgString(source
+            .getReplicationSlot(defaultJdbcDatabase, getConfig())
+            .get(0)
+            .get("confirmed_flush_lsn")
+            .asText())
+        .asLong();
 
     // Since we used the state, no change should happen to the replication slot
     assertEquals(replicationSlotAfterSecondSync, replicationSlotAfterThirdSync);
     assertEquals(recordsToCreate + 1, recordsFromThirdBatch.size());
 
     for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 500 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "H-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 500 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "H-" + recordsCreated));
       writeModelRecord(record);
     }
 
     final AutoCloseableIterator<AirbyteMessage> fourthBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, Jsons.jsonNode(Collections.singletonList(stateAfterThirdBatch.get(stateAfterThirdBatch.size() - 1))));
-    final List<AirbyteMessage> dataFromFourthBatch = AutoCloseableIterators
-        .toListAndClose(fourthBatchIterator);
+        .read(
+            getConfig(),
+            CONFIGURED_CATALOG,
+            Jsons.jsonNode(Collections.singletonList(
+                stateAfterThirdBatch.get(stateAfterThirdBatch.size() - 1))));
+    final List<AirbyteMessage> dataFromFourthBatch =
+        AutoCloseableIterators.toListAndClose(fourthBatchIterator);
 
-    final List<AirbyteStateMessage> stateAfterFourthBatch = extractStateMessages(dataFromFourthBatch);
+    final List<AirbyteStateMessage> stateAfterFourthBatch =
+        extractStateMessages(dataFromFourthBatch);
     assertExpectedStateMessagesFromIncrementalSync(stateAfterFourthBatch);
-    final Set<AirbyteRecordMessage> recordsFromFourthBatch = extractRecordMessages(
-        dataFromFourthBatch);
+    final Set<AirbyteRecordMessage> recordsFromFourthBatch =
+        extractRecordMessages(dataFromFourthBatch);
 
-    final Long replicationSlotAfterFourthSync = PgLsn.fromPgString(
-        source.getReplicationSlot(defaultJdbcDatabase, getConfig()).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    final Long replicationSlotAfterFourthSync = PgLsn.fromPgString(source
+            .getReplicationSlot(defaultJdbcDatabase, getConfig())
+            .get(0)
+            .get("confirmed_flush_lsn")
+            .asText())
+        .asLong();
 
     // Fourth sync should again move the replication slot ahead
     assertEquals(1, replicationSlotAfterFourthSync.compareTo(replicationSlotAfterThirdSync));
     assertEquals(1, recordsFromFourthBatch.size());
   }
 
-  protected void assertLsnPositionForSyncShouldIncrementLSN(final Long lsnPosition1,
-      final Long lsnPosition2, final int syncNumber) {
+  protected void assertLsnPositionForSyncShouldIncrementLSN(
+      final Long lsnPosition1, final Long lsnPosition2, final int syncNumber) {
     if (syncNumber == 1) {
       assertEquals(1, lsnPosition2.compareTo(lsnPosition1));
     } else if (syncNumber == 2) {
@@ -870,33 +952,36 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20000;
 
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch =
+        AutoCloseableIterators.toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
 
-    // As first `read` operation is from snapshot, it would generate only one state message at the end
+    // As first `read` operation is from snapshot, it would generate only one state message at the
+    // end
     // of the process.
     assertExpectedStateMessages(stateMessages);
 
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "F-" + recordsCreated));
       writeModelRecord(record);
     }
 
-    final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
-    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
-        .toListAndClose(secondBatchIterator);
+    final JsonNode stateAfterFirstSync =
+        Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromSecondBatch =
+        AutoCloseableIterators.toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
     assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+    assertEquals(
+        stateMessagesCDC.size(),
+        stateMessagesCDC.stream().distinct().count(),
+        "There are duplicated states.");
   }
 
   /**
@@ -906,43 +991,46 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception Exception happening in the test.
    */
-  @Disabled("Disabled 'verifyCheckpointStatesBySeconds' test as flaky. https://github.com/airbytehq/airbyte/issues/29411")
+  @Disabled(
+      "Disabled 'verifyCheckpointStatesBySeconds' test as flaky. https://github.com/airbytehq/airbyte/issues/29411")
   @Test
   protected void verifyCheckpointStatesBySeconds() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20000;
 
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator =
+        getSource().read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch =
+        AutoCloseableIterators.toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
 
-    // As first `read` operation is from snapshot, it would generate only one state message at the end
+    // As first `read` operation is from snapshot, it would generate only one state message at the
+    // end
     // of the process.
     assertExpectedStateMessages(stateMessages);
 
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
+      final JsonNode record = Jsons.jsonNode(ImmutableMap.of(
+          COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL, "F-" + recordsCreated));
       writeModelRecord(record);
     }
     final JsonNode config = getConfig();
     ((ObjectNode) config).put("sync_checkpoint_seconds", 1);
     ((ObjectNode) config).put("sync_checkpoint_records", 100_000);
 
-    final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(config, CONFIGURED_CATALOG, stateAfterFirstSync);
-    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
-        .toListAndClose(secondBatchIterator);
+    final JsonNode stateAfterFirstSync =
+        Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator =
+        getSource().read(config, CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromSecondBatch =
+        AutoCloseableIterators.toListAndClose(secondBatchIterator);
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
     assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+    assertEquals(
+        stateMessagesCDC.size(),
+        stateMessagesCDC.stream().distinct().count(),
+        "There are duplicated states.");
   }
-
 }

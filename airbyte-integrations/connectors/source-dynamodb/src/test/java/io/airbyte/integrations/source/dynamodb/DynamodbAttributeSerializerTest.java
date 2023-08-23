@@ -35,27 +35,46 @@ class DynamodbAttributeSerializerTest {
   void serializeAttributeValueToJson() throws JSONException, JsonProcessingException {
 
     Map<String, AttributeValue> items = Map.of(
-        "sAttribute", AttributeValue.builder().s("string").build(),
-        "nAttribute", AttributeValue.builder().n("123").build(),
+        "sAttribute",
+        AttributeValue.builder().s("string").build(),
+        "nAttribute",
+        AttributeValue.builder().n("123").build(),
         "bAttribute",
-        AttributeValue.builder().b(SdkBytes.fromByteArray("byteArray".getBytes(StandardCharsets.UTF_8))).build(),
-        "ssAttribute", AttributeValue.builder().ss("string1", "string2").build(),
-        "nsAttribute", AttributeValue.builder().ns("12.5", "25.5").build(),
-        "bsAttribute", AttributeValue.builder().bs(
-            SdkBytes.fromByteArray("byteArray1".getBytes(StandardCharsets.UTF_8)),
-            SdkBytes.fromByteArray("byteArray2".getBytes(StandardCharsets.UTF_8))).build(),
-        "lAttribute", AttributeValue.builder().l(
-            AttributeValue.builder().s("string3").build(),
-            AttributeValue.builder().n("125").build()).build(),
-        "mAttribute", AttributeValue.builder().m(Map.of(
-            "attr1", AttributeValue.builder().s("string4").build(),
-            "attr2", AttributeValue.builder().s("string5").build())).build(),
-        "boolAttribute", AttributeValue.builder().bool(false).build(),
-        "nulAttribute", AttributeValue.builder().nul(true).build());
+        AttributeValue.builder()
+            .b(SdkBytes.fromByteArray("byteArray".getBytes(StandardCharsets.UTF_8)))
+            .build(),
+        "ssAttribute",
+        AttributeValue.builder().ss("string1", "string2").build(),
+        "nsAttribute",
+        AttributeValue.builder().ns("12.5", "25.5").build(),
+        "bsAttribute",
+        AttributeValue.builder()
+            .bs(
+                SdkBytes.fromByteArray("byteArray1".getBytes(StandardCharsets.UTF_8)),
+                SdkBytes.fromByteArray("byteArray2".getBytes(StandardCharsets.UTF_8)))
+            .build(),
+        "lAttribute",
+        AttributeValue.builder()
+            .l(
+                AttributeValue.builder().s("string3").build(),
+                AttributeValue.builder().n("125").build())
+            .build(),
+        "mAttribute",
+        AttributeValue.builder()
+            .m(Map.of(
+                "attr1", AttributeValue.builder().s("string4").build(),
+                "attr2", AttributeValue.builder().s("string5").build()))
+            .build(),
+        "boolAttribute",
+        AttributeValue.builder().bool(false).build(),
+        "nulAttribute",
+        AttributeValue.builder().nul(true).build());
 
     var jsonNode = attributeObjectMapper.writeValueAsString(items);
 
-    JSONAssert.assertEquals(jsonNode, """
+    JSONAssert.assertEquals(
+        jsonNode,
+        """
                                        {
                                            "bAttribute": "Ynl0ZUFycmF5",
                                            "boolAttribute": false,
@@ -71,7 +90,7 @@ class DynamodbAttributeSerializerTest {
                                            "sAttribute": "string",
                                            "ssAttribute": ["string1", "string2"]
                                        }
-                                      """, true);
+                                      """,
+        true);
   }
-
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.MYSQL_STATUS_VERSION;
@@ -19,7 +23,8 @@ import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessage>
+    implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialSyncStateIterator.class);
   public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
@@ -37,7 +42,8 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   private final Long syncCheckpointRecords;
   private final String pkFieldName;
 
-  public MySqlInitialSyncStateIterator(final Iterator<AirbyteMessage> messageIterator,
+  public MySqlInitialSyncStateIterator(
+      final Iterator<AirbyteMessage> messageIterator,
       final AirbyteStreamNameNamespacePair pair,
       final MySqlInitialLoadStateManager stateManager,
       final JsonNode streamStateForIncrementalRun,
@@ -57,7 +63,10 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   @Override
   protected AirbyteMessage computeNext() {
     if (messageIterator.hasNext()) {
-      if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
+      if ((recordCount >= syncCheckpointRecords
+              || Duration.between(lastCheckpoint, OffsetDateTime.now())
+                      .compareTo(syncCheckpointDuration)
+                  > 0)
           && Objects.nonNull(pkStatus)) {
         LOGGER.info("Emitting initial sync pk state for stream {}, state is {}", pair, pkStatus);
         recordCount = 0L;
@@ -86,11 +95,13 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
-      LOGGER.info("Finished initial sync of stream {}, Emitting final state, state is {}", pair, finalStateMessage);
-      return new AirbyteMessage()
-          .withType(Type.STATE)
-          .withState(finalStateMessage);
+      final AirbyteStateMessage finalStateMessage =
+          stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
+      LOGGER.info(
+          "Finished initial sync of stream {}, Emitting final state, state is {}",
+          pair,
+          finalStateMessage);
+      return new AirbyteMessage().withType(Type.STATE).withState(finalStateMessage);
     } else {
       return endOfData();
     }

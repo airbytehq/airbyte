@@ -26,7 +26,8 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
+public class CdcInitialSnapshotPostgresSourceDatatypeTest
+    extends AbstractPostgresSourceDatatypeTest {
 
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
@@ -40,7 +41,8 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
   protected Database setupDatabase() throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>("postgres:14-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
@@ -72,7 +74,8 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -111,19 +114,20 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
 
   @Override
   protected void addHstoreTest() {
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("hstore")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("""
+    addDataTypeTestData(TestDataHolder.builder()
+        .sourceType("hstore")
+        .airbyteType(JsonSchemaType.STRING)
+        .addInsertValues(
+            """
                 '"paperback" => "243","publisher" => "postgresqltutorial.com",
                 "language"  => "English","ISBN-13" => "978-1449370000",
                 "weight"    => "11.2 ounces"'
-                """, null)
-            .addExpectedValues(
-                //
-                "\"weight\"=>\"11.2 ounces\", \"ISBN-13\"=>\"978-1449370000\", \"language\"=>\"English\", \"paperback\"=>\"243\", \"publisher\"=>\"postgresqltutorial.com\"",
-                null)
-            .build());
+                """,
+            null)
+        .addExpectedValues(
+            //
+            "\"weight\"=>\"11.2 ounces\", \"ISBN-13\"=>\"978-1449370000\", \"language\"=>\"English\", \"paperback\"=>\"243\", \"publisher\"=>\"postgresqltutorial.com\"",
+            null)
+        .build());
   }
 }

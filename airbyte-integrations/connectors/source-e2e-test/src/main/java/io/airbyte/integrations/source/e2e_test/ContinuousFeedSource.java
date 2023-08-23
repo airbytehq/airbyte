@@ -39,7 +39,9 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
   public AirbyteConnectionStatus check(final JsonNode jsonConfig) {
     try {
       final ContinuousFeedConfig sourceConfig = new ContinuousFeedConfig(jsonConfig);
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED).withMessage("Source config: " + sourceConfig);
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.SUCCEEDED)
+          .withMessage("Source config: " + sourceConfig);
     } catch (final Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
@@ -52,7 +54,8 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final ContinuousFeedConfig feedConfig = new ContinuousFeedConfig(jsonConfig);
     final List<Iterator<AirbyteMessage>> iterators = new LinkedList<>();
@@ -62,9 +65,11 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
       final Optional<Long> messageIntervalMs = feedConfig.getMessageIntervalMs();
 
       final SchemaStore schemaStore = new SchemaStore(true);
-      final Schema schema = schemaStore.loadSchemaJson(Jsons.serialize(stream.getStream().getJsonSchema()));
+      final Schema schema =
+          schemaStore.loadSchemaJson(Jsons.serialize(stream.getStream().getJsonSchema()));
       final Random random = new Random(feedConfig.getSeed());
-      final Generator generator = new Generator(ContinuousFeedConstants.MOCK_JSON_CONFIG, schemaStore, random);
+      final Generator generator =
+          new Generator(ContinuousFeedConstants.MOCK_JSON_CONFIG, schemaStore, random);
 
       final Iterator<AirbyteMessage> streamIterator = new AbstractIterator<>() {
 
@@ -86,7 +91,8 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
 
           final JsonNode data;
           try {
-            data = Jsons.jsonNode(generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE));
+            data = Jsons.jsonNode(
+                generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE));
           } catch (final JsonGeneratorException e) {
             throw new RuntimeException(e);
           }
@@ -98,12 +104,10 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
                   .withEmittedAt(Instant.now().toEpochMilli())
                   .withData(data));
         }
-
       };
       iterators.add(streamIterator);
     }
 
     return AutoCloseableIterators.fromIterator(Iterators.concat(iterators.iterator()));
   }
-
 }

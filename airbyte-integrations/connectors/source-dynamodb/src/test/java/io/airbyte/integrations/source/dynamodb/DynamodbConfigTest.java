@@ -30,7 +30,5 @@ class DynamodbConfigTest {
         .hasFieldOrPropertyWithValue("region", Region.of("us-east-1"))
         .hasFieldOrPropertyWithValue("accessKey", "A012345678910EXAMPLE")
         .hasFieldOrPropertyWithValue("secretKey", "a012345678910ABCDEFGH/AbCdEfGhLEKEY");
-
   }
-
 }

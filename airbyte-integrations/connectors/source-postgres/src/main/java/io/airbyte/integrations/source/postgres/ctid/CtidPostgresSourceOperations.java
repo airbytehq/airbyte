@@ -52,9 +52,7 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
     return new RowDataWithCtid(jsonNode, ctid);
   }
 
-  public record RowDataWithCtid(JsonNode data, String ctid) {
-
-  }
+  public record RowDataWithCtid(JsonNode data, String ctid) {}
 
   public static class CdcMetadataInjector {
 
@@ -62,7 +60,9 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
     private final long lsn;
     private final PostgresCdcConnectorMetadataInjector metadataInjector;
 
-    public CdcMetadataInjector(final String transactionTimestamp, final long lsn,
+    public CdcMetadataInjector(
+        final String transactionTimestamp,
+        final long lsn,
         final PostgresCdcConnectorMetadataInjector metadataInjector) {
       this.transactionTimestamp = transactionTimestamp;
       this.lsn = lsn;
@@ -73,5 +73,4 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
       metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(record, transactionTimestamp, lsn);
     }
   }
-
 }

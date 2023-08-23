@@ -13,9 +13,11 @@ import org.slf4j.MDC;
 
 class MdcScopeTest {
 
-  private static final Map<String, String> originalMap = Map.of("test", "entry", "testOverride", "should be overrided");
+  private static final Map<String, String> originalMap =
+      Map.of("test", "entry", "testOverride", "should be overrided");
 
-  private static final Map<String, String> modificationInMDC = Map.of("new", "will be added", "testOverride", "will override");
+  private static final Map<String, String> modificationInMDC =
+      Map.of("new", "will be added", "testOverride", "will override");
 
   @BeforeEach
   void init() {
@@ -28,8 +30,9 @@ class MdcScopeTest {
     try (final MdcScope ignored = new MdcScope(modificationInMDC)) {
       final Map<String, String> mdcState = MDC.getCopyOfContextMap();
 
-      Assertions.assertThat(mdcState).containsExactlyInAnyOrderEntriesOf(
-          Map.of("test", "entry", "new", "will be added", "testOverride", "will override"));
+      Assertions.assertThat(mdcState)
+          .containsExactlyInAnyOrderEntriesOf(
+              Map.of("test", "entry", "new", "will be added", "testOverride", "will override"));
     }
   }
 
@@ -43,5 +46,4 @@ class MdcScopeTest {
     Assertions.assertThat(mdcState).containsAllEntriesOf(originalMap);
     Assertions.assertThat(mdcState).doesNotContainKey("new");
   }
-
 }

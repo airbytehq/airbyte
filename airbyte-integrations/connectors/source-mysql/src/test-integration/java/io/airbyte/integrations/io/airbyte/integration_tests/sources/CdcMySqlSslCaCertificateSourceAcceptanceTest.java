@@ -65,31 +65,32 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        String.format("%s", STREAM_NAME),
+                        String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSourceDefinedCursor(true)
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withStream(CatalogHelpers.createAirbyteStream(
+                        String.format("%s", STREAM_NAME2),
+                        String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING))
+                    .withSourceDefinedCursor(true)
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
   }
 
   @Override
@@ -156,15 +157,14 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         "root",
         "test",
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
-      database.query(
-          ctx -> ctx
-              .execute(query));
+      database.query(ctx -> ctx.execute(query));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -177,15 +177,16 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
 
   @Test
   public void testIncrementalSyncShouldNotFailIfBinlogIsDeleted() throws Exception {
-    final ConfiguredAirbyteCatalog configuredCatalog = withSourceDefinedCursors(getConfiguredCatalog());
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        withSourceDefinedCursors(getConfiguredCatalog());
     // only sync incremental streams
-    configuredCatalog.setStreams(
-        configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList()));
+    configuredCatalog.setStreams(configuredCatalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == INCREMENTAL)
+        .collect(Collectors.toList()));
 
     final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalog, getState());
     final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
-    final List<AirbyteStateMessage> stateMessages = airbyteMessages
-        .stream()
+    final List<AirbyteStateMessage> stateMessages = airbyteMessages.stream()
         .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
         .map(AirbyteMessage::getState)
         .collect(Collectors.toList());
@@ -194,7 +195,8 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    final JsonNode latestState = Jsons.jsonNode(supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
+    final JsonNode latestState = Jsons.jsonNode(
+        supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     executeQuery("RESET MASTER;");
@@ -206,5 +208,4 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
   protected boolean supportsPerStream() {
     return true;
   }
-
 }

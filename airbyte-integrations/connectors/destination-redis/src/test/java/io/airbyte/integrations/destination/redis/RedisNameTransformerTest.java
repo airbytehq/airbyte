@@ -22,7 +22,6 @@ class RedisNameTransformerTest {
   void testKeyName() {
     var keyName = redisNameTransformer.keyName("namespace", "stream");
     assertThat(keyName).isEqualTo("namespace:stream");
-
   }
 
   @Test
@@ -30,5 +29,4 @@ class RedisNameTransformerTest {
     var tmpKeyName = redisNameTransformer.tmpKeyName("namespace", "stream");
     assertThat(tmpKeyName).isEqualTo("tmp:namespace:stream");
   }
-
 }

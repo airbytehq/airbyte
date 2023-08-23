@@ -33,7 +33,8 @@ public class SelectdbConnectionOptions {
   private String clusterName;
   private static final String CLUSTER_NAME_KEY = "cluster_name";
 
-  public static SelectdbConnectionOptions getSelectdbConnection(final JsonNode config, String table) {
+  public static SelectdbConnectionOptions getSelectdbConnection(
+      final JsonNode config, String table) {
     return new SelectdbConnectionOptions(
         config.get(DB_KEY).asText(),
         table,
@@ -42,16 +43,16 @@ public class SelectdbConnectionOptions {
         config.get(CLUSTER_NAME_KEY).asText(),
         config.get(USER_KEY).asText(),
         config.get(PWD_KEY) == null ? "" : config.get(PWD_KEY).asText());
-
   }
 
-  public SelectdbConnectionOptions(String db,
-                                   String table,
-                                   String loadUrl,
-                                   String jdbcUrl,
-                                   String clusterName,
-                                   String username,
-                                   String password) {
+  public SelectdbConnectionOptions(
+      String db,
+      String table,
+      String loadUrl,
+      String jdbcUrl,
+      String clusterName,
+      String username,
+      String password) {
     this.db = db;
     this.table = table;
     this.loadUrl = Preconditions.checkNotNull(loadUrl, "loadUrl  is empty");
@@ -99,17 +100,15 @@ public class SelectdbConnectionOptions {
 
   @Override
   public String toString() {
-    return "SelectdbConnectionOptions{" +
-        "driverName='" + driverName + '\'' +
-        ", cjDriverName='" + cjDriverName + '\'' +
-        ", db='" + db + '\'' +
-        ", table='" + table + '\'' +
-        ", user='" + user + '\'' +
-        ", pwd='" + pwd + '\'' +
-        ", loadUrl='" + loadUrl + '\'' +
-        ", jdbcUrl='" + jdbcUrl + '\'' +
-        ", clusterName='" + clusterName + '\'' +
-        '}';
+    return "SelectdbConnectionOptions{" + "driverName='"
+        + driverName + '\'' + ", cjDriverName='"
+        + cjDriverName + '\'' + ", db='"
+        + db + '\'' + ", table='"
+        + table + '\'' + ", user='"
+        + user + '\'' + ", pwd='"
+        + pwd + '\'' + ", loadUrl='"
+        + loadUrl + '\'' + ", jdbcUrl='"
+        + jdbcUrl + '\'' + ", clusterName='"
+        + clusterName + '\'' + '}';
   }
-
 }

@@ -138,7 +138,8 @@ public class AirbyteApiClient {
    * an 10-minute wait for the last retry.
    */
   public static <T> T retryWithJitter(final Callable<T> call, final String desc) {
-    return retryWithJitter(call, desc, DEFAULT_RETRY_INTERVAL_SECS, DEFAULT_FINAL_INTERVAL_SECS, DEFAULT_MAX_RETRIES);
+    return retryWithJitter(
+        call, desc, DEFAULT_RETRY_INTERVAL_SECS, DEFAULT_FINAL_INTERVAL_SECS, DEFAULT_MAX_RETRIES);
   }
 
   /**
@@ -158,11 +159,12 @@ public class AirbyteApiClient {
   @VisibleForTesting
   // This is okay since we are logging the stack trace, which PMD is not detecting.
   @SuppressWarnings("PMD.PreserveStackTrace")
-  public static <T> T retryWithJitter(final Callable<T> call,
-                                      final String desc,
-                                      final int jitterMaxIntervalSecs,
-                                      final int finalIntervalSecs,
-                                      final int maxTries) {
+  public static <T> T retryWithJitter(
+      final Callable<T> call,
+      final String desc,
+      final int jitterMaxIntervalSecs,
+      final int finalIntervalSecs,
+      final int maxTries) {
     int currRetries = 0;
     boolean keepTrying = true;
 
@@ -195,5 +197,4 @@ public class AirbyteApiClient {
     }
     return data;
   }
-
 }

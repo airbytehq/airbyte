@@ -30,6 +30,7 @@ public class UploaderConfig {
    * Parsed directly from {@link #configStream}.
    */
   private StreamConfig parsedStream;
+
   private String targetTableName;
   private String tmpTableName;
   private BigQuery bigQuery;
@@ -47,5 +48,4 @@ public class UploaderConfig {
   public BigQueryRecordFormatter getFormatter() {
     return formatterMap.get(getUploaderType());
   }
-
 }

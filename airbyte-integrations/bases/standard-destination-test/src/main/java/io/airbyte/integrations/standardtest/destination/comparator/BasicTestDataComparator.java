@@ -42,7 +42,8 @@ public class BasicTestDataComparator implements TestDataComparator {
         final Map.Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
         final JsonNode expectedValue = expectedEntry.getValue();
         String key = expectedEntry.getKey();
-        JsonNode actualValue = ComparatorUtils.getActualValueByExpectedKey(key, actualData, nameResolver);
+        JsonNode actualValue =
+            ComparatorUtils.getActualValueByExpectedKey(key, actualData, nameResolver);
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
         assertSameValue(expectedValue, actualValue);
       }
@@ -53,5 +54,4 @@ public class BasicTestDataComparator implements TestDataComparator {
   protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     assertEquals(expectedValue, actualValue);
   }
-
 }

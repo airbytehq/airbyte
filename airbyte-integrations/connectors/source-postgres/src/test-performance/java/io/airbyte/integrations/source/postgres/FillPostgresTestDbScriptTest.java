@@ -40,9 +40,8 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
 
   @Override
   protected Database setupDatabase(final String dbName) throws Exception {
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "Standard").build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "your_host")
@@ -57,7 +56,8 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -81,5 +81,4 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
   protected Stream<Arguments> provideParameters() {
     return Stream.of(Arguments.of("postgres", "\"your_schema_name\"", 100, 2, 240, 1000));
   }
-
 }

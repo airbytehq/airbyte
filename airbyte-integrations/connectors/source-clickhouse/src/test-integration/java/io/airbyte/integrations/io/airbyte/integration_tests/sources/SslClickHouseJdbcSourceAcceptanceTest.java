@@ -31,9 +31,11 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceA
 
   @BeforeAll
   static void init() {
-    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY =
+        "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
     INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
-    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY =
+        "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
     INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
     container = new GenericContainer("etsybaev/clickhouse-with-ssl:dev").withExposedPorts(8443);
     container.start();
@@ -54,7 +56,8 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceA
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
-        String.format("jdbc:clickhouse:https://%s:%d?sslmode=NONE",
+        String.format(
+            "jdbc:clickhouse:https://%s:%d?sslmode=NONE",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()));
 
@@ -62,7 +65,8 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceA
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    jdbcDatabase.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+    jdbcDatabase.execute(
+        ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
 
     super.setup();
@@ -70,7 +74,8 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceA
 
   @AfterEach
   public void tearDownClickHouse() throws Exception {
-    jdbcDatabase.execute(ctx -> ctx.createStatement().execute(String.format("DROP DATABASE %s;", dbName)));
+    jdbcDatabase.execute(
+        ctx -> ctx.createStatement().execute(String.format("DROP DATABASE %s;", dbName)));
     super.tearDown();
   }
 
@@ -79,5 +84,4 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceA
     DataSourceFactory.close(dataSource);
     container.close();
   }
-
 }

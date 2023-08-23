@@ -67,11 +67,12 @@ public class FlushWorkers implements AutoCloseable {
   private final AtomicBoolean isClosing;
   private final GlobalAsyncStateManager stateManager;
 
-  public FlushWorkers(final BufferDequeue bufferDequeue,
-                      final DestinationFlushFunction flushFunction,
-                      final Consumer<AirbyteMessage> outputRecordCollector,
-                      final FlushFailure flushFailure,
-                      final GlobalAsyncStateManager stateManager) {
+  public FlushWorkers(
+      final BufferDequeue bufferDequeue,
+      final DestinationFlushFunction flushFunction,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final FlushFailure flushFailure,
+      final GlobalAsyncStateManager stateManager) {
     this.bufferDequeue = bufferDequeue;
     this.outputRecordCollector = outputRecordCollector;
     this.flushFailure = flushFailure;
@@ -82,28 +83,30 @@ public class FlushWorkers implements AutoCloseable {
     workerPool = Executors.newFixedThreadPool(5);
     isClosing = new AtomicBoolean(false);
     runningFlushWorkers = new RunningFlushWorkers();
-    detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, isClosing, flusher);
+    detectStreamToFlush =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, isClosing, flusher);
   }
 
   public void start() {
     log.info("Start async buffer supervisor");
-    supervisorThread.scheduleAtFixedRate(this::retrieveWork,
+    supervisorThread.scheduleAtFixedRate(
+        this::retrieveWork,
         SUPERVISOR_INITIAL_DELAY_SECS,
         SUPERVISOR_PERIOD_SECS,
         TimeUnit.SECONDS);
-    debugLoop.scheduleAtFixedRate(this::printWorkerInfo,
-        DEBUG_INITIAL_DELAY_SECS,
-        DEBUG_PERIOD_SECS,
-        TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(
+        this::printWorkerInfo, DEBUG_INITIAL_DELAY_SECS, DEBUG_PERIOD_SECS, TimeUnit.SECONDS);
   }
 
   private void retrieveWork() {
     try {
-      // This will put a new log line every second which is too much, sampling it doesn't bring much value
+      // This will put a new log line every second which is too much, sampling it doesn't bring much
+      // value
       // so it is set to debug
       log.debug("Retrieve Work -- Finding queues to flush");
       final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
-      int allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
+      int allocatableThreads =
+          threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
 
       while (allocatableThreads > 0) {
         final Optional<StreamDescriptor> next = detectStreamToFlush.getNextStreamToFlush();
@@ -133,29 +136,29 @@ public class FlushWorkers implements AutoCloseable {
     final int queueSize = threadPoolExecutor.getQueue().size();
     final int activeCount = threadPoolExecutor.getActiveCount();
 
-    workerInfo.append(String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount));
+    workerInfo.append(
+        String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount));
     log.info(workerInfo.toString());
-
   }
 
   private void flush(final StreamDescriptor desc, final UUID flushWorkerId) {
     workerPool.submit(() -> {
-      log.info("Flush Worker ({}) -- Worker picked up work.", humanReadableFlushWorkerId(flushWorkerId));
+      log.info(
+          "Flush Worker ({}) -- Worker picked up work.", humanReadableFlushWorkerId(flushWorkerId));
       try {
-        log.info("Flush Worker ({}) -- Attempting to read from queue namespace: {}, stream: {}.",
+        log.info(
+            "Flush Worker ({}) -- Attempting to read from queue namespace: {}, stream: {}.",
             humanReadableFlushWorkerId(flushWorkerId),
             desc.getNamespace(),
             desc.getName());
 
         try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
           runningFlushWorkers.registerBatchSize(desc, flushWorkerId, batch.getSizeInBytes());
-          final Map<Long, Long> stateIdToCount = batch.getData()
-              .stream()
+          final Map<Long, Long> stateIdToCount = batch.getData().stream()
               .map(MessageWithMeta::stateId)
-              .collect(Collectors.groupingBy(
-                  stateId -> stateId,
-                  Collectors.counting()));
-          log.info("Flush Worker ({}) -- Batch contains: {} records, {} bytes.",
+              .collect(Collectors.groupingBy(stateId -> stateId, Collectors.counting()));
+          log.info(
+              "Flush Worker ({}) -- Batch contains: {} records, {} bytes.",
               humanReadableFlushWorkerId(flushWorkerId),
               batch.getData().size(),
               AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
@@ -164,11 +167,16 @@ public class FlushWorkers implements AutoCloseable {
           emitStateMessages(batch.flushStates(stateIdToCount));
         }
 
-        log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
+        log.info(
+            "Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
             humanReadableFlushWorkerId(flushWorkerId),
             bufferDequeue.getQueueSizeInRecords(desc).orElseThrow());
       } catch (final Exception e) {
-        log.error(String.format("Flush Worker (%s) -- flush worker error: ", humanReadableFlushWorkerId(flushWorkerId)), e);
+        log.error(
+            String.format(
+                "Flush Worker (%s) -- flush worker error: ",
+                humanReadableFlushWorkerId(flushWorkerId)),
+            e);
         flushFailure.propagateException(e);
         throw new RuntimeException(e);
       } finally {
@@ -183,27 +191,26 @@ public class FlushWorkers implements AutoCloseable {
     isClosing.set(true);
     // wait for all buffers to be flushed.
     while (true) {
-      final Map<StreamDescriptor, Long> streamDescriptorToRemainingRecords = bufferDequeue.getBufferedStreams()
-          .stream()
-          .collect(Collectors.toMap(desc -> desc, desc -> bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()));
+      final Map<StreamDescriptor, Long> streamDescriptorToRemainingRecords =
+          bufferDequeue.getBufferedStreams().stream()
+              .collect(Collectors.toMap(
+                  desc -> desc,
+                  desc -> bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()));
 
-      final boolean anyRecordsLeft = streamDescriptorToRemainingRecords
-          .values()
-          .stream()
-          .anyMatch(size -> size > 0);
+      final boolean anyRecordsLeft =
+          streamDescriptorToRemainingRecords.values().stream().anyMatch(size -> size > 0);
 
       if (!anyRecordsLeft) {
         break;
       }
 
-      final var workerInfo = new StringBuilder().append("REMAINING_BUFFERS_INFO").append(System.lineSeparator());
-      streamDescriptorToRemainingRecords.entrySet()
-          .stream()
+      final var workerInfo =
+          new StringBuilder().append("REMAINING_BUFFERS_INFO").append(System.lineSeparator());
+      streamDescriptorToRemainingRecords.entrySet().stream()
           .filter(entry -> entry.getValue() > 0)
-          .forEach(entry -> workerInfo.append(String.format("  Namespace: %s Stream: %s -- remaining records: %d",
-              entry.getKey().getNamespace(),
-              entry.getKey().getName(),
-              entry.getValue())));
+          .forEach(entry -> workerInfo.append(String.format(
+              "  Namespace: %s Stream: %s -- remaining records: %d",
+              entry.getKey().getNamespace(), entry.getKey().getName(), entry.getValue())));
       log.info(workerInfo.toString());
       log.info("Waiting for all streams to flush.");
       Thread.sleep(1000);
@@ -225,8 +232,7 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   private void emitStateMessages(final List<PartialAirbyteMessage> partials) {
-    partials
-        .stream()
+    partials.stream()
         .map(partial -> Jsons.deserialize(partial.getSerialized(), AirbyteMessage.class))
         .forEach(outputRecordCollector);
   }
@@ -234,5 +240,4 @@ public class FlushWorkers implements AutoCloseable {
   private static String humanReadableFlushWorkerId(final UUID flushWorkerId) {
     return flushWorkerId.toString().substring(0, 5);
   }
-
 }

@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
+
 package io.airbyte.integrations.source.postgres;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.cdk.CDKConstants;
@@ -22,5 +22,4 @@ class CdkImportTest {
     // Should fail in unit test phase:
     assertEquals("0.0.2", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
   }
-
 }

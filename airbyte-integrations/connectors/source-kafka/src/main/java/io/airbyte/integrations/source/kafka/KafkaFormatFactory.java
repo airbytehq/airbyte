@@ -13,9 +13,10 @@ public class KafkaFormatFactory {
 
   public static KafkaFormat getFormat(final JsonNode config) {
 
-    MessageFormat messageFormat =
-        config.has("MessageFormat") ? MessageFormat.valueOf(config.get("MessageFormat").get("deserialization_type").asText().toUpperCase())
-            : MessageFormat.JSON;
+    MessageFormat messageFormat = config.has("MessageFormat")
+        ? MessageFormat.valueOf(
+            config.get("MessageFormat").get("deserialization_type").asText().toUpperCase())
+        : MessageFormat.JSON;
 
     switch (messageFormat) {
       case JSON -> {
@@ -27,5 +28,4 @@ public class KafkaFormatFactory {
     }
     return new JsonFormat(config);
   }
-
 }

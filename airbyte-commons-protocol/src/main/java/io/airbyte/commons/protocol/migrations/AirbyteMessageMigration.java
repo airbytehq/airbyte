@@ -22,7 +22,9 @@ public interface AirbyteMessageMigration<PreviousVersion, CurrentVersion> extend
    * @param configuredAirbyteCatalog: the ConfiguredAirbyteCatalog of the connection when applicable
    * @return the downgraded message
    */
-  PreviousVersion downgrade(final CurrentVersion message, final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog);
+  PreviousVersion downgrade(
+      final CurrentVersion message,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog);
 
   /**
    * Upgrades a message from the old version to the new version
@@ -31,6 +33,7 @@ public interface AirbyteMessageMigration<PreviousVersion, CurrentVersion> extend
    * @param configuredAirbyteCatalog: the ConfiguredAirbyteCatalog of the connection when applicable
    * @return the upgrade message
    */
-  CurrentVersion upgrade(final PreviousVersion message, final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog);
-
+  CurrentVersion upgrade(
+      final PreviousVersion message,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog);
 }

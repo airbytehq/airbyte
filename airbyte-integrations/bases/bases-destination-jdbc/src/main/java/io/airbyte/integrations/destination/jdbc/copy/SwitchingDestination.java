@@ -39,7 +39,10 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   private final Function<JsonNode, T> configToType;
   private final Map<T, Destination> typeToDestination;
 
-  public SwitchingDestination(final Class<T> enumClass, final Function<JsonNode, T> configToType, final Map<T, Destination> typeToDestination) {
+  public SwitchingDestination(
+      final Class<T> enumClass,
+      final Function<JsonNode, T> configToType,
+      final Map<T, Destination> typeToDestination) {
     final Set<T> allEnumConstants = new HashSet<>(Arrays.asList(enumClass.getEnumConstants()));
     final Set<T> supportedEnumConstants = typeToDestination.keySet();
 
@@ -58,23 +61,28 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
-    return typeToDestination.get(destinationType).getConsumer(config, catalog, outputRecordCollector);
+    return typeToDestination
+        .get(destinationType)
+        .getConsumer(config, catalog, outputRecordCollector);
   }
 
   @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
-                                                                       final ConfiguredAirbyteCatalog catalog,
-                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
-    return typeToDestination.get(destinationType).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
+    return typeToDestination
+        .get(destinationType)
+        .getSerializedMessageConsumer(config, catalog, outputRecordCollector);
   }
-
 }

@@ -19,5 +19,4 @@ public class AirbyteMessageGenericSerializer<T> implements AirbyteMessageSeriali
   public String serialize(T message) {
     return Jsons.serialize(message);
   }
-
 }

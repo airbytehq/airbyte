@@ -30,5 +30,4 @@ public class SelectdbWriteConfig {
   public CSVPrinter getWriter() {
     return writer;
   }
-
 }

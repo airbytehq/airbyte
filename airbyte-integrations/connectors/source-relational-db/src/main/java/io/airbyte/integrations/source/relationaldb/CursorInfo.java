@@ -16,19 +16,21 @@ public class CursorInfo {
   private String cursor;
   private long cursorRecordCount;
 
-  public CursorInfo(final String originalCursorField,
-                    final String originalCursor,
-                    final String cursorField,
-                    final String cursor) {
+  public CursorInfo(
+      final String originalCursorField,
+      final String originalCursor,
+      final String cursorField,
+      final String cursor) {
     this(originalCursorField, originalCursor, 0L, cursorField, cursor, 0L);
   }
 
-  public CursorInfo(final String originalCursorField,
-                    final String originalCursor,
-                    final long originalCursorRecordCount,
-                    final String cursorField,
-                    final String cursor,
-                    final long cursorRecordCount) {
+  public CursorInfo(
+      final String originalCursorField,
+      final String originalCursor,
+      final long originalCursorRecordCount,
+      final String cursorField,
+      final String cursor,
+      final long cursorRecordCount) {
     this.originalCursorField = originalCursorField;
     this.originalCursor = originalCursor;
     this.originalCursorRecordCount = originalCursorRecordCount;
@@ -91,19 +93,23 @@ public class CursorInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(originalCursorField, originalCursor, originalCursorRecordCount, cursorField, cursor, cursorRecordCount);
+    return Objects.hash(
+        originalCursorField,
+        originalCursor,
+        originalCursorRecordCount,
+        cursorField,
+        cursor,
+        cursorRecordCount);
   }
 
   @Override
   public String toString() {
-    return "CursorInfo{" +
-        "originalCursorField='" + originalCursorField + '\'' +
-        ", originalCursor='" + originalCursor + '\'' +
-        ", originalCursorRecordCount='" + originalCursorRecordCount + '\'' +
-        ", cursorField='" + cursorField + '\'' +
-        ", cursor='" + cursor + '\'' +
-        ", cursorRecordCount='" + cursorRecordCount + '\'' +
-        '}';
+    return "CursorInfo{" + "originalCursorField='"
+        + originalCursorField + '\'' + ", originalCursor='"
+        + originalCursor + '\'' + ", originalCursorRecordCount='"
+        + originalCursorRecordCount + '\'' + ", cursorField='"
+        + cursorField + '\'' + ", cursor='"
+        + cursor + '\'' + ", cursorRecordCount='"
+        + cursorRecordCount + '\'' + '}';
   }
-
 }

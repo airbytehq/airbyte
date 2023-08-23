@@ -34,14 +34,17 @@ public class BigQueryDestinationTestUtils {
    * @param stagingPath Staging GCS path to use in the test, or null if the test is running in standard inserts mode.
    *                    Should be randomized per test case.
    */
-  public static ObjectNode createConfig(Path configFile, String datasetId, String stagingPath) throws IOException {
+  public static ObjectNode createConfig(Path configFile, String datasetId, String stagingPath)
+      throws IOException {
     LOGGER.info("Setting default dataset to {}", datasetId);
     final String tmpConfigAsString = Files.readString(configFile);
     final ObjectNode config = (ObjectNode) Jsons.deserialize(tmpConfigAsString);
     config.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId);
 
-    // This is sort of a hack. Ideally tests shouldn't interfere with each other even when using the same staging path.
-    // Most likely there's a real bug in the connector - but we should investigate that and write a real test case,
+    // This is sort of a hack. Ideally tests shouldn't interfere with each other even when using the
+    // same staging path.
+    // Most likely there's a real bug in the connector - but we should investigate that and write a
+    // real test case,
     // rather than relying on tests randomly failing to indicate that bug.
     // See https://github.com/airbytehq/airbyte/issues/28372.
     if (stagingPath != null && BigQueryUtils.getLoadingMethod(config) == UploadingMethod.GCS) {
@@ -62,7 +65,8 @@ public class BigQueryDestinationTestUtils {
    */
   public static Dataset initDataSet(JsonNode config, BigQuery bigquery, String datasetId) {
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId)
-        .setLocation(config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText()).build();
+        .setLocation(config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText())
+        .build();
     try {
       return bigquery.create(datasetInfo);
     } catch (Exception ex) {
@@ -128,12 +132,12 @@ public class BigQueryDestinationTestUtils {
     }
     final JsonNode properties = config.get(BigQueryConsts.LOADING_METHOD);
     final String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
-    final String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
+    final String gcs_bucket_path =
+        properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
     try {
       final List<KeyVersion> keysToDelete = new LinkedList<>();
-      final List<S3ObjectSummary> objects = s3Client
-          .listObjects(gcsBucketName, gcs_bucket_path)
-          .getObjectSummaries();
+      final List<S3ObjectSummary> objects =
+          s3Client.listObjects(gcsBucketName, gcs_bucket_path).getObjectSummaries();
       for (final S3ObjectSummary object : objects) {
         keysToDelete.add(new KeyVersion(object.getKey()));
       }
@@ -150,5 +154,4 @@ public class BigQueryDestinationTestUtils {
       LOGGER.error("Failed to remove GCS resources after the test", ex);
     }
   }
-
 }

@@ -47,7 +47,8 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     if (db == null) {
-      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04").acceptLicense();
+      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04")
+          .acceptLicense();
       db.start();
     }
     final var containerAddress = SshHelpers.getOuterContainerAddress(db);
@@ -64,11 +65,11 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
       database.query(ctx -> {
         ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
         ctx.fetch(String.format("USE %s;", dbName));
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
         ctx.fetch(
-            "INSERT INTO id_and_name (id, name, born) VALUES " +
-                "(1,'picard', '2124-03-04T01:01:01Z'),  " +
-                "(2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+            "CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
+        ctx.fetch("INSERT INTO id_and_name (id, name, born) VALUES "
+            + "(1,'picard', '2124-03-04T01:01:01Z'),  "
+            + "(2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
         return null;
       });
     }
@@ -112,18 +113,20 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private static DSLContext getDslContext(final JsonNode config) {
-    return DSLContextFactory.create(DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false")), null);
+    return DSLContextFactory.create(
+        DataSourceFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+            String.format(
+                "jdbc:sqlserver://%s:%d;",
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt()),
+            Map.of("encrypt", "false")),
+        null);
   }
 
   private static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
-
 }

@@ -13,5 +13,4 @@ public class AzureBlobStorageJsonlFormatConfig implements AzureBlobStorageFormat
   public AzureBlobStorageFormat getFormat() {
     return AzureBlobStorageFormat.JSONL;
   }
-
 }

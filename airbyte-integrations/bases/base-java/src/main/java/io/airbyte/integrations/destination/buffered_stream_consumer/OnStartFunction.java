@@ -6,6 +6,4 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 
-public interface OnStartFunction extends VoidCallable {
-
-}
+public interface OnStartFunction extends VoidCallable {}

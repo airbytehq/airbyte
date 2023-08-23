@@ -10,7 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperations<ResultSet, SourceType> {
+public interface JdbcCompatibleSourceOperations<SourceType>
+    extends SourceOperations<ResultSet, SourceType> {
 
   /**
    * Read from a result set, and copy the value of the column at colIndex to the Json object.
@@ -18,15 +19,17 @@ public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperat
    *
    * @param colIndex 1-based column index.
    */
-  void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException;
+  void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
+      throws SQLException;
 
   /**
    * Set the cursor field in incremental table query.
    */
-  void setCursorField(final PreparedStatement preparedStatement,
-                      final int parameterIndex,
-                      final SourceType cursorFieldType,
-                      final String value)
+  void setCursorField(
+      final PreparedStatement preparedStatement,
+      final int parameterIndex,
+      final SourceType cursorFieldType,
+      final String value)
       throws SQLException;
 
   /**
@@ -41,5 +44,4 @@ public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperat
    * @return true is field type can be used as cursor field for incremental sync
    */
   boolean isCursorType(final SourceType type);
-
 }

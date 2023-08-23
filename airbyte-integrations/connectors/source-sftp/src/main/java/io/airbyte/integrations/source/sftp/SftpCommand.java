@@ -37,12 +37,15 @@ public class SftpCommand {
   public SftpCommand(SftpClient client, JsonNode config) {
     this.client = client;
     sftpFileParserFactory = new SftpFileParserFactory();
-    String commaSeparatedFileExtension = config.has("file_types") ? config.get("file_types").asText() : "";
-    Set<String> selectedFileExtension = Set.of(commaSeparatedFileExtension.split(FILE_TYPE_SEPARATOR));
+    String commaSeparatedFileExtension =
+        config.has("file_types") ? config.get("file_types").asText() : "";
+    Set<String> selectedFileExtension =
+        Set.of(commaSeparatedFileExtension.split(FILE_TYPE_SEPARATOR));
     selectedFileExtensions = selectedFileExtension.stream()
         .map(this::transformFileExtension)
         .collect(Collectors.toSet());
-    filePattern = Pattern.compile(config.has("file_pattern") ? config.get("file_pattern").asText() : "");
+    filePattern =
+        Pattern.compile(config.has("file_pattern") ? config.get("file_pattern").asText() : "");
   }
 
   private SupportedFileExtension transformFileExtension(String fileExtension) {
@@ -129,5 +132,4 @@ public class SftpCommand {
       client.connect();
     }
   }
-
 }

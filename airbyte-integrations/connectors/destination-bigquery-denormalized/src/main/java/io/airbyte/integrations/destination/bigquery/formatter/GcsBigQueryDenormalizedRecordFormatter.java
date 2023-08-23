@@ -14,11 +14,11 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class GcsBigQueryDenormalizedRecordFormatter extends DefaultBigQueryDenormalizedRecordFormatter {
+public class GcsBigQueryDenormalizedRecordFormatter
+    extends DefaultBigQueryDenormalizedRecordFormatter {
 
   public GcsBigQueryDenormalizedRecordFormatter(
-                                                final JsonNode jsonSchema,
-                                                final StandardNameTransformer namingResolver) {
+      final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
 
@@ -41,11 +41,12 @@ public class GcsBigQueryDenormalizedRecordFormatter extends DefaultBigQueryDenor
   }
 
   @Override
-  protected void addAirbyteColumns(final ObjectNode data, final AirbyteRecordMessage recordMessage) {
-    final long emittedAtMicroseconds = TimeUnit.MILLISECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+  protected void addAirbyteColumns(
+      final ObjectNode data, final AirbyteRecordMessage recordMessage) {
+    final long emittedAtMicroseconds =
+        TimeUnit.MILLISECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
 
     data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, emittedAtMicroseconds);
   }
-
 }

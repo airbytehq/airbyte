@@ -14,5 +14,4 @@ public class DynamodbDestinationRunner {
         .withCloudDestination(DynamodbDestinationStrictEncrypt::new)
         .run(args);
   }
-
 }

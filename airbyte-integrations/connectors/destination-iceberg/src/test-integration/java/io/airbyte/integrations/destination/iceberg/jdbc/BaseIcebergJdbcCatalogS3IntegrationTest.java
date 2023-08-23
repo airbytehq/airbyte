@@ -46,7 +46,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseIcebergJdbcCatalogS3IntegrationTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BaseIcebergJdbcCatalogS3IntegrationTest.class);
   private static final String PG_SCHEMA = "public";
 
   private PostgreSQLContainer<?> catalogDb;
@@ -79,7 +80,8 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
     LOGGER.info("Postgresql jdbc url: {}", jdbcUrl);
     final String s3Endpoint = "http://" + s3Storage.getHostAddress();
     return Jsons.jsonNode(ofEntries(
-        entry(ICEBERG_CATALOG_CONFIG_KEY,
+        entry(
+            ICEBERG_CATALOG_CONFIG_KEY,
             Jsons.jsonNode(ofEntries(
                 entry(ICEBERG_CATALOG_TYPE_CONFIG_KEY, "Jdbc"),
                 entry(DEFAULT_DATABASE_CONFIG_KEY, PG_SCHEMA),
@@ -88,25 +90,33 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
                 entry(JDBC_PASSWORD_CONFIG_KEY, catalogDb.getPassword()),
                 entry(JDBC_SSL_CONFIG_KEY, false),
                 entry(JDBC_CATALOG_SCHEMA_CONFIG_KEY, PG_SCHEMA)))),
-        entry(ICEBERG_STORAGE_CONFIG_KEY,
-            Jsons.jsonNode(ofEntries(entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
+        entry(
+            ICEBERG_STORAGE_CONFIG_KEY,
+            Jsons.jsonNode(ofEntries(
+                entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
                 entry(S3_ACCESS_KEY_ID_CONFIG_KEY, DEFAULT_ACCESS_KEY),
                 entry(S3_SECRET_KEY_CONFIG_KEY, DEFAULT_SECRET_KEY),
                 entry(S3_WAREHOUSE_URI_CONFIG_KEY, "s3a://" + WAREHOUSE_BUCKET_NAME + "/jdbc"),
                 entry(S3_BUCKET_REGION_CONFIG_KEY, "us-east-1"),
                 entry(S3_ENDPOINT_CONFIG_KEY, s3Endpoint)))),
-        entry(ICEBERG_FORMAT_CONFIG_KEY, Jsons.jsonNode(Map.of("format", fileFormat().getConfigValue())))));
+        entry(
+            ICEBERG_FORMAT_CONFIG_KEY,
+            Jsons.jsonNode(Map.of("format", fileFormat().getConfigValue())))));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    final String jdbcUrl = "jdbc:postgresql://%s:%d/%s".formatted(HostPortResolver.resolveHost(catalogDb),
-        HostPortResolver.resolvePort(catalogDb),
-        catalogDb.getDatabaseName());
-    final String s3Endpoint = "http://%s:%s".formatted(HostPortResolver.resolveHost(s3Storage),
-        HostPortResolver.resolvePort(s3Storage));
+    final String jdbcUrl = "jdbc:postgresql://%s:%d/%s"
+        .formatted(
+            HostPortResolver.resolveHost(catalogDb),
+            HostPortResolver.resolvePort(catalogDb),
+            catalogDb.getDatabaseName());
+    final String s3Endpoint = "http://%s:%s"
+        .formatted(
+            HostPortResolver.resolveHost(s3Storage), HostPortResolver.resolvePort(s3Storage));
     return Jsons.jsonNode(ofEntries(
-        entry(ICEBERG_CATALOG_CONFIG_KEY,
+        entry(
+            ICEBERG_CATALOG_CONFIG_KEY,
             Jsons.jsonNode(ofEntries(
                 entry(ICEBERG_CATALOG_TYPE_CONFIG_KEY, "Jdbc"),
                 entry(DEFAULT_DATABASE_CONFIG_KEY, PG_SCHEMA),
@@ -115,25 +125,29 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
                 entry(JDBC_PASSWORD_CONFIG_KEY, "wrong_password"),
                 entry(JDBC_SSL_CONFIG_KEY, false),
                 entry(JDBC_CATALOG_SCHEMA_CONFIG_KEY, PG_SCHEMA)))),
-        entry(ICEBERG_STORAGE_CONFIG_KEY,
-            Jsons.jsonNode(ofEntries(entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
+        entry(
+            ICEBERG_STORAGE_CONFIG_KEY,
+            Jsons.jsonNode(ofEntries(
+                entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
                 entry(S3_ACCESS_KEY_ID_CONFIG_KEY, DEFAULT_ACCESS_KEY),
                 entry(S3_SECRET_KEY_CONFIG_KEY, "wrong_secret_key"),
                 entry(S3_WAREHOUSE_URI_CONFIG_KEY, "s3a://warehouse/jdbc"),
                 entry(S3_BUCKET_REGION_CONFIG_KEY, "us-east-1"),
                 entry(S3_ENDPOINT_CONFIG_KEY, s3Endpoint)))),
-        entry(ICEBERG_FORMAT_CONFIG_KEY, Jsons.jsonNode(Map.of("format", fileFormat().getConfigValue())))));
+        entry(
+            ICEBERG_FORMAT_CONFIG_KEY,
+            Jsons.jsonNode(Map.of("format", fileFormat().getConfigValue())))));
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
     return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
   }
 
   abstract DataFileFormat fileFormat();
-
 }

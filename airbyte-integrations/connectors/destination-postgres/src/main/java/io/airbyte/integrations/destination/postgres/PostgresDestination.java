@@ -34,7 +34,8 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new PostgresDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedDestination(
+        new PostgresDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public PostgresDestination() {
@@ -61,7 +62,9 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY))
+        .map(JsonNode::asText)
+        .orElse("public");
 
     String encodedDatabase = config.get(JdbcUtils.DATABASE_KEY).asText();
     if (encodedDatabase != null) {
@@ -72,7 +75,8 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
         e.printStackTrace();
       }
     }
-    final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
+    final String jdbcUrl = String.format(
+        "jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
         encodedDatabase);
@@ -83,11 +87,14 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
         .put(JdbcUtils.SCHEMA_KEY, schema);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.JDBC_URL_PARAMS_KEY,
+          config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -99,5 +106,4 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", PostgresDestination.class);
   }
-
 }

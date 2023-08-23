@@ -68,5 +68,4 @@ class SamplingSizeEstimatorTest {
   private static void assertDoubleEquals(final double expected, final double actual) {
     assertEquals(Math.round(expected), Math.round(actual));
   }
-
 }

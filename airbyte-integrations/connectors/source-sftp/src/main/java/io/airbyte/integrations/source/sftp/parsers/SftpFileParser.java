@@ -30,5 +30,4 @@ public interface SftpFileParser {
    * @throws IOException if given file is not valid
    */
   JsonNode parseFileFirstEntity(ByteArrayInputStream file) throws IOException;
-
 }

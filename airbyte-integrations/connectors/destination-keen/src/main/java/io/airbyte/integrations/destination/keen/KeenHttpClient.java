@@ -31,12 +31,15 @@ public class KeenHttpClient {
     eraseStream(streamToDelete, projectId, apiKey, false);
   }
 
-  public void eraseStream(final String streamToDelete, final String projectId, final String apiKey, final boolean retried)
+  public void eraseStream(
+      final String streamToDelete,
+      final String projectId,
+      final String apiKey,
+      final boolean retried)
       throws IOException, InterruptedException {
 
-    final URI deleteUri = URI.create(String.format(
-        KEEN_BASE_API_PATH + "/projects/%s/events/%s",
-        projectId, streamToDelete));
+    final URI deleteUri = URI.create(
+        String.format(KEEN_BASE_API_PATH + "/projects/%s/events/%s", projectId, streamToDelete));
 
     final HttpRequest request = HttpRequest.newBuilder()
         .uri(deleteUri)
@@ -54,8 +57,9 @@ public class KeenHttpClient {
         Thread.sleep(MINUTE_MILLIS);
         eraseStream(streamToDelete, projectId, apiKey, true);
       } else {
-        throw new IllegalStateException(String.format("Could not erase data from stream designed for overriding: "
-            + "%s. Error message: %s", streamToDelete, response.body()));
+        throw new IllegalStateException(String.format(
+            "Could not erase data from stream designed for overriding: " + "%s. Error message: %s",
+            streamToDelete, response.body()));
       }
     }
   }
@@ -63,9 +67,11 @@ public class KeenHttpClient {
   public ArrayNode extract(final String streamName, final String projectId, final String apiKey)
       throws IOException, InterruptedException {
     final URI extractionUri = URI.create(String.format(
-        keenBaseApiPath + "/projects/%s/queries/extraction" +
-            "?api_key=%s&timeframe=this_7_years&event_collection=%s",
-        projectId, apiKey, streamName));
+        keenBaseApiPath + "/projects/%s/queries/extraction"
+            + "?api_key=%s&timeframe=this_7_years&event_collection=%s",
+        projectId,
+        apiKey,
+        streamName));
 
     final HttpRequest request = HttpRequest.newBuilder()
         .uri(extractionUri)
@@ -73,13 +79,14 @@ public class KeenHttpClient {
         .header("Content-Type", "application/json")
         .build();
 
-    final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    final HttpResponse<String> response =
+        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     if (response.statusCode() != 200) {
-      throw new IllegalStateException("Server did not return successful response: " + response.body());
+      throw new IllegalStateException(
+          "Server did not return successful response: " + response.body());
     }
 
     return (ArrayNode) objectMapper.readTree(response.body()).get("result");
   }
-
 }

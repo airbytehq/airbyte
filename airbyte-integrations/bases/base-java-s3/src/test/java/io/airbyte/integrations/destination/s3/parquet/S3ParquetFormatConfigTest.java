@@ -36,5 +36,4 @@ class S3ParquetFormatConfigTest {
     assertEquals(CompressionCodecName.GZIP, config.getCompressionCodec());
     assertFalse(config.isDictionaryEncoding());
   }
-
 }

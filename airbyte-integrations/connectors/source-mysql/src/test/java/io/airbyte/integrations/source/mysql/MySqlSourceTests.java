@@ -65,21 +65,33 @@ public class MySqlSourceTests {
       container.start();
 
       final Properties properties = new Properties();
-      properties.putAll(ImmutableMap.of("user", "root", JdbcUtils.PASSWORD_KEY, TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
+      properties.putAll(ImmutableMap.of(
+          "user",
+          "root",
+          JdbcUtils.PASSWORD_KEY,
+          TEST_PASSWORD,
+          "serverTimezone",
+          "Europe/Moscow"));
       DriverManager.getConnection(container.getJdbcUrl(), properties);
       final String dbName = Strings.addRandomSuffix("db", "_", 10);
       final JsonNode config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
 
-      try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
-        connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-        connection.createStatement().execute("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
+      try (final Connection connection =
+          DriverManager.getConnection(container.getJdbcUrl(), properties)) {
+        connection
+            .createStatement()
+            .execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+        connection
+            .createStatement()
+            .execute("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
       }
       final AirbyteConnectionStatus check = new MySqlSource().check(config);
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
     }
   }
 
-  private static JsonNode getConfig(final MySQLContainer dbContainer, final String dbName, final String jdbcParams) {
+  private static JsonNode getConfig(
+      final MySQLContainer dbContainer, final String dbName, final String jdbcParams) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
         .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
@@ -94,7 +106,8 @@ public class MySqlSourceTests {
   void testJdbcUrlWithEscapedDatabaseName() {
     final JsonNode jdbcConfig = new MySqlSource().toDatabaseConfig(buildConfigEscapingNeeded());
     assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-    assertTrue(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText().startsWith(EXPECTED_JDBC_ESCAPED_URL));
+    assertTrue(
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText().startsWith(EXPECTED_JDBC_ESCAPED_URL));
   }
 
   private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:mysql://localhost:1111/db%2Ffoo?";
@@ -108,7 +121,8 @@ public class MySqlSourceTests {
   }
 
   @Test
-  @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
+  @Disabled(
+      "See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void testTableWithNullCursorValueShouldThrowException() throws SQLException {
     try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0")
         .withUsername(TEST_USER)
@@ -117,12 +131,16 @@ public class MySqlSourceTests {
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)) {
       db.start();
       final JsonNode config = getConfig(db, "test", "");
-      try (Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", config.get(JdbcUtils.PASSWORD_KEY).asText())) {
+      try (Connection connection = DriverManager.getConnection(
+          db.getJdbcUrl(), "root", config.get(JdbcUtils.PASSWORD_KEY).asText())) {
         final ConfiguredAirbyteStream table = createTableWithNullValueCursor(connection);
-        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+        final ConfiguredAirbyteCatalog catalog =
+            new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
 
-        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new MySqlSource().read(config, catalog, null)));
-        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+        final Throwable throwable = catchThrowable(
+            () -> MoreIterators.toSet(new MySqlSource().read(config, catalog, null)));
+        assertThat(throwable)
+            .isInstanceOf(ConfigErrorException.class)
             .hasMessageContaining(
                 "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='test.null_cursor_table', cursorColumnName='id', cursorSqlType=INT, cause=Cursor column contains NULL value}");
 
@@ -132,26 +150,32 @@ public class MySqlSourceTests {
     }
   }
 
-  private ConfiguredAirbyteStream createTableWithNullValueCursor(final Connection connection) throws SQLException {
-    connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-    connection.createStatement().execute("CREATE TABLE IF NOT EXISTS test.null_cursor_table(id INTEGER NULL)");
-    connection.createStatement().execute("INSERT INTO test.null_cursor_table(id) VALUES (1), (2), (NULL)");
+  private ConfiguredAirbyteStream createTableWithNullValueCursor(final Connection connection)
+      throws SQLException {
+    connection
+        .createStatement()
+        .execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+    connection
+        .createStatement()
+        .execute("CREATE TABLE IF NOT EXISTS test.null_cursor_table(id INTEGER NULL)");
+    connection
+        .createStatement()
+        .execute("INSERT INTO test.null_cursor_table(id) VALUES (1), (2), (NULL)");
 
-    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+    return new ConfiguredAirbyteStream()
+        .withSyncMode(SyncMode.INCREMENTAL)
         .withCursorField(Lists.newArrayList("id"))
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
-            "null_cursor_table",
-            "test",
-            Field.of("id", JsonSchemaType.STRING))
+                "null_cursor_table", "test", Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
-
   }
 
   @Test
-  @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
+  @Disabled(
+      "See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void viewWithNullValueCursorShouldThrowException() throws SQLException {
     try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0")
         .withUsername(TEST_USER)
@@ -160,12 +184,16 @@ public class MySqlSourceTests {
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)) {
       db.start();
       final JsonNode config = getConfig(db, "test", "");
-      try (Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", config.get(JdbcUtils.PASSWORD_KEY).asText())) {
+      try (Connection connection = DriverManager.getConnection(
+          db.getJdbcUrl(), "root", config.get(JdbcUtils.PASSWORD_KEY).asText())) {
         final ConfiguredAirbyteStream table = createViewWithNullValueCursor(connection);
-        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+        final ConfiguredAirbyteCatalog catalog =
+            new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
 
-        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new MySqlSource().read(config, catalog, null)));
-        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+        final Throwable throwable = catchThrowable(
+            () -> MoreIterators.toSet(new MySqlSource().read(config, catalog, null)));
+        assertThat(throwable)
+            .isInstanceOf(ConfigErrorException.class)
             .hasMessageContaining(
                 "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='test.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INT, cause=Cursor column contains NULL value}");
 
@@ -175,34 +203,42 @@ public class MySqlSourceTests {
     }
   }
 
-  private ConfiguredAirbyteStream createViewWithNullValueCursor(final Connection connection) throws SQLException {
+  private ConfiguredAirbyteStream createViewWithNullValueCursor(final Connection connection)
+      throws SQLException {
 
-    connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-    connection.createStatement().execute("CREATE TABLE IF NOT EXISTS test.test_table_null_cursor(id INTEGER NULL)");
-    connection.createStatement().execute("""
+    connection
+        .createStatement()
+        .execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+    connection
+        .createStatement()
+        .execute("CREATE TABLE IF NOT EXISTS test.test_table_null_cursor(id INTEGER NULL)");
+    connection
+        .createStatement()
+        .execute(
+            """
                                          CREATE VIEW test_view_null_cursor(id) as
                                          SELECT test_table_null_cursor.id
                                          FROM test_table_null_cursor
                                          """);
-    connection.createStatement().execute("INSERT INTO test.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
+    connection
+        .createStatement()
+        .execute("INSERT INTO test.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
 
-    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+    return new ConfiguredAirbyteStream()
+        .withSyncMode(SyncMode.INCREMENTAL)
         .withCursorField(Lists.newArrayList("id"))
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
-            "test_view_null_cursor",
-            "test",
-            Field.of("id", JsonSchemaType.STRING))
+                "test_view_null_cursor", "test", Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
-
   }
 
   @Test
   void testParseJdbcParameters() {
-    Map<String, String> parameters =
-        MySqlSource.parseJdbcParameters("theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
+    Map<String, String> parameters = MySqlSource.parseJdbcParameters(
+        "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
     assertEquals("max_execution_time=10000", parameters.get("sessionVariables"));
     assertEquals("42", parameters.get("theAnswerToLiveAndEverything"));
     assertEquals("bar", parameters.get("foo"));
@@ -223,11 +259,17 @@ public class MySqlSourceTests {
       properties.putAll(ImmutableMap.of("user", "root", JdbcUtils.PASSWORD_KEY, TEST_PASSWORD));
       DriverManager.getConnection(container.getJdbcUrl(), properties);
       final String dbName = Strings.addRandomSuffix("db", "_", 10);
-      final JsonNode config = getConfig(container, dbName, "sessionVariables=MAX_EXECUTION_TIME=28800000");
+      final JsonNode config =
+          getConfig(container, dbName, "sessionVariables=MAX_EXECUTION_TIME=28800000");
 
-      try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
-        connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-        connection.createStatement().execute("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
+      try (final Connection connection =
+          DriverManager.getConnection(container.getJdbcUrl(), properties)) {
+        connection
+            .createStatement()
+            .execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+        connection
+            .createStatement()
+            .execute("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
       }
       final AirbyteConnectionStatus check = new MySqlSource().check(config);
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
@@ -254,5 +296,4 @@ public class MySqlSourceTests {
     assertEquals(3, result.get("stream-b").size());
     assertEquals(Arrays.asList("xcol3", "xcol2", "xcol1"), result.get("stream-b"));
   }
-
 }

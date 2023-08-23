@@ -34,11 +34,10 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   public static final String SSL_MODE_REQUIRED = "required";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlStrictEncryptSource.class);
-  private static final String SSL_MODE_DESCRIPTION = "SSL connection modes. " +
-      "<li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li>"
-      +
-      "<li><b>verify-ca</b> - Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.</li>" +
-      "<li><b>Verify Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.";
+  private static final String SSL_MODE_DESCRIPTION = "SSL connection modes. "
+      + "<li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li>"
+      + "<li><b>verify-ca</b> - Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.</li>"
+      + "<li><b>Verify Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.";
 
   MySqlStrictEncryptSource() {
     super(MySqlSource.sshWrappedSource());
@@ -48,13 +47,15 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE))
+        .put("default", SSL_MODE_REQUIRED);
     return spec;
   }
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting
+    // directly
     // and not over SSH tunnel
     if (config.has(TUNNEL_METHOD)
         && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
@@ -79,5 +80,4 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlStrictEncryptSource.class);
   }
-
 }

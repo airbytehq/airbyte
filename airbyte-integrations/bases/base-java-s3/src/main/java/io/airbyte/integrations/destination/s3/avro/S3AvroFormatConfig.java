@@ -63,20 +63,26 @@ public class S3AvroFormatConfig implements S3FormatConfig {
     }
   }
 
-  public static int getCompressionLevel(final JsonNode compressionCodecConfig, final int defaultLevel, final int minLevel, final int maxLevel) {
+  public static int getCompressionLevel(
+      final JsonNode compressionCodecConfig,
+      final int defaultLevel,
+      final int minLevel,
+      final int maxLevel) {
     final JsonNode levelConfig = compressionCodecConfig.get("compression_level");
     if (levelConfig == null || levelConfig.isNull() || !levelConfig.isIntegralNumber()) {
       return defaultLevel;
     }
     final int level = levelConfig.asInt();
     if (level < minLevel || level > maxLevel) {
-      throw new IllegalArgumentException(
-          String.format("Invalid compression level: %d, expected an integer in range [%d, %d]", level, minLevel, maxLevel));
+      throw new IllegalArgumentException(String.format(
+          "Invalid compression level: %d, expected an integer in range [%d, %d]",
+          level, minLevel, maxLevel));
     }
     return level;
   }
 
-  public static boolean getIncludeChecksum(final JsonNode compressionCodecConfig, final boolean defaultValue) {
+  public static boolean getIncludeChecksum(
+      final JsonNode compressionCodecConfig, final boolean defaultValue) {
     final JsonNode checksumConfig = compressionCodecConfig.get("include_checksum");
     if (checksumConfig == null || checksumConfig.isNumber() || !checksumConfig.isBoolean()) {
       return defaultValue;
@@ -99,7 +105,6 @@ public class S3AvroFormatConfig implements S3FormatConfig {
   }
 
   public enum CompressionCodec {
-
     NULL("no compression"),
     DEFLATE("deflate"),
     BZIP2("bzip2"),
@@ -121,7 +126,5 @@ public class S3AvroFormatConfig implements S3FormatConfig {
       }
       throw new IllegalArgumentException("Unknown codec config value: " + configValue);
     }
-
   }
-
 }

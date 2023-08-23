@@ -17,12 +17,17 @@ class BaseSizeEstimatorTest {
   void testGetEstimatedByteSize() {
     assertEquals(0L, BaseSizeEstimator.getEstimatedByteSize(null));
     assertEquals(21L, BaseSizeEstimator.getEstimatedByteSize("12345"));
-    assertEquals(45L, BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value"))));
+    assertEquals(
+        45L, BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value"))));
   }
 
   public static class TestSizeEstimator extends BaseSizeEstimator {
 
-    protected TestSizeEstimator(final long bufferByteSize, final int minFetchSize, final int defaultFetchSize, final int maxFetchSize) {
+    protected TestSizeEstimator(
+        final long bufferByteSize,
+        final int minFetchSize,
+        final int defaultFetchSize,
+        final int maxFetchSize) {
       super(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize);
     }
 
@@ -37,7 +42,6 @@ class BaseSizeEstimatorTest {
     public void setMeanByteSize(final double meanByteSize) {
       this.maxRowByteSize = meanByteSize;
     }
-
   }
 
   @Test
@@ -46,7 +50,8 @@ class BaseSizeEstimatorTest {
     final int minFetchSize = 10;
     final int defaultFetchSize = 20;
     final int maxFetchSize = 40;
-    final TestSizeEstimator sizeEstimator = new TestSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize);
+    final TestSizeEstimator sizeEstimator =
+        new TestSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize);
 
     sizeEstimator.setMeanByteSize(-1.0);
     assertEquals(defaultFetchSize, sizeEstimator.getBoundedFetchSize());
@@ -74,5 +79,4 @@ class BaseSizeEstimatorTest {
     sizeEstimator.setMeanByteSize(bufferByteSize / 60.0);
     assertEquals(maxFetchSize, sizeEstimator.getBoundedFetchSize());
   }
-
 }

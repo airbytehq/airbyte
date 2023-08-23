@@ -48,10 +48,9 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     if (db == null) {
-      db = new MSSQLServerContainer<>(DockerImageName
-          .parse("airbyte/mssql_ssltest:dev")
-          .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-              .acceptLicense();
+      db = new MSSQLServerContainer<>(DockerImageName.parse("airbyte/mssql_ssltest:dev")
+              .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
+          .acceptLicense();
       db.start();
     }
 
@@ -67,7 +66,8 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
         configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s;encrypt=true;trustServerCertificate=true;",
+        String.format(
+            "jdbc:sqlserver://%s:%s;encrypt=true;trustServerCertificate=true;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
         null)) {
@@ -75,19 +75,22 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
       database.query(ctx -> {
         ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
         ctx.fetch(String.format("USE %s;", dbName));
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
         ctx.fetch(
-            "INSERT INTO id_and_name (id, name, born) VALUES " +
-                "(1,'picard', '2124-03-04T01:01:01Z'),  " +
-                "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
-                "(3, 'vash', '2124-03-04T01:01:01Z');");
+            "CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
+        ctx.fetch("INSERT INTO id_and_name (id, name, born) VALUES "
+            + "(1,'picard', '2124-03-04T01:01:01Z'),  "
+            + "(2, 'crusher', '2124-03-04T01:01:01Z'), "
+            + "(3, 'vash', '2124-03-04T01:01:01Z');");
         return null;
       });
     }
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
+    ((ObjectNode) config)
+        .put(
+            "ssl_method",
+            Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
   }
 
   private static Database getDatabase(final DSLContext dslContext) {
@@ -104,7 +107,8 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(
+        MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
   }
 
   @Override
@@ -126,5 +130,4 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

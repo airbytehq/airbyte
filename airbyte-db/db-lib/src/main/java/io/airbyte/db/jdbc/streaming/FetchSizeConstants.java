@@ -22,5 +22,4 @@ public final class FetchSizeConstants {
   public static final int MAX_FETCH_SIZE = 1_000_000_000;
 
   private FetchSizeConstants() {}
-
 }

@@ -54,10 +54,11 @@ public class ScyllaDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    return new ScyllaMessageConsumer(new ScyllaConfig(config), configuredCatalog, outputRecordCollector);
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
+    return new ScyllaMessageConsumer(
+        new ScyllaConfig(config), configuredCatalog, outputRecordCollector);
   }
-
 }

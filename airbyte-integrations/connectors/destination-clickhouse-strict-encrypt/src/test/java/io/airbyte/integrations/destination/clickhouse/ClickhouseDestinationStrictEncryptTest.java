@@ -15,9 +15,11 @@ class ClickhouseDestinationStrictEncryptTest {
 
   @Test
   void testGetSpec() throws Exception {
-    System.out.println(new ClickhouseDestinationStrictEncrypt().spec().getConnectionSpecification());
-    assertEquals(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class),
+    System.out.println(
+        new ClickhouseDestinationStrictEncrypt().spec().getConnectionSpecification());
+    assertEquals(
+        Jsons.deserialize(
+            MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class),
         new ClickhouseDestinationStrictEncrypt().spec());
   }
-
 }

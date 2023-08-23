@@ -44,9 +44,10 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public MqttRecordConsumer(final MqttDestinationConfig mqttDestinationConfig,
-                            final ConfiguredAirbyteCatalog catalog,
-                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public MqttRecordConsumer(
+      final MqttDestinationConfig mqttDestinationConfig,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.config = mqttDestinationConfig;
     this.topicMap = new HashMap<>();
     this.catalog = catalog;
@@ -56,7 +57,8 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private IMqttAsyncClient buildMqttClient() {
     try {
-      return new MqttAsyncClient(config.getServerUri(), config.getClientId(), new MemoryPersistence());
+      return new MqttAsyncClient(
+          config.getServerUri(), config.getClientId(), new MemoryPersistence());
     } catch (MqttException e) {
       throw new RuntimeException("Error creating MQTT client", e);
     }
@@ -78,7 +80,8 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
       lastStateMessage = airbyteMessage;
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-      final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
+      final String topic =
+          topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
 
       final String key = UUID.randomUUID().toString();
       final JsonNode payload = Jsons.jsonNode(ImmutableMap.of(
@@ -100,15 +103,20 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   Map<AirbyteStreamNameNamespacePair, String> buildTopicMap() {
     return catalog.getStreams().stream()
         .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
-        .collect(Collectors.toMap(Function.identity(), pair -> config.getTopicPattern()
-            .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
-            .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")),
+        .collect(Collectors.toMap(
+            Function.identity(),
+            pair -> config
+                .getTopicPattern()
+                .replaceAll(
+                    "\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
+                .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")),
             (existing, newValue) -> existing));
   }
 
   private void sendRecord(final String topic, final MqttMessage message) {
     try {
-      final IMqttDeliveryToken token = client.publish(topic, message, null, new MessageActionListener(outputRecordCollector, lastStateMessage));
+      final IMqttDeliveryToken token = client.publish(
+          topic, message, null, new MessageActionListener(outputRecordCollector, lastStateMessage));
       if (config.isSync()) {
         token.waitForCompletion();
       }
@@ -133,7 +141,8 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     private final AirbyteMessage lastStateMessage;
     private final Consumer<AirbyteMessage> outputRecordCollector;
 
-    MessageActionListener(Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {
+    MessageActionListener(
+        Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {
       this.outputRecordCollector = outputRecordCollector;
       this.lastStateMessage = lastStateMessage;
     }
@@ -147,9 +156,8 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     @Override
     public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-      throw new RuntimeException("Cannot deliver message with ID '" + asyncActionToken.getMessageId() + "'", exception);
+      throw new RuntimeException(
+          "Cannot deliver message with ID '" + asyncActionToken.getMessageId() + "'", exception);
     }
-
   }
-
 }

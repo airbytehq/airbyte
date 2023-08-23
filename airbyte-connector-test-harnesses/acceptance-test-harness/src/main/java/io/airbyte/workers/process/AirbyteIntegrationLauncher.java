@@ -45,16 +45,18 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
    * At this moment, we put custom connector jobs into an isolated pool.
    */
   private final boolean useIsolatedPool;
+
   private final AllowedHosts allowedHosts;
 
-  public AirbyteIntegrationLauncher(final String jobId,
-                                    final int attempt,
-                                    final String imageName,
-                                    final ProcessFactory processFactory,
-                                    final ResourceRequirements resourceRequirement,
-                                    final AllowedHosts allowedHosts,
-                                    final boolean useIsolatedPool,
-                                    final FeatureFlags featureFlags) {
+  public AirbyteIntegrationLauncher(
+      final String jobId,
+      final int attempt,
+      final String imageName,
+      final ProcessFactory processFactory,
+      final ResourceRequirements resourceRequirement,
+      final AllowedHosts allowedHosts,
+      final boolean useIsolatedPool,
+      final FeatureFlags featureFlags) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
@@ -87,7 +89,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public Process check(final Path jobRoot, final String configFilename, final String configContents) throws TestHarnessException {
+  public Process check(final Path jobRoot, final String configFilename, final String configContents)
+      throws TestHarnessException {
     return processFactory.create(
         CHECK_JOB,
         jobId,
@@ -105,11 +108,14 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         Collections.emptyMap(),
         "check",
-        CONFIG, configFilename);
+        CONFIG,
+        configFilename);
   }
 
   @Override
-  public Process discover(final Path jobRoot, final String configFilename, final String configContents) throws TestHarnessException {
+  public Process discover(
+      final Path jobRoot, final String configFilename, final String configContents)
+      throws TestHarnessException {
     return processFactory.create(
         DISCOVER_JOB,
         jobId,
@@ -127,22 +133,22 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         Collections.emptyMap(),
         "discover",
-        CONFIG, configFilename);
+        CONFIG,
+        configFilename);
   }
 
   @Override
-  public Process read(final Path jobRoot,
-                      final String configFilename,
-                      final String configContents,
-                      final String catalogFilename,
-                      final String catalogContents,
-                      final String stateFilename,
-                      final String stateContents)
+  public Process read(
+      final Path jobRoot,
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents,
+      final String stateFilename,
+      final String stateContents)
       throws TestHarnessException {
-    final List<String> arguments = Lists.newArrayList(
-        "read",
-        CONFIG, configFilename,
-        "--catalog", catalogFilename);
+    final List<String> arguments =
+        Lists.newArrayList("read", CONFIG, configFilename, "--catalog", catalogFilename);
 
     final Map<String, String> files = new HashMap<>();
     files.put(configFilename, configContents);
@@ -176,12 +182,13 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public Process write(final Path jobRoot,
-                       final String configFilename,
-                       final String configContents,
-                       final String catalogFilename,
-                       final String catalogContents,
-                       final Map<String, String> additionalEnvironmentVariables)
+  public Process write(
+      final Path jobRoot,
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents,
+      final Map<String, String> additionalEnvironmentVariables)
       throws TestHarnessException {
     final Map<String, String> files = ImmutableMap.of(
         configFilename, configContents,
@@ -204,23 +211,32 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         additionalEnvironmentVariables,
         "write",
-        CONFIG, configFilename,
-        "--catalog", catalogFilename);
+        CONFIG,
+        configFilename,
+        "--catalog",
+        catalogFilename);
   }
 
   private Map<String, String> getWorkerMetadata() {
-    // We've managed to exceed the maximum number of parameters for Map.of(), so use a builder + convert
+    // We've managed to exceed the maximum number of parameters for Map.of(), so use a builder +
+    // convert
     // back to hashmap
-    return Maps.newHashMap(
-        ImmutableMap.<String, String>builder()
-            .put("WORKER_CONNECTOR_IMAGE", imageName)
-            .put("WORKER_JOB_ID", jobId)
-            .put("WORKER_JOB_ATTEMPT", String.valueOf(attempt))
-            .put(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()))
-            .put(EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()))
-            .put(EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()))
-            .put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces())
-            .build());
+    return Maps.newHashMap(ImmutableMap.<String, String>builder()
+        .put("WORKER_CONNECTOR_IMAGE", imageName)
+        .put("WORKER_JOB_ID", jobId)
+        .put("WORKER_JOB_ATTEMPT", String.valueOf(attempt))
+        .put(
+            EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE,
+            String.valueOf(featureFlags.useStreamCapableState()))
+        .put(
+            EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA,
+            String.valueOf(featureFlags.autoDetectSchema()))
+        .put(
+            EnvVariableFeatureFlags.APPLY_FIELD_SELECTION,
+            String.valueOf(featureFlags.applyFieldSelection()))
+        .put(
+            EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES,
+            featureFlags.fieldSelectionWorkspaces())
+        .build());
   }
-
 }

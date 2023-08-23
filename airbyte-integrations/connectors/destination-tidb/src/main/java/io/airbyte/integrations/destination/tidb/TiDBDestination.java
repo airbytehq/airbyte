@@ -26,13 +26,14 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
   private static final Logger LOGGER = LoggerFactory.getLogger(TiDBDestination.class);
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
-  static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
-      "allowLoadLocalInfile", "true");
+  static final Map<String, String> DEFAULT_JDBC_PARAMETERS =
+      ImmutableMap.of("allowLoadLocalInfile", "true");
 
-  static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(ImmutableMap.of(
-      "useSSL", "true",
-      "requireSSL", "true",
-      "verifyServerCertificate", "false"),
+  static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(
+      ImmutableMap.of(
+          "useSSL", "true",
+          "requireSSL", "true",
+          "verifyServerCertificate", "false"),
       DEFAULT_JDBC_PARAMETERS);
 
   public TiDBDestination() {
@@ -40,7 +41,8 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
   }
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new TiDBDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedDestination(
+        new TiDBDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   @Override
@@ -49,8 +51,10 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
 
     try {
       final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(), getSqlOperations());
+      final String outputSchema =
+          getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
+      attemptSQLCreateAndDropTableOperations(
+          outputSchema, database, getNamingResolver(), getSqlOperations());
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -77,7 +81,8 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(
+        "jdbc:mysql://%s:%s/%s",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
@@ -87,7 +92,8 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
@@ -102,5 +108,4 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", TiDBDestination.class);
   }
-
 }

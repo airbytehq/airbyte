@@ -13,7 +13,8 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class XminStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+public class XminStateIterator extends AbstractIterator<AirbyteMessage>
+    implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XminStateIterator.class);
 
@@ -27,9 +28,10 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
   /**
    * @param pair Stream Name and Namespace (e.g. public.users)
    */
-  public XminStateIterator(final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator,
-                           final AirbyteStreamNameNamespacePair pair,
-                           final XminStatus xminStatus) {
+  public XminStateIterator(
+      final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator,
+      final AirbyteStreamNameNamespacePair pair,
+      final XminStatus xminStatus) {
     this.messageIterator = messageIterator;
     this.pair = pair;
     this.xminStatus = xminStatus;
@@ -65,7 +67,8 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
       } catch (final Exception e) {
         hasCaughtException = true;
         LOGGER.error("Message iterator failed to read next record.", e);
-        // We want to still continue attempting to sync future streams, so the exception is caught. When
+        // We want to still continue attempting to sync future streams, so the exception is caught.
+        // When
         // frequent state emission is introduced, this
         // will result in a partial success.
         return endOfData();
@@ -77,5 +80,4 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
       return endOfData();
     }
   }
-
 }

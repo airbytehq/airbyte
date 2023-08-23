@@ -14,9 +14,11 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClickhouseDestinationStrictEncrypt extends SpecModifyingDestination implements Destination {
+public class ClickhouseDestinationStrictEncrypt extends SpecModifyingDestination
+    implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseDestinationStrictEncrypt.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ClickhouseDestinationStrictEncrypt.class);
 
   public ClickhouseDestinationStrictEncrypt() {
     super(ClickhouseDestination.sshWrappedDestination());
@@ -35,5 +37,4 @@ public class ClickhouseDestinationStrictEncrypt extends SpecModifyingDestination
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", ClickhouseDestinationStrictEncrypt.class);
   }
-
 }

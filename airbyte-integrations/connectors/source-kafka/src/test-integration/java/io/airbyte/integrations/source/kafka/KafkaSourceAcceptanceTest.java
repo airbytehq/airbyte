@@ -87,15 +87,19 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
     final ObjectNode event = mapper.createObjectNode();
     event.put("test", "value");
 
-    producer.send(new ProducerRecord<>(TOPIC_NAME, event), (recordMetadata, exception) -> {
-      if (exception != null) {
-        throw new RuntimeException("Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
-      }
-    }).get();
+    producer
+        .send(new ProducerRecord<>(TOPIC_NAME, event), (recordMetadata, exception) -> {
+          if (exception != null) {
+            throw new RuntimeException(
+                "Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
+          }
+        })
+        .get();
   }
 
   private void createTopic() throws Exception {
-    try (final var admin = AdminClient.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
+    try (final var admin = AdminClient.create(
+        Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
       final NewTopic topic = new NewTopic(TOPIC_NAME, 1, (short) 1);
       admin.createTopics(Collections.singletonList(topic)).all().get();
     }
@@ -113,8 +117,8 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    final ConfiguredAirbyteStream streams =
-        CatalogHelpers.createConfiguredAirbyteStream(TOPIC_NAME, null, Field.of("value", JsonSchemaType.STRING));
+    final ConfiguredAirbyteStream streams = CatalogHelpers.createConfiguredAirbyteStream(
+        TOPIC_NAME, null, Field.of("value", JsonSchemaType.STRING));
     streams.setSyncMode(SyncMode.FULL_REFRESH);
     return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(streams));
   }
@@ -123,5 +127,4 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

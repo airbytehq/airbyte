@@ -15,9 +15,7 @@ public class YugabytedbContainerInitializr {
 
   private static YugabytedbContainer yugabytedbContainer;
 
-  private YugabytedbContainerInitializr() {
-
-  }
+  private YugabytedbContainerInitializr() {}
 
   public static YugabytedbContainer initContainer() {
     if (yugabytedbContainer == null) {
@@ -36,7 +34,6 @@ public class YugabytedbContainerInitializr {
 
       this.setCommand("bin/yugabyted", "start", "--daemon=false");
       this.addExposedPort(YUGABYTE_PORT);
-
     }
 
     @Override
@@ -47,7 +44,8 @@ public class YugabytedbContainerInitializr {
     @Override
     public String getJdbcUrl() {
       String params = constructUrlParameters("?", "&");
-      return "jdbc:yugabytedb://" + getHost() + ":" + getMappedPort(YUGABYTE_PORT) + "/yugabyte" + params;
+      return "jdbc:yugabytedb://" + getHost() + ":" + getMappedPort(YUGABYTE_PORT) + "/yugabyte"
+          + params;
     }
 
     @Override
@@ -69,7 +67,5 @@ public class YugabytedbContainerInitializr {
     protected String getTestQueryString() {
       return "SELECT 1";
     }
-
   }
-
 }

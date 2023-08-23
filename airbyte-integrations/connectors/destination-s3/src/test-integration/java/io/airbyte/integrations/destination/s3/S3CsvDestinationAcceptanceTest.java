@@ -18,5 +18,4 @@ public class S3CsvDestinationAcceptanceTest extends S3BaseCsvDestinationAcceptan
   protected JsonNode getBaseConfigJson() {
     return S3DestinationTestUtils.getBaseConfigJsonFilePath();
   }
-
 }

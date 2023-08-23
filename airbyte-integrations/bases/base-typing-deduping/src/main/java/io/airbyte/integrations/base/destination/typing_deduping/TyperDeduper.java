@@ -11,5 +11,4 @@ public interface TyperDeduper {
   void typeAndDedupe(String originalNamespace, String originalName) throws Exception;
 
   void commitFinalTables() throws Exception;
-
 }

@@ -21,10 +21,11 @@ public class JdbcDataSourceUtils {
    * @param defaultParameters connection properties map as specified by each Jdbc source
    * @throws IllegalArgumentException
    */
-  public static void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-                                                                          final Map<String, String> defaultParameters) {
+  public static void assertCustomParametersDontOverwriteDefaultParameters(
+      final Map<String, String> customParameters, final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
-      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
+      if (customParameters.containsKey(key)
+          && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
       }
     }
@@ -38,8 +39,10 @@ public class JdbcDataSourceUtils {
    * @return A mapping of connection properties
    */
   public static Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
-    final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
+    final Map<String, String> customProperties =
+        JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
+    final Map<String, String> defaultProperties =
+        JdbcDataSourceUtils.getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);
   }
@@ -54,7 +57,8 @@ public class JdbcDataSourceUtils {
    */
   public static Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     // NOTE that Postgres returns an empty map for some reason?
-    return JdbcUtils.parseJdbcParameters(config, "connection_properties", DEFAULT_JDBC_PARAMETERS_DELIMITER);
-  };
-
+    return JdbcUtils.parseJdbcParameters(
+        config, "connection_properties", DEFAULT_JDBC_PARAMETERS_DELIMITER);
+  }
+  ;
 }

@@ -6,12 +6,11 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import io.airbyte.integrations.base.ssh.SshTunnel;
 
-public class SshPasswordClickhouseSourceAcceptanceTest extends
-    AbstractSshClickHouseSourceAcceptanceTest {
+public class SshPasswordClickhouseSourceAcceptanceTest
+    extends AbstractSshClickHouseSourceAcceptanceTest {
 
   @Override
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
   }
-
 }

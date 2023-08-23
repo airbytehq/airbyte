@@ -40,13 +40,14 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   private final boolean keepStagingFiles;
   private final Set<String> existingSchemas = new HashSet<>();
 
-  public BigQueryGcsOperations(final BigQuery bigQuery,
-                               final StandardNameTransformer gcsNameTransformer,
-                               final GcsDestinationConfig gcsConfig,
-                               final GcsStorageOperations gcsStorageOperations,
-                               final UUID randomStagingId,
-                               final DateTime syncDatetime,
-                               final boolean keepStagingFiles) {
+  public BigQueryGcsOperations(
+      final BigQuery bigQuery,
+      final StandardNameTransformer gcsNameTransformer,
+      final GcsDestinationConfig gcsConfig,
+      final GcsStorageOperations gcsStorageOperations,
+      final UUID randomStagingId,
+      final DateTime syncDatetime,
+      final boolean keepStagingFiles) {
     this.bigQuery = bigQuery;
     this.gcsNameTransformer = gcsNameTransformer;
     this.gcsConfig = gcsConfig;
@@ -60,7 +61,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    * @return {@code <bucket-path>/<dataset-id>_<stream-name>}
    */
   private String getStagingRootPath(final String datasetId, final String stream) {
-    return gcsNameTransformer.applyDefaultCase(String.format("%s/%s_%s",
+    return gcsNameTransformer.applyDefaultCase(String.format(
+        "%s/%s_%s",
         gcsConfig.getBucketPath(),
         gcsNameTransformer.convertStreamName(datasetId),
         gcsNameTransformer.convertStreamName(stream)));
@@ -71,7 +73,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    */
   @Override
   public String getStagingFullPath(final String datasetId, final String stream) {
-    return gcsNameTransformer.applyDefaultCase(String.format("%s/%s/%02d/%02d/%02d/%s/",
+    return gcsNameTransformer.applyDefaultCase(String.format(
+        "%s/%s/%02d/%02d/%02d/%s/",
         getStagingRootPath(datasetId, stream),
         syncDatetime.year().get(),
         syncDatetime.monthOfYear().get(),
@@ -106,15 +109,22 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   @Override
   public void createStageIfNotExists(final String datasetId, final String stream) {
     final String objectPath = getStagingFullPath(datasetId, stream);
-    LOGGER.info("Creating staging path for stream {} (dataset {}): {}", stream, datasetId, objectPath);
+    LOGGER.info(
+        "Creating staging path for stream {} (dataset {}): {}", stream, datasetId, objectPath);
     gcsStorageOperations.createBucketIfNotExists();
   }
 
   @Override
-  public String uploadRecordsToStage(final String datasetId, final String stream, final SerializableBuffer writer) {
+  public String uploadRecordsToStage(
+      final String datasetId, final String stream, final SerializableBuffer writer) {
     final String objectPath = getStagingFullPath(datasetId, stream);
-    LOGGER.info("Uploading records to staging for stream {} (dataset {}): {}", stream, datasetId, objectPath);
-    return gcsStorageOperations.uploadRecordsToBucket(writer, datasetId, getStagingRootPath(datasetId, stream), objectPath);
+    LOGGER.info(
+        "Uploading records to staging for stream {} (dataset {}): {}",
+        stream,
+        datasetId,
+        objectPath);
+    return gcsStorageOperations.uploadRecordsToBucket(
+        writer, datasetId, getStagingRootPath(datasetId, stream), objectPath);
   }
 
   /**
@@ -125,16 +135,22 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    * https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
    */
   @Override
-  public void copyIntoTableFromStage(final String datasetId,
-                                     final String stream,
-                                     final TableId tableId,
-                                     final Schema tableSchema,
-                                     final List<String> stagedFiles) {
-    LOGGER.info("Uploading records from staging files to target table {} (dataset {}): {}",
-        tableId, datasetId, stagedFiles);
+  public void copyIntoTableFromStage(
+      final String datasetId,
+      final String stream,
+      final TableId tableId,
+      final Schema tableSchema,
+      final List<String> stagedFiles) {
+    LOGGER.info(
+        "Uploading records from staging files to target table {} (dataset {}): {}",
+        tableId,
+        datasetId,
+        stagedFiles);
 
     stagedFiles.parallelStream().forEach(stagedFile -> {
-      final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFile);
+      final String fullFilePath = String.format(
+          "gs://%s/%s%s",
+          gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFile);
       LOGGER.info("Uploading staged file: {}", fullFilePath);
       final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tableId, fullFilePath)
           .setFormatOptions(FormatOptions.avro())
@@ -144,29 +160,39 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
           .build();
 
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
-      LOGGER.info("[{}] Created a new job to upload record(s) to target table {} (dataset {}): {}", loadJob.getJobId(),
-          tableId, datasetId, loadJob);
+      LOGGER.info(
+          "[{}] Created a new job to upload record(s) to target table {} (dataset {}): {}",
+          loadJob.getJobId(),
+          tableId,
+          datasetId,
+          loadJob);
 
       try {
         BigQueryUtils.waitForJobFinish(loadJob);
-        LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
-            tableId, datasetId);
+        LOGGER.info(
+            "[{}] Target table {} (dataset {}) is successfully appended with staging files",
+            loadJob.getJobId(),
+            tableId,
+            datasetId);
       } catch (final BigQueryException | InterruptedException e) {
         throw new RuntimeException(
-            String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
-                tableId, datasetId),
+            String.format(
+                "[%s] Failed to upload staging files to destination table %s (%s)",
+                loadJob.getJobId(), tableId, datasetId),
             e);
       }
     });
   }
 
   @Override
-  public void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles) {
+  public void cleanUpStage(
+      final String datasetId, final String stream, final List<String> stagedFiles) {
     if (keepStagingFiles) {
       return;
     }
 
-    LOGGER.info("Deleting staging files for stream {} (dataset {}): {}", stream, datasetId, stagedFiles);
+    LOGGER.info(
+        "Deleting staging files for stream {} (dataset {}): {}", stream, datasetId, stagedFiles);
     gcsStorageOperations.cleanUpBucketObject(getStagingRootPath(datasetId, stream), stagedFiles);
   }
 
@@ -183,7 +209,11 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     }
 
     final String stagingDatasetPath = getStagingRootPath(datasetId, stream);
-    LOGGER.info("Cleaning up staging path for stream {} (dataset {}): {}", stream, datasetId, stagingDatasetPath);
+    LOGGER.info(
+        "Cleaning up staging path for stream {} (dataset {}): {}",
+        stream,
+        datasetId,
+        stagingDatasetPath);
     gcsStorageOperations.dropBucketObject(stagingDatasetPath);
   }
 
@@ -201,12 +231,10 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    * @param schema schema of the table to be deleted/created
    */
   @Override
-  public void truncateTableIfExists(final String datasetId,
-                                    final TableId tableId,
-                                    final Schema schema) {
+  public void truncateTableIfExists(
+      final String datasetId, final TableId tableId, final Schema schema) {
     LOGGER.info("Truncating target table {} (dataset {})", tableId, datasetId);
     dropTableIfExists(datasetId, tableId);
     createTableIfNotExists(tableId, schema);
   }
-
 }

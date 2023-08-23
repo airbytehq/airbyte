@@ -100,19 +100,20 @@ public class SshTunnel implements AutoCloseable {
    * @param remoteServicePort - the actual port of the remote service (as it is known to the tunnel
    *        host).
    */
-  public SshTunnel(final JsonNode config,
-                   final List<String> hostKey,
-                   final List<String> portKey,
-                   final String endPointKey,
-                   final String remoteServiceUrl,
-                   final TunnelMethod tunnelMethod,
-                   final String tunnelHost,
-                   final int tunnelPort,
-                   final String tunnelUser,
-                   final String sshKey,
-                   final String tunnelUserPassword,
-                   final String remoteServiceHost,
-                   final int remoteServicePort) {
+  public SshTunnel(
+      final JsonNode config,
+      final List<String> hostKey,
+      final List<String> portKey,
+      final String endPointKey,
+      final String remoteServiceUrl,
+      final TunnelMethod tunnelMethod,
+      final String tunnelHost,
+      final int tunnelPort,
+      final String tunnelUser,
+      final String sshKey,
+      final String tunnelUserPassword,
+      final String remoteServiceHost,
+      final int remoteServicePort) {
     this.config = config;
     this.hostKey = hostKey;
     this.portKey = portKey;
@@ -142,14 +143,17 @@ public class SshTunnel implements AutoCloseable {
       }
       // must provide either host/port or endpoint
       Preconditions.checkArgument((hostKey != null && portKey != null) || endPointKey != null);
-      Preconditions.checkArgument((remoteServiceHost != null && remoteServicePort > 0) || remoteServiceUrl != null);
+      Preconditions.checkArgument(
+          (remoteServiceHost != null && remoteServicePort > 0) || remoteServiceUrl != null);
       if (remoteServiceUrl != null) {
         URL urlObject = null;
         try {
           urlObject = new URL(remoteServiceUrl);
         } catch (final MalformedURLException e) {
-          AirbyteTraceMessageUtility.emitConfigErrorTrace(e,
-              String.format("Provided value for remote service URL is not valid: %s", remoteServiceUrl));
+          AirbyteTraceMessageUtility.emitConfigErrorTrace(
+              e,
+              String.format(
+                  "Provided value for remote service URL is not valid: %s", remoteServiceUrl));
         }
         Preconditions.checkNotNull(urlObject, "Failed to parse URL of remote service");
         this.remoteServiceHost = urlObject.getHost();
@@ -183,21 +187,26 @@ public class SshTunnel implements AutoCloseable {
     } else {
       final JsonNode clone = Jsons.clone(config);
       if (hostKey != null) {
-        Jsons.replaceNestedString(clone, hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
+        Jsons.replaceNestedString(
+            clone, hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
       }
       if (portKey != null) {
         Jsons.replaceNestedInt(clone, portKey, tunnelLocalPort);
       }
       if (endPointKey != null) {
-        final URL tunnelEndPointURL =
-            new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
+        final URL tunnelEndPointURL = new URL(
+            remoteServiceProtocol,
+            SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(),
+            tunnelLocalPort,
+            remoteServicePath);
         Jsons.replaceNestedString(clone, Arrays.asList(endPointKey), tunnelEndPointURL.toString());
       }
       return clone;
     }
   }
 
-  public static SshTunnel getInstance(final JsonNode config, final List<String> hostKey, final List<String> portKey) {
+  public static SshTunnel getInstance(
+      final JsonNode config, final List<String> hostKey, final List<String> portKey) {
     final TunnelMethod tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
         .map(method -> TunnelMethod.valueOf(method.asText().trim()))
         .orElse(TunnelMethod.NO_TUNNEL);
@@ -219,7 +228,8 @@ public class SshTunnel implements AutoCloseable {
         Jsons.getIntOrZero(config, portKey));
   }
 
-  public static SshTunnel getInstance(final JsonNode config, final String endPointKey) throws Exception {
+  public static SshTunnel getInstance(final JsonNode config, final String endPointKey)
+      throws Exception {
     final TunnelMethod tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
         .map(method -> TunnelMethod.valueOf(method.asText().trim()))
         .orElse(TunnelMethod.NO_TUNNEL);
@@ -237,13 +247,15 @@ public class SshTunnel implements AutoCloseable {
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
-        null, 0);
+        null,
+        0);
   }
 
-  public static void sshWrap(final JsonNode config,
-                             final List<String> hostKey,
-                             final List<String> portKey,
-                             final CheckedConsumer<JsonNode, Exception> wrapped)
+  public static void sshWrap(
+      final JsonNode config,
+      final List<String> hostKey,
+      final List<String> portKey,
+      final CheckedConsumer<JsonNode, Exception> wrapped)
       throws Exception {
     sshWrap(config, hostKey, portKey, (configInTunnel) -> {
       wrapped.accept(configInTunnel);
@@ -251,9 +263,10 @@ public class SshTunnel implements AutoCloseable {
     });
   }
 
-  public static void sshWrap(final JsonNode config,
-                             final String endPointKey,
-                             final CheckedConsumer<JsonNode, Exception> wrapped)
+  public static void sshWrap(
+      final JsonNode config,
+      final String endPointKey,
+      final CheckedConsumer<JsonNode, Exception> wrapped)
       throws Exception {
     sshWrap(config, endPointKey, (configInTunnel) -> {
       wrapped.accept(configInTunnel);
@@ -261,19 +274,21 @@ public class SshTunnel implements AutoCloseable {
     });
   }
 
-  public static <T> T sshWrap(final JsonNode config,
-                              final List<String> hostKey,
-                              final List<String> portKey,
-                              final CheckedFunction<JsonNode, T, Exception> wrapped)
+  public static <T> T sshWrap(
+      final JsonNode config,
+      final List<String> hostKey,
+      final List<String> portKey,
+      final CheckedFunction<JsonNode, T, Exception> wrapped)
       throws Exception {
     try (final SshTunnel sshTunnel = SshTunnel.getInstance(config, hostKey, portKey)) {
       return wrapped.apply(sshTunnel.getConfigInTunnel());
     }
   }
 
-  public static <T> T sshWrap(final JsonNode config,
-                              final String endPointKey,
-                              final CheckedFunction<JsonNode, T, Exception> wrapped)
+  public static <T> T sshWrap(
+      final JsonNode config,
+      final String endPointKey,
+      final CheckedFunction<JsonNode, T, Exception> wrapped)
       throws Exception {
     try (final SshTunnel sshTunnel = SshTunnel.getInstance(config, endPointKey)) {
       return wrapped.apply(sshTunnel.getConfigInTunnel());
@@ -309,14 +324,14 @@ public class SshTunnel implements AutoCloseable {
    */
   KeyPair getPrivateKeyPair() throws IOException, GeneralSecurityException {
     final String validatedKey = validateKey();
-    final var keyPairs = SecurityUtils
-        .getKeyPairResourceParser()
+    final var keyPairs = SecurityUtils.getKeyPairResourceParser()
         .loadKeyPairs(null, null, null, new StringReader(validatedKey));
 
     if (keyPairs != null && keyPairs.iterator().hasNext()) {
       return keyPairs.iterator().next();
     }
-    throw new ConfigErrorException("Unable to load private key pairs, verify key pairs are properly inputted");
+    throw new ConfigErrorException(
+        "Unable to load private key pairs, verify key pairs are properly inputted");
   }
 
   private String validateKey() {
@@ -342,10 +357,8 @@ public class SshTunnel implements AutoCloseable {
   ClientSession openTunnel(final SshClient client) {
     try {
       client.start();
-      final ClientSession session = client.connect(
-          tunnelUser.trim(),
-          tunnelHost.trim(),
-          tunnelPort)
+      final ClientSession session = client
+          .connect(tunnelUser.trim(), tunnelHost.trim(), tunnelPort)
           .verify(TIMEOUT_MILLIS)
           .getSession();
       if (tunnelMethod.equals(TunnelMethod.SSH_KEY_AUTH)) {
@@ -358,19 +371,23 @@ public class SshTunnel implements AutoCloseable {
       session.auth().verify(TIMEOUT_MILLIS);
       final SshdSocketAddress address = session.startLocalPortForwarding(
           // entering 0 lets the OS pick a free port for us.
-          new SshdSocketAddress(InetSocketAddress.createUnresolved(SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), 0)),
+          new SshdSocketAddress(InetSocketAddress.createUnresolved(
+              SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), 0)),
           new SshdSocketAddress(remoteServiceHost, remoteServicePort));
 
-      // discover the port that the OS picked and remember it so that we can use it when we try to connect
+      // discover the port that the OS picked and remember it so that we can use it when we try to
+      // connect
       tunnelLocalPort = address.getPort();
 
-      LOGGER.info(String.format("Established tunneling session to %s:%d. Port forwarding started on %s ",
+      LOGGER.info(String.format(
+          "Established tunneling session to %s:%d. Port forwarding started on %s ",
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
     } catch (final IOException | GeneralSecurityException e) {
-      if (e instanceof SshException && e.getMessage()
-          .toLowerCase(Locale.ROOT)
-          .contains("failed to get operation result within specified timeout")) {
+      if (e instanceof SshException
+          && e.getMessage()
+              .toLowerCase(Locale.ROOT)
+              .contains("failed to get operation result within specified timeout")) {
         throw new ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e);
       } else {
         throw new RuntimeException(e);
@@ -380,17 +397,15 @@ public class SshTunnel implements AutoCloseable {
 
   @Override
   public String toString() {
-    return "SshTunnel{" +
-        "hostKey=" + hostKey +
-        ", portKey=" + portKey +
-        ", tunnelMethod=" + tunnelMethod +
-        ", tunnelHost='" + tunnelHost + '\'' +
-        ", tunnelPort=" + tunnelPort +
-        ", tunnelUser='" + tunnelUser + '\'' +
-        ", remoteServiceHost='" + remoteServiceHost + '\'' +
-        ", remoteServicePort=" + remoteServicePort +
-        ", tunnelLocalPort=" + tunnelLocalPort +
-        '}';
+    return "SshTunnel{" + "hostKey="
+        + hostKey + ", portKey="
+        + portKey + ", tunnelMethod="
+        + tunnelMethod + ", tunnelHost='"
+        + tunnelHost + '\'' + ", tunnelPort="
+        + tunnelPort + ", tunnelUser='"
+        + tunnelUser + '\'' + ", remoteServiceHost='"
+        + remoteServiceHost + '\'' + ", remoteServicePort="
+        + remoteServicePort + ", tunnelLocalPort="
+        + tunnelLocalPort + '}';
   }
-
 }

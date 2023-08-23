@@ -12,5 +12,4 @@ public class SshPasswordMySQLDestinationAcceptanceTest extends SshMySQLDestinati
   public Path getConfigFilePath() {
     return Path.of("secrets/ssh-pwd-config.json");
   }
-
 }

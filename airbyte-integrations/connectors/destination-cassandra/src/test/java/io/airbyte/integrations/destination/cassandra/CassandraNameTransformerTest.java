@@ -17,11 +17,7 @@ class CassandraNameTransformerTest {
 
   @BeforeAll
   void setup() {
-    var cassandraConfig = TestDataFactory.createCassandraConfig(
-        "usr",
-        "pw",
-        "127.0.0.1",
-        9042);
+    var cassandraConfig = TestDataFactory.createCassandraConfig("usr", "pw", "127.0.0.1", 9042);
     this.cassandraNameTransformer = new CassandraNameTransformer(cassandraConfig);
   }
 
@@ -31,7 +27,6 @@ class CassandraNameTransformerTest {
     var table = cassandraNameTransformer.outputTable("stream_name");
 
     assertThat(table).matches("airbyte_raw_stream_name");
-
   }
 
   @Test
@@ -40,7 +35,6 @@ class CassandraNameTransformerTest {
     var table = cassandraNameTransformer.outputTmpTable("stream_name");
 
     assertThat(table).matches("airbyte_tmp_+[a-z]+_stream_name");
-
   }
 
   @Test
@@ -49,7 +43,6 @@ class CassandraNameTransformerTest {
     var keyspace = cassandraNameTransformer.outputKeyspace("***keyspace^h");
 
     assertThat(keyspace).matches("keyspace_h");
-
   }
 
   @Test
@@ -58,7 +51,5 @@ class CassandraNameTransformerTest {
     var column = cassandraNameTransformer.outputColumn("_airbyte_data");
 
     assertThat(column).matches("\"_airbyte_data\"");
-
   }
-
 }

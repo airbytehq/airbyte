@@ -24,21 +24,23 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWriter> extends AbstractBigQueryUploader<DestinationFileWriter> {
+public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWriter>
+    extends AbstractBigQueryUploader<DestinationFileWriter> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGscBigQueryUploader.class);
 
   private final boolean isKeepFilesInGcs;
   protected final GcsDestinationConfig gcsDestinationConfig;
 
-  AbstractGscBigQueryUploader(final TableId table,
-                              final TableId tmpTable,
-                              final T writer,
-                              final WriteDisposition syncMode,
-                              final GcsDestinationConfig gcsDestinationConfig,
-                              final BigQuery bigQuery,
-                              final boolean isKeepFilesInGcs,
-                              final BigQueryRecordFormatter recordFormatter) {
+  AbstractGscBigQueryUploader(
+      final TableId table,
+      final TableId tmpTable,
+      final T writer,
+      final WriteDisposition syncMode,
+      final GcsDestinationConfig gcsDestinationConfig,
+      final BigQuery bigQuery,
+      final boolean isKeepFilesInGcs,
+      final BigQueryRecordFormatter recordFormatter) {
     super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter);
     this.isKeepFilesInGcs = isKeepFilesInGcs;
     this.gcsDestinationConfig = gcsDestinationConfig;
@@ -52,7 +54,9 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
   }
 
   @Override
-  protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
+  protected void uploadData(
+      final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage)
+      throws Exception {
     LOGGER.info("Uploading data to the tmp table {}.", tmpTable.getTable());
     uploadDataFromFileToTmpTable();
     super.uploadData(outputRecordCollector, lastStateMessage);
@@ -64,8 +68,12 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
 
       // Initialize client that will be used to send requests. This client only needs to be created
       // once, and can be reused for multiple requests.
-      LOGGER.info(String.format("Started copying data from %s GCS " + getFileTypeName() + " file to %s tmp BigQuery table with schema: \n %s",
-          fileLocation, tmpTable, recordFormatter.getBigQuerySchema()));
+      LOGGER.info(String.format(
+          "Started copying data from %s GCS " + getFileTypeName()
+              + " file to %s tmp BigQuery table with schema: \n %s",
+          fileLocation,
+          tmpTable,
+          recordFormatter.getBigQuerySchema()));
 
       final LoadJobConfiguration configuration = getLoadConfiguration();
 
@@ -73,20 +81,22 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
       // https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
       // Load the table
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
-      LOGGER.info("Created a new job GCS " + getFileTypeName() + " file to tmp BigQuery table: " + loadJob);
+      LOGGER.info(
+          "Created a new job GCS " + getFileTypeName() + " file to tmp BigQuery table: " + loadJob);
 
       // Load data from a GCS parquet file into the table
       // Blocks until this load table job completes its execution, either failing or succeeding.
       BigQueryUtils.waitForJobFinish(loadJob);
 
-      LOGGER.info("Table is successfully overwritten by file loaded from GCS: {}", getFileTypeName());
+      LOGGER.info(
+          "Table is successfully overwritten by file loaded from GCS: {}", getFileTypeName());
     } catch (final BigQueryException | InterruptedException e) {
       LOGGER.error("Column not added during load append", e);
       throw new RuntimeException("Column not added during load append \n" + e.toString());
     }
   }
 
-  abstract protected LoadJobConfiguration getLoadConfiguration();
+  protected abstract LoadJobConfiguration getLoadConfiguration();
 
   private String getFileTypeName() {
     return writer.getFileFormat().getFileExtension();
@@ -100,15 +110,17 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
     final String gcsBucketName = gcsDestinationConfig.getBucketName();
     final String gcs_bucket_path = gcsDestinationConfig.getBucketPath();
 
-    final List<S3ObjectSummary> objects = s3Client
-        .listObjects(gcsBucketName, gcs_bucket_path)
-        .getObjectSummaries();
+    final List<S3ObjectSummary> objects =
+        s3Client.listObjects(gcsBucketName, gcs_bucket_path).getObjectSummaries();
 
-    objects.stream().filter(s3ObjectSummary -> s3ObjectSummary.getKey().equals(writer.getOutputPath())).forEach(s3ObjectSummary -> {
-      s3Client.deleteObject(gcsBucketName, new DeleteObjectsRequest.KeyVersion(s3ObjectSummary.getKey()).getKey());
-      LOGGER.info("File is deleted : " + s3ObjectSummary.getKey());
-    });
+    objects.stream()
+        .filter(s3ObjectSummary -> s3ObjectSummary.getKey().equals(writer.getOutputPath()))
+        .forEach(s3ObjectSummary -> {
+          s3Client.deleteObject(
+              gcsBucketName,
+              new DeleteObjectsRequest.KeyVersion(s3ObjectSummary.getKey()).getKey());
+          LOGGER.info("File is deleted : " + s3ObjectSummary.getKey());
+        });
     s3Client.shutdown();
   }
-
 }

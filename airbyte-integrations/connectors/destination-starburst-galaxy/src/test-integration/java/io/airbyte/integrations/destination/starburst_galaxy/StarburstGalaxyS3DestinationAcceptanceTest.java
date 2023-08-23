@@ -47,13 +47,15 @@ public class StarburstGalaxyS3DestinationAcceptanceTest
     // Set a random s3 bucket path and database schema for each integration test
     String randomString = randomAlphanumeric(5);
     JsonNode configJson = Jsons.clone(baseConfigJson);
-    ((ObjectNode) configJson).put(CATALOG_SCHEMA, configJson.get(CATALOG_SCHEMA).asText() + "_" + randomString);
+    ((ObjectNode) configJson)
+        .put(CATALOG_SCHEMA, configJson.get(CATALOG_SCHEMA).asText() + "_" + randomString);
     JsonNode stagingStore = configJson.get(STAGING_OBJECT_STORE);
     ((ObjectNode) stagingStore).put(S_3_BUCKET_PATH, "test_" + randomString);
 
     this.configJson = configJson;
     this.galaxyDestinationConfig = get(configJson);
-    S3DestinationConfig s3Config = galaxyDestinationConfig.storageConfig().getS3DestinationConfigOrThrow();
+    S3DestinationConfig s3Config =
+        galaxyDestinationConfig.storageConfig().getS3DestinationConfigOrThrow();
     LOGGER.info("Test full path: s3://{}/{}", s3Config.getBucketName(), s3Config.getBucketPath());
 
     super.setup(testEnv, TEST_SCHEMAS); // Create a database
@@ -63,5 +65,4 @@ public class StarburstGalaxyS3DestinationAcceptanceTest
   protected List<String> resolveIdentifier(String identifier) {
     return List.of(identifier.toLowerCase(ENGLISH));
   }
-
 }

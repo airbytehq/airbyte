@@ -34,8 +34,8 @@ public class IcebergDestination extends BaseConnector implements Destination {
 
   @VisibleForTesting
   public IcebergDestination(IcebergCatalogConfigFactory icebergCatalogConfigFactory) {
-    this.icebergCatalogConfigFactory = Objects.requireNonNullElseGet(icebergCatalogConfigFactory,
-        IcebergCatalogConfigFactory::new);
+    this.icebergCatalogConfigFactory = Objects.requireNonNullElseGet(
+        icebergCatalogConfigFactory, IcebergCatalogConfigFactory::new);
   }
 
   public static void main(String[] args) throws Exception {
@@ -45,7 +45,8 @@ public class IcebergDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      IcebergCatalogConfig icebergCatalogConfig = icebergCatalogConfigFactory.fromJsonNodeConfig(config);
+      IcebergCatalogConfig icebergCatalogConfig =
+          icebergCatalogConfigFactory.fromJsonNodeConfig(config);
       icebergCatalogConfig.check();
 
       // getting here means Iceberg catalog check success
@@ -54,8 +55,9 @@ public class IcebergDestination extends BaseConnector implements Destination {
       log.error("Exception attempting to access the Iceberg catalog: ", e);
       Throwable rootCause = getRootCause(e);
       String errMessage =
-          "Could not connect to the Iceberg catalog with the provided configuration. \n" + e.getMessage()
-              + ", root cause: " + rootCause.getClass().getSimpleName() + "(" + rootCause.getMessage() + ")";
+          "Could not connect to the Iceberg catalog with the provided configuration. \n"
+              + e.getMessage() + ", root cause: " + rootCause.getClass().getSimpleName() + "("
+              + rootCause.getMessage() + ")";
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage(errMessage);
@@ -72,10 +74,12 @@ public class IcebergDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    final IcebergCatalogConfig icebergCatalogConfig = this.icebergCatalogConfigFactory.fromJsonNodeConfig(config);
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
+    final IcebergCatalogConfig icebergCatalogConfig =
+        this.icebergCatalogConfigFactory.fromJsonNodeConfig(config);
     Map<String, String> sparkConfMap = icebergCatalogConfig.sparkConfigMap();
 
     Builder sparkBuilder = SparkSession.builder()
@@ -86,5 +90,4 @@ public class IcebergDestination extends BaseConnector implements Destination {
 
     return new IcebergConsumer(spark, outputRecordCollector, catalog, icebergCatalogConfig);
   }
-
 }

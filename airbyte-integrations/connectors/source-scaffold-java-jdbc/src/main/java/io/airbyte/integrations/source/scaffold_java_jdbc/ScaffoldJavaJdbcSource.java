@@ -48,5 +48,4 @@ public class ScaffoldJavaJdbcSource extends AbstractJdbcSource<JDBCType> impleme
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", ScaffoldJavaJdbcSource.class);
   }
-
 }

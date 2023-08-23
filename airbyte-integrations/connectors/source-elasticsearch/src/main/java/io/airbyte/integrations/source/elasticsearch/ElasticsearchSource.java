@@ -43,11 +43,13 @@ public class ElasticsearchSource extends BaseConnector implements Source {
     final ConnectorConfiguration configObject = convertConfig(config);
     if (Objects.isNull(configObject.getEndpoint())) {
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("endpoint must not be empty");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("endpoint must not be empty");
     }
     if (!configObject.getAuthenticationMethod().isValid()) {
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("authentication options are invalid");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("authentication options are invalid");
     }
 
     final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
@@ -60,7 +62,9 @@ public class ElasticsearchSource extends BaseConnector implements Source {
     if (result) {
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } else {
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to ping elasticsearch");
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("failed to ping elasticsearch");
     }
   }
 
@@ -91,22 +95,22 @@ public class ElasticsearchSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(
+      JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
     final ConnectorConfiguration configObject = convertConfig(config);
     final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
 
-    catalog.getStreams()
-        .stream()
-        .map(ConfiguredAirbyteStream::getStream)
-        .forEach(stream -> {
-          AutoCloseableIterator<JsonNode> data = ElasticsearchUtils.getDataIterator(connection, stream);
-          AutoCloseableIterator<AirbyteMessage> messageIterator =
-              ElasticsearchUtils.getMessageIterator(data, stream.getName(), stream.getNamespace());
-          iteratorList.add(messageIterator);
-        });
-    return AutoCloseableIterators
-        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace), () -> {
+    catalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).forEach(stream -> {
+      AutoCloseableIterator<JsonNode> data = ElasticsearchUtils.getDataIterator(connection, stream);
+      AutoCloseableIterator<AirbyteMessage> messageIterator =
+          ElasticsearchUtils.getMessageIterator(data, stream.getName(), stream.getNamespace());
+      iteratorList.add(messageIterator);
+    });
+    return AutoCloseableIterators.appendOnClose(
+        AutoCloseableIterators.concatWithEagerClose(
+            iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace),
+        () -> {
           LOGGER.info("Closing server connection.");
           connection.close();
           LOGGER.info("Closed server connection.");
@@ -116,5 +120,4 @@ public class ElasticsearchSource extends BaseConnector implements Source {
   private ConnectorConfiguration convertConfig(JsonNode config) {
     return mapper.convertValue(config, ConnectorConfiguration.class);
   }
-
 }

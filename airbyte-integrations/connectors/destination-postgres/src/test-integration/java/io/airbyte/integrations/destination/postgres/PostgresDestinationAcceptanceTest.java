@@ -61,13 +61,13 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
@@ -103,27 +103,31 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     try (final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         db.getJdbcUrl(),
         SQLDialect.POSTGRES)) {
-      return new Database(dslContext)
-          .query(ctx -> {
-            ctx.execute("set time zone 'UTC';");
-            return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(this::getJsonFromRecord)
-                .collect(Collectors.toList());
-          });
+      return new Database(dslContext).query(ctx -> {
+        ctx.execute("set time zone 'UTC';");
+        return ctx
+            .fetch(String.format(
+                "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(this::getJsonFromRecord)
+            .collect(Collectors.toList());
+      });
     }
   }
 
@@ -138,5 +142,4 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
     db.stop();
     db.close();
   }
-
 }

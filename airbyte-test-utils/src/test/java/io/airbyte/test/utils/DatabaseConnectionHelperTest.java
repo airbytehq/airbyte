@@ -51,5 +51,4 @@ class DatabaseConnectionHelperTest {
     assertNotNull(dslContext);
     assertEquals(dialect, dslContext.configuration().dialect());
   }
-
 }

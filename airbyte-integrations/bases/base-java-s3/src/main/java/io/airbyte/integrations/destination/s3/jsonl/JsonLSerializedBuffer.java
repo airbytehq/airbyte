@@ -35,7 +35,9 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
   private final boolean flattenData;
 
-  protected JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression, final boolean flattenData) throws Exception {
+  protected JsonLSerializedBuffer(
+      final BufferStorage bufferStorage, final boolean gzipCompression, final boolean flattenData)
+      throws Exception {
     super(bufferStorage);
     // we always want to compress jsonl files
     withCompression(gzipCompression);
@@ -53,7 +55,8 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, record.getEmittedAt());
     if (flattenData) {
-      final Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {});
+      final Map<String, JsonNode> data =
+          MAPPER.convertValue(record.getData(), new TypeReference<>() {});
       json.setAll(data);
     } else {
       json.set(JavaBaseConstants.COLUMN_NAME_DATA, record.getData());
@@ -71,20 +74,19 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
     printWriter.close();
   }
 
-  public static BufferCreateFunction createBufferFunction(final S3JsonlFormatConfig config,
-                                                          final Callable<BufferStorage> createStorageFunction) {
-    return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
+  public static BufferCreateFunction createBufferFunction(
+      final S3JsonlFormatConfig config, final Callable<BufferStorage> createStorageFunction) {
+    return (final AirbyteStreamNameNamespacePair stream,
+        final ConfiguredAirbyteCatalog catalog) -> {
       final CompressionType compressionType = config == null
           ? S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
           : config.getCompressionType();
 
-      final Flattening flattening = config == null
-          ? Flattening.NO
-          : config.getFlatteningType();
-      return new JsonLSerializedBuffer(createStorageFunction.call(), compressionType != CompressionType.NO_COMPRESSION,
+      final Flattening flattening = config == null ? Flattening.NO : config.getFlatteningType();
+      return new JsonLSerializedBuffer(
+          createStorageFunction.call(),
+          compressionType != CompressionType.NO_COMPRESSION,
           flattening != Flattening.NO);
     };
-
   }
-
 }

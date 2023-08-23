@@ -18,14 +18,15 @@ import static io.airbyte.integrations.destination.starburst_galaxy.StarburstGala
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public record StarburstGalaxyDestinationConfig(String galaxyServerHostname,
-                                               String galaxyPort,
-                                               String galaxyUsername,
-                                               String galaxyPassword,
-                                               String galaxyCatalog,
-                                               String galaxyCatalogSchema,
-                                               boolean purgeStagingData,
-                                               StarburstGalaxyStagingStorageConfig storageConfig) {
+public record StarburstGalaxyDestinationConfig(
+    String galaxyServerHostname,
+    String galaxyPort,
+    String galaxyUsername,
+    String galaxyPassword,
+    String galaxyCatalog,
+    String galaxyCatalogSchema,
+    boolean purgeStagingData,
+    StarburstGalaxyStagingStorageConfig storageConfig) {
 
   static final String DEFAULT_STARBURST_GALAXY_PORT = "443";
   static final String DEFAULT_STARBURST_GALAXY_CATALOG_SCHEMA = "public";
@@ -41,9 +42,12 @@ public record StarburstGalaxyDestinationConfig(String galaxyServerHostname,
         config.get(USERNAME).asText(),
         config.get(PASSWORD).asText(),
         config.get(CATALOG).asText(),
-        config.has(CATALOG_SCHEMA) ? config.get(CATALOG_SCHEMA).asText() : DEFAULT_STARBURST_GALAXY_CATALOG_SCHEMA,
-        config.has(PURGE_STAGING_TABLE) ? config.get(PURGE_STAGING_TABLE).asBoolean() : DEFAULT_PURGE_STAGING_TABLE,
+        config.has(CATALOG_SCHEMA)
+            ? config.get(CATALOG_SCHEMA).asText()
+            : DEFAULT_STARBURST_GALAXY_CATALOG_SCHEMA,
+        config.has(PURGE_STAGING_TABLE)
+            ? config.get(PURGE_STAGING_TABLE).asBoolean()
+            : DEFAULT_PURGE_STAGING_TABLE,
         getStarburstGalaxyStagingStorageConfig(config.get(STAGING_OBJECT_STORE)));
   }
-
 }

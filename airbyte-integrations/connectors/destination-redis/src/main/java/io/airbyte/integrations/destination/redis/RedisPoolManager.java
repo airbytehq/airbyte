@@ -20,8 +20,10 @@ class RedisPoolManager {
     Jedis jedis = null;
     final String host = jsonConfig.get(PARAM_HOST).asText();
     final int port = jsonConfig.get(PARAM_PORT).asInt(6379);
-    final String username = jsonConfig.has(PARAM_USERNAME) ? jsonConfig.get(PARAM_USERNAME).asText() : "";
-    final String password = jsonConfig.has(PARAM_PASSWORD) ? jsonConfig.get(PARAM_PASSWORD).asText() : "";
+    final String username =
+        jsonConfig.has(PARAM_USERNAME) ? jsonConfig.get(PARAM_USERNAME).asText() : "";
+    final String password =
+        jsonConfig.has(PARAM_PASSWORD) ? jsonConfig.get(PARAM_PASSWORD).asText() : "";
     try {
       if (RedisSslUtil.isSsl(jsonConfig)) {
         RedisSslUtil.setupCertificates(jsonConfig.get(PARAM_SSL_MODE));
@@ -38,5 +40,4 @@ class RedisPoolManager {
       throw new RuntimeException(e);
     }
   }
-
 }

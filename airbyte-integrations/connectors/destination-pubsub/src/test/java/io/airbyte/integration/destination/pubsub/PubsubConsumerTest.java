@@ -26,6 +26,7 @@ public class PubsubConsumerTest extends PerStreamStateMessageTest {
 
   @Mock
   private PubsubDestinationConfig config;
+
   @Mock
   private ConfiguredAirbyteCatalog catalog;
 
@@ -43,5 +44,4 @@ public class PubsubConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return consumer;
   }
-
 }

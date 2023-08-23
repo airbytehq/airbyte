@@ -28,7 +28,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
  * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer}
  * class.
  */
-public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
+public interface AirbyteMessageConsumer
+    extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 
   void start() throws Exception;
 
@@ -52,7 +53,8 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
   /**
    * Append a function to be called on {@link AirbyteMessageConsumer#close}.
    */
-  static AirbyteMessageConsumer appendOnClose(final AirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
+  static AirbyteMessageConsumer appendOnClose(
+      final AirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
     return new AirbyteMessageConsumer() {
 
       @Override
@@ -70,8 +72,6 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
         consumer.close();
         voidCallable.call();
       }
-
     };
   }
-
 }

@@ -45,13 +45,13 @@ class PostgresSourceOperationsTest {
   @BeforeEach
   public void init() throws SQLException {
     container = new PostgreSQLContainer<>("postgres:14-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "Standard").build());
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
@@ -66,7 +66,8 @@ class PostgresSourceOperationsTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -91,9 +92,8 @@ class PostgresSourceOperationsTest {
   @Test
   public void numericColumnAsCursor() throws SQLException {
     final String tableName = container.getDatabaseName() + ".numeric_table";
-    final String createTableQuery = String.format("CREATE TABLE %s(id INTEGER PRIMARY KEY, %s NUMERIC(38, 0));",
-        tableName,
-        cursorColumn);
+    final String createTableQuery = String.format(
+        "CREATE TABLE %s(id INTEGER PRIMARY KEY, %s NUMERIC(38, 0));", tableName, cursorColumn);
     executeQuery(createTableQuery);
     final List<JsonNode> expectedRecords = new ArrayList<>();
     for (int i = 1; i <= 4; i++) {
@@ -101,10 +101,8 @@ class PostgresSourceOperationsTest {
       jsonNode.put("id", i);
       final long cursorValue = i * 10;
       jsonNode.put(cursorColumn, cursorValue);
-      final String insertQuery = String.format("INSERT INTO %s VALUES (%s, %s);",
-          tableName,
-          i,
-          cursorValue);
+      final String insertQuery =
+          String.format("INSERT INTO %s VALUES (%s, %s);", tableName, i, cursorValue);
       executeQuery(insertQuery);
       expectedRecords.add(jsonNode);
     }
@@ -113,10 +111,7 @@ class PostgresSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      postgresSourceOperations.setCursorField(preparedStatement,
-          1,
-          PostgresType.NUMERIC,
-          "0");
+      postgresSourceOperations.setCursorField(preparedStatement, 1, PostgresType.NUMERIC, "0");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         final int columnCount = resultSet.getMetaData().getColumnCount();
@@ -135,9 +130,8 @@ class PostgresSourceOperationsTest {
   @Test
   public void timeColumnAsCursor() throws SQLException {
     final String tableName = container.getDatabaseName() + ".time_table";
-    final String createTableQuery = String.format("CREATE TABLE %s(id INTEGER PRIMARY KEY, %s TIME);",
-        tableName,
-        cursorColumn);
+    final String createTableQuery =
+        String.format("CREATE TABLE %s(id INTEGER PRIMARY KEY, %s TIME);", tableName, cursorColumn);
     executeQuery(createTableQuery);
     final List<JsonNode> expectedRecords = new ArrayList<>();
     for (int i = 1; i <= 4; i++) {
@@ -153,7 +147,8 @@ class PostgresSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      postgresSourceOperations.setCursorField(preparedStatement,
+      postgresSourceOperations.setCursorField(
+          preparedStatement,
           1,
           PostgresType.TIME,
           DateTimeConverter.convertToTime(LocalTime.of(20, 0, 0)));
@@ -184,12 +179,9 @@ class PostgresSourceOperationsTest {
 
   protected void executeQuery(final String query) {
     try {
-      database.query(
-          ctx -> ctx
-              .execute(query));
+      database.query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
-
 }

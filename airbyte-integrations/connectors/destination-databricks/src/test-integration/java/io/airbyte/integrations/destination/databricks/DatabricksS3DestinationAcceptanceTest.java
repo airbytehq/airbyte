@@ -30,7 +30,8 @@ import org.slf4j.LoggerFactory;
 
 public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksS3DestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(DatabricksS3DestinationAcceptanceTest.class);
   private static final String SECRETS_CONFIG_JSON = "secrets/config.json";
 
   private S3DestinationConfig s3Config;
@@ -75,15 +76,16 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
     }
 
     if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", s3Config.getBucketName(),
+      LOGGER.info(
+          "Tearing down test bucket path: {}/{}",
+          s3Config.getBucketName(),
           s3Config.getBucketPath());
-      final DeleteObjectsResult result = s3Client
-          .deleteObjects(new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
+      final DeleteObjectsResult result = s3Client.deleteObjects(
+          new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
     s3Client.shutdown();
 
     super.tearDown(testEnv);
   }
-
 }

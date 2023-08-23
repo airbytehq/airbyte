@@ -52,27 +52,30 @@ public class MySQLDestinationTest {
 
   @Test
   void testEmptyExtraParams() {
-    final JsonNode jdbcConfig = new MySQLDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
+    final JsonNode jdbcConfig =
+        new MySQLDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
     assertEquals(JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
-    final JsonNode jdbcConfig = new MySQLDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
+    final JsonNode jdbcConfig =
+        new MySQLDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
     assertEquals(JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testDefaultParamsNoSSL() {
-    final Map<String, String> defaultProperties = new MySQLDestination().getDefaultConnectionProperties(buildConfigNoExtraJdbcParametersWithoutSsl());
+    final Map<String, String> defaultProperties = new MySQLDestination()
+        .getDefaultConnectionProperties(buildConfigNoExtraJdbcParametersWithoutSsl());
     assertEquals(MySQLDestination.DEFAULT_JDBC_PARAMETERS, defaultProperties);
   }
 
   @Test
   void testDefaultParamsWithSSL() {
-    final Map<String, String> defaultProperties = new MySQLDestination().getDefaultConnectionProperties(buildConfigNoJdbcParameters());
+    final Map<String, String> defaultProperties =
+        new MySQLDestination().getDefaultConnectionProperties(buildConfigNoJdbcParameters());
     assertEquals(MySQLDestination.DEFAULT_SSL_JDBC_PARAMETERS, defaultProperties);
   }
-
 }

@@ -21,5 +21,4 @@ public interface AirbyteStreamAware {
   default Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
     return Optional.empty();
   }
-
 }

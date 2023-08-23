@@ -12,5 +12,4 @@ public class RedpandaConsumer<K, V> extends KafkaConsumer<K, V> {
   public RedpandaConsumer(Map<String, Object> configs) {
     super(configs);
   }
-
 }

@@ -29,10 +29,12 @@ class ExasolSQLNameTransformerTest {
   }
 
   @ParameterizedTest
-  @CsvSource({"stream, \"_airbyte_raw_stream\"",
+  @CsvSource({
+    "stream, \"_airbyte_raw_stream\"",
     "Stream, \"_airbyte_raw_Stream\"",
     "stream*, \"_airbyte_raw_stream_\"",
-    "äöü, \"_airbyte_raw_aou\""})
+    "äöü, \"_airbyte_raw_aou\""
+  })
   void getRawTableName(String streamName, String expectedTableName) {
     assertEquals(expectedTableName, transformer.getRawTableName(streamName));
   }
@@ -40,9 +42,7 @@ class ExasolSQLNameTransformerTest {
   @Test
   void getTmpTableNamePrefixSuffix() {
     String tmpTableName = transformer.getTmpTableName("stream");
-    assertThat(tmpTableName, allOf(
-        startsWith("\"_airbyte_tmp_"),
-        endsWith("_stream\"")));
+    assertThat(tmpTableName, allOf(startsWith("\"_airbyte_tmp_"), endsWith("_stream\"")));
   }
 
   @Test
@@ -53,7 +53,8 @@ class ExasolSQLNameTransformerTest {
   }
 
   @ParameterizedTest
-  @CsvSource({"stream, stream",
+  @CsvSource({
+    "stream, stream",
     "Stream,     Stream",
     "STREAM,     STREAM",
     "stream*,    stream_",
@@ -61,9 +62,9 @@ class ExasolSQLNameTransformerTest {
     "äöü,        aou",
     "\"stream,   stream",
     "stream\",   stream",
-    "\"stream\", stream",})
+    "\"stream\", stream",
+  })
   void convertStreamName(String streamName, String expectedTableName) {
     assertThat(transformer.convertStreamName(streamName), equalTo("\"" + expectedTableName + "\""));
   }
-
 }

@@ -25,7 +25,8 @@ public class ArgumentProviderUtil {
    * @param protocolVersion supported protocol version
    * @return filename with protocol version prefix
    */
-  public static String prefixFileNameByVersion(final String fileName, ProtocolVersion protocolVersion) {
+  public static String prefixFileNameByVersion(
+      final String fileName, ProtocolVersion protocolVersion) {
     return String.format("%s/%s", protocolVersion.getPrefix(), fileName);
   }
 
@@ -43,5 +44,4 @@ public class ArgumentProviderUtil {
     Method m = c.getMethod(PROTOCOL_VERSION_METHOD_NAME);
     return (ProtocolVersion) m.invoke(c.getDeclaredConstructor().newInstance());
   }
-
 }

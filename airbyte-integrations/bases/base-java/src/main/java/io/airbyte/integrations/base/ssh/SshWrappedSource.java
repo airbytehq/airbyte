@@ -29,14 +29,19 @@ public class SshWrappedSource implements Source {
   private final List<String> portKey;
   private final Optional<String> sshGroup;
 
-  public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey) {
+  public SshWrappedSource(
+      final Source delegate, final List<String> hostKey, final List<String> portKey) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
     this.sshGroup = Optional.empty();
   }
 
-  public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey, final String sshGroup) {
+  public SshWrappedSource(
+      final Source delegate,
+      final List<String> hostKey,
+      final List<String> portKey,
+      final String sshGroup) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
@@ -53,11 +58,10 @@ public class SshWrappedSource implements Source {
     try {
       return SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
     } catch (final RuntimeException e) {
-      final String sshErrorMessage = "Could not connect with provided SSH configuration. Error: " + e.getMessage();
+      final String sshErrorMessage =
+          "Could not connect with provided SSH configuration. Error: " + e.getMessage();
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, sshErrorMessage);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage(sshErrorMessage);
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(sshErrorMessage);
     }
   }
 
@@ -67,14 +71,16 @@ public class SshWrappedSource implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
     final AutoCloseableIterator<AirbyteMessage> delegateRead;
     try {
       delegateRead = delegate.read(tunnel.getConfigInTunnel(), catalog, state);
     } catch (final Exception e) {
-      LOGGER.error("Exception occurred while getting the delegate read iterator, closing SSH tunnel", e);
+      LOGGER.error(
+          "Exception occurred while getting the delegate read iterator, closing SSH tunnel", e);
       tunnel.close();
       throw e;
     }
@@ -82,16 +88,17 @@ public class SshWrappedSource implements Source {
   }
 
   @Override
-  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
-      throws Exception {
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(
+      JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
     try {
       return delegate.readStreams(tunnel.getConfigInTunnel(), catalog, state);
     } catch (final Exception e) {
-      LOGGER.error("Exception occurred while getting the delegate read stream iterators, closing SSH tunnel", e);
+      LOGGER.error(
+          "Exception occurred while getting the delegate read stream iterators, closing SSH tunnel",
+          e);
       tunnel.close();
       throw e;
     }
   }
-
 }

@@ -20,7 +20,8 @@ public class WaitingUtils {
    * @return true if condition was met before the timeout was reached, otherwise false.
    */
   @SuppressWarnings("BusyWait")
-  public static boolean waitForCondition(final Duration interval, final Duration timeout, final Supplier<Boolean> condition) {
+  public static boolean waitForCondition(
+      final Duration interval, final Duration timeout, final Supplier<Boolean> condition) {
     Duration timeWaited = Duration.ZERO;
     while (true) {
       if (condition.get()) {
@@ -40,5 +41,4 @@ public class WaitingUtils {
       timeWaited = timeWaited.plus(interval);
     }
   }
-
 }

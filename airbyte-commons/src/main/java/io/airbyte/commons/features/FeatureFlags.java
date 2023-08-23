@@ -48,5 +48,4 @@ public interface FeatureFlags {
    * @return The Docker image tag representing the normalization version with strict-comparison
    */
   String strictComparisonNormalizationTag();
-
 }

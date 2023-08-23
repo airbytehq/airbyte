@@ -30,9 +30,10 @@ public interface Destination extends Integration {
    *         or failure.
    * @throws Exception - any exception.
    */
-  AirbyteMessageConsumer getConsumer(JsonNode config,
-                                     ConfiguredAirbyteCatalog catalog,
-                                     Consumer<AirbyteMessage> outputRecordCollector)
+  AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception;
 
   /**
@@ -47,11 +48,13 @@ public interface Destination extends Integration {
    *         behavior.
    * @throws Exception exception
    */
-  default SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
-                                                                        final ConfiguredAirbyteCatalog catalog,
-                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
+  default SerializedAirbyteMessageConsumer getSerializedMessageConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    return new ShimToSerializedAirbyteMessageConsumer(getConsumer(config, catalog, outputRecordCollector));
+    return new ShimToSerializedAirbyteMessageConsumer(
+        getConsumer(config, catalog, outputRecordCollector));
   }
 
   static void defaultOutputRecordCollector(final AirbyteMessage message) {
@@ -108,9 +111,11 @@ public interface Destination extends Integration {
      *         provided message.
      */
     @VisibleForTesting
-    static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
+    static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString)
+        throws Exception {
 
-      final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+      final Optional<AirbyteMessage> messageOptional =
+          Jsons.tryDeserialize(inputString, AirbyteMessage.class);
       if (messageOptional.isPresent()) {
         consumer.accept(messageOptional.get());
       } else {
@@ -130,7 +135,8 @@ public interface Destination extends Integration {
      */
     @SuppressWarnings("OptionalIsPresent")
     private static boolean isStateMessage(final String input) {
-      final Optional<AirbyteTypeMessage> deserialized = Jsons.tryDeserialize(input, AirbyteTypeMessage.class);
+      final Optional<AirbyteTypeMessage> deserialized =
+          Jsons.tryDeserialize(input, AirbyteTypeMessage.class);
       if (deserialized.isPresent()) {
         return deserialized.get().getType() == Type.STATE;
       } else {
@@ -157,9 +163,6 @@ public interface Destination extends Integration {
       public void setType(final AirbyteMessage.Type type) {
         this.type = type;
       }
-
     }
-
   }
-
 }

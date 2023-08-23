@@ -48,7 +48,8 @@ public class IcebergCatalogConfigFactory {
   }
 
   private StorageConfig genStorageConfig(JsonNode storageConfigJson) {
-    String storageTypeStr = storageConfigJson.get(ICEBERG_STORAGE_TYPE_CONFIG_KEY).asText();
+    String storageTypeStr =
+        storageConfigJson.get(ICEBERG_STORAGE_TYPE_CONFIG_KEY).asText();
     if (storageTypeStr == null) {
       throw new IllegalArgumentException(ICEBERG_STORAGE_TYPE_CONFIG_KEY + " cannot be null");
     }
@@ -66,7 +67,8 @@ public class IcebergCatalogConfigFactory {
 
   @NotNull
   private static IcebergCatalogConfig genIcebergCatalogConfig(@NotNull JsonNode catalogConfigJson) {
-    String catalogTypeStr = catalogConfigJson.get(ICEBERG_CATALOG_TYPE_CONFIG_KEY).asText();
+    String catalogTypeStr =
+        catalogConfigJson.get(ICEBERG_CATALOG_TYPE_CONFIG_KEY).asText();
     if (catalogTypeStr == null) {
       throw new IllegalArgumentException(ICEBERG_CATALOG_TYPE_CONFIG_KEY + " cannot be null");
     }
@@ -88,5 +90,4 @@ public class IcebergCatalogConfigFactory {
     }
     return node.asText();
   }
-
 }

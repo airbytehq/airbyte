@@ -45,7 +45,8 @@ public class FileBuffer implements BufferStorage {
    */
   public static final int DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER = 10;
   public static final String FILE_BUFFER_COUNT_KEY = "file_buffer_count";
-  // This max is subject to change as no proper load testing has been done to verify the side effects
+  // This max is subject to change as no proper load testing has been done to verify the side
+  // effects
   public static final int MAX_CONCURRENT_STREAM_IN_BUFFER = 50;
   /*
    * Use this soft cap as a guidance for customers to not exceed the recommended number of buffers
@@ -75,7 +76,8 @@ public class FileBuffer implements BufferStorage {
   @Override
   public OutputStream getOutputStream() throws IOException {
     if (outputStream == null || tempFile == null) {
-      tempFile = Files.createTempFile(UUID.randomUUID().toString(), fileExtension).toFile();
+      tempFile =
+          Files.createTempFile(UUID.randomUUID().toString(), fileExtension).toFile();
       outputStream = new BufferedOutputStream(new FileOutputStream(tempFile));
     }
     return outputStream;
@@ -124,5 +126,4 @@ public class FileBuffer implements BufferStorage {
   public int getMaxConcurrentStreamsInBuffer() {
     return maxConcurrentStreams;
   }
-
 }

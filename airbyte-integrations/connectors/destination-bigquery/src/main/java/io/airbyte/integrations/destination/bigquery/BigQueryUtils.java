@@ -64,17 +64,20 @@ public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
   private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
-  private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
-  private static final DateTimeFormatter formatter =
-      DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
-          "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
+  private static final BigQuerySQLNameTransformer NAME_TRANSFORMER =
+      new BigQuerySQLNameTransformer();
+  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+      "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]"
+          + "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
   private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
   private static final String CHECK_TEST_DATASET_SUFFIX = "_airbyte_check_stage_tmp_";
   private static final String CHECK_TEST_TMP_TABLE_NAME = "test_connection_table_name";
 
-  public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
+  public static ImmutablePair<Job, String> executeQuery(
+      final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
-    final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
+    final Job queryJob =
+        bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
@@ -101,12 +104,13 @@ public class BigQueryUtils {
     }
   }
 
-  public static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
-                                                  final Set<String> existingSchemas,
-                                                  final String schemaName,
-                                                  final TableId tmpTableId,
-                                                  final String datasetLocation,
-                                                  final Schema schema) {
+  public static void createSchemaAndTableIfNeeded(
+      final BigQuery bigquery,
+      final Set<String> existingSchemas,
+      final String schemaName,
+      final TableId tmpTableId,
+      final String datasetLocation,
+      final Schema schema) {
     if (!existingSchemas.contains(schemaName)) {
       getOrCreateDataset(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
@@ -114,18 +118,23 @@ public class BigQueryUtils {
     BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tmpTableId, schema);
   }
 
-  public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
+  public static Dataset getOrCreateDataset(
+      final BigQuery bigquery, final String datasetId, final String datasetLocation) {
     Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
-      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
+      final DatasetInfo datasetInfo =
+          DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
       dataset = bigquery.create(datasetInfo);
     }
     return dataset;
   }
 
-  public static void checkHasCreateAndDeleteDatasetRole(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
-    final String tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX + System.currentTimeMillis();
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(tmpTestDatasetId).setLocation(datasetLocation).build();
+  public static void checkHasCreateAndDeleteDatasetRole(
+      final BigQuery bigquery, final String datasetId, final String datasetLocation) {
+    final String tmpTestDatasetId =
+        datasetId + CHECK_TEST_DATASET_SUFFIX + System.currentTimeMillis();
+    final DatasetInfo datasetInfo =
+        DatasetInfo.newBuilder(tmpTestDatasetId).setLocation(datasetLocation).build();
 
     bigquery.create(datasetInfo);
 
@@ -147,22 +156,21 @@ public class BigQueryUtils {
    * @param bigquery - initialized bigquery client
    * @param tmpTestDatasetId - dataset name where tmp table will be created
    */
-  private static void attemptCreateTableAndTestInsert(final BigQuery bigquery, final String tmpTestDatasetId) {
+  private static void attemptCreateTableAndTestInsert(
+      final BigQuery bigquery, final String tmpTestDatasetId) {
     // Create dummy schema that will be used for tmp table creation
     final Schema testTableSchema = Schema.of(
-        Field.of("id", StandardSQLTypeName.INT64),
-        Field.of("name", StandardSQLTypeName.STRING));
+        Field.of("id", StandardSQLTypeName.INT64), Field.of("name", StandardSQLTypeName.STRING));
 
     // Create tmp table to verify if user has a create table permission. Also below we will do test
     // records insert in it
-    final Table test_connection_table_name = createTable(bigquery, tmpTestDatasetId,
-        CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
+    final Table test_connection_table_name =
+        createTable(bigquery, tmpTestDatasetId, CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
 
     // Try to make test (dummy records) insert to make sure that user has required permissions
     try {
       final InsertAllResponse response =
-          bigquery.insertAll(InsertAllRequest
-              .newBuilder(test_connection_table_name)
+          bigquery.insertAll(InsertAllRequest.newBuilder(test_connection_table_name)
               .addRow(Map.of("id", 1, "name", "James"))
               .addRow(Map.of("id", 2, "name", "Eugene"))
               .addRow(Map.of("id", 3, "name", "Angelina"))
@@ -170,7 +178,8 @@ public class BigQueryUtils {
 
       if (response.hasErrors()) {
         // If any of the insertions failed, this lets you inspect the errors
-        for (final Map.Entry<Long, List<BigQueryError>> entry : response.getInsertErrors().entrySet()) {
+        for (final Map.Entry<Long, List<BigQueryError>> entry :
+            response.getInsertErrors().entrySet()) {
           throw new ConfigErrorException("Failed to check connection: \n" + entry.getValue());
         }
       }
@@ -181,7 +190,11 @@ public class BigQueryUtils {
     }
   }
 
-  public static Table createTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
+  public static Table createTable(
+      final BigQuery bigquery,
+      final String datasetName,
+      final String tableName,
+      final Schema schema) {
     final TableId tableId = TableId.of(datasetName, tableName);
     final TableDefinition tableDefinition = StandardTableDefinition.of(schema);
     final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
@@ -201,24 +214,24 @@ public class BigQueryUtils {
    * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
    *         was not successfully created
    */
-  static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
+  static void createPartitionedTableIfNotExists(
+      final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
-      final var chunkingColumn =
-          TypingAndDedupingFlag.isDestinationV2() ? JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT : JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+      final var chunkingColumn = TypingAndDedupingFlag.isDestinationV2()
+          ? JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+          : JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
       final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
           .setField(chunkingColumn)
           .build();
 
-      final Clustering clustering = Clustering.newBuilder()
-          .setFields(ImmutableList.of(chunkingColumn))
-          .build();
+      final Clustering clustering =
+          Clustering.newBuilder().setFields(ImmutableList.of(chunkingColumn)).build();
 
-      final StandardTableDefinition tableDefinition =
-          StandardTableDefinition.newBuilder()
-              .setSchema(schema)
-              .setTimePartitioning(partitioning)
-              .setClustering(clustering)
-              .build();
+      final StandardTableDefinition tableDefinition = StandardTableDefinition.newBuilder()
+          .setSchema(schema)
+          .setTimePartitioning(partitioning)
+          .setClustering(clustering)
+          .build();
       final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
       final Table table = bigquery.getTable(tableInfo.getTableId());
@@ -242,10 +255,12 @@ public class BigQueryUtils {
         .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
         .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
         .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
-        .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
-            + "  \"format_type\": \"CSV\",\n"
-            + "  \"flattening\": \"No flattening\"\n"
-            + "}"))
+        .put(
+            BigQueryConsts.FORMAT,
+            Jsons.deserialize("{\n"
+                + "  \"format_type\": \"CSV\",\n"
+                + "  \"flattening\": \"No flattening\"\n"
+                + "}"))
         .build());
 
     LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
@@ -263,10 +278,12 @@ public class BigQueryUtils {
         .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
         .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
         .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
-        .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
-            + "  \"format_type\": \"AVRO\",\n"
-            + "  \"flattening\": \"No flattening\"\n"
-            + "}"))
+        .put(
+            BigQueryConsts.FORMAT,
+            Jsons.deserialize("{\n"
+                + "  \"format_type\": \"AVRO\",\n"
+                + "  \"flattening\": \"No flattening\"\n"
+                + "}"))
         .build());
 
     LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
@@ -286,8 +303,7 @@ public class BigQueryUtils {
       if (!(projectId.equals(projectIdPart))) {
         throw new IllegalArgumentException(String.format(
             "Project ID included in Dataset ID must match Project ID field's value: Project ID is `%s`, but you specified `%s` in Dataset ID",
-            projectId,
-            projectIdPart));
+            projectId, projectIdPart));
       }
     }
     // if colonIndex is -1, then this returns the entire string
@@ -303,7 +319,8 @@ public class BigQueryUtils {
     }
   }
 
-  static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {
+  static TableDefinition getTableDefinition(
+      final BigQuery bigquery, final String datasetName, final String tableName) {
     final TableId tableId = TableId.of(datasetName, tableName);
     return bigquery.getTable(tableId).getDefinition();
   }
@@ -332,7 +349,8 @@ public class BigQueryUtils {
    *      "https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported
    *      Google bigquery datatype</a> This method is responsible to adapt JSON DATETIME to Bigquery
    */
-  public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final JsonNode data) {
+  public static void transformJsonDateTimeToBigDataFormat(
+      final List<String> dateTimeFields, final JsonNode data) {
     dateTimeFields.forEach(e -> {
       if (data.isObject() && data.findValue(e) != null && !data.get(e).isNull()) {
         final ObjectNode dataObject = (ObjectNode) data;
@@ -340,7 +358,8 @@ public class BigQueryUtils {
         if (value.isArray()) {
           final ArrayNode arrayNode = (ArrayNode) value;
           final ArrayNode newArrayNode = dataObject.putArray(e);
-          arrayNode.forEach(jsonNode -> newArrayNode.add(getFormattedBigQueryDateTime(jsonNode.asText())));
+          arrayNode.forEach(
+              jsonNode -> newArrayNode.add(getFormattedBigQueryDateTime(jsonNode.asText())));
         } else if (value.isTextual()) {
           dataObject.put(e, getFormattedBigQueryDateTime(value.asText()));
         } else {
@@ -351,8 +370,11 @@ public class BigQueryUtils {
   }
 
   private static String getFormattedBigQueryDateTime(final String dateTimeValue) {
-    return (dateTimeValue != null ? QueryParameterValue
-        .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).withZone(DateTimeZone.UTC).toString(BIG_QUERY_DATETIME_FORMAT)).getValue()
+    return (dateTimeValue != null
+        ? QueryParameterValue.dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue))
+                .withZone(DateTimeZone.UTC)
+                .toString(BIG_QUERY_DATETIME_FORMAT))
+            .getValue()
         : null);
   }
 
@@ -397,10 +419,13 @@ public class BigQueryUtils {
   public static Integer getBigQueryClientChunkSize(final JsonNode config) {
     Integer chunkSizeFromConfig = null;
     if (config.has(BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE)) {
-      chunkSizeFromConfig = config.get(BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE).asInt();
+      chunkSizeFromConfig =
+          config.get(BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE).asInt();
       if (chunkSizeFromConfig <= 0) {
-        LOGGER.error("BigQuery client Chunk (buffer) size must be a positive number (MB), but was:" + chunkSizeFromConfig);
-        throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive number (MB)");
+        LOGGER.error("BigQuery client Chunk (buffer) size must be a positive number (MB), but was:"
+            + chunkSizeFromConfig);
+        throw new IllegalArgumentException(
+            "BigQuery client Chunk (buffer) size must be a positive number (MB)");
       }
       chunkSizeFromConfig = chunkSizeFromConfig * BigQueryConsts.MiB;
     }
@@ -409,7 +434,9 @@ public class BigQueryUtils {
 
   public static UploadingMethod getLoadingMethod(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
-    if (loadingMethod != null && BigQueryConsts.GCS_STAGING.equals(loadingMethod.get(BigQueryConsts.METHOD).asText())) {
+    if (loadingMethod != null
+        && BigQueryConsts.GCS_STAGING.equals(
+            loadingMethod.get(BigQueryConsts.METHOD).asText())) {
       LOGGER.info("Selected loading method is set to: " + UploadingMethod.GCS);
       return UploadingMethod.GCS;
     } else {
@@ -420,9 +447,10 @@ public class BigQueryUtils {
 
   public static boolean isKeepFilesInGcs(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
-    if (loadingMethod != null && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
-        && BigQueryConsts.KEEP_GCS_FILES_VAL
-            .equals(loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
+    if (loadingMethod != null
+        && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
+        && BigQueryConsts.KEEP_GCS_FILES_VAL.equals(
+            loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
       LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished");
       return true;
     } else {
@@ -474,5 +502,4 @@ public class BigQueryUtils {
     }
     return instant == null ? null : instant.toString();
   }
-
 }

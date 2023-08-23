@@ -60,7 +60,10 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final var credentials = config.has(MongoUtils.USER) && config.has(JdbcUtils.PASSWORD_KEY)
-        ? String.format("%s:%s@", config.get(MongoUtils.USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
+        ? String.format(
+            "%s:%s@",
+            config.get(MongoUtils.USER).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText())
         : StringUtils.EMPTY;
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -72,7 +75,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   @Override
   protected MongoDatabase createDatabase(final JsonNode sourceConfig) throws Exception {
     final var dbConfig = toDatabaseConfig(sourceConfig);
-    final MongoDatabase database = new MongoDatabase(dbConfig.get("connectionString").asText(),
+    final MongoDatabase database = new MongoDatabase(
+        dbConfig.get("connectionString").asText(),
         dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
@@ -110,7 +114,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final Set<String> authorizedCollections = getAuthorizedCollections(database);
     authorizedCollections.parallelStream().forEach(collectionName -> {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
+      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream()
+          .map(MongoUtils::nodeToCommonField)
+          .toList();
 
       // The field name _id is reserved for use as a primary key;
       final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
@@ -134,14 +140,13 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      * database.
      */
     try {
-      final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-          .append("authorizedCollections", true)
-          .append("nameOnly", true))
+      final Document document = database
+          .getDatabase()
+          .runCommand(new Document("listCollections", 1)
+              .append("authorizedCollections", true)
+              .append("nameOnly", true))
           .append("filter", "{ 'type': 'collection' }");
-      return document.toBsonDocument()
-          .get("cursor").asDocument()
-          .getArray("firstBatch")
-          .stream()
+      return document.toBsonDocument().get("cursor").asDocument().getArray("firstBatch").stream()
           .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
           .collect(Collectors.toSet());
 
@@ -154,18 +159,17 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database, final String schema) throws Exception {
+  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(
+      final MongoDatabase database, final String schema) throws Exception {
     // MondoDb doesn't support schemas
     return discoverInternal(database);
   }
 
   @Override
-  protected Map<String, List<String>> discoverPrimaryKeys(final MongoDatabase database,
-                                                          final List<TableInfo<CommonField<BsonType>>> tableInfos) {
+  protected Map<String, List<String>> discoverPrimaryKeys(
+      final MongoDatabase database, final List<TableInfo<CommonField<BsonType>>> tableInfos) {
     return tableInfos.stream()
-        .collect(Collectors.toMap(
-            TableInfo::getName,
-            TableInfo::getPrimaryKeys));
+        .collect(Collectors.toMap(TableInfo::getName, TableInfo::getPrimaryKeys));
   }
 
   @Override
@@ -174,23 +178,27 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final MongoDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final SyncMode syncMode,
-                                                               final Optional<String> cursorField) {
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(
+      final MongoDatabase database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final SyncMode syncMode,
+      final Optional<String> cursorField) {
     return queryTable(database, columnNames, tableName, null);
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(final MongoDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final CursorInfo cursorInfo,
-                                                               final BsonType cursorFieldType) {
-    final Bson greaterComparison = gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor()));
+  public AutoCloseableIterator<JsonNode> queryTableIncremental(
+      final MongoDatabase database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final CursorInfo cursorInfo,
+      final BsonType cursorFieldType) {
+    final Bson greaterComparison = gt(
+        cursorInfo.getCursorField(),
+        MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor()));
     return queryTable(database, columnNames, tableName, greaterComparison);
   }
 
@@ -198,53 +206,68 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   public boolean isCursorType(final BsonType bsonType) {
     // while reading from mongo primary key "id" is always added, so there will be no situation
     // when we have no cursor field here, at least id could be used as cursor here.
-    // This logic will be used feather when we will implement part which will show only list of possible
+    // This logic will be used feather when we will implement part which will show only list of
+    // possible
     // cursor fields on UI
     return MongoUtils.ALLOWED_CURSOR_TYPES.contains(bsonType);
   }
 
-  private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,
-                                                     final List<String> columnNames,
-                                                     final String tableName,
-                                                     final Bson filter) {
-    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, null);
-    return AutoCloseableIterators.lazyIterator(() -> {
-      try {
-        final Stream<JsonNode> stream = database.read(tableName, columnNames, Optional.ofNullable(filter));
-        return AutoCloseableIterators.fromStream(stream, airbyteStream);
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      }
-    }, airbyteStream);
+  private AutoCloseableIterator<JsonNode> queryTable(
+      final MongoDatabase database,
+      final List<String> columnNames,
+      final String tableName,
+      final Bson filter) {
+    final AirbyteStreamNameNamespacePair airbyteStream =
+        AirbyteStreamUtils.convertFromNameAndNamespace(tableName, null);
+    return AutoCloseableIterators.lazyIterator(
+        () -> {
+          try {
+            final Stream<JsonNode> stream =
+                database.read(tableName, columnNames, Optional.ofNullable(filter));
+            return AutoCloseableIterators.fromStream(stream, airbyteStream);
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          }
+        },
+        airbyteStream);
   }
 
   private String buildConnectionString(final JsonNode config, final String credentials) {
     final StringBuilder connectionStrBuilder = new StringBuilder();
 
     final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+    final MongoInstanceType instance =
+        MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
     switch (instance) {
       case STANDALONE -> {
-        connectionStrBuilder.append(
-            String.format(MongoUtils.MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
-                instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
-                config.get(JdbcUtils.DATABASE_KEY).asText(),
-                config.get(MongoUtils.AUTH_SOURCE).asText(), MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)));
+        connectionStrBuilder.append(String.format(
+            MongoUtils.MONGODB_SERVER_URL,
+            credentials,
+            instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
+            instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
+            config.get(JdbcUtils.DATABASE_KEY).asText(),
+            config.get(MongoUtils.AUTH_SOURCE).asText(),
+            MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)));
       }
       case REPLICA -> {
-        connectionStrBuilder.append(
-            String.format(MongoUtils.MONGODB_REPLICA_URL, credentials, instanceConfig.get(MongoUtils.SERVER_ADDRESSES).asText(),
-                config.get(JdbcUtils.DATABASE_KEY).asText(),
-                config.get(MongoUtils.AUTH_SOURCE).asText()));
+        connectionStrBuilder.append(String.format(
+            MongoUtils.MONGODB_REPLICA_URL,
+            credentials,
+            instanceConfig.get(MongoUtils.SERVER_ADDRESSES).asText(),
+            config.get(JdbcUtils.DATABASE_KEY).asText(),
+            config.get(MongoUtils.AUTH_SOURCE).asText()));
         if (instanceConfig.has(MongoUtils.REPLICA_SET)) {
-          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(MongoUtils.REPLICA_SET).asText()));
+          connectionStrBuilder.append(String.format(
+              "&replicaSet=%s", instanceConfig.get(MongoUtils.REPLICA_SET).asText()));
         }
       }
       case ATLAS -> {
-        connectionStrBuilder.append(
-            String.format(MongoUtils.MONGODB_CLUSTER_URL, credentials,
-                instanceConfig.get(MongoUtils.CLUSTER_URL).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(),
-                config.get(MongoUtils.AUTH_SOURCE).asText()));
+        connectionStrBuilder.append(String.format(
+            MongoUtils.MONGODB_CLUSTER_URL,
+            credentials,
+            instanceConfig.get(MongoUtils.CLUSTER_URL).asText(),
+            config.get(JdbcUtils.DATABASE_KEY).asText(),
+            config.get(MongoUtils.AUTH_SOURCE).asText()));
       }
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
@@ -253,5 +276,4 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public void close() throws Exception {}
-
 }

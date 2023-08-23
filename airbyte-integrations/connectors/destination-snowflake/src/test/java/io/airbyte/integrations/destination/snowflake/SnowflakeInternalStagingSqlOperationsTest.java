@@ -31,23 +31,27 @@ class SnowflakeInternalStagingSqlOperationsTest {
 
   @Test
   void createStageIfNotExists() {
-    final String actualCreateStageQuery = snowflakeStagingSqlOperations.getCreateStageQuery(STAGE_NAME);
-    final String expectedCreateStageQuery =
-        "CREATE STAGE IF NOT EXISTS " + STAGE_NAME + " encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
+    final String actualCreateStageQuery =
+        snowflakeStagingSqlOperations.getCreateStageQuery(STAGE_NAME);
+    final String expectedCreateStageQuery = "CREATE STAGE IF NOT EXISTS " + STAGE_NAME
+        + " encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
     assertEquals(expectedCreateStageQuery, actualCreateStageQuery);
   }
 
   @Test
   void putFileToStage() {
-    final String expectedQuery = "PUT file://" + FILE_PATH + " @" + STAGE_NAME + "/" + STAGE_PATH + " PARALLEL =";
-    final String actualPutQuery = snowflakeStagingSqlOperations.getPutQuery(STAGE_NAME, STAGE_PATH, FILE_PATH);
+    final String expectedQuery =
+        "PUT file://" + FILE_PATH + " @" + STAGE_NAME + "/" + STAGE_PATH + " PARALLEL =";
+    final String actualPutQuery =
+        snowflakeStagingSqlOperations.getPutQuery(STAGE_NAME, STAGE_PATH, FILE_PATH);
     assertTrue(actualPutQuery.startsWith(expectedQuery));
   }
 
   @Test
   void listStage() {
     final String expectedQuery = "LIST @" + STAGE_NAME + "/" + STAGE_PATH + FILE_PATH + ";";
-    final String actualListQuery = snowflakeStagingSqlOperations.getListQuery(STAGE_NAME, STAGE_PATH, FILE_PATH);
+    final String actualListQuery =
+        snowflakeStagingSqlOperations.getListQuery(STAGE_NAME, STAGE_PATH, FILE_PATH);
     assertEquals(expectedQuery, actualListQuery);
   }
 
@@ -64,8 +68,8 @@ class SnowflakeInternalStagingSqlOperationsTest {
           FIELD_OPTIONALLY_ENCLOSED_BY = '"'
           NULL_IF=('')
         ) files = ('filename1','filename2');""";
-    final String actualCopyQuery =
-        snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
+    final String actualCopyQuery = snowflakeStagingSqlOperations.getCopyQuery(
+        STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
     assertEquals(expectedQuery, actualCopyQuery);
   }
 
@@ -82,5 +86,4 @@ class SnowflakeInternalStagingSqlOperationsTest {
     final String actualRemoveQuery = snowflakeStagingSqlOperations.getRemoveQuery(STAGE_NAME);
     assertEquals(expectedQuery, actualRemoveQuery);
   }
-
 }

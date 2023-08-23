@@ -25,7 +25,8 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public boolean existingSchemaMatchesStreamConfig(StreamConfig stream, String existingTable) throws TableNotMigratedException {
+  public boolean existingSchemaMatchesStreamConfig(StreamConfig stream, String existingTable)
+      throws TableNotMigratedException {
     return false;
   }
 
@@ -41,12 +42,13 @@ class MockSqlGenerator implements SqlGenerator<String> {
 
   @Override
   public String overwriteFinalTable(StreamId stream, String finalSuffix) {
-    return "OVERWRITE TABLE " + stream.finalTableId("") + " FROM " + stream.finalTableId("", finalSuffix);
+    return "OVERWRITE TABLE " + stream.finalTableId("") + " FROM "
+        + stream.finalTableId("", finalSuffix);
   }
 
   @Override
   public String migrateFromV1toV2(final StreamId streamId, String namespace, String tableName) {
-    return "MIGRATE TABLE " + String.join(".", namespace, tableName) + " TO " + streamId.rawTableId("");
+    return "MIGRATE TABLE " + String.join(".", namespace, tableName) + " TO "
+        + streamId.rawTableId("");
   }
-
 }

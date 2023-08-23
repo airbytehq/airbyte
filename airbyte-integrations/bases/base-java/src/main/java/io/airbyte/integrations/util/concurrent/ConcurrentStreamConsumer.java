@@ -42,7 +42,8 @@ import org.slf4j.LoggerFactory;
  * This consumer will capture any raised exceptions during execution of each stream. Anu exceptions
  * are stored and made available by calling the {@link #getException()} method.
  */
-public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseableIterator<AirbyteMessage>>>, AutoCloseable {
+public class ConcurrentStreamConsumer
+    implements Consumer<Collection<AutoCloseableIterator<AirbyteMessage>>>, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentStreamConsumer.class);
 
@@ -70,7 +71,9 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
    * @param requestedParallelism The requested amount of parallelism that will be used as a hint to
    *        determine the appropriate number of threads to execute concurrently.
    */
-  public ConcurrentStreamConsumer(final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer, final Integer requestedParallelism) {
+  public ConcurrentStreamConsumer(
+      final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer,
+      final Integer requestedParallelism) {
     this.parallelism = computeParallelism(requestedParallelism);
     this.executorService = createExecutorService(parallelism);
     this.exceptions = new ArrayList<>();
@@ -95,7 +98,8 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
      * all streams to complete even if one or more encounters an exception.
      */
     LOGGER.debug("Waiting for all streams to complete....");
-    CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+        .join();
     LOGGER.debug("Completed consuming from all streams.");
   }
 
@@ -148,11 +152,16 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
      * the number of available processors if the environment variable is not set/present. This is to
      * ensure that we do not over-parallelize unless requested explicitly.
      */
-    final Integer defaultPoolSize = Optional.ofNullable(System.getenv("DEFAULT_CONCURRENT_STREAM_CONSUMER_THREADS"))
+    final Integer defaultPoolSize = Optional.ofNullable(
+            System.getenv("DEFAULT_CONCURRENT_STREAM_CONSUMER_THREADS"))
         .map(Integer::parseInt)
         .orElseGet(() -> Runtime.getRuntime().availableProcessors());
-    LOGGER.debug("Default parallelism: {}, Requested parallelism: {}", defaultPoolSize, requestedParallelism);
-    final Integer parallelism = Math.min(defaultPoolSize, requestedParallelism > 0 ? requestedParallelism : 1);
+    LOGGER.debug(
+        "Default parallelism: {}, Requested parallelism: {}",
+        defaultPoolSize,
+        requestedParallelism);
+    final Integer parallelism =
+        Math.min(defaultPoolSize, requestedParallelism > 0 ? requestedParallelism : 1);
     LOGGER.debug("Computed concurrent stream consumer parallelism: {}", parallelism);
     return parallelism;
   }
@@ -165,8 +174,14 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
    * @return The configured {@link ExecutorService}.
    */
   private ExecutorService createExecutorService(final Integer nThreads) {
-    return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
-        new ConcurrentStreamThreadFactory(), new AbortPolicy());
+    return new ThreadPoolExecutor(
+        nThreads,
+        nThreads,
+        0L,
+        TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<>(),
+        new ConcurrentStreamThreadFactory(),
+        new AbortPolicy());
   }
 
   /**
@@ -180,9 +195,13 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
       StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter);
       streamConsumer.accept(stream);
       StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter);
-      stream.getAirbyteStream().ifPresent(s -> LOGGER.debug("Consumption from stream {} complete.", s));
+      stream
+          .getAirbyteStream()
+          .ifPresent(s -> LOGGER.debug("Consumption from stream {} complete.", s));
     } catch (final Exception e) {
-      stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Unable to consume from stream {}.", s, e));
+      stream
+          .getAirbyteStream()
+          .ifPresent(s -> LOGGER.error("Unable to consume from stream {}.", s, e));
       StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter);
       exceptions.add(e);
     }
@@ -204,10 +223,16 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
     public Thread newThread(final Runnable r) {
       final Thread thread = new Thread(r);
       if (r instanceof ConcurrentStreamRunnable) {
-        final AutoCloseableIterator<AirbyteMessage> stream = ((ConcurrentStreamRunnable) r).stream();
+        final AutoCloseableIterator<AirbyteMessage> stream =
+            ((ConcurrentStreamRunnable) r).stream();
         if (stream.getAirbyteStream().isPresent()) {
-          final AirbyteStreamNameNamespacePair airbyteStream = stream.getAirbyteStream().get();
-          thread.setName(String.format("%s-%s-%s", CONCURRENT_STREAM_THREAD_NAME, airbyteStream.getNamespace(), airbyteStream.getName()));
+          final AirbyteStreamNameNamespacePair airbyteStream =
+              stream.getAirbyteStream().get();
+          thread.setName(String.format(
+              "%s-%s-%s",
+              CONCURRENT_STREAM_THREAD_NAME,
+              airbyteStream.getNamespace(),
+              airbyteStream.getName()));
         } else {
           thread.setName(CONCURRENT_STREAM_THREAD_NAME);
         }
@@ -216,7 +241,6 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
       }
       return thread;
     }
-
   }
 
   /**
@@ -225,13 +249,13 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
    * @param stream The stream that is part of the {@link Runnable} execution.
    * @param consumer The {@link ConcurrentStreamConsumer} that will execute the stream.
    */
-  private record ConcurrentStreamRunnable(AutoCloseableIterator<AirbyteMessage> stream, ConcurrentStreamConsumer consumer) implements Runnable {
+  private record ConcurrentStreamRunnable(
+      AutoCloseableIterator<AirbyteMessage> stream, ConcurrentStreamConsumer consumer)
+      implements Runnable {
 
     @Override
     public void run() {
       consumer.executeStream(stream);
     }
-
   }
-
 }

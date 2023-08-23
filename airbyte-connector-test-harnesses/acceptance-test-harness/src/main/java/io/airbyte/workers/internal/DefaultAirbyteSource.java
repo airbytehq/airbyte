@@ -42,11 +42,10 @@ public class DefaultAirbyteSource implements AirbyteSource {
   static final Set<Integer> IGNORED_EXIT_CODES = Set.of(
       0, // Normal exit
       143 // SIGTERM
-  );
+      );
 
-  public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
-      .setLogPrefix("source")
-      .setPrefixColor(Color.BLUE_BACKGROUND);
+  public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER =
+      new Builder().setLogPrefix("source").setPrefixColor(Color.BLUE_BACKGROUND);
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
@@ -58,23 +57,35 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Integer exitValue = null;
   private final boolean featureFlagLogConnectorMsgs;
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultProtocolSerializer(), featureFlags);
+  public DefaultAirbyteSource(
+      final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
+    this(
+        integrationLauncher,
+        new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
+        new DefaultProtocolSerializer(),
+        featureFlags);
   }
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                              final AirbyteStreamFactory streamFactory,
-                              final ProtocolSerializer protocolSerializer,
-                              final FeatureFlags featureFlags) {
-    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), protocolSerializer, featureFlags);
+  public DefaultAirbyteSource(
+      final IntegrationLauncher integrationLauncher,
+      final AirbyteStreamFactory streamFactory,
+      final ProtocolSerializer protocolSerializer,
+      final FeatureFlags featureFlags) {
+    this(
+        integrationLauncher,
+        streamFactory,
+        new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION),
+        protocolSerializer,
+        featureFlags);
   }
 
   @VisibleForTesting
-  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor,
-                       final ProtocolSerializer protocolSerializer,
-                       final FeatureFlags featureFlags) {
+  DefaultAirbyteSource(
+      final IntegrationLauncher integrationLauncher,
+      final AirbyteStreamFactory streamFactory,
+      final HeartbeatMonitor heartbeatMonitor,
+      final ProtocolSerializer protocolSerializer,
+      final FeatureFlags featureFlags) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.protocolSerializer = protocolSerializer;
@@ -86,21 +97,27 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
 
-    sourceProcess = integrationLauncher.read(jobRoot,
+    sourceProcess = integrationLauncher.read(
+        jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
         protocolSerializer.serialize(sourceConfig.getCatalog()),
         sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
         // TODO We should be passing a typed state here and use the protocolSerializer
-        sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
+        sourceConfig.getState() == null
+            ? null
+            : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
+    LineGobbler.gobble(
+        sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
 
     logInitialStateAsJSON(sourceConfig);
 
-    final List<Type> acceptedMessageTypes = List.of(Type.RECORD, Type.STATE, Type.TRACE, Type.CONTROL);
-    messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
+    final List<Type> acceptedMessageTypes =
+        List.of(Type.RECORD, Type.STATE, Type.TRACE, Type.CONTROL);
+    messageIterator = streamFactory
+        .create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
         .filter(message -> acceptedMessageTypes.contains(message.getType()))
         .iterator();
@@ -119,8 +136,10 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public int getExitValue() throws IllegalStateException {
-    Preconditions.checkState(sourceProcess != null, "Source process is null, cannot retrieve exit value.");
-    Preconditions.checkState(!sourceProcess.isAlive(), "Source process is still alive, cannot retrieve exit value.");
+    Preconditions.checkState(
+        sourceProcess != null, "Source process is null, cannot retrieve exit value.");
+    Preconditions.checkState(
+        !sourceProcess.isAlive(), "Source process is still alive, cannot retrieve exit value.");
 
     if (exitValue == null) {
       exitValue = sourceProcess.exitValue();
@@ -145,13 +164,14 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
     LOGGER.debug("Closing source process");
     TestHarnessUtils.gentleClose(
-        sourceProcess,
-        GRACEFUL_SHUTDOWN_DURATION.toMillis(),
-        TimeUnit.MILLISECONDS);
+        sourceProcess, GRACEFUL_SHUTDOWN_DURATION.toMillis(), TimeUnit.MILLISECONDS);
 
     if (sourceProcess.isAlive() || !IGNORED_EXIT_CODES.contains(getExitValue())) {
-      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + getExitValue();
-      throw new TestHarnessException(message + ". This warning is normal if the job was cancelled.");
+      final String message = sourceProcess.isAlive()
+          ? "Source has not terminated "
+          : "Source process exit with code " + getExitValue();
+      throw new TestHarnessException(
+          message + ". This warning is normal if the job was cancelled.");
     }
   }
 
@@ -178,7 +198,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
       return;
     }
 
-    LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.getState().getState()));
+    LOGGER.info(
+        "source starting state | " + Jsons.serialize(sourceConfig.getState().getState()));
   }
-
 }

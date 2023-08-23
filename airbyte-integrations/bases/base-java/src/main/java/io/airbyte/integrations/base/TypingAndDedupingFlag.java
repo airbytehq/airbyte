@@ -21,5 +21,4 @@ public class TypingAndDedupingFlag {
       return Optional.of(rawOverride);
     }
   }
-
 }

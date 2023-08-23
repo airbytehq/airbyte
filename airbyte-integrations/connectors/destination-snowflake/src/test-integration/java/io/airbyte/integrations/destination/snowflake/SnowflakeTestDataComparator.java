@@ -16,7 +16,8 @@ import java.util.List;
 
 public class SnowflakeTestDataComparator extends AdvancedTestDataComparator {
 
-  public static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
+  public static final NamingConventionTransformer NAME_TRANSFORMER =
+      new SnowflakeSQLNameTransformer();
 
   private static final String SNOWFLAKE_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   private static final String SNOWFLAKE_DATE_FORMAT = "yyyy-MM-dd";
@@ -46,7 +47,9 @@ public class SnowflakeTestDataComparator extends AdvancedTestDataComparator {
 
   private LocalDate parseLocalDate(String dateTimeValue) {
     if (dateTimeValue != null) {
-      var format = (dateTimeValue.matches(".+Z") ? POSTGRES_DATETIME_WITH_TZ_FORMAT : AIRBYTE_DATETIME_FORMAT);
+      var format = (dateTimeValue.matches(".+Z")
+          ? POSTGRES_DATETIME_WITH_TZ_FORMAT
+          : AIRBYTE_DATETIME_FORMAT);
       return LocalDate.parse(dateTimeValue, DateTimeFormatter.ofPattern(format));
     } else {
       return null;
@@ -56,20 +59,24 @@ public class SnowflakeTestDataComparator extends AdvancedTestDataComparator {
   @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseLocalDate(actualValue);
-    var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+    var expectedDate =
+        LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   @Override
   protected boolean compareDateValues(String expectedValue, String actualValue) {
     var destinationDate = parseDate(actualValue);
-    var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
+    var expectedDate =
+        LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   @Override
   protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
-    return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT)), ZoneOffset.UTC);
+    return ZonedDateTime.of(
+        LocalDateTime.parse(
+            destinationValue, DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT)),
+        ZoneOffset.UTC);
   }
-
 }

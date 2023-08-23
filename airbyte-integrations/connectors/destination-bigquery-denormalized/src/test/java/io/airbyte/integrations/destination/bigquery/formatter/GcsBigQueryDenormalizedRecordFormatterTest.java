@@ -42,7 +42,10 @@ class GcsBigQueryDenormalizedRecordFormatterTest {
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     final Schema expectedResult = Schema.of(
         Field.of("updated_at", LegacySQLTypeName.TIMESTAMP),
-        Field.of("items", LegacySQLTypeName.RECORD, Field.of("nested_datetime", LegacySQLTypeName.TIMESTAMP)),
+        Field.of(
+            "items",
+            LegacySQLTypeName.RECORD,
+            Field.of("nested_datetime", LegacySQLTypeName.TIMESTAMP)),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
         Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
 
@@ -53,8 +56,8 @@ class GcsBigQueryDenormalizedRecordFormatterTest {
 
   @Test
   public void testEmittedAtTimeConversion() {
-    final GcsBigQueryDenormalizedRecordFormatter mockedFormatter = Mockito.mock(
-        GcsBigQueryDenormalizedRecordFormatter.class, Mockito.CALLS_REAL_METHODS);
+    final GcsBigQueryDenormalizedRecordFormatter mockedFormatter =
+        Mockito.mock(GcsBigQueryDenormalizedRecordFormatter.class, Mockito.CALLS_REAL_METHODS);
 
     final ObjectMapper mapper = new ObjectMapper();
     final ObjectNode objectNode = mapper.createObjectNode();
@@ -63,8 +66,8 @@ class GcsBigQueryDenormalizedRecordFormatterTest {
     airbyteRecordMessage.setEmittedAt(1602637589000L);
     mockedFormatter.addAirbyteColumns(objectNode, airbyteRecordMessage);
 
-    assertEquals("1602637589000",
+    assertEquals(
+        "1602637589000",
         objectNode.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asText());
   }
-
 }

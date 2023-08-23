@@ -82,5 +82,4 @@ class AirbyteMessageSerDeProviderTest {
     when(ser.getTargetVersion()).thenReturn(version);
     return ser;
   }
-
 }

@@ -26,19 +26,27 @@ public class DataTypeUtils {
 
   public static final String DATE_FORMAT_WITH_MILLISECONDS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
-  public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSS");
-  public static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-  public static final DateTimeFormatter TIMETZ_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSXXX");
-  public static final DateTimeFormatter TIMESTAMPTZ_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
-  public static final DateTimeFormatter OFFSETDATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX");
+  public static final DateTimeFormatter TIME_FORMATTER =
+      DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSS");
+  public static final DateTimeFormatter TIMESTAMP_FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+  public static final DateTimeFormatter TIMETZ_FORMATTER =
+      DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSXXX");
+  public static final DateTimeFormatter TIMESTAMPTZ_FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+  public static final DateTimeFormatter OFFSETDATETIME_FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX");
   public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-  // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static final.
+  // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static
+  // final.
   public static DateFormat getDateFormat() {
-    return new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset;
+    return new SimpleDateFormat(
+        DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset;
   }
 
-  // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static final.
+  // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static
+  // final.
   public static DateFormat getDateFormatMillisPattern() {
     return new SimpleDateFormat(DATE_FORMAT_WITH_MILLISECONDS_PATTERN);
   }
@@ -47,7 +55,8 @@ public class DataTypeUtils {
     return returnNullIfInvalid(valueProducer, ignored -> true);
   }
 
-  public static <T> T returnNullIfInvalid(final DataTypeSupplier<T> valueProducer, final Function<T, Boolean> isValidFn) {
+  public static <T> T returnNullIfInvalid(
+      final DataTypeSupplier<T> valueProducer, final Function<T, Boolean> isValidFn) {
     // Some edge case values (e.g: Infinity, NaN) have no java or JSON equivalent, and will throw an
     // exception when parsed. We want to parse those
     // values as null.
@@ -63,7 +72,9 @@ public class DataTypeUtils {
   public static String toISO8601StringWithMicroseconds(final Instant instant) {
 
     final String dateWithMilliseconds = getDateFormatMillisPattern().format(Date.from(instant));
-    return dateWithMilliseconds.substring(0, 23) + calculateMicrosecondsString(instant.getNano()) + dateWithMilliseconds.substring(23);
+    return dateWithMilliseconds.substring(0, 23)
+        + calculateMicrosecondsString(instant.getNano())
+        + dateWithMilliseconds.substring(23);
   }
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
@@ -109,7 +120,8 @@ public class DataTypeUtils {
   }
 
   public static String toISO8601String(final Duration duration) {
-    return getDateFormat().format(Date.from(Instant.ofEpochSecond(Math.abs(duration.getSeconds()), Math.abs(duration.getNano()))));
+    return getDateFormat()
+        .format(Date.from(
+            Instant.ofEpochSecond(Math.abs(duration.getSeconds()), Math.abs(duration.getNano()))));
   }
-
 }

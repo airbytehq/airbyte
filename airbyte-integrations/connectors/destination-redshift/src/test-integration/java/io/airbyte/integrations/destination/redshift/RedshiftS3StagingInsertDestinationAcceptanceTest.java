@@ -9,10 +9,10 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.nio.file.Path;
 
-public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
+public class RedshiftS3StagingInsertDestinationAcceptanceTest
+    extends RedshiftStagingS3DestinationAcceptanceTest {
 
   public JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
   }
-
 }

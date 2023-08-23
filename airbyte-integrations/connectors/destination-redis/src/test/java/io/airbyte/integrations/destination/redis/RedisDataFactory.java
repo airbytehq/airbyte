@@ -10,9 +10,7 @@ import io.airbyte.commons.json.Jsons;
 
 class RedisDataFactory {
 
-  private RedisDataFactory() {
-
-  }
+  private RedisDataFactory() {}
 
   static JsonNode jsonConfig(String host, int port) {
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -23,5 +21,4 @@ class RedisDataFactory {
         .put("cache_type", "hash")
         .build());
   }
-
 }

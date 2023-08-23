@@ -36,54 +36,59 @@ public class S3ConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(S3ConsumerFactory.class);
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
 
-  public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final BlobStorageOperations storageOperations,
-                                       final NamingConventionTransformer namingResolver,
-                                       final BufferCreateFunction onCreateBuffer,
-                                       final S3DestinationConfig s3Config,
-                                       final ConfiguredAirbyteCatalog catalog) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, namingResolver, s3Config, catalog);
+  public AirbyteMessageConsumer create(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final BlobStorageOperations storageOperations,
+      final NamingConventionTransformer namingResolver,
+      final BufferCreateFunction onCreateBuffer,
+      final S3DestinationConfig s3Config,
+      final ConfiguredAirbyteCatalog catalog) {
+    final List<WriteConfig> writeConfigs =
+        createWriteConfigs(storageOperations, namingResolver, s3Config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(storageOperations, writeConfigs),
         new SerializedBufferingStrategy(
-            onCreateBuffer,
-            catalog,
-            flushBufferFunction(storageOperations, writeConfigs, catalog)),
+            onCreateBuffer, catalog, flushBufferFunction(storageOperations, writeConfigs, catalog)),
         onCloseFunction(storageOperations, writeConfigs),
         catalog,
         storageOperations::isValidData);
   }
 
-  private static List<WriteConfig> createWriteConfigs(final BlobStorageOperations storageOperations,
-                                                      final NamingConventionTransformer namingResolver,
-                                                      final S3DestinationConfig config,
-                                                      final ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams()
-        .stream()
+  private static List<WriteConfig> createWriteConfigs(
+      final BlobStorageOperations storageOperations,
+      final NamingConventionTransformer namingResolver,
+      final S3DestinationConfig config,
+      final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
         .map(toWriteConfig(storageOperations, namingResolver, config))
         .collect(Collectors.toList());
   }
 
-  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final BlobStorageOperations storageOperations,
-                                                                              final NamingConventionTransformer namingResolver,
-                                                                              final S3DestinationConfig s3Config) {
+  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
+      final BlobStorageOperations storageOperations,
+      final NamingConventionTransformer namingResolver,
+      final S3DestinationConfig s3Config) {
     return stream -> {
-      Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
+      Preconditions.checkNotNull(
+          stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
       final String namespace = abStream.getNamespace();
       final String streamName = abStream.getName();
       final String bucketPath = s3Config.getBucketPath();
       final String customOutputFormat = String.join("/", bucketPath, s3Config.getPathFormat());
-      final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
+      final String fullOutputPath = storageOperations.getBucketObjectPath(
+          namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
-      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(
+          namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode);
       LOGGER.info("Write config: {}", writeConfig);
       return writeConfig;
     };
   }
 
-  private OnStartFunction onStartFunction(final BlobStorageOperations storageOperations, final List<WriteConfig> writeConfigs) {
+  private OnStartFunction onStartFunction(
+      final BlobStorageOperations storageOperations, final List<WriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing bucket in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
@@ -92,10 +97,17 @@ public class S3ConsumerFactory {
           final String stream = writeConfig.getStreamName();
           final String outputBucketPath = writeConfig.getOutputBucketPath();
           final String pathFormat = writeConfig.getPathFormat();
-          LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {} pathFormat {}",
-              namespace, stream, outputBucketPath, pathFormat);
+          LOGGER.info(
+              "Clearing storage area in destination started for namespace {} stream {} bucketObject {} pathFormat {}",
+              namespace,
+              stream,
+              outputBucketPath,
+              pathFormat);
           storageOperations.cleanUpBucketObject(namespace, stream, outputBucketPath, pathFormat);
-          LOGGER.info("Clearing storage area in destination completed for namespace {} stream {} bucketObject {}", namespace, stream,
+          LOGGER.info(
+              "Clearing storage area in destination completed for namespace {} stream {} bucketObject {}",
+              namespace,
+              stream,
               outputBucketPath);
         }
       }
@@ -107,19 +119,23 @@ public class S3ConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
-  private FlushBufferFunction flushBufferFunction(final BlobStorageOperations storageOperations,
-                                                  final List<WriteConfig> writeConfigs,
-                                                  final ConfiguredAirbyteCatalog catalog) {
-    final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
-        writeConfigs.stream()
-            .collect(Collectors.toUnmodifiableMap(
-                S3ConsumerFactory::toNameNamespacePair, Function.identity()));
+  private FlushBufferFunction flushBufferFunction(
+      final BlobStorageOperations storageOperations,
+      final List<WriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog) {
+    final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
+        .collect(Collectors.toUnmodifiableMap(
+            S3ConsumerFactory::toNameNamespacePair, Function.identity()));
 
     return (pair, writer) -> {
-      LOGGER.info("Flushing buffer for stream {} ({}) to storage", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+      LOGGER.info(
+          "Flushing buffer for stream {} ({}) to storage",
+          pair.getName(),
+          FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {
-        throw new IllegalArgumentException(
-            String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", pair, Jsons.serialize(catalog)));
+        throw new IllegalArgumentException(String.format(
+            "Message contained record from a stream %s that was not in the catalog. \ncatalog: %s",
+            pair, Jsons.serialize(catalog)));
       }
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
@@ -137,18 +153,18 @@ public class S3ConsumerFactory {
     };
   }
 
-  private OnCloseFunction onCloseFunction(final BlobStorageOperations storageOperations,
-                                          final List<WriteConfig> writeConfigs) {
+  private OnCloseFunction onCloseFunction(
+      final BlobStorageOperations storageOperations, final List<WriteConfig> writeConfigs) {
     return (hasFailed) -> {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {
-          storageOperations.cleanUpBucketObject(writeConfig.getFullOutputPath(), writeConfig.getStoredFiles());
+          storageOperations.cleanUpBucketObject(
+              writeConfig.getFullOutputPath(), writeConfig.getStoredFiles());
           writeConfig.clearStoredFiles();
         }
         LOGGER.info("Cleaning up destination completed.");
       }
     };
   }
-
 }

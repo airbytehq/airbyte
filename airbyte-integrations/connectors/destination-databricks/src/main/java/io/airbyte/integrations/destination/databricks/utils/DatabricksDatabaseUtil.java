@@ -19,8 +19,10 @@ import javax.sql.DataSource;
 
 public class DatabricksDatabaseUtil {
 
-  public static String getDatabricksConnectionString(final DatabricksDestinationConfig databricksConfig) {
-    return String.format(DatabaseDriver.DATABRICKS.getUrlFormatString(),
+  public static String getDatabricksConnectionString(
+      final DatabricksDestinationConfig databricksConfig) {
+    return String.format(
+        DatabaseDriver.DATABRICKS.getUrlFormatString(),
         databricksConfig.serverHostname(),
         databricksConfig.port(),
         databricksConfig.httpPath());
@@ -29,7 +31,8 @@ public class DatabricksDatabaseUtil {
   public static DataSource getDataSource(final JsonNode config) {
     final Map<String, String> property = new HashMap<>();
     if (config.has(DATABRICKS_CATALOG_KEY)) {
-      property.put(DATABRICKS_CATALOG_JDBC_KEY, config.get(DATABRICKS_CATALOG_KEY).asText());
+      property.put(
+          DATABRICKS_CATALOG_JDBC_KEY, config.get(DATABRICKS_CATALOG_KEY).asText());
     }
     if (config.has(DATABRICKS_SCHEMA_KEY)) {
       property.put(DATABRICKS_SCHEMA_JDBC_KEY, config.get(DATABRICKS_SCHEMA_KEY).asText());
@@ -42,5 +45,4 @@ public class DatabricksDatabaseUtil {
         getDatabricksConnectionString(databricksConfig),
         property);
   }
-
 }

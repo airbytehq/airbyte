@@ -33,15 +33,14 @@ public class GlueDestinationConfig {
 
   private String serializationLibrary;
 
-  private GlueDestinationConfig() {
+  private GlueDestinationConfig() {}
 
-  }
-
-  private GlueDestinationConfig(String database,
-                                String region,
-                                String accessKeyId,
-                                String secretAccessKey,
-                                String serializationLibrary) {
+  private GlueDestinationConfig(
+      String database,
+      String region,
+      String accessKeyId,
+      String secretAccessKey,
+      String serializationLibrary) {
     this.database = database;
     this.region = region;
     this.accessKeyId = accessKeyId;
@@ -52,10 +51,16 @@ public class GlueDestinationConfig {
   public static GlueDestinationConfig getInstance(JsonNode jsonNode) {
     return new GlueDestinationConfig(
         jsonNode.get(GLUE_DATABASE) != null ? jsonNode.get(GLUE_DATABASE).asText() : null,
-        jsonNode.get(S_3_BUCKET_REGION) != null ? jsonNode.get(S_3_BUCKET_REGION).asText() : null,
+        jsonNode.get(S_3_BUCKET_REGION) != null
+            ? jsonNode.get(S_3_BUCKET_REGION).asText()
+            : null,
         jsonNode.get(ACCESS_KEY_ID) != null ? jsonNode.get(ACCESS_KEY_ID).asText() : null,
-        jsonNode.get(SECRET_ACCESS_KEY) != null ? jsonNode.get(SECRET_ACCESS_KEY).asText() : null,
-        jsonNode.get(SERIALIZATION_LIBRARY) != null ? jsonNode.get(SERIALIZATION_LIBRARY).asText() : "org.openx.data.jsonserde.JsonSerDe");
+        jsonNode.get(SECRET_ACCESS_KEY) != null
+            ? jsonNode.get(SECRET_ACCESS_KEY).asText()
+            : null,
+        jsonNode.get(SERIALIZATION_LIBRARY) != null
+            ? jsonNode.get(SERIALIZATION_LIBRARY).asText()
+            : "org.openx.data.jsonserde.JsonSerDe");
   }
 
   public AWSGlue getAWSGlueInstance() {
@@ -75,7 +80,6 @@ public class GlueDestinationConfig {
     }
 
     return builder.build();
-
   }
 
   public String getDatabase() {
@@ -85,5 +89,4 @@ public class GlueDestinationConfig {
   public String getSerializationLibrary() {
     return serializationLibrary;
   }
-
 }

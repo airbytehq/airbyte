@@ -23,8 +23,8 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
-        .withExposedPorts(4000);
+    container =
+        new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly")).withExposedPorts(4000);
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -74,5 +74,4 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void cleanUp() {
     container.close();
   }
-
 }

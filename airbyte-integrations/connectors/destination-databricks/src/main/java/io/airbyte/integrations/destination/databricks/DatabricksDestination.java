@@ -12,10 +12,14 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class DatabricksDestination extends SwitchingDestination<DatabricksStorageType> {
 
-  public static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
+  public static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE =
+      Executors.newScheduledThreadPool(1);
 
   public DatabricksDestination() {
-    super(DatabricksStorageType.class, DatabricksDestinationResolver::getTypeFromConfig, DatabricksDestinationResolver.getTypeToDestination());
+    super(
+        DatabricksStorageType.class,
+        DatabricksDestinationResolver::getTypeFromConfig,
+        DatabricksDestinationResolver.getTypeToDestination());
   }
 
   public static void main(final String[] args) throws Exception {
@@ -23,5 +27,4 @@ public class DatabricksDestination extends SwitchingDestination<DatabricksStorag
     new IntegrationRunner(destination).run(args);
     SCHEDULED_EXECUTOR_SERVICE.shutdownNow();
   }
-
 }

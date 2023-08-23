@@ -68,13 +68,11 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
       return false;
     }
     final S3JsonlFormatConfig that = (S3JsonlFormatConfig) o;
-    return flattening == that.flattening
-        && Objects.equals(compressionType, that.compressionType);
+    return flattening == that.flattening && Objects.equals(compressionType, that.compressionType);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(flattening, compressionType);
   }
-
 }

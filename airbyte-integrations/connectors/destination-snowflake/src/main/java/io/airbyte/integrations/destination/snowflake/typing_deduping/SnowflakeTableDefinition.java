@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import java.util.LinkedHashMap;
@@ -8,5 +12,4 @@ import java.util.LinkedHashMap;
  *                have all the types that Snowflake supports.
  */
 // TODO fields for columns + indexes... or other stuff we want to set?
-public record SnowflakeTableDefinition(LinkedHashMap<String, String> columns) {
-}
+public record SnowflakeTableDefinition(LinkedHashMap<String, String> columns) {}

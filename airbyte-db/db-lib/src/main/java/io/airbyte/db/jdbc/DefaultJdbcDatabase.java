@@ -35,7 +35,8 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     this(dataSource, JdbcUtils.getDefaultSourceOperations());
   }
 
-  public DefaultJdbcDatabase(final DataSource dataSource, final JdbcCompatibleSourceOperations<?> sourceOperations) {
+  public DefaultJdbcDatabase(
+      final DataSource dataSource, final JdbcCompatibleSourceOperations<?> sourceOperations) {
     super(sourceOperations);
     this.dataSource = dataSource;
   }
@@ -48,8 +49,9 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   }
 
   @Override
-  public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> List<T> bufferedResultSetQuery(
+      final CheckedFunction<Connection, ResultSet, SQLException> query,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = dataSource.getConnection();
         final Stream<T> results = toUnsafeStream(query.apply(connection), recordTransform)) {
@@ -59,18 +61,18 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   @Override
   @MustBeClosed
-  public <T> Stream<T> unsafeResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeResultSetQuery(
+      final CheckedFunction<Connection, ResultSet, SQLException> query,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = dataSource.getConnection();
-    return toUnsafeStream(query.apply(connection), recordTransform)
-        .onClose(() -> {
-          try {
-            connection.close();
-          } catch (final SQLException e) {
-            throw new RuntimeException(e);
-          }
-        });
+    return toUnsafeStream(query.apply(connection), recordTransform).onClose(() -> {
+      try {
+        connection.close();
+      } catch (final SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   @Override
@@ -84,7 +86,8 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
       } else {
         final SQLException cause = (SQLException) e.getCause();
-        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
+        throw new ConnectionErrorException(
+            e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
       }
     }
   }
@@ -105,8 +108,9 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
    */
   @Override
   @MustBeClosed
-  public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                   final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeQuery(
+      final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = dataSource.getConnection();
     return toUnsafeStream(statementCreator.apply(connection).executeQuery(), recordTransform)
@@ -119,5 +123,4 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
           }
         });
   }
-
 }

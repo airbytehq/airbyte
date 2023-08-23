@@ -50,8 +50,11 @@ public class RedisSslUtil {
       if (getSslVerifyMode(sslModeConfig) == VERIFY_IDENTITY) {
         LOGGER.info("Preparing ssl certificates for {} mode", PARAM_SSL_MODE_VERIFY_FULL);
         final String clientKeyPassword = getOrGeneratePassword(sslModeConfig);
-        initCertificateStores(sslModeConfig.get(PARAM_CA_CERTIFICATE).asText(),
-            sslModeConfig.get(PARAM_CLIENT_CERTIFICATE).asText(), sslModeConfig.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
+        initCertificateStores(
+            sslModeConfig.get(PARAM_CA_CERTIFICATE).asText(),
+            sslModeConfig.get(PARAM_CLIENT_CERTIFICATE).asText(),
+            sslModeConfig.get(PARAM_CLIENT_KEY).asText(),
+            clientKeyPassword);
       }
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
@@ -66,7 +69,8 @@ public class RedisSslUtil {
    */
   private static String getOrGeneratePassword(final JsonNode sslModeConfig) {
     final String clientKeyPassword;
-    if (sslModeConfig.has(PARAM_CLIENT_KEY_PASSWORD) && !sslModeConfig.get(PARAM_CLIENT_KEY_PASSWORD).asText().isEmpty()) {
+    if (sslModeConfig.has(PARAM_CLIENT_KEY_PASSWORD)
+        && !sslModeConfig.get(PARAM_CLIENT_KEY_PASSWORD).asText().isEmpty()) {
       clientKeyPassword = sslModeConfig.get(PARAM_CLIENT_KEY_PASSWORD).asText();
     } else {
       clientKeyPassword = RandomStringUtils.randomAlphanumeric(10);
@@ -83,36 +87,36 @@ public class RedisSslUtil {
    * @param clientKeyPassword The client key password.
    */
   private static void initCertificateStores(
-                                            final String caCertificate,
-                                            final String clientCertificate,
-                                            final String clientKey,
-                                            final String clientKeyPassword)
+      final String caCertificate,
+      final String clientCertificate,
+      final String clientKey,
+      final String clientKeyPassword)
       throws IOException, InterruptedException {
 
     LOGGER.info("Try to generate {}", CLIENT_KEY_STORE);
     createCertificateFile(CLIENT_CERTIFICATE, clientCertificate);
     createCertificateFile(CLIENT_KEY, clientKey);
-    runProcess(String.format("openssl pkcs12 -export -in %s -inkey %s -out %s -passout pass:%s",
-        CLIENT_CERTIFICATE,
-        CLIENT_KEY,
-        CLIENT_KEY_STORE,
-        clientKeyPassword),
+    runProcess(
+        String.format(
+            "openssl pkcs12 -export -in %s -inkey %s -out %s -passout pass:%s",
+            CLIENT_CERTIFICATE, CLIENT_KEY, CLIENT_KEY_STORE, clientKeyPassword),
         Runtime.getRuntime());
     LOGGER.info("{} Generated", CLIENT_KEY_STORE);
 
     LOGGER.info("Try to generate {}", TRUST_STORE);
     createCertificateFile(CLIENT_CA_CERTIFICATE, caCertificate);
-    runProcess(String.format("keytool -import -file %s -alias redis-ca -keystore %s -storepass %s -noprompt",
-        CLIENT_CA_CERTIFICATE,
-        TRUST_STORE,
-        TRUST_PASSWORD),
+    runProcess(
+        String.format(
+            "keytool -import -file %s -alias redis-ca -keystore %s -storepass %s -noprompt",
+            CLIENT_CA_CERTIFICATE, TRUST_STORE, TRUST_PASSWORD),
         Runtime.getRuntime());
     LOGGER.info("{} Generated", TRUST_STORE);
 
     setSystemProperty(clientKeyPassword);
   }
 
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+  private static void runProcess(final String cmd, final Runtime run)
+      throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
@@ -120,7 +124,8 @@ public class RedisSslUtil {
     }
   }
 
-  private static void createCertificateFile(final String fileName, final String fileValue) throws IOException {
+  private static void createCertificateFile(final String fileName, final String fileValue)
+      throws IOException {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
     }
@@ -140,11 +145,11 @@ public class RedisSslUtil {
   }
 
   private static SslMode getSslVerifyMode(JsonNode sslModeParam) {
-    return SslMode.bySpec(sslModeParam.get(PARAM_SSL_MODE).asText()).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode"));
+    return SslMode.bySpec(sslModeParam.get(PARAM_SSL_MODE).asText())
+        .orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode"));
   }
 
   public enum SslMode {
-
     DISABLED("disable"),
     VERIFY_IDENTITY("verify-full");
 
@@ -159,7 +164,5 @@ public class RedisSslUtil {
           .filter(sslMode -> sslMode.spec.contains(spec))
           .findFirst();
     }
-
   }
-
 }

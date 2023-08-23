@@ -36,7 +36,9 @@ class AirbyteMessageMigrationV1Test {
   void setup() throws URISyntaxException {
     // TODO this should probably just get generated as part of the airbyte-protocol build, and
     // airbyte-workers / airbyte-commons-protocol would reference it directly
-    final URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json").getAbsoluteFile().toURI();
+    final URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json")
+        .getAbsoluteFile()
+        .toURI();
     validator = new JsonSchemaValidator(parentUri);
     migration = new AirbyteMessageMigrationV1(validator);
   }
@@ -53,15 +55,17 @@ class AirbyteMessageMigrationV1Test {
     @Test
     void testBasicUpgrade() {
       // This isn't actually a valid stream schema (since it's not an object)
-      // but this test case is mostly about preserving the message structure, so it's not super relevant
-      final JsonNode oldSchema = Jsons.deserialize(
-          """
+      // but this test case is mostly about preserving the message structure, so it's not super
+      // relevant
+      final JsonNode oldSchema =
+          Jsons.deserialize("""
           {
             "type": "string"
           }
           """);
 
-      final AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
+      final AirbyteMessage upgradedMessage =
+          migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
 
       final AirbyteMessage expectedMessage = Jsons.deserialize(
           """
@@ -84,8 +88,9 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testNullUpgrade() {
-      final io.airbyte.protocol.models.v0.AirbyteMessage oldMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
-          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG);
+      final io.airbyte.protocol.models.v0.AirbyteMessage oldMessage =
+          new io.airbyte.protocol.models.v0.AirbyteMessage()
+              .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG);
       final AirbyteMessage upgradedMessage = migration.upgrade(oldMessage, Optional.empty());
       final AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.CATALOG);
       assertEquals(expectedMessage, upgradedMessage);
@@ -100,10 +105,12 @@ class AirbyteMessageMigrationV1Test {
     private void doTest(final String oldSchemaString, final String expectedSchemaString) {
       final JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
 
-      final AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
+      final AirbyteMessage upgradedMessage =
+          migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
 
       final JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
-      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+      assertEquals(
+          expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     @Test
@@ -327,7 +334,8 @@ class AirbyteMessageMigrationV1Test {
     void testUpgradeBooleanSchemas() {
       // Most of these should never happen in reality, but let's handle them just in case
       // The only ones that we're _really_ expecting are additionalItems and additionalProperties
-      final String schemaString = """
+      final String schemaString =
+          """
                                   {
                                     "type": "object",
                                     "properties": {
@@ -368,9 +376,11 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testUpgradeEmptySchema() {
-      // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently
+      // Sources shouldn't do this, but we should have handling for it anyway, since it's not
+      // currently
       // enforced by SATs
-      final String schemaString = """
+      final String schemaString =
+          """
                                   {
                                     "type": "object",
                                     "properties": {
@@ -412,7 +422,8 @@ class AirbyteMessageMigrationV1Test {
     @Test
     void testUpgradeLiteralSchema() {
       // Verify that we do _not_ recurse into places we shouldn't
-      final String schemaString = """
+      final String schemaString =
+          """
                                   {
                                     "type": "object",
                                     "properties": {
@@ -433,7 +444,8 @@ class AirbyteMessageMigrationV1Test {
       // These schemas are "wrong" in some way. For example, normalization will currently treat
       // bad_timestamptz as a string timestamp_with_timezone,
       // i.e. it will disregard the option for a boolean.
-      // Generating this sort of schema is just wrong; sources shouldn't do this to begin with. But let's
+      // Generating this sort of schema is just wrong; sources shouldn't do this to begin with. But
+      // let's
       // verify that we behave mostly correctly here.
       doTest(
           """
@@ -557,13 +569,14 @@ class AirbyteMessageMigrationV1Test {
           """);
     }
 
-    private io.airbyte.protocol.models.v0.AirbyteMessage createCatalogMessage(final JsonNode schema) {
-      return new io.airbyte.protocol.models.v0.AirbyteMessage().withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG)
-          .withCatalog(
-              new io.airbyte.protocol.models.v0.AirbyteCatalog().withStreams(List.of(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
-                  schema))));
+    private io.airbyte.protocol.models.v0.AirbyteMessage createCatalogMessage(
+        final JsonNode schema) {
+      return new io.airbyte.protocol.models.v0.AirbyteMessage()
+          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG)
+          .withCatalog(new io.airbyte.protocol.models.v0.AirbyteCatalog()
+              .withStreams(List.of(
+                  new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(schema))));
     }
-
   }
 
   @Nested
@@ -571,14 +584,15 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testBasicUpgrade() {
-      final JsonNode oldData = Jsons.deserialize(
-          """
+      final JsonNode oldData =
+          Jsons.deserialize("""
           {
             "id": 42
           }
           """);
 
-      final AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData), Optional.empty());
+      final AirbyteMessage upgradedMessage =
+          migration.upgrade(createRecordMessage(oldData), Optional.empty());
 
       final AirbyteMessage expectedMessage = Jsons.deserialize(
           """
@@ -597,8 +611,9 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testNullUpgrade() {
-      final io.airbyte.protocol.models.v0.AirbyteMessage oldMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
-          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD);
+      final io.airbyte.protocol.models.v0.AirbyteMessage oldMessage =
+          new io.airbyte.protocol.models.v0.AirbyteMessage()
+              .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD);
       final AirbyteMessage upgradedMessage = migration.upgrade(oldMessage, Optional.empty());
       final AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.RECORD);
       assertEquals(expectedMessage, upgradedMessage);
@@ -613,7 +628,8 @@ class AirbyteMessageMigrationV1Test {
     private void doTest(final String oldDataString, final String expectedDataString) {
       final JsonNode oldData = Jsons.deserialize(oldDataString);
 
-      final AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData), Optional.empty());
+      final AirbyteMessage upgradedMessage =
+          migration.upgrade(createRecordMessage(oldData), Optional.empty());
 
       final JsonNode expectedData = Jsons.deserialize(expectedDataString);
       assertEquals(expectedData, upgradedMessage.getRecord().getData());
@@ -678,10 +694,10 @@ class AirbyteMessageMigrationV1Test {
     }
 
     private io.airbyte.protocol.models.v0.AirbyteMessage createRecordMessage(final JsonNode data) {
-      return new io.airbyte.protocol.models.v0.AirbyteMessage().withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD)
+      return new io.airbyte.protocol.models.v0.AirbyteMessage()
+          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD)
           .withRecord(new io.airbyte.protocol.models.v0.AirbyteRecordMessage().withData(data));
     }
-
   }
 
   @Nested
@@ -690,7 +706,8 @@ class AirbyteMessageMigrationV1Test {
     @Test
     void testBasicDowngrade() {
       // This isn't actually a valid stream schema (since it's not an object)
-      // but this test case is mostly about preserving the message structure, so it's not super relevant
+      // but this test case is mostly about preserving the message structure, so it's not super
+      // relevant
       final JsonNode newSchema = Jsons.deserialize(
           """
           {
@@ -698,7 +715,8 @@ class AirbyteMessageMigrationV1Test {
           }
           """);
 
-      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(newSchema), Optional.empty());
+      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage =
+          migration.downgrade(createCatalogMessage(newSchema), Optional.empty());
 
       final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
           """
@@ -722,9 +740,11 @@ class AirbyteMessageMigrationV1Test {
     @Test
     void testNullDowngrade() {
       final AirbyteMessage oldMessage = new AirbyteMessage().withType(Type.CATALOG);
-      final io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(oldMessage, Optional.empty());
-      final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
-          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG);
+      final io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage =
+          migration.downgrade(oldMessage, Optional.empty());
+      final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage =
+          new io.airbyte.protocol.models.v0.AirbyteMessage()
+              .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG);
       assertEquals(expectedMessage, upgradedMessage);
     }
 
@@ -737,10 +757,12 @@ class AirbyteMessageMigrationV1Test {
     private void doTest(final String oldSchemaString, final String expectedSchemaString) {
       final JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
 
-      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema), Optional.empty());
+      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage =
+          migration.downgrade(createCatalogMessage(oldSchema), Optional.empty());
 
       final JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
-      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+      assertEquals(
+          expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     @Test
@@ -944,7 +966,8 @@ class AirbyteMessageMigrationV1Test {
     void testDowngradeBooleanSchemas() {
       // Most of these should never happen in reality, but let's handle them just in case
       // The only ones that we're _really_ expecting are additionalItems and additionalProperties
-      final String schemaString = """
+      final String schemaString =
+          """
                                   {
                                     "type": "object",
                                     "properties": {
@@ -985,9 +1008,11 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testDowngradeEmptySchema() {
-      // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently
+      // Sources shouldn't do this, but we should have handling for it anyway, since it's not
+      // currently
       // enforced by SATs
-      final String schemaString = """
+      final String schemaString =
+          """
                                   {
                                     "type": "object",
                                     "properties": {
@@ -1029,7 +1054,8 @@ class AirbyteMessageMigrationV1Test {
     @Test
     void testDowngradeLiteralSchema() {
       // Verify that we do _not_ recurse into places we shouldn't
-      final String schemaString = """
+      final String schemaString =
+          """
                                   {
                                     "type": "object",
                                     "properties": {
@@ -1173,12 +1199,11 @@ class AirbyteMessageMigrationV1Test {
     }
 
     private AirbyteMessage createCatalogMessage(final JsonNode schema) {
-      return new AirbyteMessage().withType(AirbyteMessage.Type.CATALOG)
-          .withCatalog(
-              new AirbyteCatalog().withStreams(List.of(new AirbyteStream().withJsonSchema(
-                  schema))));
+      return new AirbyteMessage()
+          .withType(AirbyteMessage.Type.CATALOG)
+          .withCatalog(new AirbyteCatalog()
+              .withStreams(List.of(new AirbyteStream().withJsonSchema(schema))));
     }
-
   }
 
   @Nested
@@ -1193,13 +1218,13 @@ class AirbyteMessageMigrationV1Test {
           """
           {"$ref": "WellKnownTypes.json#/definitions/Integer"}
           """);
-      final JsonNode oldData = Jsons.deserialize(
-          """
+      final JsonNode oldData = Jsons.deserialize("""
           "42"
           """);
 
-      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(validator)
-          .downgrade(createRecordMessage(oldData), Optional.of(catalog));
+      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage =
+          new AirbyteMessageMigrationV1(validator)
+              .downgrade(createRecordMessage(oldData), Optional.of(catalog));
 
       final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
           """
@@ -1219,9 +1244,11 @@ class AirbyteMessageMigrationV1Test {
     @Test
     void testNullDowngrade() {
       final AirbyteMessage oldMessage = new AirbyteMessage().withType(Type.RECORD);
-      final io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(oldMessage, Optional.empty());
-      final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
-          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD);
+      final io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage =
+          migration.downgrade(oldMessage, Optional.empty());
+      final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage =
+          new io.airbyte.protocol.models.v0.AirbyteMessage()
+              .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD);
       assertEquals(expectedMessage, upgradedMessage);
     }
 
@@ -1233,12 +1260,14 @@ class AirbyteMessageMigrationV1Test {
      * @param oldDataString The data of the record to be downgraded
      * @param expectedDataString The expected data after downgrading
      */
-    private void doTest(final String schemaString, final String oldDataString, final String expectedDataString) {
+    private void doTest(
+        final String schemaString, final String oldDataString, final String expectedDataString) {
       final ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(schemaString);
       final JsonNode oldData = Jsons.deserialize(oldDataString);
 
-      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(validator)
-          .downgrade(createRecordMessage(oldData), Optional.of(catalog));
+      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage =
+          new AirbyteMessageMigrationV1(validator)
+              .downgrade(createRecordMessage(oldData), Optional.of(catalog));
 
       final JsonNode expectedDowngradedRecord = Jsons.deserialize(expectedDataString);
       assertEquals(expectedDowngradedRecord, downgradedMessage.getRecord().getData());
@@ -1617,17 +1646,20 @@ class AirbyteMessageMigrationV1Test {
 
     private ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String schema) {
       return new ConfiguredAirbyteCatalog()
-          .withStreams(List.of(new ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.AirbyteStream()
-              .withName(STREAM_NAME)
-              .withNamespace(NAMESPACE_NAME)
-              .withJsonSchema(Jsons.deserialize(schema)))));
+          .withStreams(List.of(new ConfiguredAirbyteStream()
+              .withStream(new io.airbyte.protocol.models.AirbyteStream()
+                  .withName(STREAM_NAME)
+                  .withNamespace(NAMESPACE_NAME)
+                  .withJsonSchema(Jsons.deserialize(schema)))));
     }
 
     private AirbyteMessage createRecordMessage(final JsonNode data) {
-      return new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withNamespace(NAMESPACE_NAME).withData(data));
+      return new AirbyteMessage()
+          .withType(AirbyteMessage.Type.RECORD)
+          .withRecord(new AirbyteRecordMessage()
+              .withStream(STREAM_NAME)
+              .withNamespace(NAMESPACE_NAME)
+              .withData(data));
     }
-
   }
-
 }

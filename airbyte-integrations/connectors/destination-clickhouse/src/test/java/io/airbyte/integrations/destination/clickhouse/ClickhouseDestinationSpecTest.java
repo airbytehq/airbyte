@@ -45,7 +45,9 @@ public class ClickhouseDestinationSpecTest {
   @BeforeAll
   static void init() throws IOException {
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "cl-spec-test"), "schema.json", spec).toFile();
+    final File schemaFile = IOs.writeFile(
+            Files.createTempDirectory(Path.of("/tmp"), "cl-spec-test"), "schema.json", spec)
+        .toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
@@ -87,7 +89,8 @@ public class ClickhouseDestinationSpecTest {
   @Test
   void testJdbcAdditionalProperty() throws Exception {
     final ConnectorSpecification spec = new ClickhouseDestination().spec();
-    assertNotNull(spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+    assertNotNull(
+        spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
   }
 
   @Test
@@ -110,5 +113,4 @@ public class ClickhouseDestinationSpecTest {
     ((ObjectNode) config).remove("username");
     assertFalse(validator.test(schema, config));
   }
-
 }

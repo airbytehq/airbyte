@@ -19,7 +19,10 @@ import javax.sql.DataSource;
 public class DatabricksManagedTablesDestination extends AbstractJdbcDestination {
 
   public DatabricksManagedTablesDestination() {
-    super(DatabricksConstants.DATABRICKS_DRIVER_CLASS, new DatabricksNameTransformer(), new DatabricksSqlOperations());
+    super(
+        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        new DatabricksNameTransformer(),
+        new DatabricksSqlOperations());
   }
 
   @Override
@@ -46,5 +49,4 @@ public class DatabricksManagedTablesDestination extends AbstractJdbcDestination 
   public DataSource getDataSource(final JsonNode config) {
     return DatabricksDatabaseUtil.getDataSource(config);
   }
-
 }

@@ -37,7 +37,8 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
   }
 
   @Override
-  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog)
+      throws Exception {
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync is null");
     }
@@ -101,7 +102,8 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -133,15 +135,14 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
         "root",
         "test",
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
-      database.query(
-          ctx -> ctx
-              .execute(query));
+      database.query(ctx -> ctx.execute(query));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -154,25 +155,29 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
 
   @Override
   protected void addTimestampDataTypeTest() {
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("timestamp")
-            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'", "'2022-08-09T10:17:16.161342Z'")
-            .addExpectedValues(null, "1970-01-01T00:00:00.000000Z", "1970-01-01T00:00:00.000000Z", "1970-01-01T00:00:00.000000Z",
-                "2022-08-09T10:17:16.000000Z")
-            .build());
+    addDataTypeTestData(TestDataHolder.builder()
+        .sourceType("timestamp")
+        .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
+        .addInsertValues(
+            "null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'", "'2022-08-09T10:17:16.161342Z'")
+        .addExpectedValues(
+            null,
+            "1970-01-01T00:00:00.000000Z",
+            "1970-01-01T00:00:00.000000Z",
+            "1970-01-01T00:00:00.000000Z",
+            "2022-08-09T10:17:16.000000Z")
+        .build());
   }
 
   @Override
   protected void addJsonDataTypeTest() {
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("json")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'{\"a\":10,\"b\":15}'", "'{\"fóo\":\"bär\"}'", "'{\"春江潮水连海平\":\"海上明月共潮生\"}'")
-            .addExpectedValues(null, "{\"a\":10,\"b\":15}", "{\"fóo\":\"bär\"}", "{\"春江潮水连海平\":\"海上明月共潮生\"}")
-            .build());
+    addDataTypeTestData(TestDataHolder.builder()
+        .sourceType("json")
+        .airbyteType(JsonSchemaType.STRING)
+        .addInsertValues(
+            "null", "'{\"a\":10,\"b\":15}'", "'{\"fóo\":\"bär\"}'", "'{\"春江潮水连海平\":\"海上明月共潮生\"}'")
+        .addExpectedValues(
+            null, "{\"a\":10,\"b\":15}", "{\"fóo\":\"bär\"}", "{\"春江潮水连海平\":\"海上明月共潮生\"}")
+        .build());
   }
-
 }

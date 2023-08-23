@@ -33,9 +33,7 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
 
   @BeforeAll
   static void initContainers() {
-    redisContainer = new RedisContainer()
-        .withExposedPorts(6379)
-        .withNetwork(network);
+    redisContainer = new RedisContainer().withExposedPorts(6379).withNetwork(network);
     redisContainer.start();
     bastion.initAndStartBastion(network);
   }
@@ -50,9 +48,8 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
-    jsonConfig = RedisDataFactory.jsonConfig(
-        redisContainer.getHost(),
-        redisContainer.getFirstMappedPort());
+    jsonConfig =
+        RedisDataFactory.jsonConfig(redisContainer.getHost(), redisContainer.getFirstMappedPort());
     redisCache = new RedisHCache(jsonConfig);
     redisNameTransformer = new RedisNameTransformer();
   }
@@ -69,26 +66,28 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveIpAddress(redisContainer))
-        .put("port", redisContainer.getExposedPorts().get(0))
-        .put("username", jsonConfig.get("username"))
-        .put("password", jsonConfig.get("password"))
-        .put("cache_type", jsonConfig.get("cache_type")), false);
+    return bastion.getTunnelConfig(
+        getTunnelMethod(),
+        ImmutableMap.builder()
+            .put("host", HostPortResolver.resolveIpAddress(redisContainer))
+            .put("port", redisContainer.getExposedPorts().get(0))
+            .put("username", jsonConfig.get("username"))
+            .put("password", jsonConfig.get("password"))
+            .put("cache_type", jsonConfig.get("cache_type")),
+        false);
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return RedisDataFactory.jsonConfig(
-        "127.0.0.9",
-        8080);
+    return RedisDataFactory.jsonConfig("127.0.0.9", 8080);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
     final var key = redisNameTransformer.keyName(namespace, streamName);
     return redisCache.getAll(key).stream()
         .sorted(Comparator.comparing(RedisRecord::getTimestamp))
@@ -121,5 +120,4 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
   protected boolean supportObjectDataTypeTest() {
     return true;
   }
-
 }

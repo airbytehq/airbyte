@@ -19,7 +19,5 @@ class RedpandaWriteConfigTest {
     assertThat(writeConfig)
         .hasFieldOrPropertyWithValue("topicName", "namespace_stream")
         .hasFieldOrPropertyWithValue("destinationSyncMode", DestinationSyncMode.OVERWRITE);
-
   }
-
 }

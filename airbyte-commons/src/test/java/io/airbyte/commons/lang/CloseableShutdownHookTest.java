@@ -19,11 +19,11 @@ class CloseableShutdownHookTest {
     final CloseableQueue autoCloseable = mock(CloseableQueue.class);
     final String notCloseable = "Not closeable";
 
-    final Thread thread = CloseableShutdownHook.buildShutdownHookThread(closeable, autoCloseable, notCloseable, null);
+    final Thread thread =
+        CloseableShutdownHook.buildShutdownHookThread(closeable, autoCloseable, notCloseable, null);
     thread.run();
 
     verify(closeable, times(1)).close();
     verify(autoCloseable, times(1)).close();
   }
-
 }

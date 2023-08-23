@@ -18,5 +18,4 @@ class MoreBooleansTest {
     assertFalse(MoreBooleans.isTruthy(Boolean.FALSE));
     assertFalse(MoreBooleans.isTruthy(null));
   }
-
 }

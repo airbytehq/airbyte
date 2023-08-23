@@ -12,7 +12,8 @@ import org.slf4j.LoggerFactory;
 
 public class Exceptions {
 
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Catch a checked exception and rethrow as a {@link RuntimeException}
@@ -40,7 +41,8 @@ public class Exceptions {
     castCheckedToRuntime(voidCallable, RuntimeException::new);
   }
 
-  private static void castCheckedToRuntime(final Procedure voidCallable, final Function<Exception, RuntimeException> exceptionFactory) {
+  private static void castCheckedToRuntime(
+      final Procedure voidCallable, final Function<Exception, RuntimeException> exceptionFactory) {
     try {
       voidCallable.call();
     } catch (final RuntimeException e) {
@@ -61,7 +63,6 @@ public class Exceptions {
   public interface Procedure {
 
     void call() throws Exception;
-
   }
 
   public static <T> T swallowWithDefault(final Callable<T> procedure, final T defaultValue) {
@@ -71,5 +72,4 @@ public class Exceptions {
       return defaultValue;
     }
   }
-
 }

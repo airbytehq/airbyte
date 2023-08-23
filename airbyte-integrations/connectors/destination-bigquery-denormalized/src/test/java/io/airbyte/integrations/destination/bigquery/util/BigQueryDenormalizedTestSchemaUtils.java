@@ -85,12 +85,13 @@ public class BigQueryDenormalizedTestSchemaUtils {
   private static JsonNode getTestDataFromResourceJson(final String fileName) {
     final String fileContent;
     try {
-      fileContent = Files.readString(Path.of(BigQueryDenormalizedTestSchemaUtils.class.getClassLoader()
-          .getResource(JSON_FILES_BASE_LOCATION + fileName).getPath()));
+      fileContent = Files.readString(Path.of(BigQueryDenormalizedTestSchemaUtils.class
+          .getClassLoader()
+          .getResource(JSON_FILES_BASE_LOCATION + fileName)
+          .getPath()));
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     return Jsons.deserialize(fileContent);
   }
-
 }

@@ -37,15 +37,15 @@ public class KeenTimestampService {
   private final Parser parser;
   private final boolean timestampInferenceEnabled;
 
-  public KeenTimestampService(final ConfiguredAirbyteCatalog catalog, final boolean timestampInferenceEnabled) {
+  public KeenTimestampService(
+      final ConfiguredAirbyteCatalog catalog, final boolean timestampInferenceEnabled) {
     this.streamCursorFields = new HashMap<>();
     this.parser = new Parser();
     this.timestampInferenceEnabled = timestampInferenceEnabled;
 
     if (timestampInferenceEnabled) {
       LOGGER.info("Initializing KeenTimestampService, finding cursor fields.");
-      streamCursorFields = catalog.getStreams()
-          .stream()
+      streamCursorFields = catalog.getStreams().stream()
           .filter(stream -> stream.getCursorField().size() > 0)
           .map(s -> Pair.of(s.getStream().getName(), s.getCursorField()))
           .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
@@ -99,7 +99,8 @@ public class KeenTimestampService {
     if (numberTimestamp == 0) {
       return parser
           .parse(timestamp.asText())
-          .get(0).getDates()
+          .get(0)
+          .getDates()
           .get(0)
           .toInstant()
           .toString();
@@ -108,7 +109,8 @@ public class KeenTimestampService {
   }
 
   private String dateFromNumber(final Long timestamp) {
-    // if cursor value is above given threshold, then assume that it's Unix timestamp in milliseconds
+    // if cursor value is above given threshold, then assume that it's Unix timestamp in
+    // milliseconds
     if (timestamp > MILLIS_FROM_EPOCH_THRESHOLD) {
       return Instant.ofEpochMilli(timestamp).toString();
     }
@@ -122,5 +124,4 @@ public class KeenTimestampService {
   public Map<String, List<String>> getStreamCursorFields() {
     return streamCursorFields;
   }
-
 }

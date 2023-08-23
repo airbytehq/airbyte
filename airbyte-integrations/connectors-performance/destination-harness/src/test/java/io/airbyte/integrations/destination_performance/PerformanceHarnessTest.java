@@ -18,7 +18,8 @@ class PerformanceHarnessTest {
     final List<String> streamNames = new ArrayList<>();
     final Random random = new Random();
     final int duplicateFactor = 1000;
-    // Keep this number high to avoid statistical collisions. Alternative was to consider chi-squared
+    // Keep this number high to avoid statistical collisions. Alternative was to consider
+    // chi-squared
     for (int i = 1; i <= duplicateFactor; i++) {
       streamNames.add("stream" + i);
     }
@@ -26,5 +27,4 @@ class PerformanceHarnessTest {
     final String streamName2 = PerformanceHarness.getStreamName(streamNames, random);
     assertNotEquals(streamName1, streamName2);
   }
-
 }

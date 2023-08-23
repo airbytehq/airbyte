@@ -35,5 +35,4 @@ public class JsonDefinitionsHelper {
     }
     return definitionJson;
   }
-
 }

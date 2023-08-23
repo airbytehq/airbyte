@@ -18,5 +18,4 @@ public class S3JsonlGzipDestinationAcceptanceTest extends S3BaseJsonlGzipDestina
   protected JsonNode getBaseConfigJson() {
     return S3DestinationTestUtils.getBaseConfigJsonFilePath();
   }
-
 }

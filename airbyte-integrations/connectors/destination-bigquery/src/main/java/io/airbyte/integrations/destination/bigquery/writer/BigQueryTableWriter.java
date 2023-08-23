@@ -36,7 +36,8 @@ public class BigQueryTableWriter implements DestinationWriter {
 
   @Override
   public void write(JsonNode formattedData) throws IOException {
-    writeChannel.write(ByteBuffer.wrap((Jsons.serialize(formattedData) + "\n").getBytes(Charsets.UTF_8)));
+    writeChannel.write(
+        ByteBuffer.wrap((Jsons.serialize(formattedData) + "\n").getBytes(Charsets.UTF_8)));
   }
 
   @Override
@@ -47,5 +48,4 @@ public class BigQueryTableWriter implements DestinationWriter {
   public TableDataWriteChannel getWriteChannel() {
     return writeChannel;
   }
-
 }

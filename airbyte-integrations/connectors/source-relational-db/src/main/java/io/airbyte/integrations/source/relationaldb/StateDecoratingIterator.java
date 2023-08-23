@@ -18,7 +18,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage>
+    implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StateDecoratingIterator.class);
 
@@ -52,6 +53,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * to true and the latest "ready" state will be emitted in the next {@code computeNext} call.
    */
   private final int stateEmissionFrequency;
+
   private int totalRecordCount = 0;
   private boolean emitIntermediateState = false;
   private AirbyteMessage intermediateStateMessage = null;
@@ -69,13 +71,14 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    *        which an "ORDER BY" clause is appended to the SQL query if {@code stateEmissionFrequency}
    *        > 0.
    */
-  public StateDecoratingIterator(final Iterator<AirbyteMessage> messageIterator,
-                                 final StateManager stateManager,
-                                 final AirbyteStreamNameNamespacePair pair,
-                                 final String cursorField,
-                                 final String initialCursor,
-                                 final JsonSchemaPrimitive cursorType,
-                                 final int stateEmissionFrequency) {
+  public StateDecoratingIterator(
+      final Iterator<AirbyteMessage> messageIterator,
+      final StateManager stateManager,
+      final AirbyteStreamNameNamespacePair pair,
+      final String cursorField,
+      final String initialCursor,
+      final JsonSchemaPrimitive cursorType,
+      final int stateEmissionFrequency) {
     this.messageIterator = messageIterator;
     this.stateManager = stateManager;
     this.pair = pair;
@@ -87,7 +90,8 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   }
 
   private String getCursorCandidate(final AirbyteMessage message) {
-    final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+    final String cursorCandidate =
+        message.getRecord().getData().get(cursorField).asText();
     return (cursorCandidate != null ? replaceNull(cursorCandidate) : null);
   }
 
@@ -133,10 +137,14 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         final AirbyteMessage message = messageIterator.next();
         if (message.getRecord().getData().hasNonNull(cursorField)) {
           final String cursorCandidate = getCursorCandidate(message);
-          final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
+          final int cursorComparison =
+              IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
           if (cursorComparison < 0) {
-            // Update the current max cursor only when current max cursor < cursor candidate from the message
-            if (stateEmissionFrequency > 0 && !Objects.equals(currentMaxCursor, initialCursor) && messageIterator.hasNext()) {
+            // Update the current max cursor only when current max cursor < cursor candidate from
+            // the message
+            if (stateEmissionFrequency > 0
+                && !Objects.equals(currentMaxCursor, initialCursor)
+                && messageIterator.hasNext()) {
               // Only create an intermediate state when it is not the first or last record message.
               // The last state message will be processed seperately.
               intermediateStateMessage = createStateMessage(false, totalRecordCount);
@@ -146,8 +154,9 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
           } else if (cursorComparison == 0) {
             currentMaxCursorRecordCount++;
           } else if (cursorComparison > 0 && stateEmissionFrequency > 0) {
-            LOGGER.warn("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
-                + "data loss can occur.");
+            LOGGER.warn(
+                "Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
+                    + "data loss can occur.");
           }
         }
 
@@ -200,11 +209,13 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * @return AirbyteMessage which includes information on state of records read so far
    */
   public AirbyteMessage createStateMessage(final boolean isFinalState, final int totalRecordCount) {
-    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
+    final AirbyteStateMessage stateMessage =
+        stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
     // logging once every 100 messages to reduce log verbosity
     if (totalRecordCount % 100 == 0) {
-      LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
+      LOGGER.info(
+          "State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
           pair,
           cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
           cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
@@ -216,11 +227,12 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     if (isFinalState) {
       hasEmittedFinalState = true;
       if (stateManager.getCursor(pair).isEmpty()) {
-        LOGGER.warn("Cursor for stream {} was null. This stream will replicate all records on the next run", pair);
+        LOGGER.warn(
+            "Cursor for stream {} was null. This stream will replicate all records on the next run",
+            pair);
       }
     }
 
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
-
 }

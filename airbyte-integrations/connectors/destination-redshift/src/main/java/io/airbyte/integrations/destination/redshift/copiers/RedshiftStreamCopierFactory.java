@@ -19,15 +19,23 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 public class RedshiftStreamCopierFactory extends S3StreamCopierFactory {
 
   @Override
-  public StreamCopier create(final String stagingFolder,
-                             final String schema,
-                             final AmazonS3 s3Client,
-                             final JdbcDatabase db,
-                             final S3CopyConfig config,
-                             final StandardNameTransformer nameTransformer,
-                             final SqlOperations sqlOperations,
-                             final ConfiguredAirbyteStream configuredStream) {
-    return new RedshiftStreamCopier(stagingFolder, schema, s3Client, db, config, nameTransformer, sqlOperations, configuredStream);
+  public StreamCopier create(
+      final String stagingFolder,
+      final String schema,
+      final AmazonS3 s3Client,
+      final JdbcDatabase db,
+      final S3CopyConfig config,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final ConfiguredAirbyteStream configuredStream) {
+    return new RedshiftStreamCopier(
+        stagingFolder,
+        schema,
+        s3Client,
+        db,
+        config,
+        nameTransformer,
+        sqlOperations,
+        configuredStream);
   }
-
 }

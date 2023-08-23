@@ -21,10 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GeneralStagingFunctions {
 
-  public static OnStartFunction onStartFunction(final JdbcDatabase database,
-                                                final StagingOperations stagingOperations,
-                                                final List<WriteConfig> writeConfigs,
-                                                final TyperDeduper typerDeduper) {
+  public static OnStartFunction onStartFunction(
+      final JdbcDatabase database,
+      final StagingOperations stagingOperations,
+      final List<WriteConfig> writeConfigs,
+      final TyperDeduper typerDeduper) {
     return () -> {
       log.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
       final List<String> queryList = new ArrayList<>();
@@ -33,11 +34,18 @@ public class GeneralStagingFunctions {
         final String stream = writeConfig.getStreamName();
         final String dstTableName = writeConfig.getOutputTableName();
         final String stageName = stagingOperations.getStageName(schema, stream);
-        final String stagingPath =
-            stagingOperations.getStagingPath(StagingConsumerFactory.RANDOM_CONNECTION_ID, schema, stream, writeConfig.getWriteDatetime());
+        final String stagingPath = stagingOperations.getStagingPath(
+            StagingConsumerFactory.RANDOM_CONNECTION_ID,
+            schema,
+            stream,
+            writeConfig.getWriteDatetime());
 
-        log.info("Preparing staging area in destination started for schema {} stream {}: target table: {}, stage: {}",
-            schema, stream, dstTableName, stagingPath);
+        log.info(
+            "Preparing staging area in destination started for schema {} stream {}: target table: {}, stage: {}",
+            schema,
+            stream,
+            dstTableName,
+            stagingPath);
 
         stagingOperations.createSchemaIfNotExists(database, schema);
         stagingOperations.createTableIfNotExists(database, schema, dstTableName);
@@ -48,12 +56,17 @@ public class GeneralStagingFunctions {
          * effect of checkpoint and the removal of temporary tables
          */
         switch (writeConfig.getSyncMode()) {
-          case OVERWRITE -> queryList.add(stagingOperations.truncateTableQuery(database, schema, dstTableName));
+          case OVERWRITE -> queryList.add(
+              stagingOperations.truncateTableQuery(database, schema, dstTableName));
           case APPEND, APPEND_DEDUP -> {}
-          default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
+          default -> throw new IllegalStateException(
+              "Unrecognized sync mode: " + writeConfig.getSyncMode());
         }
 
-        log.info("Preparing staging area in destination completed for schema {} stream {}", schema, stream);
+        log.info(
+            "Preparing staging area in destination completed for schema {} stream {}",
+            schema,
+            stream);
       }
       log.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
@@ -66,23 +79,25 @@ public class GeneralStagingFunctions {
    * Handles copying data from staging area to destination table and clean up of staged files if
    * upload was unsuccessful
    */
-  public static void copyIntoTableFromStage(final JdbcDatabase database,
-                                            final String stageName,
-                                            final String stagingPath,
-                                            final List<String> stagedFiles,
-                                            final String tableName,
-                                            final String schemaName,
-                                            final StagingOperations stagingOperations,
-                                            final String streamNamespace,
-                                            final String streamName,
-                                            final TypeAndDedupeOperationValve typerDeduperValve,
-                                            final TyperDeduper typerDeduper)
+  public static void copyIntoTableFromStage(
+      final JdbcDatabase database,
+      final String stageName,
+      final String stagingPath,
+      final List<String> stagedFiles,
+      final String tableName,
+      final String schemaName,
+      final StagingOperations stagingOperations,
+      final String streamNamespace,
+      final String streamName,
+      final TypeAndDedupeOperationValve typerDeduperValve,
+      final TyperDeduper typerDeduper)
       throws Exception {
     try {
-      stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
-          tableName, schemaName);
+      stagingOperations.copyIntoTableFromStage(
+          database, stageName, stagingPath, stagedFiles, tableName, schemaName);
 
-      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
+      AirbyteStreamNameNamespacePair streamId =
+          new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
       if (!typerDeduperValve.containsKey(streamId)) {
         typerDeduperValve.addStream(streamId);
       }
@@ -106,11 +121,12 @@ public class GeneralStagingFunctions {
    * @param purgeStagingData drop staging area if true, keep otherwise
    * @return
    */
-  public static OnCloseFunction onCloseFunction(final JdbcDatabase database,
-                                                final StagingOperations stagingOperations,
-                                                final List<WriteConfig> writeConfigs,
-                                                final boolean purgeStagingData,
-                                                final TyperDeduper typerDeduper) {
+  public static OnCloseFunction onCloseFunction(
+      final JdbcDatabase database,
+      final StagingOperations stagingOperations,
+      final List<WriteConfig> writeConfigs,
+      final boolean purgeStagingData,
+      final TyperDeduper typerDeduper) {
     return (hasFailed) -> {
       // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
@@ -118,8 +134,12 @@ public class GeneralStagingFunctions {
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
-          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
-          log.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
+          final String stageName =
+              stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+          log.info(
+              "Cleaning stage in destination started for stream {}. schema {}, stage: {}",
+              writeConfig.getStreamName(),
+              schemaName,
               stageName);
           stagingOperations.dropStageIfExists(database, stageName);
         }
@@ -131,5 +151,4 @@ public class GeneralStagingFunctions {
       log.info("Cleaning up destination completed.");
     };
   }
-
 }

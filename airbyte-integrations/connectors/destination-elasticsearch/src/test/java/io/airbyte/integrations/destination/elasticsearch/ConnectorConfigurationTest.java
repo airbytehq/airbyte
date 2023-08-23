@@ -24,19 +24,15 @@ public class ConnectorConfigurationTest {
     String apiKeyId = "foo";
     String apiKeySecret = "bar";
 
-    node
-        .put("endpoint", endpoint)
-        .set("authenticationMethod", authNode);
+    node.put("endpoint", endpoint).set("authenticationMethod", authNode);
 
-    authNode
-        .put("method", authMethod)
-        .put("apiKeyId", apiKeyId)
-        .put("apiKeySecret", apiKeySecret);
+    authNode.put("method", authMethod).put("apiKeyId", apiKeyId).put("apiKeySecret", apiKeySecret);
 
     ConnectorConfiguration config = mapper.convertValue(node, ConnectorConfiguration.class);
     Assertions.assertTrue(config.getAuthenticationMethod().isValid());
     Assertions.assertEquals(endpoint, config.getEndpoint());
-    Assertions.assertEquals(authMethod, config.getAuthenticationMethod().getMethod().toString());
+    Assertions.assertEquals(
+        authMethod, config.getAuthenticationMethod().getMethod().toString());
     Assertions.assertEquals(apiKeyId, config.getAuthenticationMethod().getApiKeyId());
     Assertions.assertEquals(apiKeySecret, config.getAuthenticationMethod().getApiKeySecret());
   }
@@ -52,19 +48,15 @@ public class ConnectorConfigurationTest {
     String username = "foo";
     String password = "bar";
 
-    node
-        .put("endpoint", endpoint)
-        .set("authenticationMethod", authNode);
+    node.put("endpoint", endpoint).set("authenticationMethod", authNode);
 
-    authNode
-        .put("method", authMethod)
-        .put("username", username)
-        .put("password", password);
+    authNode.put("method", authMethod).put("username", username).put("password", password);
 
     ConnectorConfiguration config = mapper.convertValue(node, ConnectorConfiguration.class);
     Assertions.assertTrue(config.getAuthenticationMethod().isValid());
     Assertions.assertEquals(endpoint, config.getEndpoint());
-    Assertions.assertEquals(authMethod, config.getAuthenticationMethod().getMethod().toString());
+    Assertions.assertEquals(
+        authMethod, config.getAuthenticationMethod().getMethod().toString());
     Assertions.assertEquals(username, config.getAuthenticationMethod().getUsername());
     Assertions.assertEquals(password, config.getAuthenticationMethod().getPassword());
   }
@@ -78,17 +70,14 @@ public class ConnectorConfigurationTest {
     String endpoint = "http://localhost:123";
     String authMethod = ElasticsearchAuthenticationMethod.none.toString();
 
-    node
-        .put("endpoint", endpoint)
-        .set("authenticationMethod", authNode);
+    node.put("endpoint", endpoint).set("authenticationMethod", authNode);
 
-    authNode
-        .put("method", authMethod);
+    authNode.put("method", authMethod);
 
     ConnectorConfiguration config = mapper.convertValue(node, ConnectorConfiguration.class);
     Assertions.assertTrue(config.getAuthenticationMethod().isValid());
     Assertions.assertEquals(endpoint, config.getEndpoint());
-    Assertions.assertEquals(authMethod, config.getAuthenticationMethod().getMethod().toString());
+    Assertions.assertEquals(
+        authMethod, config.getAuthenticationMethod().getMethod().toString());
   }
-
 }

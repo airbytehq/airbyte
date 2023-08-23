@@ -82,8 +82,8 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
   /**
    * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
    */
-  private final Set<String> IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES = Sets.newHashSet(
-      "airbyte/source-google-workspace-admin-reports", "airbyte/source-kafka");
+  private final Set<String> IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES =
+      Sets.newHashSet("airbyte/source-google-workspace-admin-reports", "airbyte/source-kafka");
 
   /**
    * Specification for integration. Will be passed to integration where appropriate in each test.
@@ -128,7 +128,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testGetSpec() throws Exception {
-    assertEquals(getSpec(), runSpec(), "Expected spec output by integration to be equal to spec provided by test runner");
+    assertEquals(
+        getSpec(),
+        runSpec(),
+        "Expected spec output by integration to be equal to spec provided by test runner");
   }
 
   /**
@@ -137,7 +140,8 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testCheckConnection() throws Exception {
-    assertEquals(Status.SUCCEEDED, runCheck().getStatus(), "Expected check connection operation to succeed");
+    assertEquals(
+        Status.SUCCEEDED, runCheck().getStatus(), "Expected check connection operation to succeed");
   }
 
   // /**
@@ -184,14 +188,16 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     final ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalog());
     final List<AirbyteMessage> allMessages = runRead(catalog);
 
-    assertFalse(filterRecords(allMessages).isEmpty(), "Expected a full refresh sync to produce records");
+    assertFalse(
+        filterRecords(allMessages).isEmpty(), "Expected a full refresh sync to produce records");
     assertFullRefreshMessages(allMessages);
   }
 
   /**
    * Override this method to perform more specific assertion on the messages.
    */
-  protected void assertFullRefreshMessages(final List<AirbyteMessage> allMessages) throws Exception {
+  protected void assertFullRefreshMessages(final List<AirbyteMessage> allMessages)
+      throws Exception {
     // do nothing by default
   }
 
@@ -211,15 +217,23 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
       return;
     }
 
-    final ConfiguredAirbyteCatalog configuredCatalog = withFullRefreshSyncModes(getConfiguredCatalog());
-    final List<AirbyteRecordMessage> recordMessagesFirstRun = filterRecords(runRead(configuredCatalog));
-    final List<AirbyteRecordMessage> recordMessagesSecondRun = filterRecords(runRead(configuredCatalog));
-    // the worker validates the messages, so we just validate the message, so we do not need to validate
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        withFullRefreshSyncModes(getConfiguredCatalog());
+    final List<AirbyteRecordMessage> recordMessagesFirstRun =
+        filterRecords(runRead(configuredCatalog));
+    final List<AirbyteRecordMessage> recordMessagesSecondRun =
+        filterRecords(runRead(configuredCatalog));
+    // the worker validates the messages, so we just validate the message, so we do not need to
+    // validate
     // again (as long as we use the worker, which we will not want to do long term).
     assertFalse(recordMessagesFirstRun.isEmpty(), "Expected first full refresh to produce records");
-    assertFalse(recordMessagesSecondRun.isEmpty(), "Expected second full refresh to produce records");
+    assertFalse(
+        recordMessagesSecondRun.isEmpty(), "Expected second full refresh to produce records");
 
-    assertSameRecords(recordMessagesFirstRun, recordMessagesSecondRun, "Expected two full refresh syncs to produce the same records");
+    assertSameRecords(
+        recordMessagesFirstRun,
+        recordMessagesSecondRun,
+        "Expected two full refresh syncs to produce the same records");
   }
 
   /**
@@ -242,15 +256,16 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
       return;
     }
 
-    final ConfiguredAirbyteCatalog configuredCatalog = withSourceDefinedCursors(getConfiguredCatalog());
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        withSourceDefinedCursors(getConfiguredCatalog());
     // only sync incremental streams
-    configuredCatalog.setStreams(
-        configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList()));
+    configuredCatalog.setStreams(configuredCatalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == INCREMENTAL)
+        .collect(Collectors.toList()));
 
     final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalog, getState());
     final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
-    final List<AirbyteStateMessage> stateMessages = airbyteMessages
-        .stream()
+    final List<AirbyteStateMessage> stateMessages = airbyteMessages.stream()
         .filter(m -> m.getType() == Type.STATE)
         .map(AirbyteMessage::getState)
         .collect(Collectors.toList());
@@ -264,8 +279,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    final JsonNode latestState = Jsons.jsonNode(supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
-    final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState));
+    final JsonNode latestState = Jsons.jsonNode(
+        supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
+    final List<AirbyteRecordMessage> secondSyncRecords =
+        filterRecords(runRead(configuredCatalog, latestState));
     assertTrue(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce no records when given the first sync's output state.");
@@ -294,11 +311,15 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     final ConfiguredAirbyteCatalog fullRefreshCatalog = withFullRefreshSyncModes(configuredCatalog);
 
-    final List<AirbyteRecordMessage> fullRefreshRecords = filterRecords(runRead(fullRefreshCatalog));
-    final List<AirbyteRecordMessage> emptyStateRecords = filterRecords(runRead(configuredCatalog, Jsons.jsonNode(new HashMap<>())));
+    final List<AirbyteRecordMessage> fullRefreshRecords =
+        filterRecords(runRead(fullRefreshCatalog));
+    final List<AirbyteRecordMessage> emptyStateRecords =
+        filterRecords(runRead(configuredCatalog, Jsons.jsonNode(new HashMap<>())));
     assertFalse(fullRefreshRecords.isEmpty(), "Expected a full refresh sync to produce records");
     assertFalse(emptyStateRecords.isEmpty(), "Expected state records to not be empty");
-    assertSameRecords(fullRefreshRecords, emptyStateRecords,
+    assertSameRecords(
+        fullRefreshRecords,
+        emptyStateRecords,
         "Expected a full refresh sync and incremental sync with no input state to produce identical records");
   }
 
@@ -312,14 +333,16 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     checkEntrypointEnvVariable();
   }
 
-  protected static List<AirbyteRecordMessage> filterRecords(final Collection<AirbyteMessage> messages) {
+  protected static List<AirbyteRecordMessage> filterRecords(
+      final Collection<AirbyteMessage> messages) {
     return messages.stream()
         .filter(m -> m.getType() == Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .collect(Collectors.toList());
   }
 
-  protected ConfiguredAirbyteCatalog withSourceDefinedCursors(final ConfiguredAirbyteCatalog catalog) {
+  protected ConfiguredAirbyteCatalog withSourceDefinedCursors(
+      final ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (final ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getSyncMode() == INCREMENTAL
@@ -331,7 +354,8 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     return clone;
   }
 
-  protected ConfiguredAirbyteCatalog withFullRefreshSyncModes(final ConfiguredAirbyteCatalog catalog) {
+  protected ConfiguredAirbyteCatalog withFullRefreshSyncModes(
+      final ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (final ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {
@@ -360,10 +384,13 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     return false;
   }
 
-  private void assertSameRecords(final List<AirbyteRecordMessage> expected, final List<AirbyteRecordMessage> actual, final String message) {
-    final List<AirbyteRecordMessage> prunedExpected = expected.stream().map(this::pruneEmittedAt).collect(Collectors.toList());
-    final List<AirbyteRecordMessage> prunedActual = actual
-        .stream()
+  private void assertSameRecords(
+      final List<AirbyteRecordMessage> expected,
+      final List<AirbyteRecordMessage> actual,
+      final String message) {
+    final List<AirbyteRecordMessage> prunedExpected =
+        expected.stream().map(this::pruneEmittedAt).collect(Collectors.toList());
+    final List<AirbyteRecordMessage> prunedActual = actual.stream()
         .map(this::pruneEmittedAt)
         .map(this::pruneCdcMetadata)
         .collect(Collectors.toList());
@@ -387,5 +414,4 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     ((ObjectNode) clone.getData()).remove(CDC_DEFAULT_CURSOR);
     return clone;
   }
-
 }

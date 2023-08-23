@@ -27,10 +27,12 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new FailAfterNConsumer(config.get("test_destination").get("num_messages").asLong(), outputRecordCollector);
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    return new FailAfterNConsumer(
+        config.get("test_destination").get("num_messages").asLong(), outputRecordCollector);
   }
 
   public static class FailAfterNConsumer implements AirbyteMessageConsumer {
@@ -39,7 +41,9 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
     private final long numMessagesAfterWhichToFail;
     private long numMessagesSoFar;
 
-    public FailAfterNConsumer(final long numMessagesAfterWhichToFail, final Consumer<AirbyteMessage> outputRecordCollector) {
+    public FailAfterNConsumer(
+        final long numMessagesAfterWhichToFail,
+        final Consumer<AirbyteMessage> outputRecordCollector) {
       this.numMessagesAfterWhichToFail = numMessagesAfterWhichToFail;
       this.outputRecordCollector = outputRecordCollector;
       this.numMessagesSoFar = 0;
@@ -54,7 +58,8 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
       numMessagesSoFar += 1;
 
       if (numMessagesSoFar > numMessagesAfterWhichToFail) {
-        throw new IllegalStateException("Forcing a fail after processing " + numMessagesAfterWhichToFail + " messages.");
+        throw new IllegalStateException(
+            "Forcing a fail after processing " + numMessagesAfterWhichToFail + " messages.");
       }
 
       if (message.getType() == Type.STATE) {
@@ -65,7 +70,5 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
 
     @Override
     public void close() {}
-
   }
-
 }

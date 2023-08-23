@@ -19,11 +19,7 @@ class InitialSizeEstimatorTest {
     final int defaultFetchSize = 20;
     final int maxFetchSize = 120;
     final InitialSizeEstimator sizeEstimator = new InitialSizeEstimator(
-        bufferByteSize,
-        initialSampleSize,
-        minFetchSize,
-        defaultFetchSize,
-        maxFetchSize);
+        bufferByteSize, initialSampleSize, minFetchSize, defaultFetchSize, maxFetchSize);
 
     // size: 3 * 4 = 12
     sizeEstimator.accept("1");
@@ -43,7 +39,8 @@ class InitialSizeEstimatorTest {
     assertTrue(fetchSize.isPresent());
     final long expectedMaxByteSize = 21L;
     assertEquals(expectedMaxByteSize, Math.round(sizeEstimator.getMaxRowByteSize()));
-    assertEquals((bufferByteSize / expectedMaxByteSize) + 1, fetchSize.get().longValue()); // + 1 needed for int remainder rounding
+    assertEquals(
+        (bufferByteSize / expectedMaxByteSize) + 1,
+        fetchSize.get().longValue()); // + 1 needed for int remainder rounding
   }
-
 }

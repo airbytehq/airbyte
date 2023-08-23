@@ -43,7 +43,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopier {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksAzureBlobStorageStreamCopier.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(DatabricksAzureBlobStorageStreamCopier.class);
   private static final String AZURE_BLOB_ENDPOINT_DOMAIN_NAME = "blob.core.windows.net";
   private static final String AZURE_DFS_ENDPOINT_DOMAIN_NAME = "dfs.core.windows.net";
 
@@ -56,37 +57,61 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
   protected final HashMap<String, AppendBlobClient> blobClients = new HashMap<>();
   protected String currentFile;
 
-  public DatabricksAzureBlobStorageStreamCopier(final String stagingFolder,
-                                                final String catalog,
-                                                final String schema,
-                                                final ConfiguredAirbyteStream configuredStream,
-                                                final JdbcDatabase database,
-                                                final DatabricksDestinationConfig databricksConfig,
-                                                final StandardNameTransformer nameTransformer,
-                                                final SqlOperations sqlOperations,
-                                                final SpecializedBlobClientBuilder specializedBlobClientBuilder,
-                                                final AzureBlobStorageConfig azureConfig) {
-    super(stagingFolder, catalog, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
+  public DatabricksAzureBlobStorageStreamCopier(
+      final String stagingFolder,
+      final String catalog,
+      final String schema,
+      final ConfiguredAirbyteStream configuredStream,
+      final JdbcDatabase database,
+      final DatabricksDestinationConfig databricksConfig,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final SpecializedBlobClientBuilder specializedBlobClientBuilder,
+      final AzureBlobStorageConfig azureConfig) {
+    super(
+        stagingFolder,
+        catalog,
+        schema,
+        configuredStream,
+        database,
+        databricksConfig,
+        nameTransformer,
+        sqlOperations);
 
     this.specializedBlobClientBuilder = specializedBlobClientBuilder;
     this.azureConfig = azureConfig;
 
-    LOGGER.info("[Stream {}] Tmp table {} location: {}", streamName, tmpTableName, getTmpTableLocation());
-    LOGGER.info("[Stream {}] Data table {} location: {}", streamName, destTableName, getDestTableLocation());
+    LOGGER.info(
+        "[Stream {}] Tmp table {} location: {}", streamName, tmpTableName, getTmpTableLocation());
+    LOGGER.info(
+        "[Stream {}] Data table {} location: {}",
+        streamName,
+        destTableName,
+        getDestTableLocation());
   }
 
   public String getTmpTableLocation() {
-    return String.format("abfss://%s@%s.%s/%s/%s/%s/",
-        azureConfig.getContainerName(), azureConfig.getAccountName(), azureConfig.getEndpointDomainName(),
-        stagingFolder, schemaName, tmpTableName);
+    return String.format(
+        "abfss://%s@%s.%s/%s/%s/%s/",
+        azureConfig.getContainerName(),
+        azureConfig.getAccountName(),
+        azureConfig.getEndpointDomainName(),
+        stagingFolder,
+        schemaName,
+        tmpTableName);
   }
 
   public String getDestTableLocation() {
-    return String.format("abfss://%s@%s.%s/%s/%s/",
-        azureConfig.getContainerName(), azureConfig.getAccountName(),
+    return String.format(
+        "abfss://%s@%s.%s/%s/%s/",
+        azureConfig.getContainerName(),
+        azureConfig.getAccountName(),
         // If this is .blob.core, we need to replace with .dfs.core to create table in Databricks
-        azureConfig.getEndpointDomainName().replace(AZURE_BLOB_ENDPOINT_DOMAIN_NAME, AZURE_DFS_ENDPOINT_DOMAIN_NAME),
-        schemaName, streamName);
+        azureConfig
+            .getEndpointDomainName()
+            .replace(AZURE_BLOB_ENDPOINT_DOMAIN_NAME, AZURE_DFS_ENDPOINT_DOMAIN_NAME),
+        schemaName,
+        streamName);
   }
 
   @Override
@@ -107,13 +132,19 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
       try {
 
         final String accountKey = "doesntmatter";
-        final String containerPath = String.format("%s/%s/%s/%s/", azureConfig.getContainerName(), stagingFolder, schemaName, streamName);
-        final AzureBlobStorageFormatConfig formatConfig =
-            new AzureBlobStorageCsvFormatConfig(Jsons.jsonNode(Map.of("flattening", "Root level flattening")));
-        final AzureBlobStorageDestinationConfig config = new AzureBlobStorageDestinationConfig(azureConfig.getEndpointUrl(),
-            azureConfig.getAccountName(), accountKey, containerPath, 5,
+        final String containerPath = String.format(
+            "%s/%s/%s/%s/", azureConfig.getContainerName(), stagingFolder, schemaName, streamName);
+        final AzureBlobStorageFormatConfig formatConfig = new AzureBlobStorageCsvFormatConfig(
+            Jsons.jsonNode(Map.of("flattening", "Root level flattening")));
+        final AzureBlobStorageDestinationConfig config = new AzureBlobStorageDestinationConfig(
+            azureConfig.getEndpointUrl(),
+            azureConfig.getAccountName(),
+            accountKey,
+            containerPath,
+            5,
             formatConfig);
-        this.csvWriters.put(currentFile, new AzureBlobStorageCsvWriter(config, appendBlobClient, configuredStream));
+        this.csvWriters.put(
+            currentFile, new AzureBlobStorageCsvWriter(config, appendBlobClient, configuredStream));
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
@@ -122,11 +153,13 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
   }
 
   protected String prepareAzureStagingFile() {
-    return String.join("/", stagingFolder, schemaName, tmpTableName, filenameGenerator.getStagingFilename());
+    return String.join(
+        "/", stagingFolder, schemaName, tmpTableName, filenameGenerator.getStagingFilename());
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String fileName) throws Exception {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String fileName)
+      throws Exception {
     if (csvWriters.containsKey(fileName)) {
       csvWriters.get(fileName).write(id, recordMessage);
     }
@@ -150,35 +183,53 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
 
     LOGGER.info("[Stream {}] tmp table schema: {}", stream.getName(), schemaString);
 
-    return String.format("CREATE TABLE %s.%s (%s) USING csv LOCATION '%s' " +
-        "options (\"header\" = \"true\", \"multiLine\" = \"true\") ;",
-        schemaName, tmpTableName, schemaString,
-        getTmpTableLocation().replace(AZURE_BLOB_ENDPOINT_DOMAIN_NAME, AZURE_DFS_ENDPOINT_DOMAIN_NAME));
+    return String.format(
+        "CREATE TABLE %s.%s (%s) USING csv LOCATION '%s' "
+            + "options (\"header\" = \"true\", \"multiLine\" = \"true\") ;",
+        schemaName,
+        tmpTableName,
+        schemaString,
+        getTmpTableLocation()
+            .replace(AZURE_BLOB_ENDPOINT_DOMAIN_NAME, AZURE_DFS_ENDPOINT_DOMAIN_NAME));
   }
 
   private String getSchemaString() {
     // Databricks requires schema to be provided when creating delta table from CSV
-    final StringBuilder schemaString = new StringBuilder("_airbyte_ab_id string, _airbyte_emitted_at string");
-    final ObjectNode properties = (ObjectNode) configuredStream.getStream().getJsonSchema().get("properties");
-    final List<String> recordHeaders = MoreIterators.toList(properties.fieldNames())
-        .stream().sorted().toList();
+    final StringBuilder schemaString =
+        new StringBuilder("_airbyte_ab_id string, _airbyte_emitted_at string");
+    final ObjectNode properties =
+        (ObjectNode) configuredStream.getStream().getJsonSchema().get("properties");
+    final List<String> recordHeaders =
+        MoreIterators.toList(properties.fieldNames()).stream().sorted().toList();
     for (final String header : recordHeaders) {
       final JsonNode node = properties.get(header);
       final String type = node.get("type").asText();
-      schemaString.append(", `").append(header).append("` ").append(type.equals("number") ? "double" : type);
+      schemaString
+          .append(", `")
+          .append(header)
+          .append("` ")
+          .append(type.equals("number") ? "double" : type);
     }
     return schemaString.toString();
   }
 
   @Override
   public String generateMergeStatement(final String destTableName) {
-    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
+    LOGGER.info(
+        "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
+        tmpTableName,
+        destTableName,
+        schemaName);
     final var queries = new StringBuilder();
     if (destinationSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(database, schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
+      LOGGER.info(
+          "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.",
+          destTableName,
+          schemaName);
     }
-    queries.append(sqlOperations.insertTableQuery(database, schemaName, tmpTableName, destTableName));
+    queries.append(
+        sqlOperations.insertTableQuery(database, schemaName, tmpTableName, destTableName));
 
     return queries.toString();
   }
@@ -211,7 +262,8 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
     return currentFile;
   }
 
-  private static BlobContainerClient getBlobContainerClient(final AppendBlobClient appendBlobClient) {
+  private static BlobContainerClient getBlobContainerClient(
+      final AppendBlobClient appendBlobClient) {
     final BlobContainerClient containerClient = appendBlobClient.getContainerClient();
     if (!containerClient.exists()) {
       containerClient.create();
@@ -222,5 +274,4 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
     }
     return containerClient;
   }
-
 }

@@ -24,7 +24,8 @@ public class AirbyteTypeTest {
   @Test
   public void testStruct() {
     final List<String> structSchema = new ArrayList<>();
-    structSchema.add("""
+    structSchema.add(
+        """
                      {
                        "type": "object",
                        "properties": {
@@ -75,7 +76,8 @@ public class AirbyteTypeTest {
                        }
                      }
                      """);
-    structSchema.add("""
+    structSchema.add(
+        """
                      {
                        "type": ["object"],
                        "properties": {
@@ -126,7 +128,8 @@ public class AirbyteTypeTest {
                        }
                      }
                      """);
-    structSchema.add("""
+    structSchema.add(
+        """
                      {
                        "type": ["null", "object"],
                        "properties": {
@@ -200,17 +203,20 @@ public class AirbyteTypeTest {
   @Test
   public void testEmptyStruct() {
     final List<String> structSchema = new ArrayList<>();
-    structSchema.add("""
+    structSchema.add(
+        """
                      {
                        "type": "object"
                      }
                      """);
-    structSchema.add("""
+    structSchema.add(
+        """
                      {
                        "type": ["object"]
                      }
                      """);
-    structSchema.add("""
+    structSchema.add(
+        """
                      {
                        "type": ["null", "object"]
                      }
@@ -224,7 +230,8 @@ public class AirbyteTypeTest {
 
   @Test
   public void testImplicitStruct() {
-    final String structSchema = """
+    final String structSchema =
+        """
                                 {
                                   "properties": {
                                     "key1": {
@@ -244,7 +251,8 @@ public class AirbyteTypeTest {
   @Test
   public void testArray() {
     final List<String> arraySchema = new ArrayList<>();
-    arraySchema.add("""
+    arraySchema.add(
+        """
                     {
                       "type": "array",
                       "items": {
@@ -254,7 +262,8 @@ public class AirbyteTypeTest {
                       }
                     }
                     """);
-    arraySchema.add("""
+    arraySchema.add(
+        """
                     {
                       "type": ["array"],
                       "items": {
@@ -264,7 +273,8 @@ public class AirbyteTypeTest {
                       }
                     }
                     """);
-    arraySchema.add("""
+    arraySchema.add(
+        """
                     {
                       "type": ["null", "array"],
                       "items": {
@@ -284,18 +294,21 @@ public class AirbyteTypeTest {
   @Test
   public void testEmptyArray() {
     final List<String> arraySchema = new ArrayList<>();
-    arraySchema.add("""
+    arraySchema.add(
+        """
                     {
                       "type": "array"
                     }
                     """);
-    arraySchema.add("""
+    arraySchema.add(
+        """
                     {
                       "type": ["array"]
                     }
                     """);
 
-    arraySchema.add("""
+    arraySchema.add(
+        """
                     {
                       "type": ["null", "array"]
                     }
@@ -309,7 +322,8 @@ public class AirbyteTypeTest {
 
   @Test
   public void testUnsupportedOneOf() {
-    final String unsupportedOneOfSchema = """
+    final String unsupportedOneOfSchema =
+        """
                                           {
                                             "oneOf": ["number", "string"]
                                           }
@@ -326,7 +340,8 @@ public class AirbyteTypeTest {
   @Test
   public void testUnion() {
 
-    final String unionSchema = """
+    final String unionSchema =
+        """
                                {
                                  "type": ["string", "number"]
                                }
@@ -342,7 +357,8 @@ public class AirbyteTypeTest {
 
   @Test
   public void testUnionComplex() {
-    final JsonNode schema = Jsons.deserialize("""
+    final JsonNode schema = Jsons.deserialize(
+        """
                                               {
                                                 "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
                                                 "properties": {
@@ -361,7 +377,6 @@ public class AirbyteTypeTest {
           {
             put("foo", STRING);
           }
-
         }),
         new Array(STRING)));
     assertEquals(expected, parsed);
@@ -369,7 +384,8 @@ public class AirbyteTypeTest {
 
   @Test
   public void testUnionUnderspecifiedNonPrimitives() {
-    final JsonNode schema = Jsons.deserialize("""
+    final JsonNode schema = Jsons.deserialize(
+        """
                                               {
                                                 "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
                                               }
@@ -377,16 +393,15 @@ public class AirbyteTypeTest {
 
     final AirbyteType parsed = fromJsonSchema(schema);
 
-    final AirbyteType expected = new Union(List.of(
-        STRING,
-        new Struct(new LinkedHashMap<>()),
-        new Array(UNKNOWN)));
+    final AirbyteType expected =
+        new Union(List.of(STRING, new Struct(new LinkedHashMap<>()), new Array(UNKNOWN)));
     assertEquals(expected, parsed);
   }
 
   @Test
   public void testInvalidTextualType() {
-    final String invalidTypeSchema = """
+    final String invalidTypeSchema =
+        """
                                      {
                                        "type": "foo"
                                      }
@@ -396,7 +411,8 @@ public class AirbyteTypeTest {
 
   @Test
   public void testInvalidBooleanType() {
-    final String invalidTypeSchema = """
+    final String invalidTypeSchema =
+        """
                                      {
                                        "type": true
                                      }
@@ -439,8 +455,8 @@ public class AirbyteTypeTest {
     unionToType.put(new Union(ImmutableList.of(INTEGER, BOOLEAN, NUMBER)), NUMBER);
     unionToType.put(new Union(ImmutableList.of(BOOLEAN, INTEGER)), INTEGER);
 
-    assertAll(
-        unionToType.entrySet().stream().map(e -> () -> assertEquals(e.getValue(), e.getKey().chooseType())));
+    assertAll(unionToType.entrySet().stream()
+        .map(e -> () -> assertEquals(e.getValue(), e.getKey().chooseType())));
   }
 
   @Test
@@ -452,7 +468,6 @@ public class AirbyteTypeTest {
           {
             put("foo", STRING);
           }
-
         }),
         new Array(STRING),
         // This is bad behavior, but it matches current behavior so we'll test it.
@@ -468,16 +483,14 @@ public class AirbyteTypeTest {
           {
             put("foo", STRING);
           }
-
         },
         columns);
   }
 
   @Test
   public void testAsColumnsMultipleObjects() {
-    final Union u = new Union(List.of(
-        new Struct(new LinkedHashMap<>()),
-        new Struct(new LinkedHashMap<>())));
+    final Union u =
+        new Union(List.of(new Struct(new LinkedHashMap<>()), new Struct(new LinkedHashMap<>())));
 
     // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
     // warning for now.
@@ -498,5 +511,4 @@ public class AirbyteTypeTest {
     // warning for now.
     assertEquals(new LinkedHashMap<>(), u.asColumns());
   }
-
 }

@@ -33,7 +33,8 @@ import org.junit.jupiter.api.Test;
 
 class SpeedBenchmarkSourceTest {
 
-  public static final String CONFIG_JSON = """
+  public static final String CONFIG_JSON =
+      """
                                            {
                                              "type": "BENCHMARK",
                                              "schema": "FIVE_STRING_COLUMNS",
@@ -44,10 +45,9 @@ class SpeedBenchmarkSourceTest {
                                            }
                                            """;
   public static final SpeedBenchmarkConfig CONFIG = new SpeedBenchmarkConfig(
-      SchemaType.FIVE_STRING_COLUMNS,
-      TerminationCondition.MAX_RECORDS,
-      100);
-  public static final String SCHEMA = """
+      SchemaType.FIVE_STRING_COLUMNS, TerminationCondition.MAX_RECORDS, 100);
+  public static final String SCHEMA =
+      """
                                           {
                                                 "type": "object",
                                                 "properties": {
@@ -69,14 +69,19 @@ class SpeedBenchmarkSourceTest {
                                                 }
                                               }
                                       """;
-  public static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
-      new AirbyteStream().withName("stream1").withJsonSchema(Jsons.deserialize(SCHEMA)).withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
+  public static final AirbyteCatalog CATALOG = new AirbyteCatalog()
+      .withStreams(List.of(new AirbyteStream()
+          .withName("stream1")
+          .withJsonSchema(Jsons.deserialize(SCHEMA))
+          .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
 
   @Test
   void testSpec() throws Exception {
     final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
-    assertEquals(Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class), speedBenchmarkSource.spec());
+    assertEquals(
+        Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class),
+        speedBenchmarkSource.spec());
   }
 
   @Test
@@ -101,16 +106,17 @@ class SpeedBenchmarkSourceTest {
   void testSource() throws Exception {
     final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
-    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(new ConfiguredAirbyteStream()
-        .withStream(CATALOG.getStreams().get(0))
-        .withSyncMode(SyncMode.FULL_REFRESH)
-        .withDestinationSyncMode(DestinationSyncMode.APPEND)));
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(new ConfiguredAirbyteStream()
+            .withStream(CATALOG.getStreams().get(0))
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
     final JsonNode config = Jsons.deserialize(CONFIG_JSON);
     ((ObjectNode) config.get("terminationCondition")).put("max", 3);
 
-    try (final AutoCloseableIterator<AirbyteMessage> records = speedBenchmarkSource
-        .read(config, configuredCatalog, Jsons.emptyObject())) {
+    try (final AutoCloseableIterator<AirbyteMessage> records =
+        speedBenchmarkSource.read(config, configuredCatalog, Jsons.emptyObject())) {
 
       assertEquals(getExpectRecordMessage(1), records.next());
       assertEquals(getExpectRecordMessage(2), records.next());
@@ -120,15 +126,16 @@ class SpeedBenchmarkSourceTest {
   }
 
   private static AirbyteMessage getExpectRecordMessage(final int recordNumber) {
-    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage()
-        .withStream("stream1")
-        .withEmittedAt(Instant.EPOCH.toEpochMilli())
-        .withData(Jsons.jsonNode(ImmutableMap.of(
-            "field1", "valuevaluevaluevaluevalue" + recordNumber,
-            "field2", "valuevaluevaluevaluevalue" + recordNumber,
-            "field3", "valuevaluevaluevaluevalue" + recordNumber,
-            "field4", "valuevaluevaluevaluevalue" + recordNumber,
-            "field5", "valuevaluevaluevaluevalue" + recordNumber))));
+    return new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream("stream1")
+            .withEmittedAt(Instant.EPOCH.toEpochMilli())
+            .withData(Jsons.jsonNode(ImmutableMap.of(
+                "field1", "valuevaluevaluevaluevalue" + recordNumber,
+                "field2", "valuevaluevaluevaluevalue" + recordNumber,
+                "field3", "valuevaluevaluevaluevalue" + recordNumber,
+                "field4", "valuevaluevaluevaluevalue" + recordNumber,
+                "field5", "valuevaluevaluevaluevalue" + recordNumber))));
   }
-
 }

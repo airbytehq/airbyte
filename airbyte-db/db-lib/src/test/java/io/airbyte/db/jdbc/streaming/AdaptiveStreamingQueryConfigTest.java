@@ -29,5 +29,4 @@ class AdaptiveStreamingQueryConfigTest {
     verify(resultSet, times(1)).setFetchSize(anyInt());
     queryConfig.accept(resultSet, "abcd");
   }
-
 }

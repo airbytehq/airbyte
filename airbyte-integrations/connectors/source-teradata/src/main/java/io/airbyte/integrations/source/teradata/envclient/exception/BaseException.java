@@ -37,5 +37,4 @@ public class BaseException extends RuntimeException {
   public String getReason() {
     return reason;
   }
-
 }

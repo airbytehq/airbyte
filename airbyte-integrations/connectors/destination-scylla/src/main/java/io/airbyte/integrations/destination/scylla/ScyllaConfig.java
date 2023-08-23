@@ -21,7 +21,13 @@ public class ScyllaConfig {
 
   private final int replication;
 
-  public ScyllaConfig(String keyspace, String username, String password, String address, int port, int replication) {
+  public ScyllaConfig(
+      String keyspace,
+      String username,
+      String password,
+      String address,
+      int port,
+      int replication) {
     this.keyspace = keyspace;
     this.username = username;
     this.password = password;
@@ -65,14 +71,13 @@ public class ScyllaConfig {
 
   @Override
   public String toString() {
-    return "ScyllaConfig{" +
-        "keyspace='" + keyspace + '\'' +
-        ", username='" + username + '\'' +
-        ", password='" + password + '\'' +
-        ", address='" + address + '\'' +
-        ", port=" + port +
-        ", replication=" + replication +
-        '}';
+    return "ScyllaConfig{" + "keyspace='"
+        + keyspace + '\'' + ", username='"
+        + username + '\'' + ", password='"
+        + password + '\'' + ", address='"
+        + address + '\'' + ", port="
+        + port + ", replication="
+        + replication + '}';
   }
 
   @Override
@@ -84,13 +89,14 @@ public class ScyllaConfig {
       return false;
     }
     ScyllaConfig that = (ScyllaConfig) o;
-    return port == that.port && username.equals(that.username) && password.equals(that.password) &&
-        address.equals(that.address);
+    return port == that.port
+        && username.equals(that.username)
+        && password.equals(that.password)
+        && address.equals(that.address);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(username, password, address, port);
   }
-
 }

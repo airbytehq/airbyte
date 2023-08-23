@@ -24,9 +24,7 @@ public class RedisRecord {
   @JsonProperty(TIMESTAMP_PROPERTY)
   private Instant timestamp;
 
-  public RedisRecord() {
-
-  }
+  public RedisRecord() {}
 
   public RedisRecord(Long id, String data, Instant timestamp) {
     this.id = id;
@@ -48,11 +46,9 @@ public class RedisRecord {
 
   @Override
   public String toString() {
-    return "RedisRecord{" +
-        "id=" + id +
-        ", data='" + data + '\'' +
-        ", timestamp=" + timestamp +
-        '}';
+    return "RedisRecord{" + "id="
+        + id + ", data='"
+        + data + '\'' + ", timestamp="
+        + timestamp + '}';
   }
-
 }

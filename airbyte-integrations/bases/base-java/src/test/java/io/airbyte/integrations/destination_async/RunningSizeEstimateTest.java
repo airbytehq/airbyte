@@ -34,33 +34,40 @@ public class RunningSizeEstimateTest {
   @Test
   void testEstimateZeroWorkers() {
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
-    when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(Collections.emptyList());
-    final DetectStreamToFlush detect = new DetectStreamToFlush(null, runningFlushWorkers, null, flusher);
+    when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any()))
+        .thenReturn(Collections.emptyList());
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(null, runningFlushWorkers, null, flusher);
     assertEquals(0, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB));
   }
 
   @Test
   void testEstimateWorkerWithBatch() {
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
-    when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_20MB)));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(null, runningFlushWorkers, null, flusher);
+    when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any()))
+        .thenReturn(List.of(Optional.of(SIZE_20MB)));
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(null, runningFlushWorkers, null, flusher);
     assertEquals(SIZE_20MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB));
   }
 
   @Test
   void testEstimateWorkerWithoutBatchAndQueueLessThanOptimalSize() {
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
-    when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.empty()));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(null, runningFlushWorkers, null, flusher);
+    when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any()))
+        .thenReturn(List.of(Optional.empty()));
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(null, runningFlushWorkers, null, flusher);
     assertEquals(SIZE_10MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB));
   }
 
   @Test
   void testEstimateWorkerWithoutBatchAndQueueGreaterThanOptimalSize() {
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
-    when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.empty()));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(null, runningFlushWorkers, null, flusher);
+    when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any()))
+        .thenReturn(List.of(Optional.empty()));
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(null, runningFlushWorkers, null, flusher);
     assertEquals(SIZE_200MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_200MB + 1));
   }
-
 }

@@ -29,7 +29,12 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
 
     private final Path statePath;
 
-    public TestConfig(final String imageName, final Path specPath, final Path configPath, final Path catalogPath, final Path statePath) {
+    public TestConfig(
+        final String imageName,
+        final Path specPath,
+        final Path configPath,
+        final Path catalogPath,
+        final Path statePath) {
       this.imageName = imageName;
       this.specPath = specPath;
       this.configPath = configPath;
@@ -57,7 +62,6 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
     public Path getStatePath() {
       return statePath;
     }
-
   }
 
   public static TestConfig TEST_CONFIG;
@@ -79,7 +83,8 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getCatalogPath()), ConfiguredAirbyteCatalog.class);
+    return Jsons.deserialize(
+        IOs.readFile(TEST_CONFIG.getCatalogPath()), ConfiguredAirbyteCatalog.class);
   }
 
   @Override
@@ -89,7 +94,6 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
     } else {
       return Jsons.deserialize("{}");
     }
-
   }
 
   @Override
@@ -101,5 +105,4 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     // no-op, for now
   }
-
 }

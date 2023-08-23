@@ -35,5 +35,4 @@ public class MySQLDestinationStrictEncrypt extends SpecModifyingDestination impl
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MySQLDestinationStrictEncrypt.class);
   }
-
 }

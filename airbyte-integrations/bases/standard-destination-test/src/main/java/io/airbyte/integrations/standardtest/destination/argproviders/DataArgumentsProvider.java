@@ -28,15 +28,19 @@ public class DataArgumentsProvider implements ArgumentsProvider {
       new CatalogMessageTestConfigPair("namespace_catalog.json", "namespace_messages.txt");
 
   @Override
-  public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+  public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
+      throws Exception {
     ProtocolVersion protocolVersion = getProtocolVersion(context);
     return Stream.of(
-        Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion)),
-        Arguments.of(EDGE_CASE_CONFIG.getMessageFileVersion(protocolVersion), EDGE_CASE_CONFIG.getCatalogFileVersion(protocolVersion))
-    // todo - need to use the new protocol to capture this.
-    // Arguments.of("stripe_messages.txt", "stripe_schema.json")
-    );
-
+        Arguments.of(
+            EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion),
+            EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion)),
+        Arguments.of(
+            EDGE_CASE_CONFIG.getMessageFileVersion(protocolVersion),
+            EDGE_CASE_CONFIG.getCatalogFileVersion(protocolVersion))
+        // todo - need to use the new protocol to capture this.
+        // Arguments.of("stripe_messages.txt", "stripe_schema.json")
+        );
   }
 
   public static class CatalogMessageTestConfigPair {
@@ -56,7 +60,5 @@ public class DataArgumentsProvider implements ArgumentsProvider {
     public String getMessageFileVersion(ProtocolVersion protocolVersion) {
       return prefixFileNameByVersion(messageFile, protocolVersion);
     }
-
   }
-
 }

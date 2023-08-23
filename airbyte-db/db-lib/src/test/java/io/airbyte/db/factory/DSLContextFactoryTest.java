@@ -20,8 +20,11 @@ class DSLContextFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingADslContext() {
-    final DataSource dataSource =
-        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+    final DataSource dataSource = DataSourceFactory.create(
+        container.getUsername(),
+        container.getPassword(),
+        container.getDriverClassName(),
+        container.getJdbcUrl());
     final SQLDialect dialect = SQLDialect.POSTGRES;
     final DSLContext dslContext = DSLContextFactory.create(dataSource, dialect);
     assertNotNull(dslContext);
@@ -55,5 +58,4 @@ class DSLContextFactoryTest extends CommonFactoryTest {
     assertNotNull(dslContext);
     assertEquals(dialect, dslContext.configuration().dialect());
   }
-
 }

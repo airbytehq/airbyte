@@ -7,7 +7,8 @@ package io.airbyte.integrations.destination.iceberg.rest;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import org.junit.jupiter.api.BeforeAll;
 
-public class IcebergRESTCatalogS3AvroIntegrationTest extends BaseIcebergRESTCatalogS3IntegrationTest {
+public class IcebergRESTCatalogS3AvroIntegrationTest
+    extends BaseIcebergRESTCatalogS3IntegrationTest {
 
   @BeforeAll
   public static void startCompose() {

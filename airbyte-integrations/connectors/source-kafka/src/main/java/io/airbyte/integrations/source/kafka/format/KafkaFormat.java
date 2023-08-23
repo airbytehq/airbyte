@@ -16,5 +16,4 @@ public interface KafkaFormat {
   List<AirbyteStream> getStreams();
 
   AutoCloseableIterator<AirbyteMessage> read();
-
 }

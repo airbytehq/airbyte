@@ -4,23 +4,23 @@
 
 package io.airbyte.integrations.destination.iceberg.rest;
 
+import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.ICEBERG_IMAGE_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.RESTServerWithMinioCompose;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.HashSet;
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
-import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.ICEBERG_IMAGE_NAME;
-
 public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseIcebergRESTCatalogS3IntegrationTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BaseIcebergRESTCatalogS3IntegrationTest.class);
 
   private static RESTServerWithMinioCompose composeContainer;
   private static JsonNode config;
@@ -35,7 +35,8 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
 
   @AfterAll
   public static void stopCompose() {
-    IcebergIntegrationTestUtil.stopAndCloseContainer(composeContainer, "REST Server with Minio - Docker Compose");
+    IcebergIntegrationTestUtil.stopAndCloseContainer(
+        composeContainer, "REST Server with Minio - Docker Compose");
   }
 
   @Override
@@ -60,10 +61,11 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
     return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
   }

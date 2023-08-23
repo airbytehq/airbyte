@@ -45,14 +45,15 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
   protected final ConfiguredAirbyteStream configuredStream;
   protected final DatabricksDestinationConfig databricksConfig;
 
-  public DatabricksStreamCopier(final String stagingFolder,
-                                final String catalog,
-                                final String schema,
-                                final ConfiguredAirbyteStream configuredStream,
-                                final JdbcDatabase database,
-                                final DatabricksDestinationConfig databricksConfig,
-                                final StandardNameTransformer nameTransformer,
-                                final SqlOperations sqlOperations) {
+  public DatabricksStreamCopier(
+      final String stagingFolder,
+      final String catalog,
+      final String schema,
+      final ConfiguredAirbyteStream configuredStream,
+      final JdbcDatabase database,
+      final DatabricksDestinationConfig databricksConfig,
+      final StandardNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
     this.schemaName = schema;
     this.catalogName = catalog;
     this.streamName = configuredStream.getStream().getName();
@@ -67,7 +68,8 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
     this.destTableName = nameTransformer.getIdentifier(streamName);
     this.stagingFolder = stagingFolder;
 
-    this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
+    this.filenameGenerator = new StagingFilenameGenerator(
+        streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
     this.configuredStream = configuredStream;
 
     LOGGER.info("[Stream {}] Database schema: {}", streamName, schemaName);
@@ -79,13 +81,18 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public void createDestinationSchema() throws Exception {
-    LOGGER.info("[Stream {}] Creating database schema if it does not exist: {}", streamName, schemaName);
+    LOGGER.info(
+        "[Stream {}] Creating database schema if it does not exist: {}", streamName, schemaName);
     sqlOperations.createSchemaIfNotExists(database, schemaName);
   }
 
   @Override
   public void createTemporaryTable() throws Exception {
-    LOGGER.info("[Stream {}] Creating tmp table {} from staging file: {}", streamName, tmpTableName, getTmpTableLocation());
+    LOGGER.info(
+        "[Stream {}] Creating tmp table {} from staging file: {}",
+        streamName,
+        tmpTableName,
+        getTmpTableLocation());
 
     sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
 
@@ -105,7 +112,10 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public String createDestinationTable() throws Exception {
-    LOGGER.info("[Stream {}] Creating destination table if it does not exist: {}", streamName, destTableName);
+    LOGGER.info(
+        "[Stream {}] Creating destination table if it does not exist: {}",
+        streamName,
+        destTableName);
 
     final String createStatement = destinationSyncMode == DestinationSyncMode.OVERWRITE
         // "create or replace" is the recommended way to replace existing table
@@ -113,20 +123,23 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
         : "CREATE TABLE IF NOT EXISTS";
 
     final String createTable = String.format(
-        "%s %s.%s.%s " +
-            "USING delta " +
-            "LOCATION '%s' " +
-            "COMMENT 'Created from stream %s' " +
-            "TBLPROPERTIES ('airbyte.destinationSyncMode' = '%s', %s) " +
+        "%s %s.%s.%s " + "USING delta "
+            + "LOCATION '%s' "
+            + "COMMENT 'Created from stream %s' "
+            + "TBLPROPERTIES ('airbyte.destinationSyncMode' = '%s', %s) "
+            +
             // create the table based on the schema of the tmp table
             "AS SELECT * FROM %s.%s LIMIT 0",
         createStatement,
-        catalogName, schemaName, destTableName,
+        catalogName,
+        schemaName,
+        destTableName,
         getDestTableLocation(),
         streamName,
         destinationSyncMode.value(),
         String.join(", ", DatabricksConstants.DEFAULT_TBL_PROPERTIES),
-        schemaName, tmpTableName);
+        schemaName,
+        tmpTableName);
     LOGGER.info(createTable);
     database.execute(createTable);
 
@@ -144,5 +157,4 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
   }
 
   protected abstract void deleteStagingFile();
-
 }

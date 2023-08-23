@@ -72,7 +72,6 @@ class ScyllaCqlProviderTest {
         .anyMatch(r -> r.value2().equals("{\"property\":\"data1\"}"))
         .anyMatch(r -> r.value2().equals("{\"property\":\"data2\"}"))
         .anyMatch(r -> r.value2().equals("{\"property\":\"data3\"}"));
-
   }
 
   @Test
@@ -87,9 +86,7 @@ class ScyllaCqlProviderTest {
     var resultSet = scyllaCqlProvider.select(SCYLLA_KEYSPACE, SCYLLA_TABLE);
 
     // then
-    assertThat(resultSet)
-        .isNotNull()
-        .isEmpty();
+    assertThat(resultSet).isNotNull().isEmpty();
   }
 
   @Test
@@ -102,7 +99,8 @@ class ScyllaCqlProviderTest {
     scyllaCqlProvider.dropTableIfExists(SCYLLA_KEYSPACE, table);
 
     // then
-    assertThrows(InvalidQueryException.class, () -> scyllaCqlProvider.select(SCYLLA_KEYSPACE, table));
+    assertThrows(
+        InvalidQueryException.class, () -> scyllaCqlProvider.select(SCYLLA_KEYSPACE, table));
   }
 
   @Test
@@ -128,7 +126,5 @@ class ScyllaCqlProviderTest {
         .anyMatch(r -> r.value2().equals("{\"property\":\"data1\"}"))
         .anyMatch(r -> r.value2().equals("{\"property\":\"data2\"}"))
         .anyMatch(r -> r.value2().equals("{\"property\":\"data3\"}"));
-
   }
-
 }

@@ -29,11 +29,11 @@ public class DorisStreamLoad {
   private static final Logger LOGGER = LoggerFactory.getLogger(DorisStreamLoad.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   public static final Pattern LABEL_EXIST_PATTERN =
-      Pattern.compile("errCode = 2, detailMessage = Label \\[(.*)\\] " +
-          "has already been used, relate to txn \\[(\\d+)\\]");
+      Pattern.compile("errCode = 2, detailMessage = Label \\[(.*)\\] "
+          + "has already been used, relate to txn \\[(\\d+)\\]");
   public static final Pattern COMMITTED_PATTERN =
-      Pattern.compile("errCode = 2, detailMessage = transaction \\[(\\d+)\\] " +
-          "is already \\b(COMMITTED|committed|VISIBLE|visible)\\b, not pre-committed.");
+      Pattern.compile("errCode = 2, detailMessage = transaction \\[(\\d+)\\] "
+          + "is already \\b(COMMITTED|committed|VISIBLE|visible)\\b, not pre-committed.");
   private final DorisLabelInfo dorisLabelInfo;
   private static final String LOAD_FIRST_URL_PATTERN = "http://%s/api/%s/%s/_stream_load";
   private static final String LOAD_SECOND_URL_PATTERN = "http://%s/api/%s/_stream_load_2pc";
@@ -54,15 +54,16 @@ public class DorisStreamLoad {
   private final CloseableHttpClient httpClient;
   public static final String SUCCESS = "Success";
   public static final String PUBLISH_TIMEOUT = "Publish Timeout";
-  private static final List<String> DORIS_SUCCESS_STATUS = new ArrayList<>(Arrays.asList(SUCCESS, PUBLISH_TIMEOUT));
+  private static final List<String> DORIS_SUCCESS_STATUS =
+      new ArrayList<>(Arrays.asList(SUCCESS, PUBLISH_TIMEOUT));
   public static final String FAIL = "Fail";
 
   public DorisStreamLoad(
-                         Path path,
-                         DorisConnectionOptions dorisOptions,
-                         DorisLabelInfo dorisLabelInfo,
-                         CloseableHttpClient httpClient,
-                         String... head) {
+      Path path,
+      DorisConnectionOptions dorisOptions,
+      DorisLabelInfo dorisLabelInfo,
+      CloseableHttpClient httpClient,
+      String... head) {
     this.hostPort = dorisOptions.getHttpHostPort();
     String db = dorisOptions.getDb();
     this.user = dorisOptions.getUser();
@@ -74,8 +75,7 @@ public class DorisStreamLoad {
 
     StringBuilder stringBuilder = new StringBuilder();
     for (String s : head) {
-      if (!stringBuilder.isEmpty())
-        stringBuilder.append(",");
+      if (!stringBuilder.isEmpty()) stringBuilder.append(",");
       stringBuilder.append(s);
     }
     this.streamLoadProp = new Properties();
@@ -99,7 +99,8 @@ public class DorisStreamLoad {
 
       InputStreamEntity entity = new InputStreamEntity(new FileInputStream(pathChecked.toFile()));
       StreamLoadHttpPutBuilder builder = StreamLoadHttpPutBuilder.builder();
-      builder.setUrl(loadUrlStr)
+      builder
+          .setUrl(loadUrlStr)
           .baseAuth(user, passwd)
           .addCommonHeader()
           .enable2PC(enable2PC)
@@ -110,7 +111,9 @@ public class DorisStreamLoad {
       respContent = handlePreCommitResponse(httpClient.execute(build));
       Preconditions.checkState("true".equals(respContent.getTwoPhaseCommit()));
       if (!DORIS_SUCCESS_STATUS.contains(respContent.getStatus())) {
-        String errMsg = String.format("stream load error: %s, see more in %s", respContent.getMessage(), respContent.getErrorURL());
+        String errMsg = String.format(
+            "stream load error: %s, see more in %s",
+            respContent.getMessage(), respContent.getErrorURL());
         throw new DorisRuntimeException(errMsg);
       } else {
         String commitType = enable2PC ? "preCommit" : "commit";
@@ -130,7 +133,8 @@ public class DorisStreamLoad {
     int retry = 0;
     CloseableHttpResponse response = null;
     StreamLoadHttpPutBuilder putBuilder = StreamLoadHttpPutBuilder.builder();
-    putBuilder.setUrl(secondUrlStr)
+    putBuilder
+        .setUrl(secondUrlStr)
         .baseAuth(user, passwd)
         .addCommonHeader()
         .addTxnId(txnID)
@@ -149,7 +153,9 @@ public class DorisStreamLoad {
       if (statusCode != 200) {
         LOGGER.warn("commit transaction failed with {}, reason {}", hostPort, reasonPhrase);
       } else {
-        LOGGER.info("commit transaction successes , response: {}", response.getStatusLine().toString());
+        LOGGER.info(
+            "commit transaction successes , response: {}",
+            response.getStatusLine().toString());
         break;
       }
     }
@@ -161,7 +167,8 @@ public class DorisStreamLoad {
     ObjectMapper mapper = new ObjectMapper();
     if (response.getEntity() != null) {
       String loadResult = EntityUtils.toString(response.getEntity());
-      Map<String, String> res = mapper.readValue(loadResult, new TypeReference<HashMap<String, String>>() {});
+      Map<String, String> res =
+          mapper.readValue(loadResult, new TypeReference<HashMap<String, String>>() {});
       Matcher matcher = COMMITTED_PATTERN.matcher(res.get("msg"));
       if (res.get("status").equals(FAIL) && !matcher.matches()) {
         throw new DorisRuntimeException("Commit failed " + loadResult);
@@ -174,7 +181,8 @@ public class DorisStreamLoad {
   // abort
   public void abortTransaction() throws Exception {
     StreamLoadHttpPutBuilder builder = StreamLoadHttpPutBuilder.builder();
-    builder.setUrl(secondUrlStr)
+    builder
+        .setUrl(secondUrlStr)
         .baseAuth(user, passwd)
         .addCommonHeader()
         .addTxnId(txnID)
@@ -185,14 +193,16 @@ public class DorisStreamLoad {
     int statusCode = response.getStatusLine().getStatusCode();
     if (statusCode != 200 || response.getEntity() == null) {
       LOGGER.warn("abort transaction response: " + response.getStatusLine().toString());
-      throw new DorisRuntimeException("Failed abort transaction:" + txnID + ", with url " + secondUrlStr);
+      throw new DorisRuntimeException(
+          "Failed abort transaction:" + txnID + ", with url " + secondUrlStr);
     } else {
       LOGGER.info("abort transaction response: " + response.getStatusLine().toString());
     }
 
     ObjectMapper mapper = new ObjectMapper();
     String loadResult = EntityUtils.toString(response.getEntity());
-    Map<String, String> res = mapper.readValue(loadResult, new TypeReference<HashMap<String, String>>() {});
+    Map<String, String> res =
+        mapper.readValue(loadResult, new TypeReference<HashMap<String, String>>() {});
     if (FAIL.equals(res.get("status"))) {
       LOGGER.warn("Fail to abort transaction. error: {}", res.get("msg"));
     }
@@ -208,14 +218,16 @@ public class DorisStreamLoad {
     }
   }
 
-  public StreamLoadRespContent handlePreCommitResponse(CloseableHttpResponse response) throws Exception {
+  public StreamLoadRespContent handlePreCommitResponse(CloseableHttpResponse response)
+      throws Exception {
     final int statusCode = response.getStatusLine().getStatusCode();
     if (statusCode == 200 && response.getEntity() != null) {
       String loadResult = EntityUtils.toString(response.getEntity());
       LOGGER.info("load Result {}", loadResult);
       return OBJECT_MAPPER.readValue(loadResult, StreamLoadRespContent.class);
     }
-    throw new StreamLoadException("stream load response error: " + response.getStatusLine().toString());
+    throw new StreamLoadException(
+        "stream load response error: " + response.getStatusLine().toString());
   }
 
   public Path getPath() {
@@ -231,5 +243,4 @@ public class DorisStreamLoad {
       }
     }
   }
-
 }

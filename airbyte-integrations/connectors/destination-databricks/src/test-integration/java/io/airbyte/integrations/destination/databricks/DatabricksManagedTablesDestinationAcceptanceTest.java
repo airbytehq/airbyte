@@ -45,24 +45,29 @@ public class DatabricksManagedTablesDestinationAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws SQLException {
     {
       final String catalogName = databricksConfig.catalog();
       final String tableName = nameTransformer.getRawTableName(streamName);
-      final String schemaName = StreamCopierFactory.getSchema(namespace, databricksConfig.schema(), nameTransformer);
+      final String schemaName =
+          StreamCopierFactory.getSchema(namespace, databricksConfig.schema(), nameTransformer);
 
       List<JsonNode> result = new ArrayList<>();
       try (final DSLContext dslContext = DatabricksUtilTest.getDslContext(databricksConfig)) {
         final Database database = new Database(dslContext);
-        List<JsonNode> query = database.query(ctx -> ctx.select(asterisk())
+        List<JsonNode> query = database.query(ctx -> ctx
+            .select(asterisk())
             .from(String.format("%s.%s.%s", catalogName, schemaName, tableName))
             .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
-            .fetch().stream()
-            .map(record -> Jsons.deserialize(record.get(JavaBaseConstants.COLUMN_NAME_DATA).toString()))
+            .fetch()
+            .stream()
+            .map(record ->
+                Jsons.deserialize(record.get(JavaBaseConstants.COLUMN_NAME_DATA).toString()))
             .collect(Collectors.toList()));
         result.addAll(query);
       }
@@ -90,5 +95,4 @@ public class DatabricksManagedTablesDestinationAcceptanceTest extends Destinatio
   protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
     DatabricksUtilTest.cleanUpData(databricksConfig);
   }
-
 }

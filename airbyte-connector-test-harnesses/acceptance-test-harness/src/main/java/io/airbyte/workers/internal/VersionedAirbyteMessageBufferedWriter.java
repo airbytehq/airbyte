@@ -18,10 +18,11 @@ public class VersionedAirbyteMessageBufferedWriter<T> extends DefaultAirbyteMess
   private final AirbyteMessageVersionedMigrator<T> migrator;
   private final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog;
 
-  public VersionedAirbyteMessageBufferedWriter(final BufferedWriter writer,
-                                               final AirbyteMessageSerializer<T> serializer,
-                                               final AirbyteMessageVersionedMigrator<T> migrator,
-                                               final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
+  public VersionedAirbyteMessageBufferedWriter(
+      final BufferedWriter writer,
+      final AirbyteMessageSerializer<T> serializer,
+      final AirbyteMessageVersionedMigrator<T> migrator,
+      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     super(writer);
     this.serializer = serializer;
     this.migrator = migrator;
@@ -34,5 +35,4 @@ public class VersionedAirbyteMessageBufferedWriter<T> extends DefaultAirbyteMess
     writer.write(serializer.serialize(downgradedMessage));
     writer.newLine();
   }
-
 }

@@ -15,26 +15,21 @@ class PulsarUtils {
 
   static PulsarClient buildClient(final String serviceUrl) {
     try {
-      return PulsarClient.builder()
-          .serviceUrl(serviceUrl)
-          .build();
+      return PulsarClient.builder().serviceUrl(serviceUrl).build();
     } catch (PulsarClientException e) {
       throw new RuntimeException("Error creating the Pulsar client", e);
     }
   }
 
-  static Producer<GenericRecord> buildProducer(final PulsarClient client,
-                                               final Schema<GenericRecord> schema,
-                                               final Map<String, Object> config,
-                                               final String topic) {
+  static Producer<GenericRecord> buildProducer(
+      final PulsarClient client,
+      final Schema<GenericRecord> schema,
+      final Map<String, Object> config,
+      final String topic) {
     try {
-      return client.newProducer(schema)
-          .loadConf(config)
-          .topic(topic)
-          .create();
+      return client.newProducer(schema).loadConf(config).topic(topic).create();
     } catch (PulsarClientException e) {
       throw new RuntimeException("Error creating the Pulsar producer", e);
     }
   }
-
 }

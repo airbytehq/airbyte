@@ -30,13 +30,15 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
       Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
-  public static final com.google.cloud.bigquery.Schema SCHEMA_V2 = com.google.cloud.bigquery.Schema.of(
-      Field.of(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING),
-      Field.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP),
-      Field.of(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
-      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.JSON));
+  public static final com.google.cloud.bigquery.Schema SCHEMA_V2 =
+      com.google.cloud.bigquery.Schema.of(
+          Field.of(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING),
+          Field.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP),
+          Field.of(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
+          Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.JSON));
 
-  public DefaultBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+  public DefaultBigQueryRecordFormatter(
+      JsonNode jsonSchema, StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
 
@@ -45,11 +47,14 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
     if (TypingAndDedupingFlag.isDestinationV2()) {
       // Map.of has a @NonNull requirement, so creating a new Hash map
       final HashMap<String, Object> destinationV2record = new HashMap<>();
-      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
-      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage));
+      destinationV2record.put(
+          JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
+      destinationV2record.put(
+          JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage));
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
       if (useObjectForData()) {
-        destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA,
+        destinationV2record.put(
+            JavaBaseConstants.COLUMN_NAME_DATA,
             StandardNameTransformer.formatJsonPath(recordMessage.getData()));
       } else {
         destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
@@ -64,9 +69,11 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
   }
 
   protected Object getEmittedAtField(AirbyteRecordMessage recordMessage) {
-    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
+    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds
+    // then
     // use BQ helpers to string-format correctly.
-    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final long emittedAtMicroseconds =
+        TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     return QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
   }
 
@@ -83,5 +90,4 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
       return SCHEMA;
     }
   }
-
 }

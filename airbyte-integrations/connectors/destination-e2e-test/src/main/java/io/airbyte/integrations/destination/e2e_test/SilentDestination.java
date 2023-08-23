@@ -26,9 +26,10 @@ public class SilentDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     return new SilentDestination.RecordConsumer(outputRecordCollector);
   }
 
@@ -52,7 +53,5 @@ public class SilentDestination extends BaseConnector implements Destination {
 
     @Override
     public void close() {}
-
   }
-
 }

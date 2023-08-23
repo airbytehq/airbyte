@@ -29,10 +29,13 @@ public class MongodbSourceStrictEncrypt extends SpecModifyingSource implements S
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
-    // If the MongoDb source connector is not set up to use a TLS connection, then we should fail the
+    final MongoInstanceType instance =
+        MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+    // If the MongoDb source connector is not set up to use a TLS connection, then we should fail
+    // the
     // check.
-    if (instance.equals(MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
+    if (instance.equals(MongoInstanceType.STANDALONE)
+        && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
       throw new ConfigErrorException("TLS connection must be used to read from MongoDB.");
     }
 
@@ -44,7 +47,13 @@ public class MongodbSourceStrictEncrypt extends SpecModifyingSource implements S
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     // removing tls property for a standalone instance to disable possibility to switch off a tls
     // connection
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("instance_type").get("oneOf").get(0).get("properties")).remove("tls");
+    ((ObjectNode) spec.getConnectionSpecification()
+            .get("properties")
+            .get("instance_type")
+            .get("oneOf")
+            .get(0)
+            .get("properties"))
+        .remove("tls");
     return spec;
   }
 
@@ -54,5 +63,4 @@ public class MongodbSourceStrictEncrypt extends SpecModifyingSource implements S
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MongodbSourceStrictEncrypt.class);
   }
-
 }

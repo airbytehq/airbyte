@@ -19,10 +19,11 @@ class ScyllaStreamConfig {
 
   private final DestinationSyncMode destinationSyncMode;
 
-  public ScyllaStreamConfig(String keyspace,
-                            String tableName,
-                            String tempTableName,
-                            DestinationSyncMode destinationSyncMode) {
+  public ScyllaStreamConfig(
+      String keyspace,
+      String tableName,
+      String tempTableName,
+      DestinationSyncMode destinationSyncMode) {
     this.keyspace = keyspace;
     this.tableName = tableName;
     this.tempTableName = tempTableName;
@@ -47,12 +48,10 @@ class ScyllaStreamConfig {
 
   @Override
   public String toString() {
-    return "ScyllaStreamConfig{" +
-        "keyspace='" + keyspace + '\'' +
-        ", tableName='" + tableName + '\'' +
-        ", tempTableName='" + tempTableName + '\'' +
-        ", destinationSyncMode=" + destinationSyncMode +
-        '}';
+    return "ScyllaStreamConfig{" + "keyspace='"
+        + keyspace + '\'' + ", tableName='"
+        + tableName + '\'' + ", tempTableName='"
+        + tempTableName + '\'' + ", destinationSyncMode="
+        + destinationSyncMode + '}';
   }
-
 }

@@ -24,5 +24,4 @@ public class JsonFileParser implements SftpFileParser {
   public JsonNode parseFileFirstEntity(ByteArrayInputStream file) throws IOException {
     return mapper.readValue(file, JsonNode.class);
   }
-
 }

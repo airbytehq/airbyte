@@ -15,5 +15,4 @@ public interface TestingLogger {
   }
 
   void log(AirbyteRecordMessage recordMessage);
-
 }

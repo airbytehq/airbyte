@@ -51,55 +51,56 @@ public class TeradataHttpClient {
   }
 
   // Creating an environment is a blocking operation by default, and it takes ~1.5min to finish
-  public CompletableFuture<EnvironmentResponse> createEnvironment(CreateEnvironmentRequest createEnvironmentRequest,
-                                                                  String token) {
-    var requestBody = handleCheckedException(() -> objectMapper.writeValueAsString(createEnvironmentRequest));
+  public CompletableFuture<EnvironmentResponse> createEnvironment(
+      CreateEnvironmentRequest createEnvironmentRequest, String token) {
+    var requestBody =
+        handleCheckedException(() -> objectMapper.writeValueAsString(createEnvironmentRequest));
 
     var httpRequest = HttpRequest.newBuilder(URI.create(baseUrl.concat("/environments")))
-        .headers(
-            AUTHORIZATION, BEARER + token,
-            CONTENT_TYPE, APPLICATION_JSON)
+        .headers(AUTHORIZATION, BEARER + token, CONTENT_TYPE, APPLICATION_JSON)
         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
         .build();
 
-    return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
+    return httpClient
+        .sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
         .thenApply(httpResponse -> handleHttpResponse(httpResponse, new TypeReference<>() {}));
   }
 
   // Avoids long connections and the risk of connection termination by intermediary
   public CompletableFuture<EnvironmentResponse> pollingCreateEnvironment(
-                                                                         CreateEnvironmentRequest createEnvironmentRequest,
-                                                                         String token) {
+      CreateEnvironmentRequest createEnvironmentRequest, String token) {
     throw new UnsupportedOperationException();
   }
 
-  public EnvironmentResponse getEnvironment(GetEnvironmentRequest getEnvironmentRequest, String token) {
-    var httpRequest = HttpRequest.newBuilder(URI.create(baseUrl
-        .concat("/environments/")
-        .concat(getEnvironmentRequest.name())))
+  public EnvironmentResponse getEnvironment(
+      GetEnvironmentRequest getEnvironmentRequest, String token) {
+    var httpRequest = HttpRequest.newBuilder(
+            URI.create(baseUrl.concat("/environments/").concat(getEnvironmentRequest.name())))
         .headers(AUTHORIZATION, BEARER + token)
         .GET()
         .build();
 
-    var httpResponse =
-        handleCheckedException(() -> httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()));
+    var httpResponse = handleCheckedException(
+        () -> httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()));
     return handleHttpResponse(httpResponse, new TypeReference<>() {});
   }
 
   // Deleting an environment is a blocking operation by default, and it takes ~1.5min to finish
-  public CompletableFuture<Void> deleteEnvironment(DeleteEnvironmentRequest deleteEnvironmentRequest, String token) {
-    var httpRequest = HttpRequest.newBuilder(URI.create(baseUrl
-        .concat("/environments/")
-        .concat(deleteEnvironmentRequest.name())))
+  public CompletableFuture<Void> deleteEnvironment(
+      DeleteEnvironmentRequest deleteEnvironmentRequest, String token) {
+    var httpRequest = HttpRequest.newBuilder(
+            URI.create(baseUrl.concat("/environments/").concat(deleteEnvironmentRequest.name())))
         .headers(AUTHORIZATION, BEARER + token)
         .DELETE()
         .build();
 
-    return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
+    return httpClient
+        .sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
         .thenApply(httpResponse -> handleHttpResponse(httpResponse, new TypeReference<>() {}));
   }
 
-  private <T> T handleHttpResponse(HttpResponse<String> httpResponse, TypeReference<T> typeReference) {
+  private <T> T handleHttpResponse(
+      HttpResponse<String> httpResponse, TypeReference<T> typeReference) {
     var body = httpResponse.body();
     if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() <= 299) {
       return handleCheckedException(() -> {
@@ -133,7 +134,5 @@ public class TeradataHttpClient {
   private interface CheckedSupplier<T> {
 
     T get() throws IOException, InterruptedException;
-
   }
-
 }

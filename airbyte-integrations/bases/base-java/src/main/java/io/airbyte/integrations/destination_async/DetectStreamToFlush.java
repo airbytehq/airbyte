@@ -33,10 +33,11 @@ public class DetectStreamToFlush {
   private final AtomicBoolean isClosing;
   private final DestinationFlushFunction flusher;
 
-  public DetectStreamToFlush(final BufferDequeue bufferDequeue,
-                             final RunningFlushWorkers runningFlushWorkers,
-                             final AtomicBoolean isClosing,
-                             final DestinationFlushFunction flusher) {
+  public DetectStreamToFlush(
+      final BufferDequeue bufferDequeue,
+      final RunningFlushWorkers runningFlushWorkers,
+      final AtomicBoolean isClosing,
+      final DestinationFlushFunction flusher) {
     this.bufferDequeue = bufferDequeue;
     this.runningFlushWorkers = runningFlushWorkers;
     this.isClosing = isClosing;
@@ -70,9 +71,11 @@ public class DetectStreamToFlush {
    */
   @VisibleForTesting
   long computeQueueThreshold() {
-    final boolean isBuffer90Full =
-        EAGER_FLUSH_THRESHOLD <= (double) bufferDequeue.getTotalGlobalQueueSizeBytes() / bufferDequeue.getMaxQueueSizeBytes();
-    // when we are closing or queues are very full, flush regardless of how few items are in the queue.
+    final boolean isBuffer90Full = EAGER_FLUSH_THRESHOLD
+        <= (double) bufferDequeue.getTotalGlobalQueueSizeBytes()
+            / bufferDequeue.getMaxQueueSizeBytes();
+    // when we are closing or queues are very full, flush regardless of how few items are in the
+    // queue.
     return isClosing.get() || isBuffer90Full ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
   }
 
@@ -92,9 +95,11 @@ public class DetectStreamToFlush {
    */
   @VisibleForTesting
   Optional<StreamDescriptor> getNextStreamToFlush(final long queueSizeThresholdBytes) {
-    for (final StreamDescriptor stream : orderStreamsByPriority(bufferDequeue.getBufferedStreams())) {
+    for (final StreamDescriptor stream :
+        orderStreamsByPriority(bufferDequeue.getBufferedStreams())) {
       final ImmutablePair<Boolean, String> isTimeTriggeredResult = isTimeTriggered(stream);
-      final ImmutablePair<Boolean, String> isSizeTriggeredResult = isSizeTriggered(stream, queueSizeThresholdBytes);
+      final ImmutablePair<Boolean, String> isSizeTriggeredResult =
+          isSizeTriggered(stream, queueSizeThresholdBytes);
 
       final String debugString = String.format(
           "trigger info: %s - %s, %s , %s",
@@ -127,8 +132,10 @@ public class DetectStreamToFlush {
    */
   @VisibleForTesting
   ImmutablePair<Boolean, String> isTimeTriggered(final StreamDescriptor stream) {
-    final Boolean isTimeTriggered = bufferDequeue.getTimeOfLastRecord(stream)
-        .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MIN, ChronoUnit.MINUTES)))
+    final Boolean isTimeTriggered = bufferDequeue
+        .getTimeOfLastRecord(stream)
+        .map(time ->
+            time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MIN, ChronoUnit.MINUTES)))
         .orElse(false);
 
     final String debugString = String.format("time trigger: %s", isTimeTriggered);
@@ -154,9 +161,11 @@ public class DetectStreamToFlush {
    * @return is size triggered and a debug string
    */
   @VisibleForTesting
-  ImmutablePair<Boolean, String> isSizeTriggered(final StreamDescriptor stream, final long queueSizeThresholdBytes) {
+  ImmutablePair<Boolean, String> isSizeTriggered(
+      final StreamDescriptor stream, final long queueSizeThresholdBytes) {
     final long currentQueueSize = bufferDequeue.getQueueSizeBytes(stream).orElseThrow();
-    final long sizeOfRunningWorkersEstimate = estimateSizeOfRunningWorkers(stream, currentQueueSize);
+    final long sizeOfRunningWorkersEstimate =
+        estimateSizeOfRunningWorkers(stream, currentQueueSize);
     final long queueSizeAfterRunningWorkers = currentQueueSize - sizeOfRunningWorkersEstimate;
     final boolean isSizeTriggered = queueSizeAfterRunningWorkers > queueSizeThresholdBytes;
 
@@ -184,10 +193,16 @@ public class DetectStreamToFlush {
    */
   @VisibleForTesting
   long estimateSizeOfRunningWorkers(final StreamDescriptor stream, final long currentQueueSize) {
-    final List<Optional<Long>> runningWorkerBatchesSizes = runningFlushWorkers.getSizesOfRunningWorkerBatches(stream);
-    final long workersWithBatchesSize = runningWorkerBatchesSizes.stream().filter(Optional::isPresent).mapToLong(Optional::get).sum();
-    final long workersWithoutBatchesCount = runningWorkerBatchesSizes.stream().filter(Optional::isEmpty).count();
-    final long workersWithoutBatchesSizeEstimate = Math.min(flusher.getOptimalBatchSizeBytes(), currentQueueSize) * workersWithoutBatchesCount;
+    final List<Optional<Long>> runningWorkerBatchesSizes =
+        runningFlushWorkers.getSizesOfRunningWorkerBatches(stream);
+    final long workersWithBatchesSize = runningWorkerBatchesSizes.stream()
+        .filter(Optional::isPresent)
+        .mapToLong(Optional::get)
+        .sum();
+    final long workersWithoutBatchesCount =
+        runningWorkerBatchesSizes.stream().filter(Optional::isEmpty).count();
+    final long workersWithoutBatchesSizeEstimate =
+        Math.min(flusher.getOptimalBatchSizeBytes(), currentQueueSize) * workersWithoutBatchesCount;
     return (workersWithBatchesSize + workersWithoutBatchesSizeEstimate);
   }
 
@@ -212,19 +227,21 @@ public class DetectStreamToFlush {
   @VisibleForTesting
   List<StreamDescriptor> orderStreamsByPriority(final Set<StreamDescriptor> streams) {
     // eagerly pull attributes so that values are consistent throughout comparison
-    final Map<StreamDescriptor, Optional<Long>> sdToQueueSize = streams.stream()
-        .collect(Collectors.toMap(s -> s, bufferDequeue::getQueueSizeBytes));
+    final Map<StreamDescriptor, Optional<Long>> sdToQueueSize =
+        streams.stream().collect(Collectors.toMap(s -> s, bufferDequeue::getQueueSizeBytes));
 
-    final Map<StreamDescriptor, Optional<Instant>> sdToTimeOfLastRecord = streams.stream()
-        .collect(Collectors.toMap(s -> s, bufferDequeue::getTimeOfLastRecord));
+    final Map<StreamDescriptor, Optional<Instant>> sdToTimeOfLastRecord =
+        streams.stream().collect(Collectors.toMap(s -> s, bufferDequeue::getTimeOfLastRecord));
 
     return streams.stream()
-        .sorted(Comparator.comparing((StreamDescriptor s) -> sdToQueueSize.get(s).orElseThrow(), Comparator.reverseOrder())
-            // if no time is present, it suggests the queue has no records. set MAX time as a sentinel value to
+        .sorted(Comparator.comparing(
+                (StreamDescriptor s) -> sdToQueueSize.get(s).orElseThrow(),
+                Comparator.reverseOrder())
+            // if no time is present, it suggests the queue has no records. set MAX time as a
+            // sentinel value to
             // represent no records.
             .thenComparing(s -> sdToTimeOfLastRecord.get(s).orElse(Instant.MAX))
             .thenComparing(s -> s.getNamespace() + s.getName()))
         .collect(Collectors.toList());
   }
-
 }

@@ -54,6 +54,7 @@ public class S3Config implements StorageConfig {
    * Properties from Destination Config
    */
   private final String endpoint;
+
   private final String endpointWithSchema;
   private final String warehouseUri;
   private final String bucketRegion;
@@ -66,13 +67,15 @@ public class S3Config implements StorageConfig {
   private AmazonS3 s3Client;
 
   public static S3Config fromDestinationConfig(@Nonnull final JsonNode config) {
-    S3ConfigBuilder builder = new S3ConfigBuilder().bucketRegion(getProperty(config, S3_BUCKET_REGION_CONFIG_KEY));
+    S3ConfigBuilder builder =
+        new S3ConfigBuilder().bucketRegion(getProperty(config, S3_BUCKET_REGION_CONFIG_KEY));
 
     String warehouseUri = getProperty(config, S3_WAREHOUSE_URI_CONFIG_KEY);
     if (isBlank(warehouseUri)) {
       throw new IllegalArgumentException(S3_WAREHOUSE_URI_CONFIG_KEY + " cannot be null");
     }
-    if (!warehouseUri.startsWith("s3://") && !warehouseUri.startsWith("s3n://")
+    if (!warehouseUri.startsWith("s3://")
+        && !warehouseUri.startsWith("s3n://")
         && !warehouseUri.startsWith("s3a://")) {
       throw new IllegalArgumentException(
           S3_WAREHOUSE_URI_CONFIG_KEY + " must starts with 's3://' or 's3n://' or 's3a://'");
@@ -98,11 +101,15 @@ public class S3Config implements StorageConfig {
     if (config.has(S3_ACCESS_KEY_ID_CONFIG_KEY)) {
       String accessKeyId = getProperty(config, S3_ACCESS_KEY_ID_CONFIG_KEY);
       String secretAccessKey = getProperty(config, S3_SECRET_KEY_CONFIG_KEY);
-      builder.credentialConfig(new S3AccessKeyCredentialConfig(accessKeyId, secretAccessKey))
+      builder
+          .credentialConfig(new S3AccessKeyCredentialConfig(accessKeyId, secretAccessKey))
           .accessKeyId(accessKeyId)
           .secretKey(secretAccessKey);
     } else {
-      builder.credentialConfig(new S3AWSDefaultProfileCredentialConfig()).accessKeyId("").secretKey("");
+      builder
+          .credentialConfig(new S3AWSDefaultProfileCredentialConfig())
+          .accessKeyId("")
+          .secretKey("");
     }
 
     if (config.has(S3_PATH_STYLE_ACCESS_CONFIG_KEY)) {
@@ -168,11 +175,13 @@ public class S3Config implements StorageConfig {
           .build();
     }
 
-    final ClientConfiguration clientConfiguration = new ClientConfiguration().withProtocol(Protocol.HTTPS);
+    final ClientConfiguration clientConfiguration =
+        new ClientConfiguration().withProtocol(Protocol.HTTPS);
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
     return AmazonS3ClientBuilder.standard()
-        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpointWithSchema, bucketRegion))
+        .withEndpointConfiguration(
+            new AwsClientBuilder.EndpointConfiguration(endpointWithSchema, bucketRegion))
         .withPathStyleAccessEnabled(true)
         .withClientConfiguration(clientConfiguration)
         .withCredentials(credentialsProvider)
@@ -184,8 +193,8 @@ public class S3Config implements StorageConfig {
 
     // normalize path
     String prefix = this.warehouseUri.replaceAll("^s3[an]?://.+?/(.+?)/?$", "$1/");
-    String tempObjectName = prefix + "_airbyte_connection_test_" +
-        UUID.randomUUID().toString().replaceAll("-", "");
+    String tempObjectName =
+        prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     String bucket = this.warehouseUri.replaceAll("^s3[an]?://(.+?)/.+$", "$1");
 
     // check bucket exists
@@ -200,7 +209,8 @@ public class S3Config implements StorageConfig {
 
     // check listObjects
     log.info("Started testing if IAM user can call listObjects on the destination bucket");
-    final ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucket).withMaxKeys(1);
+    final ListObjectsRequest request =
+        new ListObjectsRequest().withBucketName(bucket).withMaxKeys(1);
     s3Client.listObjects(request);
     log.info("Finished checking for listObjects permission");
 
@@ -220,12 +230,14 @@ public class S3Config implements StorageConfig {
   @Override
   public Map<String, String> sparkConfigMap(String catalogName) {
     Map<String, String> sparkConfig = new HashMap<>();
-    sparkConfig.put("spark.sql.catalog." + catalogName + ".io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
+    sparkConfig.put(
+        "spark.sql.catalog." + catalogName + ".io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
     sparkConfig.put("spark.sql.catalog." + catalogName + ".warehouse", this.warehouseUri);
     sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.endpoint", this.endpointWithSchema);
     sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.access-key-id", this.accessKeyId);
     sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.secret-access-key", this.secretKey);
-    sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.path-style-access",
+    sparkConfig.put(
+        "spark.sql.catalog." + catalogName + ".s3.path-style-access",
         String.valueOf(this.pathStyleAccess));
     sparkConfig.put("spark.hadoop.fs.s3a.access.key", this.accessKeyId);
     sparkConfig.put("spark.hadoop.fs.s3a.secret.key", this.secretKey);
@@ -233,7 +245,8 @@ public class S3Config implements StorageConfig {
     sparkConfig.put("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
     sparkConfig.put("spark.hadoop.fs.s3a.endpoint", this.endpoint);
     sparkConfig.put("spark.hadoop.fs.s3a.connection.ssl.enabled", String.valueOf(this.sslEnabled));
-    sparkConfig.put("spark.hadoop.fs.s3a.aws.credentials.provider",
+    sparkConfig.put(
+        "spark.hadoop.fs.s3a.aws.credentials.provider",
         "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     return sparkConfig;
   }
@@ -248,5 +261,4 @@ public class S3Config implements StorageConfig {
     properties.put("s3.path-style-access", String.valueOf(this.pathStyleAccess));
     return properties;
   }
-
 }

@@ -55,31 +55,41 @@ public class MySqlDebeziumStateUtil {
   public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
 
-  public boolean savedOffsetStillPresentOnServer(final JdbcDatabase database, final MysqlDebeziumStateAttributes savedState) {
+  public boolean savedOffsetStillPresentOnServer(
+      final JdbcDatabase database, final MysqlDebeziumStateAttributes savedState) {
     if (savedState.gtidSet().isPresent()) {
-      final Optional<String> availableGtidStr = getStateAttributesFromDB(database).gtidSet();
+      final Optional<String> availableGtidStr =
+          getStateAttributesFromDB(database).gtidSet();
       if (availableGtidStr.isEmpty()) {
         // Last offsets had GTIDs but the server does not use them
-        LOGGER.info("Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled");
+        LOGGER.info(
+            "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled");
         return false;
       }
       final GtidSet gtidSetFromSavedState = new GtidSet(savedState.gtidSet().get());
       // Get the GTID set that is available in the server
       final GtidSet availableGtidSet = new GtidSet(availableGtidStr.get());
       if (gtidSetFromSavedState.isContainedWithin(availableGtidSet)) {
-        LOGGER.info("MySQL server current GTID set {} does contain the GTID set required by the connector {}", availableGtidSet,
+        LOGGER.info(
+            "MySQL server current GTID set {} does contain the GTID set required by the connector {}",
+            availableGtidSet,
             gtidSetFromSavedState);
-        final Optional<GtidSet> gtidSetToReplicate = subtractGtidSet(availableGtidSet, gtidSetFromSavedState, database);
+        final Optional<GtidSet> gtidSetToReplicate =
+            subtractGtidSet(availableGtidSet, gtidSetFromSavedState, database);
         if (gtidSetToReplicate.isPresent()) {
           final Optional<GtidSet> purgedGtidSet = purgedGtidSet(database);
           if (purgedGtidSet.isPresent()) {
             LOGGER.info("MySQL server has already purged {} GTIDs", purgedGtidSet.get());
-            final Optional<GtidSet> nonPurgedGtidSetToReplicate = subtractGtidSet(gtidSetToReplicate.get(), purgedGtidSet.get(), database);
+            final Optional<GtidSet> nonPurgedGtidSetToReplicate =
+                subtractGtidSet(gtidSetToReplicate.get(), purgedGtidSet.get(), database);
             if (nonPurgedGtidSetToReplicate.isPresent()) {
-              LOGGER.info("GTIDs known by the MySQL server but not processed yet {}, for replication are available only {}", gtidSetToReplicate,
+              LOGGER.info(
+                  "GTIDs known by the MySQL server but not processed yet {}, for replication are available only {}",
+                  gtidSetToReplicate,
                   nonPurgedGtidSetToReplicate);
               if (!gtidSetToReplicate.equals(nonPurgedGtidSetToReplicate)) {
-                LOGGER.info("Some of the GTIDs needed to replicate have been already purged by MySQL server");
+                LOGGER.info(
+                    "Some of the GTIDs needed to replicate have been already purged by MySQL server");
                 return false;
               }
             }
@@ -87,21 +97,27 @@ public class MySqlDebeziumStateUtil {
         }
         return true;
       }
-      LOGGER.info("Connector last known GTIDs are {}, but MySQL server only has {}", gtidSetFromSavedState, availableGtidSet);
+      LOGGER.info(
+          "Connector last known GTIDs are {}, but MySQL server only has {}",
+          gtidSetFromSavedState,
+          availableGtidSet);
       return false;
     }
 
     final List<String> existingLogFiles = getExistingLogFiles(database);
     final boolean found = existingLogFiles.stream().anyMatch(savedState.binlogFilename()::equals);
     if (!found) {
-      LOGGER.info("Connector requires binlog file '{}', but MySQL server only has {}", savedState.binlogFilename(),
+      LOGGER.info(
+          "Connector requires binlog file '{}', but MySQL server only has {}",
+          savedState.binlogFilename(),
           String.join(", ", existingLogFiles));
     } else {
-      LOGGER.info("MySQL server has the binlog file '{}' required by the connector", savedState.binlogFilename());
+      LOGGER.info(
+          "MySQL server has the binlog file '{}' required by the connector",
+          savedState.binlogFilename());
     }
 
     return found;
-
   }
 
   private List<String> getExistingLogFiles(final JdbcDatabase database) {
@@ -114,7 +130,8 @@ public class MySqlDebeziumStateUtil {
     }
   }
 
-  private Optional<GtidSet> subtractGtidSet(final GtidSet set1, final GtidSet set2, final JdbcDatabase database) {
+  private Optional<GtidSet> subtractGtidSet(
+      final GtidSet set1, final GtidSet set2, final JdbcDatabase database) {
     try (final Stream<GtidSet> stream = database.unsafeResultSetQuery(
         connection -> {
           final PreparedStatement ps = connection.prepareStatement("SELECT GTID_SUBTRACT(?, ?)");
@@ -161,15 +178,19 @@ public class MySqlDebeziumStateUtil {
     }
   }
 
-  public Optional<MysqlDebeziumStateAttributes> savedOffset(final Properties baseProperties,
-                                                            final ConfiguredAirbyteCatalog catalog,
-                                                            final JsonNode cdcOffset,
-                                                            final JsonNode config) {
+  public Optional<MysqlDebeziumStateAttributes> savedOffset(
+      final Properties baseProperties,
+      final ConfiguredAirbyteCatalog catalog,
+      final JsonNode cdcOffset,
+      final JsonNode config) {
     if (Objects.isNull(cdcOffset)) {
       return Optional.empty();
     }
 
-    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
+    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(
+        baseProperties,
+        config,
+        catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcOffset, Optional.empty()),
         Optional.empty());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
@@ -188,21 +209,23 @@ public class MySqlDebeziumStateUtil {
       fileOffsetBackingStore.configure(new StandaloneConfig(propertiesMap));
       fileOffsetBackingStore.start();
 
-      final Map<String, String> internalConverterConfig = Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
+      final Map<String, String> internalConverterConfig =
+          Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
       final JsonConverter keyConverter = new JsonConverter();
       keyConverter.configure(internalConverterConfig, true);
       final JsonConverter valueConverter = new JsonConverter();
       valueConverter.configure(internalConverterConfig, false);
 
-      final MySqlConnectorConfig connectorConfig = new MySqlConnectorConfig(Configuration.from(properties));
+      final MySqlConnectorConfig connectorConfig =
+          new MySqlConnectorConfig(Configuration.from(properties));
       final MySqlOffsetContext.Loader loader = new MySqlOffsetContext.Loader(connectorConfig);
-      final Set<Partition> partitions =
-          Collections.singleton(new MySqlPartition(connectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
+      final Set<Partition> partitions = Collections.singleton(new MySqlPartition(
+          connectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
 
-      offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter,
-          valueConverter);
-      final OffsetReader<Partition, MySqlOffsetContext, Loader> offsetReader = new OffsetReader<>(offsetStorageReader,
-          loader);
+      offsetStorageReader = new OffsetStorageReaderImpl(
+          fileOffsetBackingStore, properties.getProperty("name"), keyConverter, valueConverter);
+      final OffsetReader<Partition, MySqlOffsetContext, Loader> offsetReader =
+          new OffsetReader<>(offsetStorageReader, loader);
       final Map<Partition, MySqlOffsetContext> offsets = offsetReader.offsets(partitions);
 
       return extractStateAttributes(partitions, offsets);
@@ -219,15 +242,16 @@ public class MySqlDebeziumStateUtil {
     }
   }
 
-  private Optional<MysqlDebeziumStateAttributes> extractStateAttributes(final Set<Partition> partitions,
-                                                                        final Map<Partition, MySqlOffsetContext> offsets) {
+  private Optional<MysqlDebeziumStateAttributes> extractStateAttributes(
+      final Set<Partition> partitions, final Map<Partition, MySqlOffsetContext> offsets) {
     boolean found = false;
     for (final Partition partition : partitions) {
       final MySqlOffsetContext mySqlOffsetContext = offsets.get(partition);
 
       if (mySqlOffsetContext != null) {
         found = true;
-        LOGGER.info("Found previous partition offset {}: {}", partition, mySqlOffsetContext.getOffset());
+        LOGGER.info(
+            "Found previous partition offset {}: {}", partition, mySqlOffsetContext.getOffset());
       }
     }
 
@@ -239,24 +263,33 @@ public class MySqlDebeziumStateUtil {
     final Offsets<Partition, MySqlOffsetContext> of = Offsets.of(offsets);
     final MySqlOffsetContext previousOffset = of.getTheOnlyOffset();
 
-    return Optional.of(new MysqlDebeziumStateAttributes(previousOffset.getSource().binlogFilename(), previousOffset.getSource().binlogPosition(),
+    return Optional.of(new MysqlDebeziumStateAttributes(
+        previousOffset.getSource().binlogFilename(),
+        previousOffset.getSource().binlogPosition(),
         Optional.ofNullable(previousOffset.gtidSet())));
-
   }
 
-  public JsonNode constructInitialDebeziumState(final Properties properties,
-                                                final ConfiguredAirbyteCatalog catalog,
-                                                final JdbcDatabase database) {
+  public JsonNode constructInitialDebeziumState(
+      final Properties properties,
+      final ConfiguredAirbyteCatalog catalog,
+      final JdbcDatabase database) {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
     // We use the schema_only_recovery property cause using this mode will instruct Debezium to
     // construct the db schema history.
     properties.setProperty("snapshot.mode", "schema_only_recovery");
-    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
-        constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
-        Optional.empty());
-    final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
+    final AirbyteFileOffsetBackingStore offsetManager =
+        AirbyteFileOffsetBackingStore.initializeState(
+            constructBinlogOffset(
+                database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
+            Optional.empty());
+    final AirbyteSchemaHistoryStorage schemaHistoryStorage =
+        AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties, database.getSourceConfig(), catalog, offsetManager,
+    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(
+        properties,
+        database.getSourceConfig(),
+        catalog,
+        offsetManager,
         Optional.of(schemaHistoryStorage))) {
       publisher.start(queue);
       while (!publisher.hasClosed()) {
@@ -297,13 +330,16 @@ public class MySqlDebeziumStateUtil {
   }
 
   @VisibleForTesting
-  public JsonNode format(final MysqlDebeziumStateAttributes attributes, final String dbName, final Instant time) {
+  public JsonNode format(
+      final MysqlDebeziumStateAttributes attributes, final String dbName, final Instant time) {
     final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]";
-    final String gtidSet = attributes.gtidSet().isPresent() ? ",\"gtids\":\"" + attributes.gtidSet().get() + "\"" : "";
-    final String value =
-        "{\"transaction_id\":null,\"ts_sec\":" + time.getEpochSecond() + ",\"file\":\"" + attributes.binlogFilename() + "\",\"pos\":"
-            + attributes.binlogPosition()
-            + gtidSet + "}";
+    final String gtidSet = attributes.gtidSet().isPresent()
+        ? ",\"gtids\":\"" + attributes.gtidSet().get() + "\""
+        : "";
+    final String value = "{\"transaction_id\":null,\"ts_sec\":" + time.getEpochSecond()
+        + ",\"file\":\"" + attributes.binlogFilename() + "\",\"pos\":"
+        + attributes.binlogPosition()
+        + gtidSet + "}";
 
     final Map<String, String> result = new HashMap<>();
     result.put(key, value);
@@ -324,7 +360,8 @@ public class MySqlDebeziumStateUtil {
           assert position >= 0;
           if (resultSet.getMetaData().getColumnCount() > 4) {
             // This column exists only in MySQL 5.6.5 or later ...
-            final String gtidSet = resultSet.getString(5); // GTID set, may be null, blank, or contain a GTID set
+            final String gtidSet =
+                resultSet.getString(5); // GTID set, may be null, blank, or contain a GTID set
             return new MysqlDebeziumStateAttributes(file, position, removeNewLineChars(gtidSet));
           }
           return new MysqlDebeziumStateAttributes(file, position, Optional.empty());
@@ -346,8 +383,6 @@ public class MySqlDebeziumStateUtil {
     return Optional.empty();
   }
 
-  public record MysqlDebeziumStateAttributes(String binlogFilename, long binlogPosition, Optional<String> gtidSet) {
-
-  }
-
+  public record MysqlDebeziumStateAttributes(
+      String binlogFilename, long binlogPosition, Optional<String> gtidSet) {}
 }

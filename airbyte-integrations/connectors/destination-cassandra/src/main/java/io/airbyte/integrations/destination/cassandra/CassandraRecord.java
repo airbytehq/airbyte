@@ -39,11 +39,9 @@ class CassandraRecord {
 
   @Override
   public String toString() {
-    return "CassandraRecord{" +
-        "id=" + id +
-        ", data='" + data + '\'' +
-        ", timestamp=" + timestamp +
-        '}';
+    return "CassandraRecord{" + "id="
+        + id + ", data='"
+        + data + '\'' + ", timestamp="
+        + timestamp + '}';
   }
-
 }

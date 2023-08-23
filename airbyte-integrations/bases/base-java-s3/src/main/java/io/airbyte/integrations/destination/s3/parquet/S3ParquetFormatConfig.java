@@ -21,19 +21,26 @@ public class S3ParquetFormatConfig implements S3FormatConfig {
   private final boolean dictionaryEncoding;
 
   public S3ParquetFormatConfig(final JsonNode formatConfig) {
-    final int blockSizeMb = S3FormatConfig.withDefault(formatConfig, "block_size_mb", S3ParquetConstants.DEFAULT_BLOCK_SIZE_MB);
-    final int maxPaddingSizeMb = S3FormatConfig.withDefault(formatConfig, "max_padding_size_mb", S3ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB);
-    final int pageSizeKb = S3FormatConfig.withDefault(formatConfig, "page_size_kb", S3ParquetConstants.DEFAULT_PAGE_SIZE_KB);
-    final int dictionaryPageSizeKb =
-        S3FormatConfig.withDefault(formatConfig, "dictionary_page_size_kb", S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
+    final int blockSizeMb = S3FormatConfig.withDefault(
+        formatConfig, "block_size_mb", S3ParquetConstants.DEFAULT_BLOCK_SIZE_MB);
+    final int maxPaddingSizeMb = S3FormatConfig.withDefault(
+        formatConfig, "max_padding_size_mb", S3ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB);
+    final int pageSizeKb = S3FormatConfig.withDefault(
+        formatConfig, "page_size_kb", S3ParquetConstants.DEFAULT_PAGE_SIZE_KB);
+    final int dictionaryPageSizeKb = S3FormatConfig.withDefault(
+        formatConfig,
+        "dictionary_page_size_kb",
+        S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
 
-    this.compressionCodec = CompressionCodecName
-        .valueOf(S3FormatConfig.withDefault(formatConfig, "compression_codec", S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
+    this.compressionCodec = CompressionCodecName.valueOf(S3FormatConfig.withDefault(
+            formatConfig, "compression_codec", S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name())
+        .toUpperCase());
     this.blockSize = blockSizeMb * 1024 * 1024;
     this.maxPaddingSize = maxPaddingSizeMb * 1024 * 1024;
     this.pageSize = pageSizeKb * 1024;
     this.dictionaryPageSize = dictionaryPageSizeKb * 1024;
-    this.dictionaryEncoding = S3FormatConfig.withDefault(formatConfig, "dictionary_encoding", S3ParquetConstants.DEFAULT_DICTIONARY_ENCODING);
+    this.dictionaryEncoding = S3FormatConfig.withDefault(
+        formatConfig, "dictionary_encoding", S3ParquetConstants.DEFAULT_DICTIONARY_ENCODING);
   }
 
   @Override
@@ -72,14 +79,12 @@ public class S3ParquetFormatConfig implements S3FormatConfig {
 
   @Override
   public String toString() {
-    return "S3ParquetFormatConfig{" +
-        "compressionCodec=" + compressionCodec + ", " +
-        "blockSize=" + blockSize + ", " +
-        "maxPaddingSize=" + maxPaddingSize + ", " +
-        "pageSize=" + pageSize + ", " +
-        "dictionaryPageSize=" + dictionaryPageSize + ", " +
-        "dictionaryEncoding=" + dictionaryEncoding + ", " +
-        '}';
+    return "S3ParquetFormatConfig{" + "compressionCodec="
+        + compressionCodec + ", " + "blockSize="
+        + blockSize + ", " + "maxPaddingSize="
+        + maxPaddingSize + ", " + "pageSize="
+        + pageSize + ", " + "dictionaryPageSize="
+        + dictionaryPageSize + ", " + "dictionaryEncoding="
+        + dictionaryEncoding + ", " + '}';
   }
-
 }

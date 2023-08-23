@@ -34,9 +34,8 @@ public abstract class AzureBlobStorageOperations {
   public List<AzureBlob> listBlobs() {
 
     var listBlobsOptions = new ListBlobsOptions();
-    listBlobsOptions.setDetails(new BlobListDetails()
-        .setRetrieveMetadata(true)
-        .setRetrieveDeletedBlobs(false));
+    listBlobsOptions.setDetails(
+        new BlobListDetails().setRetrieveMetadata(true).setRetrieveDeletedBlobs(false));
 
     if (!StringUtils.isBlank(azureBlobStorageConfig.prefix())) {
       listBlobsOptions.setPrefix(azureBlobStorageConfig.prefix());
@@ -50,15 +49,14 @@ public abstract class AzureBlobStorageOperations {
         .withLastModified(blobItem.getProperties().getLastModified())
         .build()));
     return azureBlobs;
-
   }
 
-  protected <T, R> R handleCheckedIOException(CheckedFunction<T, R, IOException> checkedFunction, T parameter) {
+  protected <T, R> R handleCheckedIOException(
+      CheckedFunction<T, R, IOException> checkedFunction, T parameter) {
     try {
       return checkedFunction.apply(parameter);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
   }
-
 }

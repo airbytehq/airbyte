@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.postgres.cursor_based;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
+import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
@@ -35,16 +35,19 @@ public class PostgresCursorBasedStateManager extends StreamStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
 
-
-  public PostgresCursorBasedStateManager(final List<AirbyteStateMessage> airbyteStateMessages, final ConfiguredAirbyteCatalog catalog) {
+  public PostgresCursorBasedStateManager(
+      final List<AirbyteStateMessage> airbyteStateMessages,
+      final ConfiguredAirbyteCatalog catalog) {
     super(airbyteStateMessages, catalog);
   }
 
   @Override
   public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
     if (pair.isPresent()) {
-      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = getPairToCursorInfoMap();
-      final Optional<CursorInfo> cursorInfo = Optional.ofNullable(pairToCursorInfoMap.get(pair.get()));
+      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap =
+          getPairToCursorInfoMap();
+      final Optional<CursorInfo> cursorInfo =
+          Optional.ofNullable(pairToCursorInfoMap.get(pair.get()));
 
       if (cursorInfo.isPresent()) {
         LOGGER.debug("Generating state message for {}...", pair);
@@ -54,12 +57,18 @@ public class PostgresCursorBasedStateManager extends StreamStateManager {
             .withData(Jsons.jsonNode(generateDbState(pairToCursorInfoMap)))
             .withStream(generateStreamState(pair.get(), cursorInfo.get()));
       } else {
-        LOGGER.warn("Cursor information could not be located in state for stream {}.  Returning a new, empty state message...", pair);
-        return new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
+        LOGGER.warn(
+            "Cursor information could not be located in state for stream {}.  Returning a new, empty state message...",
+            pair);
+        return new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState());
       }
     } else {
       LOGGER.warn("Stream not provided.  Returning a new, empty state message...");
-      return new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
+      return new AirbyteStateMessage()
+          .withType(AirbyteStateType.STREAM)
+          .withStream(new AirbyteStreamState());
     }
   }
 
@@ -70,22 +79,29 @@ public class PostgresCursorBasedStateManager extends StreamStateManager {
    * @param cursorInfo The current cursor.
    * @return The {@link AirbyteStreamState} representing the current state of the stream.
    */
-  private AirbyteStreamState generateStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                                 final CursorInfo cursorInfo) {
+  private AirbyteStreamState generateStreamState(
+      final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+      final CursorInfo cursorInfo) {
     return new AirbyteStreamState()
-        .withStreamDescriptor(
-            new StreamDescriptor().withName(airbyteStreamNameNamespacePair.getName()).withNamespace(airbyteStreamNameNamespacePair.getNamespace()))
-        .withStreamState(Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)));
+        .withStreamDescriptor(new StreamDescriptor()
+            .withName(airbyteStreamNameNamespacePair.getName())
+            .withNamespace(airbyteStreamNameNamespacePair.getNamespace()))
+        .withStreamState(
+            Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)));
   }
 
-  private CursorBasedStatus generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                               final CursorInfo cursorInfo) {
+  private CursorBasedStatus generateDbStreamState(
+      final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+      final CursorInfo cursorInfo) {
     final CursorBasedStatus state = new CursorBasedStatus();
     state.setStateType(StateType.CURSOR_BASED);
     state.setVersion(2L);
     state.setStreamName(airbyteStreamNameNamespacePair.getName());
     state.setStreamNamespace(airbyteStreamNameNamespacePair.getNamespace());
-    state.setCursorField(cursorInfo.getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(cursorInfo.getCursorField()));
+    state.setCursorField(
+        cursorInfo.getCursorField() == null
+            ? Collections.emptyList()
+            : Lists.newArrayList(cursorInfo.getCursorField()));
     state.setCursor(cursorInfo.getCursor());
     if (cursorInfo.getCursorRecordCount() > 0L) {
       state.setCursorRecordCount(cursorInfo.getCursorRecordCount());
@@ -100,7 +116,8 @@ public class PostgresCursorBasedStateManager extends StreamStateManager {
    *        information for that stream
    * @return The legacy {@link DbState}.
    */
-  private DbState generateDbState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+  private DbState generateDbState(
+      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
     return new DbState()
         .withCdc(false)
         .withStreams(pairToCursorInfoMap.entrySet().stream()
@@ -108,5 +125,4 @@ public class PostgresCursorBasedStateManager extends StreamStateManager {
             .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
             .collect(Collectors.toList()));
   }
-
 }

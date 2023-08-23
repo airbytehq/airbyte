@@ -56,9 +56,8 @@ public class TestingSources extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     return selectSource(config).read(config, catalog, state);
   }
@@ -67,5 +66,4 @@ public class TestingSources extends BaseConnector implements Source {
     final Source source = new TestingSources();
     new IntegrationRunner(source).run(args);
   }
-
 }

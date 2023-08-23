@@ -29,5 +29,4 @@ class BigQueryDenormalizedGcsDestinationTest extends BigQueryDenormalizedDestina
         Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
         Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
   }
-
 }

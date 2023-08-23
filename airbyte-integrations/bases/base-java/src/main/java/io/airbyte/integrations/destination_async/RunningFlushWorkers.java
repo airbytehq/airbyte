@@ -18,7 +18,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class RunningFlushWorkers {
 
-  private final ConcurrentMap<StreamDescriptor, ConcurrentMap<UUID, Optional<Long>>> streamToFlushWorkerToBatchSize;
+  private final ConcurrentMap<StreamDescriptor, ConcurrentMap<UUID, Optional<Long>>>
+      streamToFlushWorkerToBatchSize;
 
   public RunningFlushWorkers() {
     streamToFlushWorkerToBatchSize = new ConcurrentHashMap<>();
@@ -31,9 +32,9 @@ public class RunningFlushWorkers {
    * @param flushWorkerId flush worker id
    */
   public void trackFlushWorker(final StreamDescriptor stream, final UUID flushWorkerId) {
-    streamToFlushWorkerToBatchSize.computeIfAbsent(
-        stream,
-        ignored -> new ConcurrentHashMap<>()).computeIfAbsent(flushWorkerId, ignored -> Optional.empty());
+    streamToFlushWorkerToBatchSize
+        .computeIfAbsent(stream, ignored -> new ConcurrentHashMap<>())
+        .computeIfAbsent(flushWorkerId, ignored -> Optional.empty());
   }
 
   /**
@@ -43,8 +44,9 @@ public class RunningFlushWorkers {
    * @param flushWorkerId flush worker id
    */
   public void completeFlushWorker(final StreamDescriptor stream, final UUID flushWorkerId) {
-    Preconditions.checkState(streamToFlushWorkerToBatchSize.containsKey(stream)
-        && streamToFlushWorkerToBatchSize.get(stream).containsKey(flushWorkerId),
+    Preconditions.checkState(
+        streamToFlushWorkerToBatchSize.containsKey(stream)
+            && streamToFlushWorkerToBatchSize.get(stream).containsKey(flushWorkerId),
         "Cannot complete flush worker for stream that has not started.");
     streamToFlushWorkerToBatchSize.get(stream).remove(flushWorkerId);
     if (streamToFlushWorkerToBatchSize.get(stream).isEmpty()) {
@@ -59,9 +61,11 @@ public class RunningFlushWorkers {
    * @param stream stream
    * @param batchSize batch size
    */
-  public void registerBatchSize(final StreamDescriptor stream, final UUID flushWorkerId, final long batchSize) {
-    Preconditions.checkState(streamToFlushWorkerToBatchSize.containsKey(stream)
-        && streamToFlushWorkerToBatchSize.get(stream).containsKey(flushWorkerId),
+  public void registerBatchSize(
+      final StreamDescriptor stream, final UUID flushWorkerId, final long batchSize) {
+    Preconditions.checkState(
+        streamToFlushWorkerToBatchSize.containsKey(stream)
+            && streamToFlushWorkerToBatchSize.get(stream).containsKey(flushWorkerId),
         "Cannot register a batch size for a flush worker that has not been initialized");
     streamToFlushWorkerToBatchSize.get(stream).put(flushWorkerId, Optional.of(batchSize));
   }
@@ -74,7 +78,8 @@ public class RunningFlushWorkers {
    * @return bytes in batches currently being processed
    */
   public List<Optional<Long>> getSizesOfRunningWorkerBatches(final StreamDescriptor stream) {
-    return new ArrayList<>(streamToFlushWorkerToBatchSize.getOrDefault(stream, new ConcurrentHashMap<>()).values());
+    return new ArrayList<>(streamToFlushWorkerToBatchSize
+        .getOrDefault(stream, new ConcurrentHashMap<>())
+        .values());
   }
-
 }

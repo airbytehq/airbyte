@@ -15,5 +15,4 @@ class RedisNameTransformer {
     namespace = namespace != null ? namespace : "";
     return "tmp:" + namespace + ":" + stream;
   }
-
 }

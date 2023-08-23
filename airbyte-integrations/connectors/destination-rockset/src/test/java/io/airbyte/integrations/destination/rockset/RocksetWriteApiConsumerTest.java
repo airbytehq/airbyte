@@ -48,12 +48,10 @@ public class RocksetWriteApiConsumerTest extends PerStreamStateMessageTest {
   }
 
   private JsonNode getTestConfig() {
-    return Jsons.jsonNode(
-        ImmutableMap.builder()
-            .put(API_KEY_ID, "testApiKey")
-            .put(API_SERVER_ID, "testApiServerId")
-            .put(ROCKSET_WORKSPACE_ID, "testRocksetWorkspaceId")
-            .build());
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(API_KEY_ID, "testApiKey")
+        .put(API_SERVER_ID, "testApiServerId")
+        .put(ROCKSET_WORKSPACE_ID, "testRocksetWorkspaceId")
+        .build());
   }
-
 }

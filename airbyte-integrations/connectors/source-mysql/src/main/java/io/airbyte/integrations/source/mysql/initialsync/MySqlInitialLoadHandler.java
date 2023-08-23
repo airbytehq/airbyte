@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,13 +45,15 @@ public class MySqlInitialLoadHandler {
   private final MySqlInitialLoadSourceOperations sourceOperations;
   private final String quoteString;
   private final MySqlInitialLoadStateManager initialLoadStateManager;
-  private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  private final Function<AirbyteStreamNameNamespacePair, JsonNode>
+      streamStateForIncrementalRunSupplier;
 
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
-  public MySqlInitialLoadHandler(final JsonNode config,
+  public MySqlInitialLoadHandler(
+      final JsonNode config,
       final JdbcDatabase database,
       final MySqlInitialLoadSourceOperations sourceOperations,
       final String quoteString,
@@ -72,30 +78,37 @@ public class MySqlInitialLoadHandler {
       final AirbyteStream stream = airbyteStream.getStream();
       final String streamName = stream.getName();
       final String namespace = stream.getNamespace();
-      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
-      final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
+      final AirbyteStreamNameNamespacePair pair =
+          new AirbyteStreamNameNamespacePair(streamName, namespace);
+      final String fullyQualifiedTableName =
+          DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
       if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
         LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
         continue;
       }
       if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
         // Grab the selected fields to sync
-        final TableInfo<CommonField<MysqlType>> table = tableNameToTable
-            .get(fullyQualifiedTableName);
-        final List<String> selectedDatabaseFields = table.getFields()
-            .stream()
+        final TableInfo<CommonField<MysqlType>> table =
+            tableNameToTable.get(fullyQualifiedTableName);
+        final List<String> selectedDatabaseFields = table.getFields().stream()
             .map(CommonField::getName)
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .collect(Collectors.toList());
-        final AutoCloseableIterator<JsonNode> queryStream =
-            new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-                calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
+        final AutoCloseableIterator<JsonNode> queryStream = new MySqlInitialLoadRecordIterator(
+            database,
+            sourceOperations,
+            quoteString,
+            initialLoadStateManager,
+            selectedDatabaseFields,
+            pair,
+            calculateChunkSize(tableSizeInfoMap.get(pair), pair),
+            isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator =
+            augmentWithState(recordIterator, pair);
 
         iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
-
       }
     }
     return iteratorList;
@@ -107,10 +120,16 @@ public class MySqlInitialLoadHandler {
 
   // Calculates the number of rows to fetch per query.
   @VisibleForTesting
-  public static long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
+  public static long calculateChunkSize(
+      final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
     // If table size info could not be calculated, a default chunk size will be provided.
-    if (tableSizeInfo == null || tableSizeInfo.tableSize() == 0 || tableSizeInfo.avgRowLength() == 0) {
-      LOGGER.info("Chunk size could not be determined for pair: {}, defaulting to {} rows", pair, DEFAULT_CHUNK_SIZE);
+    if (tableSizeInfo == null
+        || tableSizeInfo.tableSize() == 0
+        || tableSizeInfo.avgRowLength() == 0) {
+      LOGGER.info(
+          "Chunk size could not be determined for pair: {}, defaulting to {} rows",
+          pair,
+          DEFAULT_CHUNK_SIZE);
       return DEFAULT_CHUNK_SIZE;
     }
     final long avgRowLength = tableSizeInfo.avgRowLength();
@@ -135,11 +154,13 @@ public class MySqlInitialLoadHandler {
   }
 
   // Augments the given iterator with record count logs.
-  private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(final AutoCloseableIterator<AirbyteMessage> iterator,
+  private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(
+      final AutoCloseableIterator<AirbyteMessage> iterator,
       final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
       final String streamName) {
     final AtomicLong recordCount = new AtomicLong();
-    return AutoCloseableIterators.transform(iterator,
+    return AutoCloseableIterators.transform(
+        iterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
         r -> {
           final long count = recordCount.incrementAndGet();
@@ -150,23 +171,33 @@ public class MySqlInitialLoadHandler {
         });
   }
 
-  private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
+  private AutoCloseableIterator<AirbyteMessage> augmentWithState(
+      final AutoCloseableIterator<AirbyteMessage> recordIterator,
       final AirbyteStreamNameNamespacePair pair) {
 
-    final PrimaryKeyLoadStatus currentPkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
+    final PrimaryKeyLoadStatus currentPkLoadStatus =
+        initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
     final JsonNode incrementalState =
-        (currentPkLoadStatus == null || currentPkLoadStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
+        (currentPkLoadStatus == null || currentPkLoadStatus.getIncrementalState() == null)
+            ? streamStateForIncrementalRunSupplier.apply(pair)
             : currentPkLoadStatus.getIncrementalState();
 
-    final Duration syncCheckpointDuration =
-        config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
-            : MySqlInitialSyncStateIterator.SYNC_CHECKPOINT_DURATION;
-    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
+    final Duration syncCheckpointDuration = config.get("sync_checkpoint_seconds") != null
+        ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
+        : MySqlInitialSyncStateIterator.SYNC_CHECKPOINT_DURATION;
+    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null
+        ? config.get("sync_checkpoint_records").asLong()
         : MySqlInitialSyncStateIterator.SYNC_CHECKPOINT_RECORDS;
 
     return AutoCloseableIterators.transformIterator(
-        r -> new MySqlInitialSyncStateIterator(r, pair, initialLoadStateManager, incrementalState,
-            syncCheckpointDuration, syncCheckpointRecords),
-        recordIterator, pair);
+        r -> new MySqlInitialSyncStateIterator(
+            r,
+            pair,
+            initialLoadStateManager,
+            incrementalState,
+            syncCheckpointDuration,
+            syncCheckpointRecords),
+        recordIterator,
+        pair);
   }
 }

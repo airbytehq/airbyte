@@ -51,5 +51,4 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         Arguments.of("t25_c8_r50k_s10kb", "dbo", 50000, 8, 25),
         Arguments.of("t1000_c8_r10k_s500b", "dbo", 10000, 8, 1000));
   }
-
 }

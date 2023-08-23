@@ -93,7 +93,8 @@ public class MqttDestinationConfig {
   }
 
   private String buildServerUri(final JsonNode config) {
-    return String.format("%s://%s:%s",
+    return String.format(
+        "%s://%s:%s",
         config.get("use_tls").asBoolean() ? "ssl" : "tcp",
         config.get("broker_host").asText(),
         config.get("broker_port").intValue());
@@ -120,7 +121,6 @@ public class MqttDestinationConfig {
   }
 
   private enum MessageQoS {
-
     AT_MOST_ONCE(0),
     AT_LEAST_ONCE(1),
     EXACTLY_ONCE(2);
@@ -134,7 +134,5 @@ public class MqttDestinationConfig {
     public int getQos() {
       return qos;
     }
-
   }
-
 }

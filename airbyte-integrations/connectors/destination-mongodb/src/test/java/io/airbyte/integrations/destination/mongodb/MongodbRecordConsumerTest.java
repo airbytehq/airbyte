@@ -44,5 +44,4 @@ public class MongodbRecordConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return mongodbRecordConsumer;
   }
-
 }

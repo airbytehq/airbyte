@@ -21,7 +21,8 @@ public class StarburstGalaxyStagingStorageConfigTest {
 
   @Test
   public void testRetrieveS3Config() {
-    final ObjectNode dataSourceConfig = initMapper().createObjectNode()
+    final ObjectNode dataSourceConfig = initMapper()
+        .createObjectNode()
         .put(OBJECT_STORE_TYPE, "S3")
         .put(S_3_BUCKET_NAME, "bucket_name")
         .put(S_3_BUCKET_PATH, "bucket_path")
@@ -29,8 +30,8 @@ public class StarburstGalaxyStagingStorageConfigTest {
         .put(S_3_ACCESS_KEY_ID, "access_key_id")
         .put(S_3_SECRET_ACCESS_KEY, "secret_access_key");
 
-    StarburstGalaxyStagingStorageConfig storageConfig = getStarburstGalaxyStagingStorageConfig(dataSourceConfig);
+    StarburstGalaxyStagingStorageConfig storageConfig =
+        getStarburstGalaxyStagingStorageConfig(dataSourceConfig);
     assertNotNull(storageConfig.getS3DestinationConfigOrThrow());
   }
-
 }

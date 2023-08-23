@@ -11,5 +11,4 @@ public interface AirbyteMessageSerializer<T> {
   String serialize(final T message);
 
   Version getTargetVersion();
-
 }

@@ -16,7 +16,8 @@ class NamesTest {
     assertEquals("users", Names.toAlphanumericAndUnderscore("users"));
     assertEquals("users123", Names.toAlphanumericAndUnderscore("users123"));
     assertEquals("UsErS", Names.toAlphanumericAndUnderscore("UsErS"));
-    assertEquals("users_USE_special_____", Names.toAlphanumericAndUnderscore("users USE special !@#$"));
+    assertEquals(
+        "users_USE_special_____", Names.toAlphanumericAndUnderscore("users USE special !@#$"));
   }
 
   @Test
@@ -34,5 +35,4 @@ class NamesTest {
     assertThrows(IllegalStateException.class, () -> Names.singleQuote("'abc"));
     assertThrows(IllegalStateException.class, () -> Names.singleQuote("abc'"));
   }
-
 }

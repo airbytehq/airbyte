@@ -39,7 +39,8 @@ public class BigQueryUploaderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
 
-  private static final String CONFIG_ERROR_MSG = """
+  private static final String CONFIG_ERROR_MSG =
+      """
                                                     Failed to write to destination schema.
 
                                                    1. Make sure you have all required permissions for writing to the schema.
@@ -61,7 +62,8 @@ public class BigQueryUploaderFactory {
     } else {
       // This previously needed to handle null namespaces. That's now happening at the top of the
       // connector, so we can assume namespace is non-null here.
-      dataset = BigQueryUtils.sanitizeDatasetId(uploaderConfig.getConfigStream().getStream().getNamespace());
+      dataset = BigQueryUtils.sanitizeDatasetId(
+          uploaderConfig.getConfigStream().getStream().getNamespace());
     }
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingDatasets = new HashSet<>();
@@ -104,19 +106,19 @@ public class BigQueryUploaderFactory {
   }
 
   private static AbstractGscBigQueryUploader<?> getGcsBigQueryUploader(
-                                                                       final JsonNode config,
-                                                                       final ConfiguredAirbyteStream configStream,
-                                                                       final TableId targetTable,
-                                                                       final TableId tmpTable,
-                                                                       final BigQuery bigQuery,
-                                                                       final JobInfo.WriteDisposition syncMode,
-                                                                       final BigQueryRecordFormatter formatter,
-                                                                       final boolean isDefaultAirbyteTmpSchema)
+      final JsonNode config,
+      final ConfiguredAirbyteStream configStream,
+      final TableId targetTable,
+      final TableId tmpTable,
+      final BigQuery bigQuery,
+      final JobInfo.WriteDisposition syncMode,
+      final BigQueryRecordFormatter formatter,
+      final boolean isDefaultAirbyteTmpSchema)
       throws IOException {
 
-    final GcsDestinationConfig gcsDestinationConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
-    final JsonNode tmpTableSchema =
-        (isDefaultAirbyteTmpSchema ? null : formatter.getJsonSchema());
+    final GcsDestinationConfig gcsDestinationConfig =
+        BigQueryUtils.getGcsAvroDestinationConfig(config);
+    final JsonNode tmpTableSchema = (isDefaultAirbyteTmpSchema ? null : formatter.getJsonSchema());
     final GcsAvroWriter gcsCsvWriter =
         initGcsWriter(gcsDestinationConfig, configStream, tmpTableSchema);
     gcsCsvWriter.initialize();
@@ -133,9 +135,9 @@ public class BigQueryUploaderFactory {
   }
 
   private static GcsAvroWriter initGcsWriter(
-                                             final GcsDestinationConfig gcsDestinationConfig,
-                                             final ConfiguredAirbyteStream configuredStream,
-                                             final JsonNode jsonSchema)
+      final GcsDestinationConfig gcsDestinationConfig,
+      final ConfiguredAirbyteStream configuredStream,
+      final JsonNode jsonSchema)
       throws IOException {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
@@ -150,16 +152,20 @@ public class BigQueryUploaderFactory {
   }
 
   private static BigQueryDirectUploader getBigQueryDirectUploader(
-                                                                  final JsonNode config,
-                                                                  final TableId targetTable,
-                                                                  final TableId tmpTable,
-                                                                  final BigQuery bigQuery,
-                                                                  final JobInfo.WriteDisposition syncMode,
-                                                                  final String datasetLocation,
-                                                                  final BigQueryRecordFormatter formatter) {
+      final JsonNode config,
+      final TableId targetTable,
+      final TableId tmpTable,
+      final BigQuery bigQuery,
+      final JobInfo.WriteDisposition syncMode,
+      final String datasetLocation,
+      final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
-    final TableId tableToWriteRawData = TypingAndDedupingFlag.isDestinationV2() ? targetTable : tmpTable;
-    LOGGER.info("Will write raw data to {} with schema {}", tableToWriteRawData, formatter.getBigQuerySchema());
+    final TableId tableToWriteRawData =
+        TypingAndDedupingFlag.isDestinationV2() ? targetTable : tmpTable;
+    LOGGER.info(
+        "Will write raw data to {} with schema {}",
+        tableToWriteRawData,
+        formatter.getBigQuerySchema());
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(tableToWriteRawData)
             .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
@@ -193,12 +199,6 @@ public class BigQueryUploaderFactory {
     }
 
     return new BigQueryDirectUploader(
-        targetTable,
-        tmpTable,
-        new BigQueryTableWriter(writer),
-        syncMode,
-        bigQuery,
-        formatter);
+        targetTable, tmpTable, new BigQueryTableWriter(writer), syncMode, bigQuery, formatter);
   }
-
 }

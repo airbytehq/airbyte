@@ -65,8 +65,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITHOUT_CURSOR_TYPE = "TABLE_NAME_WITHOUT_CURSOR_TYPE";
     TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE";
     TABLE_NAME_AND_TIMESTAMP = "NAME_AND_TIMESTAMP";
-    TEST_TABLES = ImmutableSet
-        .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK, TABLE_NAME_AND_TIMESTAMP);
+    TEST_TABLES = ImmutableSet.of(
+        TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK, TABLE_NAME_AND_TIMESTAMP);
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_UPDATED_AT = "UPDATED_AT";
@@ -76,9 +76,11 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     COL_TIMESTAMP = "TIMESTAMP";
     // In Db2 PK columns must be declared with NOT NULL statement.
     COLUMN_CLAUSE_WITH_PK = "id INTEGER NOT NULL, name VARCHAR(200), updated_at DATE";
-    COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE";
+    COLUMN_CLAUSE_WITH_COMPOSITE_PK =
+        "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE";
     // There is no IF EXISTS statement for a schema in Db2.
-    // The schema name must be in the catalog when attempting the DROP statement; otherwise an error is
+    // The schema name must be in the catalog when attempting the DROP statement; otherwise an error
+    // is
     // returned.
     DROP_SCHEMA_QUERY = "DROP SCHEMA %s RESTRICT";
     CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s boolean)";
@@ -93,11 +95,13 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "encrypted_verify_certificate")
-            .put("ssl_certificate", certificate)
-            .put("key_store_password", TEST_KEY_STORE_PASS)
-            .build()))
+        .put(
+            "encryption",
+            Jsons.jsonNode(ImmutableMap.builder()
+                .put("encryption_method", "encrypted_verify_certificate")
+                .put("ssl_certificate", certificate)
+                .put("key_store_password", TEST_KEY_STORE_PASS)
+                .build()))
         .build());
 
     super.setup();
@@ -105,33 +109,56 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @AfterEach
   public void clean() throws Exception {
-    // In Db2 before dropping a schema, all objects that were in that schema must be dropped or moved to
+    // In Db2 before dropping a schema, all objects that were in that schema must be dropped or
+    // moved to
     // another schema.
     for (final String tableName : TEST_TABLES) {
-      final String dropTableQuery = String
-          .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
+      final String dropTableQuery =
+          String.format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
       super.database.execute(connection -> connection.createStatement().execute(dropTableQuery));
     }
     for (int i = 2; i < 10; i++) {
-      final String dropTableQuery = String
-          .format("DROP TABLE IF EXISTS %s.%s%s", SCHEMA_NAME, TABLE_NAME, i);
+      final String dropTableQuery =
+          String.format("DROP TABLE IF EXISTS %s.%s%s", SCHEMA_NAME, TABLE_NAME, i);
       super.database.execute(connection -> connection.createStatement().execute(dropTableQuery));
     }
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME_WITH_SPACES, connection.getMetaData().getIdentifierQuoteString()))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME_WITH_SPACES + 2, connection.getMetaData().getIdentifierQuoteString()))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME, connection.getMetaData().getIdentifierQuoteString()))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME_WITHOUT_CURSOR_TYPE, connection.getMetaData().getIdentifierQuoteString()))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME,
+            RelationalDbQueryUtils.enquoteIdentifier(
+                TABLE_NAME_WITH_SPACES, connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME,
+            RelationalDbQueryUtils.enquoteIdentifier(
+                TABLE_NAME_WITH_SPACES + 2, connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME2,
+            RelationalDbQueryUtils.enquoteIdentifier(
+                TABLE_NAME, connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME,
+            RelationalDbQueryUtils.enquoteIdentifier(
+                TABLE_NAME_WITHOUT_CURSOR_TYPE,
+                connection.getMetaData().getIdentifierQuoteString()))));
+    super.database.execute(connection -> connection
+        .createStatement()
+        .execute(String.format(
+            "DROP TABLE IF EXISTS %s.%s",
+            SCHEMA_NAME,
+            RelationalDbQueryUtils.enquoteIdentifier(
+                TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE,
+                connection.getMetaData().getIdentifierQuoteString()))));
     super.tearDown();
   }
 
@@ -171,8 +198,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
-    final ConnectorSpecification expected =
-        Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
+    final ConnectorSpecification expected = Jsons.deserialize(
+        MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
 
     assertEquals(expected, actual);
   }
@@ -180,15 +207,42 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   /* Helpers */
 
   private static String getCertificate() throws IOException, InterruptedException {
-    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -stash");
-    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
-        + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
-    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -extract -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
-        + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
+    db.execInContainer(
+        "su",
+        "-",
+        "db2inst1",
+        "-c",
+        "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
+            + "\" -stash");
+    db.execInContainer(
+        "su",
+        "-",
+        "db2inst1",
+        "-c",
+        "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
+            + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
+    db.execInContainer(
+        "su",
+        "-",
+        "db2inst1",
+        "-c",
+        "gsk8capicmd_64 -cert -extract -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
+            + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
 
-    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
-    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
-    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
+    db.execInContainer(
+        "su",
+        "-",
+        "db2inst1",
+        "-c",
+        "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
+    db.execInContainer(
+        "su",
+        "-",
+        "db2inst1",
+        "-c",
+        "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
+    db.execInContainer(
+        "su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_VERSIONS TLSV12");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2set -i db2inst1 DB2COMM=SSL");
@@ -197,24 +251,25 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return db.execInContainer("su", "-", "db2inst1", "-c", "cat server.arm").getStdout();
   }
 
-  private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
+  private static void convertAndImportCertificate(final String certificate)
+      throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
     runProcess(
-        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + TEST_KEY_STORE_PASS
-            + " -noprompt",
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH
+            + " -file certificate.der -storepass " + TEST_KEY_STORE_PASS + " -noprompt",
         run);
   }
 
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+  private static void runProcess(final String cmd, final Runtime run)
+      throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
   }
-
 }

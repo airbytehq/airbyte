@@ -18,7 +18,8 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComparator {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedTestDataComparator.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BigQueryDenormalizedTestDataComparator.class);
   private static final String BIGQUERY_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
@@ -42,7 +43,8 @@ public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComp
 
   private LocalDateTime parseDateTime(String dateTimeValue) {
     if (dateTimeValue != null) {
-      var format = (dateTimeValue.matches(".+Z") ? BIGQUERY_DATETIME_FORMAT : AIRBYTE_DATETIME_FORMAT);
+      var format =
+          (dateTimeValue.matches(".+Z") ? BIGQUERY_DATETIME_FORMAT : AIRBYTE_DATETIME_FORMAT);
       return LocalDateTime.parse(dateTimeValue, DateTimeFormatter.ofPattern(format));
     } else {
       return null;
@@ -52,10 +54,11 @@ public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComp
   @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseDateTime(actualValue);
-    var expectedDate = LocalDateTime.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+    var expectedDate =
+        LocalDateTime.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     if (expectedDate.isBefore(getBrokenDate().toLocalDateTime())) {
-      LOGGER
-          .warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
+      LOGGER.warn(
+          "Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
       return true;
     } else {
       return expectedDate.equals(destinationDate);
@@ -65,21 +68,26 @@ public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComp
   @Override
   protected boolean compareDateValues(String expectedValue, String actualValue) {
     var destinationDate = parseDate(actualValue);
-    var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
+    var expectedDate =
+        LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   @Override
   protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
-    return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT)), ZoneOffset.UTC);
+    return ZonedDateTime.of(
+        LocalDateTime.parse(
+            destinationValue, DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT)),
+        ZoneOffset.UTC);
   }
 
   @Override
-  protected boolean compareDateTimeWithTzValues(String airbyteMessageValue, String destinationValue) {
+  protected boolean compareDateTimeWithTzValues(
+      String airbyteMessageValue, String destinationValue) {
     // #13123 Normalization issue
     if (parseDestinationDateWithTz(destinationValue).isBefore(getBrokenDate())) {
-      LOGGER
-          .warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
+      LOGGER.warn(
+          "Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
       return true;
     } else {
       return super.compareDateTimeWithTzValues(airbyteMessageValue, destinationValue);
@@ -90,5 +98,4 @@ public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComp
   private ZonedDateTime getBrokenDate() {
     return ZonedDateTime.of(1583, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
   }
-
 }

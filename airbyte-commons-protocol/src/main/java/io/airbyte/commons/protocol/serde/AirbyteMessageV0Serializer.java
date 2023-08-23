@@ -14,5 +14,4 @@ public class AirbyteMessageV0Serializer extends AirbyteMessageGenericSerializer<
   public AirbyteMessageV0Serializer() {
     super(AirbyteProtocolVersion.V0);
   }
-
 }

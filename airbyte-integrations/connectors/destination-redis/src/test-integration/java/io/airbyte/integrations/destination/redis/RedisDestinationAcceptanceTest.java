@@ -32,9 +32,8 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
-    jsonConfig = RedisDataFactory.jsonConfig(
-        redisContainer.getHost(),
-        redisContainer.getFirstMappedPort());
+    jsonConfig =
+        RedisDataFactory.jsonConfig(redisContainer.getHost(), redisContainer.getFirstMappedPort());
     redisCache = new RedisHCache(jsonConfig);
     redisNameTransformer = new RedisNameTransformer();
   }
@@ -56,9 +55,7 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return RedisDataFactory.jsonConfig(
-        "127.0.0.9",
-        8080);
+    return RedisDataFactory.jsonConfig("127.0.0.9", 8080);
   }
 
   @Override
@@ -87,10 +84,8 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(
+      TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) {
     var key = redisNameTransformer.keyName(namespace, streamName);
     return redisCache.getAll(key).stream()
         .sorted(Comparator.comparing(RedisRecord::getTimestamp))
@@ -98,5 +93,4 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
-
 }

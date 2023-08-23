@@ -74,7 +74,8 @@ import org.slf4j.LoggerFactory;
  * is blind to the detail of how staging destinations implement their close.
  * </p>
  */
-public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
+public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer
+    implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
 
@@ -100,32 +101,37 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    * 1s1t destinations should prefer the version which accepts a {@code defaultNamespace}.
    */
   @Deprecated
-  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                                final OnStartFunction onStart,
-                                final BufferingStrategy bufferingStrategy,
-                                final OnCloseFunction onClose,
-                                final ConfiguredAirbyteCatalog catalog,
-                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
-    this(outputRecordCollector,
+  public BufferedStreamConsumer(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final OnStartFunction onStart,
+      final BufferingStrategy bufferingStrategy,
+      final OnCloseFunction onClose,
+      final ConfiguredAirbyteCatalog catalog,
+      final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
+    this(
+        outputRecordCollector,
         onStart,
         bufferingStrategy,
         onClose,
         catalog,
         isValidRecord,
         Duration.ofMinutes(15),
-        // This is purely for backwards compatibility. Many older destinations handle this internally.
+        // This is purely for backwards compatibility. Many older destinations handle this
+        // internally.
         // Starting with Destinations V2, we recommend passing in an explicit namespace.
         null);
   }
 
-  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                                final OnStartFunction onStart,
-                                final BufferingStrategy bufferingStrategy,
-                                final OnCloseFunction onClose,
-                                final ConfiguredAirbyteCatalog catalog,
-                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
-                                final String defaultNamespace) {
-    this(outputRecordCollector,
+  public BufferedStreamConsumer(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final OnStartFunction onStart,
+      final BufferingStrategy bufferingStrategy,
+      final OnCloseFunction onClose,
+      final ConfiguredAirbyteCatalog catalog,
+      final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+      final String defaultNamespace) {
+    this(
+        outputRecordCollector,
         onStart,
         bufferingStrategy,
         onClose,
@@ -140,14 +146,15 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    * should take in an Instant parameter which would require refactoring all MessageConsumers
    */
   @VisibleForTesting
-  BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                         final OnStartFunction onStart,
-                         final BufferingStrategy bufferingStrategy,
-                         final OnCloseFunction onClose,
-                         final ConfiguredAirbyteCatalog catalog,
-                         final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
-                         final Duration flushFrequency,
-                         final String defaultNamespace) {
+  BufferedStreamConsumer(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final OnStartFunction onStart,
+      final BufferingStrategy bufferingStrategy,
+      final OnCloseFunction onClose,
+      final ConfiguredAirbyteCatalog catalog,
+      final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+      final Duration flushFrequency,
+      final String defaultNamespace) {
     this.outputRecordCollector = outputRecordCollector;
     this.hasStarted = false;
     this.hasClosed = false;
@@ -198,7 +205,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       }
 
       if (!isValidRecord.apply(record.getData())) {
-        streamToIgnoredRecordCount.put(stream, streamToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
+        streamToIgnoredRecordCount.put(
+            stream, streamToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
         return;
       }
 
@@ -266,10 +274,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
-    throw new IllegalArgumentException(
-        String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-            Jsons.serialize(catalog), Jsons.serialize(message)));
+  private static void throwUnrecognizedStream(
+      final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
+    throw new IllegalArgumentException(String.format(
+        "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+        Jsons.serialize(catalog), Jsons.serialize(message)));
   }
 
   /**
@@ -287,8 +296,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasClosed, "Has already closed.");
     hasClosed = true;
 
-    streamToIgnoredRecordCount
-        .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
+    streamToIgnoredRecordCount.forEach((pair, count) -> LOGGER.warn(
+        "A total of {} record(s) of data from stream {} were invalid and were ignored.",
+        count,
+        pair));
     if (hasFailed) {
       LOGGER.error("executing on failed close procedure.");
     } else {
@@ -326,5 +337,4 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       throw e;
     }
   }
-
 }

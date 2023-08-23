@@ -17,10 +17,7 @@ public class AzureBlobStorageConfig {
   private final String sasToken;
 
   public AzureBlobStorageConfig(
-                                String endpointDomainName,
-                                String accountName,
-                                String containerName,
-                                String sasToken) {
+      String endpointDomainName, String accountName, String containerName, String sasToken) {
     this.endpointDomainName = endpointDomainName;
     this.accountName = accountName;
     this.containerName = containerName;
@@ -50,12 +47,11 @@ public class AzureBlobStorageConfig {
   public static AzureBlobStorageConfig getAzureBlobConfig(JsonNode config) {
 
     return new AzureBlobStorageConfig(
-        config.get("azure_blob_storage_endpoint_domain_name") == null ? DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME
+        config.get("azure_blob_storage_endpoint_domain_name") == null
+            ? DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME
             : config.get("azure_blob_storage_endpoint_domain_name").asText(),
         config.get("azure_blob_storage_account_name").asText(),
         config.get("azure_blob_storage_container_name").asText(),
         config.get("azure_blob_storage_sas_token").asText());
-
   }
-
 }

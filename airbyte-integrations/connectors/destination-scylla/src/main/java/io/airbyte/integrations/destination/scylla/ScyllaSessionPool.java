@@ -11,15 +11,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class ScyllaSessionPool {
 
-  private static final ConcurrentHashMap<ScyllaConfig, Triplet<Cluster, Session, AtomicInteger>> sessions;
+  private static final ConcurrentHashMap<ScyllaConfig, Triplet<Cluster, Session, AtomicInteger>>
+      sessions;
 
   static {
     sessions = new ConcurrentHashMap<>();
   }
 
-  private ScyllaSessionPool() {
-
-  }
+  private ScyllaSessionPool() {}
 
   static Tuple<Cluster, Session> initSession(ScyllaConfig scyllaConfig) {
     var cachedSession = sessions.get(scyllaConfig);
@@ -50,5 +49,4 @@ class ScyllaSessionPool {
       sessions.remove(scyllaConfig);
     }
   }
-
 }

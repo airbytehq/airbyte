@@ -9,8 +9,8 @@ import javax.annotation.Nonnull;
 
 public class S3DestinationConfigFactory {
 
-  public S3DestinationConfig getS3DestinationConfig(final JsonNode config, @Nonnull final StorageProvider storageProvider) {
+  public S3DestinationConfig getS3DestinationConfig(
+      final JsonNode config, @Nonnull final StorageProvider storageProvider) {
     return S3DestinationConfig.getS3DestinationConfig(config, storageProvider);
   }
-
 }

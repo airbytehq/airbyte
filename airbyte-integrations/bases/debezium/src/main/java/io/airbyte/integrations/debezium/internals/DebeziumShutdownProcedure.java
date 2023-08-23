@@ -29,9 +29,10 @@ public class DebeziumShutdownProcedure<T> {
   private Throwable exception;
   private boolean hasTransferThreadShutdown;
 
-  public DebeziumShutdownProcedure(final LinkedBlockingQueue<T> sourceQueue,
-                                   final VoidCallable debeziumThreadRequestClose,
-                                   final Supplier<Boolean> publisherStatusSupplier) {
+  public DebeziumShutdownProcedure(
+      final LinkedBlockingQueue<T> sourceQueue,
+      final VoidCallable debeziumThreadRequestClose,
+      final Supplier<Boolean> publisherStatusSupplier) {
     this.sourceQueue = sourceQueue;
     this.targetQueue = new LinkedBlockingQueue<>();
     this.debeziumThreadRequestClose = debeziumThreadRequestClose;
@@ -122,5 +123,4 @@ public class DebeziumShutdownProcedure<T> {
       throw new RuntimeException(exception);
     }
   }
-
 }

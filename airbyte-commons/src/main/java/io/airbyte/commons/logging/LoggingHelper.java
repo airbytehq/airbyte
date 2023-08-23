@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 public class LoggingHelper {
 
   public enum Color {
-
     BLACK("\u001b[30m"),
     RED("\u001b[31m"),
     GREEN("\u001b[32m"),
@@ -33,7 +32,6 @@ public class LoggingHelper {
     public String getCode() {
       return ansi;
     }
-
   }
 
   public static final String LOG_SOURCE_MDC_KEY = "log_source";
@@ -44,5 +42,4 @@ public class LoggingHelper {
   public static String applyColor(final Color color, final String msg) {
     return color.getCode() + msg + RESET;
   }
-
 }

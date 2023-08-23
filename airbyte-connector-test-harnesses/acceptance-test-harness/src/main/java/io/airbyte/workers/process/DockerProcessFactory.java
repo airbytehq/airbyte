@@ -54,11 +54,12 @@ public class DockerProcessFactory implements ProcessFactory {
    * @param networkName docker network
    * @param envMap
    */
-  public DockerProcessFactory(final Path workspaceRoot,
-                              final String workspaceMountSource,
-                              final String localMountSource,
-                              final String networkName,
-                              final Map<String, String> envMap) {
+  public DockerProcessFactory(
+      final Path workspaceRoot,
+      final String workspaceMountSource,
+      final String localMountSource,
+      final String networkName,
+      final Map<String, String> envMap) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
@@ -82,22 +83,23 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(final String jobType,
-                        final String jobId,
-                        final int attempt,
-                        final Path jobRoot,
-                        final String imageName,
-                        final boolean usesIsolatedPool,
-                        final boolean usesStdin,
-                        final Map<String, String> files,
-                        final String entrypoint,
-                        final ResourceRequirements resourceRequirements,
-                        final AllowedHosts allowedHosts,
-                        final Map<String, String> labels,
-                        final Map<String, String> jobMetadata,
-                        final Map<Integer, Integer> internalToExternalPorts,
-                        final Map<String, String> additionalEnvironmentVariables,
-                        final String... args)
+  public Process create(
+      final String jobType,
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final String imageName,
+      final boolean usesIsolatedPool,
+      final boolean usesStdin,
+      final Map<String, String> files,
+      final String entrypoint,
+      final ResourceRequirements resourceRequirements,
+      final AllowedHosts allowedHosts,
+      final Map<String, String> labels,
+      final Map<String, String> jobMetadata,
+      final Map<Integer, Integer> internalToExternalPorts,
+      final Map<String, String> additionalEnvironmentVariables,
+      final String... args)
       throws TestHarnessException {
     try {
       if (!checkImageExists(imageName)) {
@@ -122,8 +124,13 @@ public class DockerProcessFactory implements ProcessFactory {
           rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
           "--log-driver",
           "none");
-      final String containerName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
-      LOGGER.info("Creating docker container = {} with resources {} and allowedHosts {}", containerName, resourceRequirements, allowedHosts);
+      final String containerName = ProcessFactory.createProcessName(
+          imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
+      LOGGER.info(
+          "Creating docker container = {} with resources {} and allowedHosts {}",
+          containerName,
+          resourceRequirements,
+          allowedHosts);
       cmd.add("--name");
       cmd.add(containerName);
       cmd.addAll(localDebuggingOptions(containerName));
@@ -143,7 +150,8 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION));
       }
 
-      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, envMap, additionalEnvironmentVariables);
+      final Map<String, String> allEnvMap =
+          MoreMaps.merge(jobMetadata, envMap, additionalEnvironmentVariables);
       for (final Map.Entry<String, String> envEntry : allEnvMap.entrySet()) {
         cmd.add("-e");
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
@@ -158,7 +166,8 @@ public class DockerProcessFactory implements ProcessFactory {
           cmd.add(String.format("--cpus=%s", resourceRequirements.getCpuLimit()));
         }
         if (!Strings.isNullOrEmpty(resourceRequirements.getMemoryRequest())) {
-          cmd.add(String.format("--memory-reservation=%s", resourceRequirements.getMemoryRequest()));
+          cmd.add(
+              String.format("--memory-reservation=%s", resourceRequirements.getMemoryRequest()));
         }
         if (!Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
           cmd.add(String.format("--memory=%s", resourceRequirements.getMemoryLimit()));
@@ -191,11 +200,15 @@ public class DockerProcessFactory implements ProcessFactory {
    */
   static List<String> localDebuggingOptions(final String containerName) {
     final boolean shouldAddDebuggerOptions =
-        Optional.ofNullable(System.getenv("DEBUG_CONTAINER_IMAGE")).filter(StringUtils::isNotEmpty)
-            .map(imageName -> ProcessFactory.extractShortImageName(containerName).startsWith(imageName)).orElse(false)
+        Optional.ofNullable(System.getenv("DEBUG_CONTAINER_IMAGE"))
+                .filter(StringUtils::isNotEmpty)
+                .map(imageName ->
+                    ProcessFactory.extractShortImageName(containerName).startsWith(imageName))
+                .orElse(false)
             && Optional.ofNullable(System.getenv("DEBUG_CONTAINER_JAVA_OPTS")).isPresent();
     if (shouldAddDebuggerOptions) {
-      return List.of("-e", "JAVA_TOOL_OPTIONS=" + System.getenv("DEBUG_CONTAINER_JAVA_OPTS"), "-p5005:5005");
+      return List.of(
+          "-e", "JAVA_TOOL_OPTIONS=" + System.getenv("DEBUG_CONTAINER_JAVA_OPTS"), "-p5005:5005");
     } else {
       return Collections.emptyList();
     }
@@ -209,7 +222,8 @@ public class DockerProcessFactory implements ProcessFactory {
   @VisibleForTesting
   boolean checkImageExists(final String imageName) throws TestHarnessException {
     try {
-      final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
+      final Process process =
+          new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
@@ -224,5 +238,4 @@ public class DockerProcessFactory implements ProcessFactory {
       throw new RuntimeException(e);
     }
   }
-
 }

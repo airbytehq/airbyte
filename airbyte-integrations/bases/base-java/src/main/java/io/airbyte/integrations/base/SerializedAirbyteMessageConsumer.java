@@ -27,7 +27,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
  * {@link SerializedAirbyteMessageConsumer#close()}</li>
  * </ul>
  */
-public interface SerializedAirbyteMessageConsumer extends CheckedBiConsumer<String, Integer, Exception>, AutoCloseable {
+public interface SerializedAirbyteMessageConsumer
+    extends CheckedBiConsumer<String, Integer, Exception>, AutoCloseable {
 
   /**
    * Initialize anything needed for the consumer. Must be called before accept.
@@ -57,7 +58,8 @@ public interface SerializedAirbyteMessageConsumer extends CheckedBiConsumer<Stri
   /**
    * Append a function to be called on {@link SerializedAirbyteMessageConsumer#close}.
    */
-  static SerializedAirbyteMessageConsumer appendOnClose(final SerializedAirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
+  static SerializedAirbyteMessageConsumer appendOnClose(
+      final SerializedAirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
     return new SerializedAirbyteMessageConsumer() {
 
       @Override
@@ -75,8 +77,6 @@ public interface SerializedAirbyteMessageConsumer extends CheckedBiConsumer<Stri
         consumer.close();
         voidCallable.call();
       }
-
     };
   }
-
 }

@@ -16,7 +16,10 @@ public class EveryNthLogger extends BaseLogger implements TestingLogger {
   private final int nthEntryToLog;
   private int currentEntry = 0;
 
-  public EveryNthLogger(final AirbyteStreamNameNamespacePair streamNamePair, final int nthEntryToLog, final int maxEntryCount) {
+  public EveryNthLogger(
+      final AirbyteStreamNameNamespacePair streamNamePair,
+      final int nthEntryToLog,
+      final int maxEntryCount) {
     super(streamNamePair, maxEntryCount);
     this.nthEntryToLog = nthEntryToLog;
   }
@@ -33,5 +36,4 @@ public class EveryNthLogger extends BaseLogger implements TestingLogger {
       LOGGER.info(entryMessage(recordMessage));
     }
   }
-
 }

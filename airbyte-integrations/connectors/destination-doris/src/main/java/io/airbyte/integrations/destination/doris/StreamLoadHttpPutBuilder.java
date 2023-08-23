@@ -48,7 +48,8 @@ public class StreamLoadHttpPutBuilder {
   }
 
   public StreamLoadHttpPutBuilder baseAuth(String user, String password) {
-    byte[] encoded = Base64.encodeBase64(user.concat(":").concat(password).getBytes(StandardCharsets.UTF_8));
+    byte[] encoded =
+        Base64.encodeBase64(user.concat(":").concat(password).getBytes(StandardCharsets.UTF_8));
     prop.put(HttpHeaders.AUTHORIZATION, "Basic " + new String(encoded, StandardCharsets.UTF_8));
     return this;
   }
@@ -100,5 +101,4 @@ public class StreamLoadHttpPutBuilder {
     put.setEntity(httpEntity);
     return put;
   }
-
 }

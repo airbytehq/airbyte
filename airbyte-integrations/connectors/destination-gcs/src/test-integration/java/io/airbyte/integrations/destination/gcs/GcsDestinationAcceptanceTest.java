@@ -54,11 +54,13 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
+  protected static final Logger LOGGER =
+      LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   protected static final String SECRET_FILE_PATH = "secrets/config.json";
-  protected static final String SECRET_FILE_PATH_INSUFFICIENT_ROLES = "secrets/insufficient_roles_config.json";
+  protected static final String SECRET_FILE_PATH_INSUFFICIENT_ROLES =
+      "secrets/insufficient_roles_config.json";
   protected final S3Format outputFormat;
   protected JsonNode configJson;
   protected GcsDestinationConfig config;
@@ -130,26 +132,24 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   /**
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
-  protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
+  protected List<S3ObjectSummary> getAllSyncedObjects(
+      final String streamName, final String namespace) {
     final String namespaceStr = nameTransformer.getNamespace(namespace);
     final String streamNameStr = nameTransformer.getIdentifier(streamName);
     final String outputPrefix = s3StorageOperations.getBucketObjectPath(
-        namespaceStr,
-        streamNameStr,
-        DateTime.now(DateTimeZone.UTC),
-        config.getPathFormat());
+        namespaceStr, streamNameStr, DateTime.now(DateTimeZone.UTC), config.getPathFormat());
     // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
     final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
-    final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), parentFolder)
-        .getObjectSummaries()
-        .stream()
-        .filter(o -> o.getKey().contains(streamNameStr + "/"))
-        .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
-        .collect(Collectors.toList());
+    final List<S3ObjectSummary> objectSummaries =
+        s3Client.listObjects(config.getBucketName(), parentFolder).getObjectSummaries().stream()
+            .filter(o -> o.getKey().contains(streamNameStr + "/"))
+            .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
+            .collect(Collectors.toList());
     LOGGER.info(
         "All objects: {}",
-        objectSummaries.stream().map(o -> String.format("%s/%s", o.getBucketName(), o.getKey())).collect(Collectors.toList()));
+        objectSummaries.stream()
+            .map(o -> String.format("%s/%s", o.getBucketName(), o.getKey()))
+            .collect(Collectors.toList()));
     return objectSummaries;
   }
 
@@ -167,8 +167,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     final JsonNode configJson = Jsons.clone(baseConfigJson);
     final String testBucketPath = String.format(
         "%s_test_%s",
-        outputFormat.name().toLowerCase(Locale.ROOT),
-        RandomStringUtils.randomAlphanumeric(5));
+        outputFormat.name().toLowerCase(Locale.ROOT), RandomStringUtils.randomAlphanumeric(5));
     ((ObjectNode) configJson)
         .put("gcs_bucket_path", testBucketPath)
         .set("format", getFormatConfig());
@@ -187,16 +186,15 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     final List<KeyVersion> keysToDelete = new LinkedList<>();
-    final List<S3ObjectSummary> objects = s3Client
-        .listObjects(config.getBucketName(), config.getBucketPath())
-        .getObjectSummaries();
+    final List<S3ObjectSummary> objects =
+        s3Client.listObjects(config.getBucketName(), config.getBucketPath()).getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", config.getBucketName(),
-          config.getBucketPath());
+      LOGGER.info(
+          "Tearing down test bucket path: {}/{}", config.getBucketName(), config.getBucketPath());
       // Google Cloud Storage doesn't accept request to delete multiple objects
       for (final KeyVersion keyToDelete : keysToDelete) {
         s3Client.deleteObject(config.getBucketName(), keyToDelete.getKey());
@@ -212,15 +210,14 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    */
   @Test
   public void testCheckConnectionInsufficientRoles() throws Exception {
-    final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(
-        SECRET_FILE_PATH_INSUFFICIENT_ROLES)));
+    final JsonNode baseConfigJson =
+        Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH_INSUFFICIENT_ROLES)));
 
     // Set a random GCS bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);
     final String testBucketPath = String.format(
         "%s_test_%s",
-        outputFormat.name().toLowerCase(Locale.ROOT),
-        RandomStringUtils.randomAlphanumeric(5));
+        outputFormat.name().toLowerCase(Locale.ROOT), RandomStringUtils.randomAlphanumeric(5));
     ((ObjectNode) configJson)
         .put("gcs_bucket_path", testBucketPath)
         .set("format", getFormatConfig());
@@ -234,7 +231,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
         .put("credential_type", "HMAC_KEY")
         .put("hmac_key_access_id", "fake-key")
-        .put("hmac_key_secret", baseJson.get("credential").get("hmac_key_secret").asText())
+        .put(
+            "hmac_key_secret", baseJson.get("credential").get("hmac_key_secret").asText())
         .build());
 
     ((ObjectNode) baseJson).put("credential", credential);
@@ -251,7 +249,9 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     final JsonNode baseJson = getBaseConfigJson();
     final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
         .put("credential_type", "HMAC_KEY")
-        .put("hmac_key_access_id", baseJson.get("credential").get("hmac_key_access_id").asText())
+        .put(
+            "hmac_key_access_id",
+            baseJson.get("credential").get("hmac_key_access_id").asText())
         .put("hmac_key_secret", "fake-secret")
         .build());
 
@@ -275,5 +275,4 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: NoSuchKey;"));
   }
-
 }

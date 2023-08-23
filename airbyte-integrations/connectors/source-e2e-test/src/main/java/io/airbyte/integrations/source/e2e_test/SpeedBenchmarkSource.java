@@ -24,7 +24,9 @@ public class SpeedBenchmarkSource extends BaseConnector implements Source {
   public AirbyteConnectionStatus check(final JsonNode jsonConfig) {
     try {
       final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(jsonConfig);
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED).withMessage("Source config: " + sourceConfig);
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.SUCCEEDED)
+          .withMessage("Source config: " + sourceConfig);
     } catch (final Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
@@ -37,10 +39,11 @@ public class SpeedBenchmarkSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(jsonConfig);
-    return AutoCloseableIterators.fromIterator(new SpeedBenchmarkGeneratorIterator(sourceConfig.maxRecords()));
+    return AutoCloseableIterators.fromIterator(
+        new SpeedBenchmarkGeneratorIterator(sourceConfig.maxRecords()));
   }
-
 }

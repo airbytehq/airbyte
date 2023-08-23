@@ -31,18 +31,19 @@ public class S3DestinationStrictEncryptTest {
     final InitiateMultipartUploadResult uploadResult = mock(InitiateMultipartUploadResult.class);
     final UploadPartResult uploadPartResult = mock(UploadPartResult.class);
     when(s3.uploadPart(any(UploadPartRequest.class))).thenReturn(uploadPartResult);
-    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class))).thenReturn(uploadResult);
+    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class)))
+        .thenReturn(uploadResult);
 
     factoryConfig = new S3DestinationConfigFactory() {
 
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
+      public S3DestinationConfig getS3DestinationConfig(
+          final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("https://s3.example.com")
             .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
             .withS3Client(s3)
             .get();
       }
-
     };
   }
 
@@ -51,9 +52,11 @@ public class S3DestinationStrictEncryptTest {
    */
   @Test
   public void checksCustomEndpointIsHttpsOnly() {
-    final S3Destination destinationWithHttpsOnlyEndpoint = new S3DestinationStrictEncrypt(factoryConfig);
+    final S3Destination destinationWithHttpsOnlyEndpoint =
+        new S3DestinationStrictEncrypt(factoryConfig);
     final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(null);
-    assertEquals(Status.SUCCEEDED, status.getStatus(), "custom endpoint did not contain `s3-accesspoint`");
+    assertEquals(
+        Status.SUCCEEDED, status.getStatus(), "custom endpoint did not contain `s3-accesspoint`");
   }
 
   /**
@@ -65,19 +68,19 @@ public class S3DestinationStrictEncryptTest {
    */
   @Test
   public void checksCustomEndpointIsNotHttpsOnly() {
-    final S3Destination destinationWithStandardUnsecuredEndpoint = new S3DestinationStrictEncrypt(new S3DestinationConfigFactory() {
+    final S3Destination destinationWithStandardUnsecuredEndpoint =
+        new S3DestinationStrictEncrypt(new S3DestinationConfigFactory() {
 
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
-        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
-            .withEndpoint("s3.us-west-1.amazonaws.com")
-            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
-            .withS3Client(s3)
-            .get();
-      }
-
-    });
+          public S3DestinationConfig getS3DestinationConfig(
+              final JsonNode config, final StorageProvider storageProvider) {
+            return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
+                .withEndpoint("s3.us-west-1.amazonaws.com")
+                .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
+                .withS3Client(s3)
+                .get();
+          }
+        });
     final AirbyteConnectionStatus status = destinationWithStandardUnsecuredEndpoint.check(null);
     assertEquals(Status.FAILED, status.getStatus());
   }
-
 }

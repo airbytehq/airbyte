@@ -11,11 +11,13 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 
-public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
-                                   SpeedBenchmarkConfig.TerminationCondition terminationCondition,
-                                   long maxRecords) {
+public record SpeedBenchmarkConfig(
+    SpeedBenchmarkConfig.SchemaType schemaType,
+    SpeedBenchmarkConfig.TerminationCondition terminationCondition,
+    long maxRecords) {
 
-  private static final String FIVE_STRING_COLUMNS_SCHEMA = """
+  private static final String FIVE_STRING_COLUMNS_SCHEMA =
+      """
                                                                {
                                                                      "type": "object",
                                                                      "properties": {
@@ -38,12 +40,13 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
                                                                    }
                                                            """;
 
-  private static final AirbyteCatalog FIVE_STRING_COLUMNS_CATALOG = new AirbyteCatalog().withStreams(List.of(
-      new AirbyteStream().withName("stream1").withJsonSchema(Jsons.deserialize(FIVE_STRING_COLUMNS_SCHEMA))
+  private static final AirbyteCatalog FIVE_STRING_COLUMNS_CATALOG = new AirbyteCatalog()
+      .withStreams(List.of(new AirbyteStream()
+          .withName("stream1")
+          .withJsonSchema(Jsons.deserialize(FIVE_STRING_COLUMNS_SCHEMA))
           .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
 
   enum SchemaType {
-
     FIVE_STRING_COLUMNS(FIVE_STRING_COLUMNS_CATALOG);
 
     private final AirbyteCatalog catalog;
@@ -55,7 +58,6 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
     public AirbyteCatalog getCatalog() {
       return catalog;
     }
-
   }
 
   enum TerminationCondition {
@@ -63,16 +65,18 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
   }
 
   public static SpeedBenchmarkConfig parseFromConfig(final JsonNode config) {
-    final TerminationCondition terminationCondition = TerminationCondition.valueOf(config.get("terminationCondition").get("type").asText());
+    final TerminationCondition terminationCondition = TerminationCondition.valueOf(
+        config.get("terminationCondition").get("type").asText());
 
     return new SpeedBenchmarkConfig(
         SchemaType.valueOf(config.get("schema").asText()),
         terminationCondition,
-        terminationCondition == TerminationCondition.MAX_RECORDS ? config.get("terminationCondition").get("max").asLong() : 0);
+        terminationCondition == TerminationCondition.MAX_RECORDS
+            ? config.get("terminationCondition").get("max").asLong()
+            : 0);
   }
 
   public AirbyteCatalog getCatalog() {
     return schemaType.getCatalog();
   }
-
 }

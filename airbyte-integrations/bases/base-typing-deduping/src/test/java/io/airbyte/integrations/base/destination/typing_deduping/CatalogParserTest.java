@@ -34,7 +34,8 @@ class CatalogParserTest {
       String namespace = invocation.getArgument(0);
       String name = invocation.getArgument(1);
       String rawNamespace = invocation.getArgument(1);
-      return new StreamId(namespace, name, rawNamespace, namespace + "_abab_" + name, namespace, name);
+      return new StreamId(
+          namespace, name, rawNamespace, namespace + "_abab_" + name, namespace, name);
     });
 
     parser = new CatalogParser(sqlGenerator);
@@ -53,12 +54,16 @@ class CatalogParserTest {
 
       // emulate quoting logic that causes a name collision
       String quotedName = originalName.replaceAll("bar", "");
-      return new StreamId(originalNamespace, quotedName, originalRawNamespace, originalNamespace + "_abab_" + quotedName, originalNamespace,
+      return new StreamId(
+          originalNamespace,
+          quotedName,
+          originalRawNamespace,
+          originalNamespace + "_abab_" + quotedName,
+          originalNamespace,
           originalName);
     });
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        stream("a", "foobarfoo"),
-        stream("a", "foofoo")));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(stream("a", "foobarfoo"), stream("a", "foofoo")));
 
     final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
 
@@ -80,7 +85,8 @@ class CatalogParserTest {
       String quotedName = originalName.replaceAll("bar", "");
       return new ColumnId(quotedName, originalName, quotedName);
     });
-    JsonNode schema = Jsons.deserialize("""
+    JsonNode schema = Jsons.deserialize(
+        """
                                         {
                                           "type": "object",
                                           "properties": {
@@ -89,7 +95,8 @@ class CatalogParserTest {
                                           }
                                         }
                                         """);
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)));
+    final ConfiguredAirbyteCatalog catalog =
+        new ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)));
 
     final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
 
@@ -100,7 +107,8 @@ class CatalogParserTest {
     return stream(
         namespace,
         name,
-        Jsons.deserialize("""
+        Jsons.deserialize(
+            """
                           {
                             "type": "object",
                             "properties": {
@@ -111,11 +119,8 @@ class CatalogParserTest {
   }
 
   private static ConfiguredAirbyteStream stream(String namespace, String name, JsonNode schema) {
-    return new ConfiguredAirbyteStream().withStream(
-        new AirbyteStream()
-            .withNamespace(namespace)
-            .withName(name)
-            .withJsonSchema(schema));
+    return new ConfiguredAirbyteStream()
+        .withStream(
+            new AirbyteStream().withNamespace(namespace).withName(name).withJsonSchema(schema));
   }
-
 }

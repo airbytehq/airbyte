@@ -32,8 +32,9 @@ public class AirbyteMessageSerDeProvider {
   private final Map<String, AirbyteMessageDeserializer<?>> deserializers = new HashMap<>();
   private final Map<String, AirbyteMessageSerializer<?>> serializers = new HashMap<>();
 
-  public AirbyteMessageSerDeProvider(final List<AirbyteMessageDeserializer<?>> deserializers,
-                                     final List<AirbyteMessageSerializer<?>> serializers) {
+  public AirbyteMessageSerDeProvider(
+      final List<AirbyteMessageDeserializer<?>> deserializers,
+      final List<AirbyteMessageSerializer<?>> serializers) {
     deserializersToRegister = deserializers;
     serializersToRegister = serializers;
   }
@@ -68,8 +69,10 @@ public class AirbyteMessageSerDeProvider {
     if (!deserializers.containsKey(key)) {
       deserializers.put(key, deserializer);
     } else {
-      throw new RuntimeException(String.format("Trying to register a deserializer for protocol version {} when {} already exists",
-          deserializer.getTargetVersion().serialize(), deserializers.get(key).getTargetVersion().serialize()));
+      throw new RuntimeException(String.format(
+          "Trying to register a deserializer for protocol version {} when {} already exists",
+          deserializer.getTargetVersion().serialize(),
+          deserializers.get(key).getTargetVersion().serialize()));
     }
   }
 
@@ -79,8 +82,10 @@ public class AirbyteMessageSerDeProvider {
     if (!serializers.containsKey(key)) {
       serializers.put(key, serializer);
     } else {
-      throw new RuntimeException(String.format("Trying to register a serializer for protocol version {} when {} already exists",
-          serializer.getTargetVersion().serialize(), serializers.get(key).getTargetVersion().serialize()));
+      throw new RuntimeException(String.format(
+          "Trying to register a serializer for protocol version {} when {} already exists",
+          serializer.getTargetVersion().serialize(),
+          serializers.get(key).getTargetVersion().serialize()));
     }
   }
 
@@ -95,5 +100,4 @@ public class AirbyteMessageSerDeProvider {
   Set<String> getSerializerKeys() {
     return serializers.keySet();
   }
-
 }

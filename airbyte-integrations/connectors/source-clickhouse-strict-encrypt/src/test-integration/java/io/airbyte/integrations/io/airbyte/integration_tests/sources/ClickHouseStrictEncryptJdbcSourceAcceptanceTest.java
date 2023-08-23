@@ -69,32 +69,40 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   }
 
   @Override
-  public String createTableQuery(final String tableName,
-                                 final String columnClause,
-                                 final String primaryKeyClause) {
+  public String createTableQuery(
+      final String tableName, final String columnClause, final String primaryKeyClause) {
     // ClickHouse requires Engine to be mentioned as part of create table query.
     // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
-    return String.format("CREATE TABLE %s(%s) %s",
-        dbName + "." + tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
+    return String.format(
+        "CREATE TABLE %s(%s) %s",
+        dbName + "." + tableName,
+        columnClause,
+        primaryKeyClause.equals("")
+            ? "Engine = TinyLog"
             : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
                 + primaryKeyClause);
   }
 
   @BeforeAll
   static void init() {
-    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY =
+        "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
     INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
-    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY =
+        "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
     INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
 
     container = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
-        .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
-        .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
-            .withEnv("TZ", "UTC")
-            .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
-            .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
-            .waitingFor(Wait.forHttp("/ping").forPort(HTTP_PORT)
-                .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+            .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
+            .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
+        .withEnv("TZ", "UTC")
+        .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
+        .withClasspathResourceMapping(
+            "ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
+        .waitingFor(Wait.forHttp("/ping")
+            .forPort(HTTP_PORT)
+            .forStatusCode(200)
+            .withStartupTimeout(Duration.of(60, SECONDS)));
     container.start();
   }
 
@@ -108,16 +116,16 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
         .put(JdbcUtils.PASSWORD_KEY, "")
         .build());
 
-    db = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
-            ClickHouseSource.DRIVER_CLASS,
-            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=none",
-                ClickHouseSource.HTTPS_PROTOCOL,
-                configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-                configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt(),
-                configWithoutDbName.get("database").asText())));
+    db = new DefaultJdbcDatabase(DataSourceFactory.create(
+        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
+        ClickHouseSource.DRIVER_CLASS,
+        String.format(
+            DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=none",
+            ClickHouseSource.HTTPS_PROTOCOL,
+            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt(),
+            configWithoutDbName.get("database").asText())));
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
@@ -170,10 +178,8 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
-    final ConnectorSpecification expected =
-        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"),
-            ConnectorSpecification.class));
+    final ConnectorSpecification expected = SshHelpers.injectSshIntoSpec(Jsons.deserialize(
+        MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
-
 }

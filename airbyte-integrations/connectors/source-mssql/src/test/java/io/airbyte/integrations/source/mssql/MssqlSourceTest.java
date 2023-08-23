@@ -41,14 +41,15 @@ class MssqlSourceTest {
 
   private static final String DB_NAME = "dbo";
   private static final String STREAM_NAME = "id_and_name";
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
-      STREAM_NAME,
-      DB_NAME,
-      Field.of("id", JsonSchemaType.INTEGER),
-      Field.of("name", JsonSchemaType.STRING),
-      Field.of("born", JsonSchemaType.STRING))
-      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-      .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
+      .withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
+              STREAM_NAME,
+              DB_NAME,
+              Field.of("id", JsonSchemaType.INTEGER),
+              Field.of("name", JsonSchemaType.STRING),
+              Field.of("born", JsonSchemaType.STRING))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
 
   private JsonNode configWithoutDbName;
   private JsonNode config;
@@ -74,7 +75,8 @@ class MssqlSourceTest {
       database.query(ctx -> {
         ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
         ctx.fetch(String.format("USE %s;", dbName));
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
+        ctx.fetch(
+            "CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
         ctx.fetch(
             "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
         return null;
@@ -92,7 +94,8 @@ class MssqlSourceTest {
     db.close();
   }
 
-  // if a column in mssql is used as a primary key and in a separate index the discover query returns
+  // if a column in mssql is used as a primary key and in a separate index the discover query
+  // returns
   // the column twice. we now de-duplicate it (pr: https://github.com/airbytehq/airbyte/pull/983).
   // this tests that this de-duplication is successful.
   @Test
@@ -112,7 +115,8 @@ class MssqlSourceTest {
   }
 
   @Test
-  @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
+  @Disabled(
+      "See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void testTableWithNullCursorValueShouldThrowException() throws Exception {
     try (final DSLContext dslContext = getDslContext(configWithoutDbName)) {
       final Database database = getDatabase(dslContext);
@@ -123,27 +127,28 @@ class MssqlSourceTest {
         return null;
       });
 
-      ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
-          SyncMode.INCREMENTAL)
+      ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream()
+          .withSyncMode(SyncMode.INCREMENTAL)
           .withCursorField(Lists.newArrayList("id"))
           .withDestinationSyncMode(DestinationSyncMode.APPEND)
           .withSyncMode(SyncMode.INCREMENTAL)
           .withStream(CatalogHelpers.createAirbyteStream(
-              STREAM_NAME,
-              DB_NAME,
-              Field.of("id", JsonSchemaType.INTEGER),
-              Field.of("name", JsonSchemaType.STRING),
-              Field.of("born", JsonSchemaType.STRING))
+                  STREAM_NAME,
+                  DB_NAME,
+                  Field.of("id", JsonSchemaType.INTEGER),
+                  Field.of("name", JsonSchemaType.STRING),
+                  Field.of("born", JsonSchemaType.STRING))
               .withSupportedSyncModes(
                   Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
               .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
-      final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(
-          Collections.singletonList(configuredAirbyteStream));
+      final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
+          .withStreams(Collections.singletonList(configuredAirbyteStream));
 
-      final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(
-          new MssqlSource().read(config, catalog, null)));
-      assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+      final Throwable throwable =
+          catchThrowable(() -> MoreIterators.toSet(new MssqlSource().read(config, catalog, null)));
+      assertThat(throwable)
+          .isInstanceOf(ConfigErrorException.class)
           .hasMessageContaining(
               "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='dbo.id_and_name', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
     }
@@ -159,14 +164,17 @@ class MssqlSourceTest {
   }
 
   private static DSLContext getDslContext(final JsonNode config) {
-    return DSLContextFactory.create(DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false")), null);
+    return DSLContextFactory.create(
+        DataSourceFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+            String.format(
+                "jdbc:sqlserver://%s:%d;",
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt()),
+            Map.of("encrypt", "false")),
+        null);
   }
 
   public static Database getDatabase(final DSLContext dslContext) {
@@ -174,5 +182,4 @@ class MssqlSourceTest {
     // constructor. at least explicitly handle it, even if the impl doesn't change.
     return new Database(dslContext);
   }
-
 }

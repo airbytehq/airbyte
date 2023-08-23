@@ -20,5 +20,4 @@ public interface TestHarness<InputType, OutputType> {
    * asynchronous {@link DefaultReplicationWorker}'s cancel is used.
    */
   void cancel();
-
 }

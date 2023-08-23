@@ -20,5 +20,4 @@ public record ColumnId(String name, String originalName, String canonicalName) {
   public String name(final String quote) {
     return quote + name + quote;
   }
-
 }

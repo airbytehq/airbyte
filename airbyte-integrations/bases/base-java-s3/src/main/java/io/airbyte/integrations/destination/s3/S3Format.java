@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.s3;
 
 public enum S3Format {
-
   AVRO("avro"),
   CSV("csv"),
   JSONL("jsonl"),
@@ -20,5 +19,4 @@ public enum S3Format {
   public String getFileExtension() {
     return fileExtension;
   }
-
 }

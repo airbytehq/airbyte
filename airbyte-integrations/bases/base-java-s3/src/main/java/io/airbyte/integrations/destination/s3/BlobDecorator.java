@@ -36,13 +36,13 @@ public interface BlobDecorator {
    * metadataKeyMapping.
    */
   @VisibleForTesting
-  static void insertMetadata(final Map<String, String> metadata,
-                             final Map<String, String> metadataKeyMapping,
-                             final String key,
-                             final String value) {
+  static void insertMetadata(
+      final Map<String, String> metadata,
+      final Map<String, String> metadataKeyMapping,
+      final String key,
+      final String value) {
     if (metadataKeyMapping.containsKey(key)) {
       metadata.put(metadataKeyMapping.get(key), value);
     }
   }
-
 }

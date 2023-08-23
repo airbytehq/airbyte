@@ -45,14 +45,15 @@ public class ElasticsearchConnection {
    * @param config Configuration parameters for connecting to the Elasticsearch host
    */
   public ElasticsearchConnection(ConnectorConfiguration config) {
-    log.info(String.format(
-        "creating ElasticsearchConnection: %s", config.getEndpoint()));
+    log.info(String.format("creating ElasticsearchConnection: %s", config.getEndpoint()));
 
     // Create the low-level client
 
     HttpHost httpHost = HttpHost.create(config.getEndpoint());
 
-    RestClientBuilder builder = RestClient.builder(httpHost).setDefaultHeaders(configureHeaders(config)).setFailureListener((new FailureListener()));
+    RestClientBuilder builder = RestClient.builder(httpHost)
+        .setDefaultHeaders(configureHeaders(config))
+        .setFailureListener((new FailureListener()));
     client = new RestHighLevelClient(builder);
   }
 
@@ -62,7 +63,6 @@ public class ElasticsearchConnection {
     public void onFailure(Node node) {
       log.error("RestClient failure: {}", node);
     }
-
   }
 
   /**
@@ -77,12 +77,14 @@ public class ElasticsearchConnection {
     final var auth = config.getAuthenticationMethod();
     switch (auth.getMethod()) {
       case secret -> {
-        var bytes = (auth.getApiKeyId() + ":" + auth.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
+        var bytes =
+            (auth.getApiKeyId() + ":" + auth.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
         var header = "ApiKey " + Base64.getEncoder().encodeToString(bytes);
         headerList.add(new BasicHeader("Authorization", header));
       }
       case basic -> {
-        var basicBytes = (auth.getUsername() + ":" + auth.getPassword()).getBytes(StandardCharsets.UTF_8);
+        var basicBytes =
+            (auth.getUsername() + ":" + auth.getPassword()).getBytes(StandardCharsets.UTF_8);
         var basicHeader = "Basic " + Base64.getEncoder().encodeToString(basicBytes);
         headerList.add(new BasicHeader("Authorization", basicHeader));
       }
@@ -99,7 +101,11 @@ public class ElasticsearchConnection {
     log.info("checking elasticsearch connection");
     try {
       final var info = client.info(RequestOptions.DEFAULT);
-      log.info("checked elasticsearch connection: {}, node-name: {}, version: {}", info.getClusterName(), info.getNodeName(), info.getVersion());
+      log.info(
+          "checked elasticsearch connection: {}, node-name: {}, version: {}",
+          info.getClusterName(),
+          info.getNodeName(),
+          info.getVersion());
       return true;
     } catch (ApiException e) {
       log.error("failed to ping elasticsearch", unwrappedApiException("failed write operation", e));
@@ -132,7 +138,9 @@ public class ElasticsearchConnection {
     }
     if (ElasticsearchError.class.isAssignableFrom(e.error().getClass())) {
       ElasticsearchError esException = ((ElasticsearchError) e.error());
-      String errorMessage = String.format("ElasticsearchError: status:%s, error:%s", esException.status(), esException.error().toString());
+      String errorMessage = String.format(
+          "ElasticsearchError: status:%s, error:%s",
+          esException.status(), esException.error().toString());
       return new RuntimeException(errorMessage);
     }
     return new RuntimeException(e);
@@ -151,10 +159,12 @@ public class ElasticsearchConnection {
     // Avoid too_long_frame_exception error by "batching"
     // the indexes mapping calls
     for (int i = 0; i < indices.size(); i += chunk) {
-      String[] copiedIndices = indices.subList(i, Math.min(indices.size(), i + chunk)).toArray(String[]::new);
+      String[] copiedIndices =
+          indices.subList(i, Math.min(indices.size(), i + chunk)).toArray(String[]::new);
       GetMappingsRequest request = new GetMappingsRequest();
       request.indices(copiedIndices);
-      GetMappingsResponse getMappingResponse = client.indices().getMapping(request, RequestOptions.DEFAULT);
+      GetMappingsResponse getMappingResponse =
+          client.indices().getMapping(request, RequestOptions.DEFAULT);
       mappings.putAll(getMappingResponse.mappings());
     }
     return mappings;
@@ -169,7 +179,8 @@ public class ElasticsearchConnection {
   public Map<String, MappingMetadata> getAllMappings() throws IOException {
     // Need to exclude system mappings
     GetMappingsRequest request = new GetMappingsRequest();
-    GetMappingsResponse getMappingResponse = client.indices().getMapping(request, RequestOptions.DEFAULT);
+    GetMappingsResponse getMappingResponse =
+        client.indices().getMapping(request, RequestOptions.DEFAULT);
     return getMappingResponse.mappings();
   }
 
@@ -205,14 +216,14 @@ public class ElasticsearchConnection {
 
       for (SearchHit hit : searchHits) {
         data.add(mapper.convertValue(hit, JsonNode.class).get("sourceAsMap"));
-
       }
       searchHits = searchResponse.getHits().getHits();
     }
 
     ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
     clearScrollRequest.addScrollId(scrollId);
-    ClearScrollResponse clearScrollResponse = client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+    ClearScrollResponse clearScrollResponse =
+        client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
     boolean succeeded = clearScrollResponse.isSucceeded();
     if (succeeded) {
       log.info("scroll response cleared successfully");
@@ -250,5 +261,4 @@ public class ElasticsearchConnection {
     GetIndexResponse response = this.client.indices().get(request, RequestOptions.DEFAULT);
     return Arrays.asList(response.getIndices());
   }
-
 }

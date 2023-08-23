@@ -14,42 +14,55 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
-public abstract class AzureBlobStorageStreamCopierFactory implements StreamCopierFactory<AzureBlobStorageConfig> {
+public abstract class AzureBlobStorageStreamCopierFactory
+    implements StreamCopierFactory<AzureBlobStorageConfig> {
 
   @Override
-  public StreamCopier create(String configuredSchema,
-                             AzureBlobStorageConfig azureBlobConfig,
-                             String stagingFolder,
-                             ConfiguredAirbyteStream configuredStream,
-                             StandardNameTransformer nameTransformer,
-                             JdbcDatabase db,
-                             SqlOperations sqlOperations) {
+  public StreamCopier create(
+      String configuredSchema,
+      AzureBlobStorageConfig azureBlobConfig,
+      String stagingFolder,
+      ConfiguredAirbyteStream configuredStream,
+      StandardNameTransformer nameTransformer,
+      JdbcDatabase db,
+      SqlOperations sqlOperations) {
     try {
       AirbyteStream stream = configuredStream.getStream();
       DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
-      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      String schema =
+          StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
       String streamName = stream.getName();
 
-      final SpecializedBlobClientBuilder specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
-          .endpoint(azureBlobConfig.getEndpointUrl())
-          .sasToken(azureBlobConfig.getSasToken())
-          .containerName(azureBlobConfig.getContainerName());
+      final SpecializedBlobClientBuilder specializedBlobClientBuilder =
+          new SpecializedBlobClientBuilder()
+              .endpoint(azureBlobConfig.getEndpointUrl())
+              .sasToken(azureBlobConfig.getSasToken())
+              .containerName(azureBlobConfig.getContainerName());
 
-      return create(stagingFolder, syncMode, schema, streamName, specializedBlobClientBuilder, db, azureBlobConfig, nameTransformer, sqlOperations);
+      return create(
+          stagingFolder,
+          syncMode,
+          schema,
+          streamName,
+          specializedBlobClientBuilder,
+          db,
+          azureBlobConfig,
+          nameTransformer,
+          sqlOperations);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public abstract StreamCopier create(String stagingFolder,
-                                      DestinationSyncMode syncMode,
-                                      String schema,
-                                      String streamName,
-                                      SpecializedBlobClientBuilder specializedBlobClientBuilder,
-                                      JdbcDatabase db,
-                                      AzureBlobStorageConfig azureBlobConfig,
-                                      StandardNameTransformer nameTransformer,
-                                      SqlOperations sqlOperations)
+  public abstract StreamCopier create(
+      String stagingFolder,
+      DestinationSyncMode syncMode,
+      String schema,
+      String streamName,
+      SpecializedBlobClientBuilder specializedBlobClientBuilder,
+      JdbcDatabase db,
+      AzureBlobStorageConfig azureBlobConfig,
+      StandardNameTransformer nameTransformer,
+      SqlOperations sqlOperations)
       throws Exception;
-
 }

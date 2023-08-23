@@ -35,7 +35,8 @@ import org.junit.Test;
 
 public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
+  private static final JSONFormat JSON_FORMAT =
+      new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
   private final StandardNameTransformer namingResolver = new OracleNameTransformer();
   private static OracleContainer db;
@@ -65,13 +66,13 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(
             r.get(OracleDestination.COLUMN_NAME_DATA.replace("\"", "")).asText()))
         .collect(Collectors.toList());
@@ -83,9 +84,8 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
-                                                     final String streamName,
-                                                     final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
@@ -113,12 +113,14 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT);
+    final String query = String.format(
+        "SELECT * FROM %s.%s ORDER BY %s ASC",
+        schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT);
 
     try (final DSLContext dslContext = getDslContext(config)) {
-      final List<org.jooq.Record> result = getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
-      return result
-          .stream()
+      final List<org.jooq.Record> result =
+          getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
+      return result.stream()
           .map(r -> r.formatJSON(JSON_FORMAT))
           .map(Jsons::deserialize)
           .collect(Collectors.toList());
@@ -134,7 +136,8 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.ORACLE.getDriverClassName(),
-        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("sid").asText()),
@@ -142,20 +145,18 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS)
+      throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-    db = new OracleContainer()
-        .withUsername("test")
-        .withPassword("oracle")
-        .usingSid();
+    db = new OracleContainer().withUsername("test").withPassword("oracle").usingSid();
     db.start();
 
     config = getConfig(db);
 
     try (final DSLContext dslContext = getDslContext(config)) {
       final Database database = getDatabase(dslContext);
-      database.query(
-          ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
+      database.query(ctx ->
+          ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
       database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
       ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
@@ -172,24 +173,27 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   public void testEncryption() throws SQLException {
     final String algorithm = "AES256";
     final JsonNode config = getConfig();
-    final DataSource dataSource =
-        DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.ORACLE.getDriverClassName(),
-            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get("sid").asText()),
-            JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
+    final DataSource dataSource = DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(
+            DatabaseDriver.ORACLE.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get("sid").asText()),
+        JdbcUtils.parseJdbcParameters(
+            "oracle.net.encryption_client=REQUIRED;" + "oracle.net.encryption_types_client=( "
+                + algorithm + " )",
+            ";"));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
-    assertThat(collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),
+    assertThat(
+        collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),
         equals("Oracle Advanced Security: " + algorithm + " encryption"));
   }
 
@@ -197,24 +201,28 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   public void testCheckProtocol() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
 
-    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
-        .get("encryption_algorithm").asText();
+    final String algorithm =
+        clone.get(JdbcUtils.ENCRYPTION_KEY).get("encryption_algorithm").asText();
 
-    final DataSource dataSource =
-        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.ORACLE.getDriverClassName(),
-            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get("sid").asText()),
-            JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
+    final DataSource dataSource = DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(
+            DatabaseDriver.ORACLE.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get("sid").asText()),
+        JdbcUtils.parseJdbcParameters(
+            "oracle.net.encryption_client=REQUIRED;" + "oracle.net.encryption_types_client=( "
+                + algorithm + " )",
+            ";"));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
+    final String networkServiceBanner =
+        "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }
-
 }

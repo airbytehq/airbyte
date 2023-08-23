@@ -9,7 +9,6 @@ import java.sql.Types;
 import java.util.Map;
 
 public enum PostgresType implements SQLType {
-
   BIT(Types.BIT),
   TINYINT(Types.TINYINT),
   SMALLINT(Types.SMALLINT),
@@ -122,20 +121,20 @@ public enum PostgresType implements SQLType {
    *         {@code Types} value
    * @see Types
    */
-  public static PostgresType valueOf(final int type, final Map<Integer, PostgresType> postgresTypeMap) {
+  public static PostgresType valueOf(
+      final int type, final Map<Integer, PostgresType> postgresTypeMap) {
     if (postgresTypeMap.containsKey(type)) {
       return postgresTypeMap.get(type);
     }
-    throw new IllegalArgumentException("Type:" + type + " is not a valid "
-        + "Types.java value.");
+    throw new IllegalArgumentException("Type:" + type + " is not a valid " + "Types.java value.");
   }
 
-  public static PostgresType safeGetJdbcType(final int columnTypeInt, final Map<Integer, PostgresType> postgresTypeMap) {
+  public static PostgresType safeGetJdbcType(
+      final int columnTypeInt, final Map<Integer, PostgresType> postgresTypeMap) {
     try {
       return PostgresType.valueOf(columnTypeInt, postgresTypeMap);
     } catch (final Exception e) {
       return PostgresType.VARCHAR;
     }
   }
-
 }

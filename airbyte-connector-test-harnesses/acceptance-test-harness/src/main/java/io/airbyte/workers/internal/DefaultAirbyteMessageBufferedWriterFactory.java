@@ -6,11 +6,11 @@ package io.airbyte.workers.internal;
 
 import java.io.BufferedWriter;
 
-public class DefaultAirbyteMessageBufferedWriterFactory implements AirbyteMessageBufferedWriterFactory {
+public class DefaultAirbyteMessageBufferedWriterFactory
+    implements AirbyteMessageBufferedWriterFactory {
 
   @Override
   public AirbyteMessageBufferedWriter createWriter(BufferedWriter writer) {
     return new DefaultAirbyteMessageBufferedWriter(writer);
   }
-
 }

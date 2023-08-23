@@ -16,7 +16,8 @@ import java.util.Optional;
  * the platform. It encapsulates the full lifecycle of the Destination as well as any inputs and
  * outputs.
  */
-public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
+public interface AirbyteDestination
+    extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 
   /**
    * Starts the Destination container. It instantiates a writer to write to STDIN on that container.
@@ -28,7 +29,11 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    * @param additionalEnvironmentVariables
    * @throws Exception - throws if there is any failure in startup.
    */
-  void start(WorkerDestinationConfig destinationConfig, Path jobRoot, Map<String, String> additionalEnvironmentVariables) throws Exception;
+  void start(
+      WorkerDestinationConfig destinationConfig,
+      Path jobRoot,
+      Map<String, String> additionalEnvironmentVariables)
+      throws Exception;
 
   /**
    * Accepts an AirbyteMessage and writes it to STDIN of the Destination. Blocks if STDIN's buffer is
@@ -93,5 +98,4 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    * @throws Exception - throws if there is any failure in shutdown.
    */
   void cancel() throws Exception;
-
 }

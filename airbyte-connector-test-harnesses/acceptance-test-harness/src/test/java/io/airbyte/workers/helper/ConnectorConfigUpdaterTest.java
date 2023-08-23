@@ -39,15 +39,12 @@ class ConnectorConfigUpdaterTest {
 
   @BeforeEach
   void setUp() throws ApiException {
-    when(mSourceApi.getSource(new SourceIdRequestBody()
-        .sourceId(SOURCE_ID))).thenReturn(new SourceRead()
-            .sourceId(SOURCE_ID)
-            .name(SOURCE_NAME));
+    when(mSourceApi.getSource(new SourceIdRequestBody().sourceId(SOURCE_ID)))
+        .thenReturn(new SourceRead().sourceId(SOURCE_ID).name(SOURCE_NAME));
 
-    when(mDestinationApi.getDestination(new DestinationIdRequestBody()
-        .destinationId(DESTINATION_ID))).thenReturn(new DestinationRead()
-            .destinationId(DESTINATION_ID)
-            .name(DESTINATION_NAME));
+    when(mDestinationApi.getDestination(
+            new DestinationIdRequestBody().destinationId(DESTINATION_ID)))
+        .thenReturn(new DestinationRead().destinationId(DESTINATION_ID).name(DESTINATION_NAME));
 
     connectorConfigUpdater = new ConnectorConfigUpdater(mSourceApi, mDestinationApi);
   }
@@ -62,7 +59,8 @@ class ConnectorConfigUpdaterTest {
         .name(SOURCE_NAME)
         .connectionConfiguration(configJson);
 
-    when(mSourceApi.updateSource(Mockito.any())).thenReturn(new SourceRead().connectionConfiguration(configJson));
+    when(mSourceApi.updateSource(Mockito.any()))
+        .thenReturn(new SourceRead().connectionConfiguration(configJson));
 
     connectorConfigUpdater.updateSource(SOURCE_ID, newConfiguration);
     verify(mSourceApi).updateSource(expectedSourceUpdate);
@@ -78,10 +76,10 @@ class ConnectorConfigUpdaterTest {
         .name(DESTINATION_NAME)
         .connectionConfiguration(configJson);
 
-    when(mDestinationApi.updateDestination(Mockito.any())).thenReturn(new DestinationRead().connectionConfiguration(configJson));
+    when(mDestinationApi.updateDestination(Mockito.any()))
+        .thenReturn(new DestinationRead().connectionConfiguration(configJson));
 
     connectorConfigUpdater.updateDestination(DESTINATION_ID, newConfiguration);
     verify(mDestinationApi).updateDestination(expectedDestinationUpdate);
   }
-
 }

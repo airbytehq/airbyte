@@ -42,7 +42,8 @@ public class Db2SourceOperations extends JdbcSourceOperations {
 
   /* Helpers */
 
-  private void setFields(final ResultSet queryContext, final int index, final ObjectNode jsonNode) throws SQLException {
+  private void setFields(final ResultSet queryContext, final int index, final ObjectNode jsonNode)
+      throws SQLException {
     try {
       queryContext.getObject(index);
       if (!queryContext.wasNull()) {
@@ -57,7 +58,8 @@ public class Db2SourceOperations extends JdbcSourceOperations {
     }
   }
 
-  private void db2UniqueTypes(final ResultSet resultSet, final int index, final ObjectNode jsonNode) throws SQLException {
+  private void db2UniqueTypes(final ResultSet resultSet, final int index, final ObjectNode jsonNode)
+      throws SQLException {
     final String columnType = resultSet.getMetaData().getColumnTypeName(index);
     final String columnName = resultSet.getMetaData().getColumnName(index);
     if (DB2_UNIQUE_NUMBER_TYPES.contains(columnType)) {
@@ -65,10 +67,8 @@ public class Db2SourceOperations extends JdbcSourceOperations {
     }
   }
 
-  private void putDecfloat(final ObjectNode node,
-                           final String columnName,
-                           final ResultSet resultSet,
-                           final int index) {
+  private void putDecfloat(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     try {
       final double value = resultSet.getDouble(index);
       node.put(columnName, value);
@@ -78,30 +78,33 @@ public class Db2SourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putTime(final ObjectNode node,
-                         final String columnName,
-                         final ResultSet resultSet,
-                         final int index)
+  protected void putTime(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
     putJavaSQLTime(node, columnName, resultSet, index);
   }
 
   @Override
-  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putTimestamp(
+      final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
 
   @Override
-  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+  protected void setTimestamp(
+      final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
     final LocalDateTime date = LocalDateTime.parse(value);
     preparedStatement.setTimestamp(parameterIndex, Timestamp.valueOf(date));
   }
 
   @Override
-  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+  protected void setDate(
+      final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
     final LocalDate date = LocalDate.parse(value);
     preparedStatement.setDate(parameterIndex, Date.valueOf(date));
   }
-
 }

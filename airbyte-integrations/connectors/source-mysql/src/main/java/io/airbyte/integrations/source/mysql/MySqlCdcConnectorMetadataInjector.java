@@ -17,7 +17,8 @@ import io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.M
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MysqlDebeziumStateAttributes> {
+public class MySqlCdcConnectorMetadataInjector
+    implements CdcMetadataInjector<MysqlDebeziumStateAttributes> {
 
   private final long emittedAtConverted;
 
@@ -46,9 +47,10 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
   }
 
   @Override
-  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record,
-                                                      final String transactionTimestamp,
-                                                      final MysqlDebeziumStateAttributes debeziumStateAttributes) {
+  public void addMetaDataToRowsFetchedOutsideDebezium(
+      final ObjectNode record,
+      final String transactionTimestamp,
+      final MysqlDebeziumStateAttributes debeziumStateAttributes) {
     record.put(CDC_UPDATED_AT, transactionTimestamp);
     record.put(CDC_LOG_FILE, debeziumStateAttributes.binlogFilename());
     record.put(CDC_LOG_POS, debeziumStateAttributes.binlogPosition());
@@ -64,5 +66,4 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
   private Long getCdcDefaultCursor() {
     return this.emittedAtConverted + this.recordCounter.getAndIncrement();
   }
-
 }

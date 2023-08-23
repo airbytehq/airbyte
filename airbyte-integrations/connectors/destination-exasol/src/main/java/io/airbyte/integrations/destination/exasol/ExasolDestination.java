@@ -29,8 +29,10 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String jdbcUrl = String.format(DatabaseDriver.EXASOL.getUrlFormatString(),
-        config.get(JdbcUtils.HOST_KEY).asText(), config.get(JdbcUtils.PORT_KEY).asInt());
+    final String jdbcUrl = String.format(
+        DatabaseDriver.EXASOL.getUrlFormatString(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
@@ -38,11 +40,14 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
         .put("schema", config.get(JdbcUtils.SCHEMA_KEY).asText());
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+      configBuilder.put(
+          JdbcUtils.JDBC_URL_PARAMS_KEY,
+          config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -57,5 +62,4 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
     }
     return properties;
   }
-
 }

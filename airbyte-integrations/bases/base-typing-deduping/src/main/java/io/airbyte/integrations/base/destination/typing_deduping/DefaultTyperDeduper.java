@@ -40,10 +40,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
 
-  public DefaultTyperDeduper(SqlGenerator<DialectTableDefinition> sqlGenerator,
-                             DestinationHandler<DialectTableDefinition> destinationHandler,
-                             ParsedCatalog parsedCatalog,
-                             DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator) {
+  public DefaultTyperDeduper(
+      SqlGenerator<DialectTableDefinition> sqlGenerator,
+      DestinationHandler<DialectTableDefinition> destinationHandler,
+      ParsedCatalog parsedCatalog,
+      DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
@@ -69,17 +70,23 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     for (StreamConfig stream : parsedCatalog.streams()) {
       // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
       v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
-      final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
+      final Optional<DialectTableDefinition> existingTable =
+          destinationHandler.findExistingTable(stream.id());
       if (existingTable.isPresent()) {
-        // The table already exists. Decide whether we're writing to it directly, or using a tmp table.
-        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && !destinationHandler.isFinalTableEmpty(stream.id())) {
-          // We want to overwrite an existing table. Write into a tmp table. We'll overwrite the table at the
+        // The table already exists. Decide whether we're writing to it directly, or using a tmp
+        // table.
+        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE
+            && !destinationHandler.isFinalTableEmpty(stream.id())) {
+          // We want to overwrite an existing table. Write into a tmp table. We'll overwrite the
+          // table at the
           // end of the sync.
           overwriteStreamsWithTmpTable.add(stream.id());
           destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX));
         } else if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
           // We're loading data directly into the existing table. Make sure it has the right schema.
-          LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
+          LOGGER.info(
+              "Existing schema for stream {} is different from expected schema. Executing soft reset.",
+              stream.id().finalTableId(""));
           destinationHandler.execute(sqlGenerator.softReset(stream));
         }
       } else {
@@ -119,8 +126,12 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         StreamId streamId = streamConfig.id();
         String finalSuffix = getFinalTableSuffix(streamId);
         if (!StringUtils.isEmpty(finalSuffix)) {
-          final String overwriteFinalTable = sqlGenerator.overwriteFinalTable(streamId, finalSuffix);
-          LOGGER.info("Overwriting final table with tmp table for stream {}.{}", streamId.originalNamespace(), streamId.originalName());
+          final String overwriteFinalTable =
+              sqlGenerator.overwriteFinalTable(streamId, finalSuffix);
+          LOGGER.info(
+              "Overwriting final table with tmp table for stream {}.{}",
+              streamId.originalNamespace(),
+              streamId.originalName());
           destinationHandler.execute(overwriteFinalTable);
         }
       }
@@ -130,5 +141,4 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private String getFinalTableSuffix(StreamId streamId) {
     return overwriteStreamsWithTmpTable.contains(streamId) ? TMP_OVERWRITE_TABLE_SUFFIX : NO_SUFFIX;
   }
-
 }

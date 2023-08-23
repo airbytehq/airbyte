@@ -37,7 +37,8 @@ public class WriteConfig implements Serializable {
   // io.airbyte.integrations.destination.bigquery.BigQueryWriteConfig.addStagedFile
   private final List<Row> dataCache;
 
-  public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize) {
+  public WriteConfig(
+      String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize) {
     this.namespace = namingResolver.convertStreamName(namespace);
     this.tableName = namingResolver.convertStreamName(AIRBYTE_RAW_TABLE_PREFIX + streamName);
     this.tempTableName = namingResolver.convertStreamName(AIRBYTE_TMP_TABLE_PREFIX + streamName);
@@ -62,10 +63,10 @@ public class WriteConfig implements Serializable {
   }
 
   private String genTableName(String database, String tmpTableName) {
-    return "%s.`%s`.`%s`".formatted(
-        IcebergConstants.CATALOG_NAME,
-        namingResolver.convertStreamName(database),
-        namingResolver.convertStreamName(tmpTableName));
+    return "%s.`%s`.`%s`"
+        .formatted(
+            IcebergConstants.CATALOG_NAME,
+            namingResolver.convertStreamName(database),
+            namingResolver.convertStreamName(tmpTableName));
   }
-
 }

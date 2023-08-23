@@ -12,7 +12,8 @@ import java.util.List;
 
 public class TestDataHolder {
 
-  private static final String DEFAULT_CREATE_TABLE_SQL = "CREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
+  private static final String DEFAULT_CREATE_TABLE_SQL =
+      "CREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
   private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s)";
 
   private final String sourceType;
@@ -27,13 +28,14 @@ public class TestDataHolder {
   private String idColumnName;
   private String testColumnName;
 
-  TestDataHolder(final String sourceType,
-                 final JsonSchemaType airbyteType,
-                 final List<String> values,
-                 final List<String> expectedValues,
-                 final String createTablePatternSql,
-                 final String insertPatternSql,
-                 final String fullSourceDataType) {
+  TestDataHolder(
+      final String sourceType,
+      final JsonSchemaType airbyteType,
+      final List<String> values,
+      final List<String> expectedValues,
+      final String createTablePatternSql,
+      final String insertPatternSql,
+      final String fullSourceDataType) {
     this.sourceType = sourceType;
     this.airbyteType = airbyteType;
     this.values = values;
@@ -78,8 +80,7 @@ public class TestDataHolder {
      */
     public TestDataHolderBuilder sourceType(final String sourceType) {
       this.sourceType = sourceType;
-      if (fullSourceDataType == null)
-        fullSourceDataType = sourceType;
+      if (fullSourceDataType == null) fullSourceDataType = sourceType;
       return this;
     }
 
@@ -171,9 +172,15 @@ public class TestDataHolder {
     }
 
     public TestDataHolder build() {
-      return new TestDataHolder(sourceType, airbyteType, values, expectedValues, createTablePatternSql, insertPatternSql, fullSourceDataType);
+      return new TestDataHolder(
+          sourceType,
+          airbyteType,
+          values,
+          expectedValues,
+          createTablePatternSql,
+          insertPatternSql,
+          fullSourceDataType);
     }
-
   }
 
   void setNameSpace(final String nameSpace) {
@@ -214,7 +221,11 @@ public class TestDataHolder {
   }
 
   public String getCreateSqlQuery() {
-    return String.format(createTablePatternSql, (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(), idColumnName, testColumnName,
+    return String.format(
+        createTablePatternSql,
+        (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(),
+        idColumnName,
+        testColumnName,
         fullSourceDataType);
   }
 
@@ -222,9 +233,12 @@ public class TestDataHolder {
     final List<String> insertSqls = new ArrayList<>();
     int rowId = 1;
     for (final String value : values) {
-      insertSqls.add(String.format(insertPatternSql, (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(), rowId++, value));
+      insertSqls.add(String.format(
+          insertPatternSql,
+          (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(),
+          rowId++,
+          value));
     }
     return insertSqls;
   }
-
 }

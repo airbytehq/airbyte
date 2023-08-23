@@ -20,5 +20,4 @@ public class LabelInfo {
   public String label() {
     return prefix + "_" + table + "_" + UUID.randomUUID() + System.currentTimeMillis();
   }
-
 }

@@ -113,22 +113,24 @@ class SSLCertificateUtilsTest {
       + "7TicEc38QKFoLN2hti0Bmm1eJCionsSPiuyDYH5XnhSz7TDjV9sM\n"
       + "-----END RSA PRIVATE KEY-----\n";
 
-  public static final String clientKey_wrong_format = "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDBmUvDIVGZ5HsRgnXKns2fTf26pfKND45xu"
-      + "NOEWVetpvo3lGc28vVMvtPiNH/kuELxo5NesC89iotxfbOTl4I9BbjFVg3eO1nNhwmToU2f1kJJ5QFRjFw+xacIMsfBT5xy/v9U7ohZXdEk6txYkOpvhfja"
-      + "JcLDutT+NtzRdBsttgyItp5fODnk02G4bLsJ68jVH1/CXkDRvxktLR0/NctbtPVuACwA1QG9MsVbH3cE7SymIrzgI8JHwud63dQUb5iQWZ0iIDBqmF95wvg"
-      + "ox9O4QjnZCkHxo3kuYxBPaxAuMMVTohLBH/oAvo0FJt+0XF453sLPO8x3zOUnJJLhn4VHAgMBAAECggEBALQ4UB7F1YC9ARO7rouAaUnzAE/QS4qlAKU8uS"
-      + "prQQOWfTdgHvU4FsHqorPgy23PWgI3k+iBenh/kG+F5LVwRP0pZmfNQ/uspFx/aJrVfb1dZzgCxsdzMiv9MxCetPVvduRWHLqjkqoee6MyPwzzWkmXHaF1p"
-      + "WkvczdzOvyAaQyS3UPsnQzS0kt4mELGZs/E24K9vD9KfSrdRXxkk3fsLFbLrrau/mEhQ/CKX7Xl4MBchiH+lF8kHvpAc27fevrnDPToZp2cbfSc1oeeKjIM"
-      + "VmYFKytTCi5IXCNG6S0H31rNpX+5VbdZc1iJLPH7Ch6J+dRzX36R+5zSmp7OIl5gAoECgYEA5f1p/umqMW91HQ+amZoIg6gldFfGglFM5IVCrn0RRB/BrgH"
-      + "Rnpo0jo3JaOUyQMfyDz69lkpKEgejYTPGDkz3kJmpA54rBwmFitB13ZaqhzM63VzYE3hPdCqpy1VTLxW2+T5nEbLuiR4rC2Y7z+CRBmYdQUNxSq90rCpveg"
-      + "XIq4sCgYEA135M0fmeBAjTiz3f2pRt7ne64WzY4jJ0SRe6BrVA6PnI9V5+wwtRzyhee9A0awzal6t0OvAdxmnAZg3PsP1fbOPeVwXbvBKtZ4rM7adv6UdYy"
-      + "6oxjd9eULK92YnVOcZPf595WmoK28L37EHlxjP8p6lnMBk/BF9Y3N3rz2xyNLUCgYAZ8qdczTwYa7zI1JPatJg1Umk3YRfSaB3GwootaYrjJroRSb8+p6M6"
-      + "WiDZJtKuoGBc+/Uj2anVsurp8o9r2Z8sv0lkURoFpztb1/0UTQVcT5lalDkEqVQ9hPq3KB9Edqy4HiQ+yPNEoRS2KoihAXMbR7YRQOytQnJlYjxFhhWH1QK"
-      + "BgQCNFv97FyETaSgAacGQHlCfqrqr75VM/FXQqX09+RyHrUubA4ShdV7Z8Id0L0yyrlbMqRBPqnkEOKck6nQKYMpCxCsF9Sr6R4xLV8B29YK7TOBhcIxDZH"
-      + "UfBvhwXuNBkYrpd2OABCAZ5NxoTnj/vXf12l9aSZ1N4pOPAKntRAa+ZQKBgQDCPgJQfZePJGOvSIkW/TkXcHpGsexb5p900Si23BLjnMtCNMSkHuIWb60xq"
-      + "I3vLFKhrLiYzYVQ5n3C6PYLcdfiDYwruYU3zmtr/gpg/QzcsvTe5CW/hxTAkzsZsFBOquJyuyCRBGN59tH6N6ietu8zzvCc8EeJJX7N7AX0ezF7lQ==";
+  public static final String clientKey_wrong_format =
+      "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDBmUvDIVGZ5HsRgnXKns2fTf26pfKND45xu"
+          + "NOEWVetpvo3lGc28vVMvtPiNH/kuELxo5NesC89iotxfbOTl4I9BbjFVg3eO1nNhwmToU2f1kJJ5QFRjFw+xacIMsfBT5xy/v9U7ohZXdEk6txYkOpvhfja"
+          + "JcLDutT+NtzRdBsttgyItp5fODnk02G4bLsJ68jVH1/CXkDRvxktLR0/NctbtPVuACwA1QG9MsVbH3cE7SymIrzgI8JHwud63dQUb5iQWZ0iIDBqmF95wvg"
+          + "ox9O4QjnZCkHxo3kuYxBPaxAuMMVTohLBH/oAvo0FJt+0XF453sLPO8x3zOUnJJLhn4VHAgMBAAECggEBALQ4UB7F1YC9ARO7rouAaUnzAE/QS4qlAKU8uS"
+          + "prQQOWfTdgHvU4FsHqorPgy23PWgI3k+iBenh/kG+F5LVwRP0pZmfNQ/uspFx/aJrVfb1dZzgCxsdzMiv9MxCetPVvduRWHLqjkqoee6MyPwzzWkmXHaF1p"
+          + "WkvczdzOvyAaQyS3UPsnQzS0kt4mELGZs/E24K9vD9KfSrdRXxkk3fsLFbLrrau/mEhQ/CKX7Xl4MBchiH+lF8kHvpAc27fevrnDPToZp2cbfSc1oeeKjIM"
+          + "VmYFKytTCi5IXCNG6S0H31rNpX+5VbdZc1iJLPH7Ch6J+dRzX36R+5zSmp7OIl5gAoECgYEA5f1p/umqMW91HQ+amZoIg6gldFfGglFM5IVCrn0RRB/BrgH"
+          + "Rnpo0jo3JaOUyQMfyDz69lkpKEgejYTPGDkz3kJmpA54rBwmFitB13ZaqhzM63VzYE3hPdCqpy1VTLxW2+T5nEbLuiR4rC2Y7z+CRBmYdQUNxSq90rCpveg"
+          + "XIq4sCgYEA135M0fmeBAjTiz3f2pRt7ne64WzY4jJ0SRe6BrVA6PnI9V5+wwtRzyhee9A0awzal6t0OvAdxmnAZg3PsP1fbOPeVwXbvBKtZ4rM7adv6UdYy"
+          + "6oxjd9eULK92YnVOcZPf595WmoK28L37EHlxjP8p6lnMBk/BF9Y3N3rz2xyNLUCgYAZ8qdczTwYa7zI1JPatJg1Umk3YRfSaB3GwootaYrjJroRSb8+p6M6"
+          + "WiDZJtKuoGBc+/Uj2anVsurp8o9r2Z8sv0lkURoFpztb1/0UTQVcT5lalDkEqVQ9hPq3KB9Edqy4HiQ+yPNEoRS2KoihAXMbR7YRQOytQnJlYjxFhhWH1QK"
+          + "BgQCNFv97FyETaSgAacGQHlCfqrqr75VM/FXQqX09+RyHrUubA4ShdV7Z8Id0L0yyrlbMqRBPqnkEOKck6nQKYMpCxCsF9Sr6R4xLV8B29YK7TOBhcIxDZH"
+          + "UfBvhwXuNBkYrpd2OABCAZ5NxoTnj/vXf12l9aSZ1N4pOPAKntRAa+ZQKBgQDCPgJQfZePJGOvSIkW/TkXcHpGsexb5p900Si23BLjnMtCNMSkHuIWb60xq"
+          + "I3vLFKhrLiYzYVQ5n3C6PYLcdfiDYwruYU3zmtr/gpg/QzcsvTe5CW/hxTAkzsZsFBOquJyuyCRBGN59tH6N6ietu8zzvCc8EeJJX7N7AX0ezF7lQ==";
 
-  void testkeyStoreFromCertificateInternal(final String certString, final String pwd, final FileSystem fs, final String directory)
+  void testkeyStoreFromCertificateInternal(
+      final String certString, final String pwd, final FileSystem fs, final String directory)
       throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
     final URI ksUri = SSLCertificateUtils.keyStoreFromCertificate(certString, pwd, fs, directory);
 
@@ -140,7 +142,8 @@ class SSLCertificateUtilsTest {
   }
 
   @Test
-  void testkeyStoreFromCertificate() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+  void testkeyStoreFromCertificate()
+      throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
     testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD, null, SLASH_TMP);
 
     final Exception exception = assertThrows(CertificateException.class, () -> {
@@ -150,7 +153,8 @@ class SSLCertificateUtilsTest {
   }
 
   @Test
-  void testkeyStoreFromCertificateInMemory() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+  void testkeyStoreFromCertificateInMemory()
+      throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
     testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD2, null, null);
 
     final Exception exception = assertThrows(CertificateException.class, () -> {
@@ -161,13 +165,15 @@ class SSLCertificateUtilsTest {
 
   @SuppressFBWarnings("HARD_CODE_PASSWORD")
   void testKeyStoreFromClientCertificateInternal(
-                                                 final String certString,
-                                                 final String keyString,
-                                                 final String keyStorePassword,
-                                                 final FileSystem filesystem,
-                                                 final String directory)
-      throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
-    final URI ksUri = SSLCertificateUtils.keyStoreFromClientCertificate(certString, keyString, keyStorePassword, filesystem, directory);
+      final String certString,
+      final String keyString,
+      final String keyStorePassword,
+      final FileSystem filesystem,
+      final String directory)
+      throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException,
+          InvalidKeySpecException, InterruptedException {
+    final URI ksUri = SSLCertificateUtils.keyStoreFromClientCertificate(
+        certString, keyString, keyStorePassword, filesystem, directory);
     final KeyStore ks = KeyStore.getInstance("PKCS12");
     final InputStream inputStream = Files.newInputStream(Path.of(ksUri));
     ks.load(inputStream, KEY_STORE_PASSWORD.toCharArray());
@@ -179,35 +185,40 @@ class SSLCertificateUtilsTest {
 
   @Test
   void testKeyStoreFromClientCertificate()
-      throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, InterruptedException {
-    testKeyStoreFromClientCertificateInternal(clientPem, clientKey, KEY_STORE_PASSWORD, null, SLASH_TMP);
+      throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException,
+          KeyStoreException, InterruptedException {
+    testKeyStoreFromClientCertificateInternal(
+        clientPem, clientKey, KEY_STORE_PASSWORD, null, SLASH_TMP);
 
     final Exception exceptionKey = assertThrows(InvalidKeySpecException.class, () -> {
-      testKeyStoreFromClientCertificateInternal(clientPem, clientKey_wrong_format, KEY_STORE_PASSWORD, null, SLASH_TMP);
+      testKeyStoreFromClientCertificateInternal(
+          clientPem, clientKey_wrong_format, KEY_STORE_PASSWORD, null, SLASH_TMP);
     });
     assertNotNull(exceptionKey);
 
     final Exception exceptionCert = assertThrows(CertificateException.class, () -> {
-      testKeyStoreFromClientCertificateInternal(caPem_Bad, clientKey, KEY_STORE_PASSWORD, null, SLASH_TMP);
+      testKeyStoreFromClientCertificateInternal(
+          caPem_Bad, clientKey, KEY_STORE_PASSWORD, null, SLASH_TMP);
     });
     assertNotNull(exceptionCert);
   }
 
   @Test
   void testKeyStoreFromClientCertificateInMemory()
-      throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, InterruptedException {
+      throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException,
+          KeyStoreException, InterruptedException {
     testKeyStoreFromClientCertificateInternal(clientPem, clientKey, KEY_STORE_PASSWORD, null, null);
 
     final Exception exceptionKey = assertThrows(InvalidKeySpecException.class, () -> {
-      testKeyStoreFromClientCertificateInternal(clientPem, clientKey_wrong_format, KEY_STORE_PASSWORD, null, null);
+      testKeyStoreFromClientCertificateInternal(
+          clientPem, clientKey_wrong_format, KEY_STORE_PASSWORD, null, null);
     });
     assertNotNull(exceptionKey);
 
     final Exception exceptionCert = assertThrows(CertificateException.class, () -> {
-      testKeyStoreFromClientCertificateInternal(caPem_Bad, clientKey, KEY_STORE_PASSWORD, null, null);
+      testKeyStoreFromClientCertificateInternal(
+          caPem_Bad, clientKey, KEY_STORE_PASSWORD, null, null);
     });
     assertNotNull(exceptionCert);
-
   }
-
 }

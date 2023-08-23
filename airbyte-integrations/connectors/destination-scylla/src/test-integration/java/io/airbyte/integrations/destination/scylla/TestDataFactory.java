@@ -10,18 +10,10 @@ import io.airbyte.commons.json.Jsons;
 
 class TestDataFactory {
 
-  private TestDataFactory() {
-
-  }
+  private TestDataFactory() {}
 
   static ScyllaConfig scyllaConfig(String address, int port) {
-    return new ScyllaConfig(
-        "default_keyspace",
-        "usr",
-        "pw",
-        address,
-        port,
-        2);
+    return new ScyllaConfig("default_keyspace", "usr", "pw", address, port, 2);
   }
 
   static JsonNode jsonConfig(String address, int port) {
@@ -34,5 +26,4 @@ class TestDataFactory {
         .put("replication", 2)
         .build());
   }
-
 }

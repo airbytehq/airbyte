@@ -18,5 +18,4 @@ public class R2JsonlDestinationAcceptanceTest extends S3BaseJsonlDestinationAcce
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
-
 }

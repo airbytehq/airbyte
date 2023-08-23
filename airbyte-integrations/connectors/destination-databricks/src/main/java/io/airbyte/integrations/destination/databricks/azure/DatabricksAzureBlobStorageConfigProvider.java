@@ -20,5 +20,4 @@ public class DatabricksAzureBlobStorageConfigProvider extends DatabricksStorageC
   public AzureBlobStorageConfig getAzureBlobStorageConfigOrThrow() {
     return azureConfig;
   }
-
 }

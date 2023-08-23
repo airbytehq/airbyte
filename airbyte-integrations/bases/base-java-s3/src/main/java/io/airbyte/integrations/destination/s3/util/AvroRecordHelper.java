@@ -16,7 +16,8 @@ import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
  */
 public class AvroRecordHelper {
 
-  public static JsonFieldNameUpdater getFieldNameUpdater(final String streamName, final String namespace, final JsonNode streamSchema) {
+  public static JsonFieldNameUpdater getFieldNameUpdater(
+      final String streamName, final String namespace, final JsonNode streamSchema) {
     final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
     schemaConverter.getAvroSchema(streamSchema, streamName, namespace);
     return new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
@@ -46,5 +47,4 @@ public class AvroRecordHelper {
 
     return output;
   }
-
 }

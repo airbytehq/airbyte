@@ -25,62 +25,67 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
   @Test
   public void testEncryption() throws SQLException {
     final ObjectNode clone = (ObjectNode) Jsons.clone(getConfig());
-    clone.set(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
-        .put("encryption_method", "client_nne")
-        .put("encryption_algorithm", "3DES168")
-        .build()));
+    clone.set(
+        JdbcUtils.ENCRYPTION_KEY,
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "client_nne")
+            .put("encryption_algorithm", "3DES168")
+            .build()));
 
-    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
-        .get("encryption_algorithm").asText();
+    final String algorithm =
+        clone.get(JdbcUtils.ENCRYPTION_KEY).get("encryption_algorithm").asText();
 
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            clone.get(JdbcUtils.USERNAME_KEY).asText(),
-            clone.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.ORACLE.getDriverClassName(),
-            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                clone.get(JdbcUtils.HOST_KEY).asText(),
-                clone.get(JdbcUtils.PORT_KEY).asInt(),
-                clone.get("sid").asText()),
-            JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
-                "oracle.net.encryption_types_client=( "
-                + algorithm + " )")));
+    final JdbcDatabase database = new DefaultJdbcDatabase(DataSourceFactory.create(
+        clone.get(JdbcUtils.USERNAME_KEY).asText(),
+        clone.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(
+            DatabaseDriver.ORACLE.getUrlFormatString(),
+            clone.get(JdbcUtils.HOST_KEY).asText(),
+            clone.get(JdbcUtils.PORT_KEY).asInt(),
+            clone.get("sid").asText()),
+        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&"
+            + "oracle.net.encryption_types_client=( " + algorithm + " )")));
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
-    assertTrue(collect.get(2).get("NETWORK_SERVICE_BANNER").asText()
-        .contains(algorithm + " Encryption"));
+    assertTrue(
+        collect.get(2).get("NETWORK_SERVICE_BANNER").asText().contains(algorithm + " Encryption"));
   }
 
   @Test
   public void testCheckProtocol() throws SQLException {
     final ObjectNode clone = (ObjectNode) Jsons.clone(getConfig());
-    clone.set(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
-        .put("encryption_method", "client_nne")
-        .put("encryption_algorithm", "AES256")
-        .build()));
+    clone.set(
+        JdbcUtils.ENCRYPTION_KEY,
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "client_nne")
+            .put("encryption_algorithm", "AES256")
+            .build()));
 
-    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
-        .get("encryption_algorithm").asText();
+    final String algorithm =
+        clone.get(JdbcUtils.ENCRYPTION_KEY).get("encryption_algorithm").asText();
 
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            clone.get(JdbcUtils.USERNAME_KEY).asText(),
-            clone.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.ORACLE.getDriverClassName(),
-            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                clone.get(JdbcUtils.HOST_KEY).asText(),
-                clone.get(JdbcUtils.PORT_KEY).asInt(),
-                clone.get("sid").asText()),
-            JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";")));
+    final JdbcDatabase database = new DefaultJdbcDatabase(DataSourceFactory.create(
+        clone.get(JdbcUtils.USERNAME_KEY).asText(),
+        clone.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(
+            DatabaseDriver.ORACLE.getUrlFormatString(),
+            clone.get(JdbcUtils.HOST_KEY).asText(),
+            clone.get(JdbcUtils.PORT_KEY).asInt(),
+            clone.get("sid").asText()),
+        JdbcUtils.parseJdbcParameters(
+            "oracle.net.encryption_client=REQUIRED;" + "oracle.net.encryption_types_client=( "
+                + algorithm + " )",
+            ";")));
 
-    final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
+    final String networkServiceBanner =
+        "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }
-
 }

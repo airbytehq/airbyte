@@ -62,28 +62,40 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a MongoDB credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
 
-    final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
-            config.get("user").asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            config.get("instance_type").get("cluster_url").asText(),
-            config.get(JdbcUtils.DATABASE_KEY).asText());
+    final String connectionString = String.format(
+        "mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
+        config.get("user").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("instance_type").get("cluster_url").asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
-    final var doc1 = new Document("id", "0001").append("name", "Test")
-        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
-        .append("double_test", 100.12).append("int_test", 100);
-    final var doc2 = new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201);
-    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
-        .append("double_test", 212.11).append("int_test", 302);
+    final var doc1 = new Document("id", "0001")
+        .append("name", "Test")
+        .append("test", 10)
+        .append(
+            "test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12)
+        .append("int_test", 100);
+    final var doc2 = new Document("id", "0002")
+        .append("name", "Mongo")
+        .append("test", "test_value")
+        .append("int_test", 201);
+    final var doc3 = new Document("id", "0003")
+        .append("name", "Source")
+        .append("test", null)
+        .append("double_test", 212.11)
+        .append("int_test", 302);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
@@ -98,27 +110,28 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
+    return Jsons.deserialize(
+        MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
   }
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("_id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                DATABASE_NAME + "." + COLLECTION_NAME,
-                Field.of("_id", JsonSchemaType.STRING),
-                Field.of("id", JsonSchemaType.STRING),
-                Field.of("name", JsonSchemaType.STRING),
-                Field.of("test", JsonSchemaType.STRING),
-                Field.of("test_array", JsonSchemaType.ARRAY),
-                Field.of("empty_test", JsonSchemaType.STRING),
-                Field.of("double_test", JsonSchemaType.NUMBER),
-                Field.of("int_test", JsonSchemaType.NUMBER))
+                    DATABASE_NAME + "." + COLLECTION_NAME,
+                    Field.of("_id", JsonSchemaType.STRING),
+                    Field.of("id", JsonSchemaType.STRING),
+                    Field.of("name", JsonSchemaType.STRING),
+                    Field.of("test", JsonSchemaType.STRING),
+                    Field.of("test_array", JsonSchemaType.ARRAY),
+                    Field.of("empty_test", JsonSchemaType.STRING),
+                    Field.of("double_test", JsonSchemaType.NUMBER),
+                    Field.of("int_test", JsonSchemaType.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }
@@ -147,11 +160,11 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
     ((ObjectNode) invalidStandaloneConfig).put(INSTANCE_TYPE, instanceConfig);
 
-    final Throwable throwable = catchThrowable(() -> new MongodbSourceStrictEncrypt().check(invalidStandaloneConfig));
+    final Throwable throwable =
+        catchThrowable(() -> new MongodbSourceStrictEncrypt().check(invalidStandaloneConfig));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class);
     assertThat(((ConfigErrorException) throwable)
         .getDisplayMessage()
         .contains("TLS connection must be used to read from MongoDB."));
   }
-
 }

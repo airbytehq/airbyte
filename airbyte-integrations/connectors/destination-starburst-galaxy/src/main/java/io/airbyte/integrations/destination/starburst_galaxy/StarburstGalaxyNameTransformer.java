@@ -8,8 +8,7 @@ import static java.util.Locale.ENGLISH;
 
 import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class StarburstGalaxyNameTransformer
-    extends StandardNameTransformer {
+public class StarburstGalaxyNameTransformer extends StandardNameTransformer {
 
   @Override
   public String convertStreamName(final String input) {
@@ -35,5 +34,4 @@ public class StarburstGalaxyNameTransformer
   public String applyDefaultCase(final String input) {
     return input.toLowerCase(ENGLISH);
   }
-
 }

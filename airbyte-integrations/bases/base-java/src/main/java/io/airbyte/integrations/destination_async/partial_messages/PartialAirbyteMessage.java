@@ -95,7 +95,9 @@ public class PartialAirbyteMessage {
       return false;
     }
     final PartialAirbyteMessage that = (PartialAirbyteMessage) o;
-    return type == that.type && Objects.equals(record, that.record) && Objects.equals(state, that.state)
+    return type == that.type
+        && Objects.equals(record, that.record)
+        && Objects.equals(state, that.state)
         && Objects.equals(serialized, that.serialized);
   }
 
@@ -106,12 +108,10 @@ public class PartialAirbyteMessage {
 
   @Override
   public String toString() {
-    return "PartialAirbyteMessage{" +
-        "type=" + type +
-        ", record=" + record +
-        ", state=" + state +
-        ", serialized='" + serialized + '\'' +
-        '}';
+    return "PartialAirbyteMessage{" + "type="
+        + type + ", record="
+        + record + ", state="
+        + state + ", serialized='"
+        + serialized + '\'' + '}';
   }
-
 }

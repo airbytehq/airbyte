@@ -45,45 +45,56 @@ class CockroachDbSourceTest {
   private static final String STREAM_NAME = "id_and_name";
   public static String COL_ROW_ID = "rowid";
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createAirbyteStream(
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
+      .withStreams(List.of(
+          CatalogHelpers.createAirbyteStream(
+                  STREAM_NAME,
+                  SCHEMA_NAME,
+                  Field.of("id", JsonSchemaType.NUMBER),
+                  Field.of("name", JsonSchemaType.STRING),
+                  Field.of("power", JsonSchemaType.NUMBER))
+              .withSupportedSyncModes(
+                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          CatalogHelpers.createAirbyteStream(
+                  STREAM_NAME + "2",
+                  SCHEMA_NAME,
+                  Field.of("id", JsonSchemaType.NUMBER),
+                  Field.of("name", JsonSchemaType.STRING),
+                  Field.of("power", JsonSchemaType.NUMBER),
+                  Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
+              .withSupportedSyncModes(
+                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
+          CatalogHelpers.createAirbyteStream(
+                  "names",
+                  SCHEMA_NAME,
+                  Field.of("first_name", JsonSchemaType.STRING),
+                  Field.of("last_name", JsonSchemaType.STRING),
+                  Field.of("power", JsonSchemaType.NUMBER))
+              .withSupportedSyncModes(
+                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
+
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG =
+      CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
+      createRecord(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
-      CatalogHelpers.createAirbyteStream(
-          STREAM_NAME + "2",
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER),
-          Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
-      CatalogHelpers.createAirbyteStream(
-          "names",
-          SCHEMA_NAME,
-          Field.of("first_name", JsonSchemaType.STRING),
-          Field.of("last_name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
-
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers
-      .toDefaultConfiguredCatalog(CATALOG);
-  private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, SCHEMA_NAME,
           map("id", new BigDecimal("1.0"), "name", "goku", "power", Double.POSITIVE_INFINITY)),
-      createRecord(STREAM_NAME, SCHEMA_NAME,
+      createRecord(
+          STREAM_NAME,
+          SCHEMA_NAME,
           map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", Double.NaN, "name", "piccolo", "power", Double.NEGATIVE_INFINITY)));
+      createRecord(
+          STREAM_NAME,
+          SCHEMA_NAME,
+          map("id", Double.NaN, "name", "piccolo", "power", Double.NEGATIVE_INFINITY)));
 
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, SCHEMA_NAME,
-          ImmutableMap.of("id", 1L, "name", "\u2013 someutfstring")),
+      createRecord(
+          STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 1L, "name", "\u2013 someutfstring")),
       createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 2L, "name", "\u2215")));
 
   private static CockroachContainer PSQL_DB;
@@ -106,14 +117,15 @@ class CockroachDbSourceTest {
       database.query(ctx -> {
         ctx.fetch("CREATE DATABASE " + dbName + ";");
         ctx.fetch(
-            "CREATE TABLE " + dbName + ".id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+            "CREATE TABLE " + dbName
+                + ".id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
         ctx.fetch("CREATE INDEX i1 ON  " + dbName + ".id_and_name (id);");
         ctx.fetch(
             "INSERT INTO  " + dbName
                 + ".id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-        ctx.fetch(
-            "CREATE TABLE  " + dbName + ".id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+        ctx.fetch("CREATE TABLE  " + dbName
+            + ".id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
         ctx.fetch(
             "INSERT INTO  " + dbName
                 + ".id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
@@ -138,7 +150,8 @@ class CockroachDbSourceTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        String.format(
+            DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
@@ -149,14 +162,17 @@ class CockroachDbSourceTest {
     return getConfig(psqlDb, dbName, psqlDb.getUsername());
   }
 
-  private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName, final String username) {
+  private JsonNode getConfig(
+      final CockroachContainer psqlDb, final String dbName, final String username) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(PSQL_DB.getContainerInfo()
-            .getNetworkSettings()
-            .getNetworks()
-            .entrySet().stream()
-            .findFirst()
-            .get().getValue().getIpAddress()))
+        .put(
+            JdbcUtils.HOST_KEY,
+            Objects.requireNonNull(
+                PSQL_DB.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream()
+                    .findFirst()
+                    .get()
+                    .getValue()
+                    .getIpAddress()))
         .put(JdbcUtils.PORT_KEY, psqlDb.getExposedPorts().get(1))
         .put(JdbcUtils.DATABASE_KEY, dbName == null ? psqlDb.getDatabaseName() : dbName)
         .put(JdbcUtils.USERNAME_KEY, username)
@@ -176,7 +192,8 @@ class CockroachDbSourceTest {
 
   @Test
   public void testCanReadUtf8() throws Exception {
-    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
+    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even
+    // when
     // default settings are in another encoding
     try (final CockroachContainer db = new CockroachContainer("cockroachdb/cockroach:v20.2.18")) {
       // .withCommand("postgres -c client_encoding=sql_ascii")
@@ -192,8 +209,8 @@ class CockroachDbSourceTest {
         });
       }
 
-      final Set<AirbyteMessage> actualMessages = MoreIterators
-          .toSet(new CockroachDbSource().read(config, CONFIGURED_CATALOG, null));
+      final Set<AirbyteMessage> actualMessages =
+          MoreIterators.toSet(new CockroachDbSource().read(config, CONFIGURED_CATALOG, null));
       setEmittedAtToNull(actualMessages);
 
       assertEquals(UTF8_MESSAGES, actualMessages);
@@ -212,9 +229,9 @@ class CockroachDbSourceTest {
   void testDiscoverWithPk() throws Exception {
     final AirbyteCatalog actual = new CockroachDbSource().discover(getConfig(PSQL_DB, dbName));
     actual.getStreams().forEach(actualStream -> {
-      final Optional<AirbyteStream> expectedStream =
-          CATALOG.getStreams().stream()
-              .filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
+      final Optional<AirbyteStream> expectedStream = CATALOG.getStreams().stream()
+          .filter(stream -> stream.getName().equals(actualStream.getName()))
+          .findAny();
       assertTrue(expectedStream.isPresent());
       assertEquals(expectedStream.get(), actualStream);
     });
@@ -226,8 +243,7 @@ class CockroachDbSourceTest {
     try (final DSLContext dslContext = getDslContext(config)) {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
-        ctx.fetch(
-            "CREATE USER cock;");
+        ctx.fetch("CREATE USER cock;");
         ctx.fetch(
             "CREATE TABLE id_and_name_perm1(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
         ctx.fetch(
@@ -243,13 +259,10 @@ class CockroachDbSourceTest {
 
     final List<String> expected = List.of("id_and_name_perm1", "id_and_name_perm2");
 
-    final AirbyteCatalog airbyteCatalog = new CockroachDbSource().discover(getConfig(PSQL_DB, dbName, "cock"));
+    final AirbyteCatalog airbyteCatalog =
+        new CockroachDbSource().discover(getConfig(PSQL_DB, dbName, "cock"));
     final List<String> actualNamesWithPermission =
-        airbyteCatalog
-            .getStreams()
-            .stream()
-            .map(AirbyteStream::getName)
-            .toList();
+        airbyteCatalog.getStreams().stream().map(AirbyteStream::getName).toList();
 
     assertEquals(expected.size(), actualNamesWithPermission.size());
     assertEquals(expected, actualNamesWithPermission);
@@ -259,20 +272,22 @@ class CockroachDbSourceTest {
   void testReadSuccess() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog =
         CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream()
-            .filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
-                Collectors.toList()));
-    final Set<AirbyteMessage> actualMessages = MoreIterators
-        .toSet(new CockroachDbSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+            .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+            .collect(Collectors.toList()));
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(
+        new CockroachDbSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
   }
 
-  private static AirbyteMessage createRecord(final String stream,
-                                             final String namespace,
-                                             final Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream)
+  private static AirbyteMessage createRecord(
+      final String stream, final String namespace, final Map<Object, Object> data) {
+    return new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withData(Jsons.jsonNode(data))
+            .withStream(stream)
             .withNamespace(namespace));
   }
 
@@ -288,8 +303,6 @@ class CockroachDbSourceTest {
           put(entries[i++], entries[i]);
         }
       }
-
     };
   }
-
 }

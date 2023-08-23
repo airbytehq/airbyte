@@ -34,7 +34,8 @@ public class BigQueryUtilsTest {
 
   @ParameterizedTest
   @MethodSource("validBigQueryIdProvider")
-  public void testGetDatasetIdSuccess(final String projectId, final String datasetId, final String expected) {
+  public void testGetDatasetIdSuccess(
+      final String projectId, final String datasetId, final String expected) {
     final JsonNode config = Jsons.jsonNode(configMapBuilder
         .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
@@ -47,13 +48,15 @@ public class BigQueryUtilsTest {
 
   @ParameterizedTest
   @MethodSource("invalidBigQueryIdProvider")
-  public void testGetDatasetIdFail(final String projectId, final String datasetId, final String expected) {
+  public void testGetDatasetIdFail(
+      final String projectId, final String datasetId, final String expected) {
     final JsonNode config = Jsons.jsonNode(configMapBuilder
         .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .build());
 
-    final Exception exception = assertThrows(IllegalArgumentException.class, () -> BigQueryUtils.getDatasetId(config));
+    final Exception exception =
+        assertThrows(IllegalArgumentException.class, () -> BigQueryUtils.getDatasetId(config));
 
     assertEquals(expected, exception.getMessage());
   }
@@ -87,10 +90,13 @@ public class BigQueryUtilsTest {
 
   private static Stream<Arguments> invalidBigQueryIdProvider() {
     return Stream.of(
-        Arguments.arguments("my-project", ":my_dataset",
+        Arguments.arguments(
+            "my-project",
+            ":my_dataset",
             "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `` in Dataset ID"),
-        Arguments.arguments("my-project", "your-project:my_dataset",
+        Arguments.arguments(
+            "my-project",
+            "your-project:my_dataset",
             "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `your-project` in Dataset ID"));
   }
-
 }

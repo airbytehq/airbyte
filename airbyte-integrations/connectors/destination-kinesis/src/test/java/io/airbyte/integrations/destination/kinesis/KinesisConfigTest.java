@@ -18,10 +18,7 @@ class KinesisConfigTest {
   @BeforeEach
   void setup() {
     var jsonConfig = KinesisDataFactory.jsonConfig(
-        "http://aws.kinesis.com",
-        "eu-west-1",
-        "random_access_key",
-        "random_secret_key");
+        "http://aws.kinesis.com", "eu-west-1", "random_access_key", "random_secret_key");
     this.kinesisConfig = new KinesisConfig(jsonConfig);
   }
 
@@ -35,7 +32,5 @@ class KinesisConfigTest {
         .hasFieldOrPropertyWithValue("accessKey", "random_access_key")
         .hasFieldOrPropertyWithValue("privateKey", "random_secret_key")
         .hasFieldOrPropertyWithValue("bufferSize", 100);
-
   }
-
 }

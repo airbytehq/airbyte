@@ -138,29 +138,37 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace) {
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace) {
     return retrieveRecords(testEnv, streamName, namespace, null);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
     final Map<String, Object> props = ImmutableMap.<String, Object>builder()
         .put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
-        .put(ConsumerConfig.GROUP_ID_CONFIG, namingResolver.getIdentifier(namespace + "-" + streamName))
+        .put(
+            ConsumerConfig.GROUP_ID_CONFIG,
+            namingResolver.getIdentifier(namespace + "-" + streamName))
         .put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
         .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
         .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName())
         .build();
     final KafkaConsumer<String, JsonNode> consumer = new KafkaConsumer<>(props);
     final List<JsonNode> records = new ArrayList<>();
-    final String topic = namingResolver.getIdentifier(namespace + "." + streamName + "." + TOPIC_NAME);
+    final String topic =
+        namingResolver.getIdentifier(namespace + "." + streamName + "." + TOPIC_NAME);
 
     consumer.subscribe(Collections.singletonList(topic));
-    consumer.poll(Duration.ofMillis(20000L)).iterator()
-        .forEachRemaining(record -> records.add(record.value().get(JavaBaseConstants.COLUMN_NAME_DATA)));
+    consumer
+        .poll(Duration.ofMillis(20000L))
+        .iterator()
+        .forEachRemaining(
+            record -> records.add(record.value().get(JavaBaseConstants.COLUMN_NAME_DATA)));
     consumer.close();
 
     return records;
@@ -176,5 +184,4 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     KAFKA.close();
   }
-
 }

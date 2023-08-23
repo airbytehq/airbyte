@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -38,8 +37,10 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
   private static final List<String> FILE_PATH = List.of("filepath/filename");
 
   private static final String TEST_NO_CONFIG_EXCEPTION_CATCHED = "TEST";
-  private static final String TEST_PERMISSION_EXCEPTION_CATCHED = "but current role has no privileges on it";
-  private static final String TEST_IP_NOT_IN_WHITE_LIST_EXCEPTION_CATCHED = "not allowed to access Snowflake";
+  private static final String TEST_PERMISSION_EXCEPTION_CATCHED =
+      "but current role has no privileges on it";
+  private static final String TEST_IP_NOT_IN_WHITE_LIST_EXCEPTION_CATCHED =
+      "not allowed to access Snowflake";
 
   private static SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations;
 
@@ -62,20 +63,26 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
   public static void setup() {
     DestinationConfig.initialize(Jsons.emptyObject());
 
-    snowflakeStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
+    snowflakeStagingSqlOperations =
+        new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
     snowflakeSqlOperations = new SnowflakeSqlOperations();
 
+    createStageIfNotExists =
+        () -> snowflakeStagingSqlOperations.createStageIfNotExists(dbForExecuteQuery, STAGE_NAME);
+    dropStageIfExists =
+        () -> snowflakeStagingSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME);
+    cleanUpStage =
+        () -> snowflakeStagingSqlOperations.cleanUpStage(dbForExecuteQuery, STAGE_NAME, FILE_PATH);
+    copyIntoTableFromStage = () -> snowflakeStagingSqlOperations.copyIntoTableFromStage(
+        dbForExecuteQuery, STAGE_NAME, STAGE_PATH, FILE_PATH, TABLE_NAME, SCHEMA_NAME);
 
-    createStageIfNotExists = () -> snowflakeStagingSqlOperations.createStageIfNotExists(dbForExecuteQuery, STAGE_NAME);
-    dropStageIfExists = () -> snowflakeStagingSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME);
-    cleanUpStage = () -> snowflakeStagingSqlOperations.cleanUpStage(dbForExecuteQuery, STAGE_NAME, FILE_PATH);
-    copyIntoTableFromStage =
-        () -> snowflakeStagingSqlOperations.copyIntoTableFromStage(dbForExecuteQuery, STAGE_NAME, STAGE_PATH, FILE_PATH, TABLE_NAME, SCHEMA_NAME);
-
-    createSchemaIfNotExists = () -> snowflakeSqlOperations.createSchemaIfNotExists(dbForExecuteQuery, SCHEMA_NAME);
+    createSchemaIfNotExists =
+        () -> snowflakeSqlOperations.createSchemaIfNotExists(dbForExecuteQuery, SCHEMA_NAME);
     isSchemaExists = () -> snowflakeSqlOperations.isSchemaExists(dbForRunUnsafeQuery, SCHEMA_NAME);
-    createTableIfNotExists = () -> snowflakeSqlOperations.createTableIfNotExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME);
-    dropTableIfExists = () -> snowflakeSqlOperations.dropTableIfExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME);
+    createTableIfNotExists = () ->
+        snowflakeSqlOperations.createTableIfNotExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME);
+    dropTableIfExists =
+        () -> snowflakeSqlOperations.dropTableIfExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME);
   }
 
   private static Stream<Arguments> testArgumentsForDbExecute() {
@@ -105,11 +112,15 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
 
   @ParameterizedTest
   @MethodSource("testArgumentsForDbExecute")
-  public void testCatchNoPermissionOnExecuteException(final String message, final boolean shouldCapture, final Executable executable) {
+  public void testCatchNoPermissionOnExecuteException(
+      final String message, final boolean shouldCapture, final Executable executable) {
     try {
-      Mockito.doThrow(new SnowflakeSQLException(message)).when(dbForExecuteQuery).execute(Mockito.anyString());
+      Mockito.doThrow(new SnowflakeSQLException(message))
+          .when(dbForExecuteQuery)
+          .execute(Mockito.anyString());
     } catch (SQLException e) {
-      // This would not be expected, but the `execute` method above will flag as an unhandled exception
+      // This would not be expected, but the `execute` method above will flag as an unhandled
+      // exception
       assert false;
     }
     executeTest(message, shouldCapture, executable);
@@ -124,17 +135,22 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
 
   @ParameterizedTest
   @MethodSource("testArgumentsForDbUnsafeQuery")
-  public void testCatchNoPermissionOnUnsafeQueryException(final String message, final boolean shouldCapture, final Executable executable) {
+  public void testCatchNoPermissionOnUnsafeQueryException(
+      final String message, final boolean shouldCapture, final Executable executable) {
     try {
-      Mockito.doThrow(new SnowflakeSQLException(message)).when(dbForRunUnsafeQuery).unsafeQuery(Mockito.anyString());
+      Mockito.doThrow(new SnowflakeSQLException(message))
+          .when(dbForRunUnsafeQuery)
+          .unsafeQuery(Mockito.anyString());
     } catch (SQLException e) {
-      // This would not be expected, but the `execute` method above will flag as an unhandled exception
+      // This would not be expected, but the `execute` method above will flag as an unhandled
+      // exception
       assert false;
     }
     executeTest(message, shouldCapture, executable);
   }
 
-  private void executeTest(final String message, final boolean shouldCapture, final Executable executable) {
+  private void executeTest(
+      final String message, final boolean shouldCapture, final Executable executable) {
     final Exception exception = Assertions.assertThrows(Exception.class, executable);
     if (shouldCapture) {
       assertInstanceOf(ConfigErrorException.class, exception);
@@ -143,5 +159,4 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
       assertEquals(exception.getMessage(), message);
     }
   }
-
 }

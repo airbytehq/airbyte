@@ -30,7 +30,7 @@ public class XminStateManager {
 
   private final Map<AirbyteStreamNameNamespacePair, XminStatus> pairToXminStatus;
 
-  private final static AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
+  private static final AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
       .withType(AirbyteStateType.STREAM)
       .withStream(new AirbyteStreamState());
 
@@ -38,16 +38,19 @@ public class XminStateManager {
     pairToXminStatus = createPairToXminStatusMap(stateMessages);
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, XminStatus> createPairToXminStatusMap(final List<AirbyteStateMessage> stateMessages) {
+  private static Map<AirbyteStreamNameNamespacePair, XminStatus> createPairToXminStatusMap(
+      final List<AirbyteStateMessage> stateMessages) {
     final Map<AirbyteStreamNameNamespacePair, XminStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
         // A reset causes the default state to be an empty legacy state, so we have to ignore those
         // messages.
-        if (stateMessage.getType() == AirbyteStateType.STREAM && !stateMessage.equals(EMPTY_STATE)) {
+        if (stateMessage.getType() == AirbyteStateType.STREAM
+            && !stateMessage.equals(EMPTY_STATE)) {
           LOGGER.info("State message: " + stateMessage);
           final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
-          final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace());
+          final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(
+              streamDescriptor.getName(), streamDescriptor.getNamespace());
           final XminStatus xminStatus;
           try {
             xminStatus = Jsons.object(stateMessage.getStream().getStreamState(), XminStatus.class);
@@ -72,22 +75,19 @@ public class XminStateManager {
    *
    * @return AirbyteMessage which includes information on state of records read so far
    */
-  public static AirbyteMessage createStateMessage(final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
+  public static AirbyteMessage createStateMessage(
+      final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
     final AirbyteStateMessage stateMessage = getAirbyteStateMessage(pair, xminStatus);
 
-    return new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(stateMessage);
+    return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
 
-  public static AirbyteStateMessage getAirbyteStateMessage(final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
-    final AirbyteStreamState airbyteStreamState =
-        new AirbyteStreamState()
-            .withStreamDescriptor(
-                new StreamDescriptor()
-                    .withName(pair.getName())
-                    .withNamespace(pair.getNamespace()))
-            .withStreamState(Jsons.jsonNode(xminStatus));
+  public static AirbyteStateMessage getAirbyteStateMessage(
+      final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
+    final AirbyteStreamState airbyteStreamState = new AirbyteStreamState()
+        .withStreamDescriptor(
+            new StreamDescriptor().withName(pair.getName()).withNamespace(pair.getNamespace()))
+        .withStreamState(Jsons.jsonNode(xminStatus));
 
     // Set state
     return new AirbyteStateMessage()

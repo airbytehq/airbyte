@@ -47,42 +47,47 @@ import org.testcontainers.utility.DockerImageName;
 public class MqttRecordConsumerTest {
 
   @RegisterExtension
-  public final HiveMQTestContainerExtension extension = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:2021.2"));
+  public final HiveMQTestContainerExtension extension =
+      new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:2021.2"));
 
   @ParameterizedTest
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
-  public void testBuildTopicMap(final ConfiguredAirbyteCatalog catalog,
-                                final String streamName,
-                                final String namespace,
-                                final String topicPattern,
-                                final String expectedTopic) {
-    final MqttDestinationConfig config = MqttDestinationConfig
-        .getMqttDestinationConfig(getConfig(extension.getHost(), extension.getMqttPort(), topicPattern));
+  public void testBuildTopicMap(
+      final ConfiguredAirbyteCatalog catalog,
+      final String streamName,
+      final String namespace,
+      final String topicPattern,
+      final String expectedTopic) {
+    final MqttDestinationConfig config = MqttDestinationConfig.getMqttDestinationConfig(
+        getConfig(extension.getHost(), extension.getMqttPort(), topicPattern));
 
-    final MqttRecordConsumer recordConsumer = new MqttRecordConsumer(config, catalog, mock(Consumer.class));
+    final MqttRecordConsumer recordConsumer =
+        new MqttRecordConsumer(config, catalog, mock(Consumer.class));
     final Map<AirbyteStreamNameNamespacePair, String> topicMap = recordConsumer.buildTopicMap();
     assertEquals(Sets.newHashSet(catalog.getStreams()).size(), topicMap.size());
 
-    final AirbyteStreamNameNamespacePair streamNameNamespacePair = new AirbyteStreamNameNamespacePair(streamName, namespace);
+    final AirbyteStreamNameNamespacePair streamNameNamespacePair =
+        new AirbyteStreamNameNamespacePair(streamName, namespace);
     assertEquals(expectedTopic, topicMap.get(streamNameNamespacePair));
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
-    final MqttDestinationConfig config = MqttDestinationConfig
-        .getMqttDestinationConfig(getConfig(extension.getHost(), extension.getMqttPort() + 10, "test-topic"));
+    final MqttDestinationConfig config = MqttDestinationConfig.getMqttDestinationConfig(
+        getConfig(extension.getHost(), extension.getMqttPort() + 10, "test-topic"));
 
     final String streamName = "test-stream";
     final String namespace = "test-schema";
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createConfiguredAirbyteStream(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(CatalogHelpers.createConfiguredAirbyteStream(
             streamName,
             namespace,
             Field.of("id", JsonSchemaType.NUMBER),
             Field.of("name", JsonSchemaType.STRING))));
-    final MqttRecordConsumer consumer = new MqttRecordConsumer(config, catalog, mock(Consumer.class));
+    final MqttRecordConsumer consumer =
+        new MqttRecordConsumer(config, catalog, mock(Consumer.class));
     final List<AirbyteMessage> expectedRecords = getNRecords(10, streamName, namespace);
 
     assertThrows(RuntimeException.class, consumer::start);
@@ -91,7 +96,8 @@ public class MqttRecordConsumerTest {
 
     consumer.accept(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(namespace + "." + streamName, 0)))));
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.jsonNode(ImmutableMap.of(namespace + "." + streamName, 0)))));
     consumer.close();
   }
 
@@ -110,7 +116,8 @@ public class MqttRecordConsumerTest {
         .build());
   }
 
-  private List<AirbyteMessage> getNRecords(final int n, final String streamName, final String namespace) {
+  private List<AirbyteMessage> getNRecords(
+      final int n, final String streamName, final String namespace) {
     return IntStream.range(0, n)
         .boxed()
         .map(i -> new AirbyteMessage()
@@ -121,7 +128,6 @@ public class MqttRecordConsumerTest {
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
-
   }
 
   public static class TopicMapArgumentsProvider implements ArgumentsProvider {
@@ -150,26 +156,49 @@ public class MqttRecordConsumerTest {
       catalogs.add(new ConfiguredAirbyteCatalog().withStreams(List.of(stream1, stream1)));
       catalogs.add(new ConfiguredAirbyteCatalog().withStreams(List.of(stream1, stream2)));
 
-      return catalogs.stream()
-          .flatMap(catalog -> catalog.getStreams().stream()
-              .map(stream -> buildArgs(catalog, stream.getStream()))
-              .flatMap(Collection::stream));
+      return catalogs.stream().flatMap(catalog -> catalog.getStreams().stream()
+          .map(stream -> buildArgs(catalog, stream.getStream()))
+          .flatMap(Collection::stream));
     }
 
-    private List<Arguments> buildArgs(final ConfiguredAirbyteCatalog catalog, final AirbyteStream stream) {
+    private List<Arguments> buildArgs(
+        final ConfiguredAirbyteCatalog catalog, final AirbyteStream stream) {
       return ImmutableList.of(
           Arguments.of(catalog, stream.getName(), stream.getNamespace(), TOPIC_NAME, TOPIC_NAME),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "test-topic", "test-topic"),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}", stream.getNamespace()),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{stream}", stream.getName()),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}.{stream}." + TOPIC_NAME,
+          Arguments.of(
+              catalog, stream.getName(), stream.getNamespace(), "test-topic", "test-topic"),
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "{namespace}",
+              stream.getNamespace()),
+          Arguments.of(
+              catalog, stream.getName(), stream.getNamespace(), "{stream}", stream.getName()),
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "{namespace}.{stream}." + TOPIC_NAME,
               stream.getNamespace() + "." + stream.getName() + "." + TOPIC_NAME),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}-{stream}-" + TOPIC_NAME,
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "{namespace}-{stream}-" + TOPIC_NAME,
               stream.getNamespace() + "-" + stream.getName() + "-" + TOPIC_NAME),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "topic with spaces", "topic with spaces"),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "UppercaseTopic/test", "UppercaseTopic/test"));
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "topic with spaces",
+              "topic with spaces"),
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "UppercaseTopic/test",
+              "UppercaseTopic/test"));
     }
-
   }
-
 }

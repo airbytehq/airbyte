@@ -33,8 +33,8 @@ public class DefaultGetSpecTestHarness implements GetSpecTestHarness {
   private final AirbyteStreamFactory streamFactory;
   private Process process;
 
-  public DefaultGetSpecTestHarness(final IntegrationLauncher integrationLauncher,
-                                   final AirbyteStreamFactory streamFactory) {
+  public DefaultGetSpecTestHarness(
+      final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
@@ -44,21 +44,24 @@ public class DefaultGetSpecTestHarness implements GetSpecTestHarness {
   }
 
   @Override
-  public ConnectorJobOutput run(final JobGetSpecConfig config, final Path jobRoot) throws TestHarnessException {
+  public ConnectorJobOutput run(final JobGetSpecConfig config, final Path jobRoot)
+      throws TestHarnessException {
     try {
       process = integrationLauncher.spec(jobRoot);
 
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.SPEC);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30);
+      final Map<Type, List<AirbyteMessage>> messagesByType =
+          TestHarnessUtils.getMessagesByType(process, streamFactory, 30);
 
-      final Optional<ConnectorSpecification> spec = messagesByType
-          .getOrDefault(Type.SPEC, new ArrayList<>()).stream()
-          .map(AirbyteMessage::getSpec)
-          .findFirst();
+      final Optional<ConnectorSpecification> spec =
+          messagesByType.getOrDefault(Type.SPEC, new ArrayList<>()).stream()
+              .map(AirbyteMessage::getSpec)
+              .findFirst();
 
-      final Optional<FailureReason> failureReason = TestHarnessUtils.getJobFailureReasonFromMessages(OutputType.SPEC, messagesByType);
+      final Optional<FailureReason> failureReason =
+          TestHarnessUtils.getJobFailureReasonFromMessages(OutputType.SPEC, messagesByType);
       failureReason.ifPresent(jobOutput::setFailureReason);
 
       final int exitCode = process.exitValue();
@@ -69,19 +72,20 @@ public class DefaultGetSpecTestHarness implements GetSpecTestHarness {
       if (spec.isPresent()) {
         jobOutput.setSpec(spec.get());
       } else if (failureReason.isEmpty()) {
-        TestHarnessUtils.throwWorkerException("Integration failed to output a spec struct and did not output a failure reason", process);
+        TestHarnessUtils.throwWorkerException(
+            "Integration failed to output a spec struct and did not output a failure reason",
+            process);
       }
 
       return jobOutput;
     } catch (final Exception e) {
-      throw new TestHarnessException(String.format("Error while getting spec from image %s", config.getDockerImage()), e);
+      throw new TestHarnessException(
+          String.format("Error while getting spec from image %s", config.getDockerImage()), e);
     }
-
   }
 
   @Override
   public void cancel() {
     TestHarnessUtils.cancelProcess(process);
   }
-
 }

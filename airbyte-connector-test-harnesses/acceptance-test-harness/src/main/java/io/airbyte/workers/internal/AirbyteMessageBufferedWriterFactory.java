@@ -9,5 +9,4 @@ import java.io.BufferedWriter;
 public interface AirbyteMessageBufferedWriterFactory {
 
   AirbyteMessageBufferedWriter createWriter(BufferedWriter bufferedWriter);
-
 }

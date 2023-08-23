@@ -44,17 +44,19 @@ public class GcsCsvFormatConfigTest {
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
 
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
+    final GcsDestinationConfig gcsDestinationConfig =
+        GcsDestinationConfig.getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     final S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
     assertEquals("CSV", formatConfig.getFormat().name());
     // Assert that is set properly in config
-    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
-        .create(gcsDestinationConfig.getBucketName(), "objectKey", null)
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory.create(
+            gcsDestinationConfig.getBucketName(), "objectKey", null)
         .get();
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
@@ -66,15 +68,16 @@ public class GcsCsvFormatConfigTest {
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
 
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
+    final GcsDestinationConfig gcsDestinationConfig =
+        GcsDestinationConfig.getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
-    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
-        .create(gcsDestinationConfig.getBucketName(), "objectKey", null)
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory.create(
+            gcsDestinationConfig.getBucketName(), "objectKey", null)
         .get();
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
-
 }

@@ -26,5 +26,4 @@ public interface CdcStateHandler {
   default boolean isCdcCheckpointEnabled() {
     return false;
   }
-
 }

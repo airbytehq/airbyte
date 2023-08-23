@@ -44,10 +44,10 @@ public class BigQueryStructureSourceTest extends AbstractBigQuerySourceTest {
 
   @Test
   public void testReadSuccess() throws Exception {
-    final List<AirbyteMessage> actualMessages = MoreIterators.toList(new BigQuerySource().read(config, getConfiguredCatalog(), null));
+    final List<AirbyteMessage> actualMessages =
+        MoreIterators.toList(new BigQuerySource().read(config, getConfiguredCatalog(), null));
 
     assertNotNull(actualMessages);
     assertEquals(3, actualMessages.size());
   }
-
 }

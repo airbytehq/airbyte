@@ -26,7 +26,8 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public class PostgresDestinationSSLFullCertificateAcceptanceTest
+    extends JdbcDestinationAcceptanceTest {
 
   private PostgreSQLContainer<?> db;
 
@@ -48,13 +49,15 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
         .put("port", db.getFirstMappedPort())
         .put("database", db.getDatabaseName())
         .put("ssl", true)
-        .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "verify-full")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", "Passw0rd")
-            .build())
+        .put(
+            "ssl_mode",
+            ImmutableMap.builder()
+                .put("mode", "verify-full")
+                .put("ca_certificate", certs.getCaCertificate())
+                .put("client_certificate", certs.getClientCertificate())
+                .put("client_key", certs.getClientKey())
+                .put("client_key_password", "Passw0rd")
+                .build())
         .build());
   }
 
@@ -72,13 +75,13 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
@@ -109,34 +112,39 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     try (final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         db.getJdbcUrl(),
         SQLDialect.POSTGRES)) {
-      return new Database(dslContext)
-          .query(ctx -> {
-            ctx.execute("set time zone 'UTC';");
-            return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(this::getJsonFromRecord)
-                .collect(Collectors.toList());
-          });
+      return new Database(dslContext).query(ctx -> {
+        ctx.execute("set time zone 'UTC';");
+        return ctx
+            .fetch(String.format(
+                "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(this::getJsonFromRecord)
+            .collect(Collectors.toList());
+      });
     }
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
-    db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-        .asCompatibleSubstituteFor("postgres"));
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS)
+      throws Exception {
+    db = new PostgreSQLContainer<>(
+        DockerImageName.parse("postgres:bullseye").asCompatibleSubstituteFor("postgres"));
     db.start();
     certs = getCertificate(db);
   }
@@ -146,5 +154,4 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
     db.stop();
     db.close();
   }
-
 }

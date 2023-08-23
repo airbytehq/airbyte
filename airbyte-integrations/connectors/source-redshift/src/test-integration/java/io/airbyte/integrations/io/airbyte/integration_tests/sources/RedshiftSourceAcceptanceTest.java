@@ -75,40 +75,48 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     createTestData(database, schemaName, streamName, testUserName, true);
     createTestData(database, schemaName, "not_readable", testUserName, false);
 
-    // create a schema with data that will not be used for testing, but would be used to check schema
+    // create a schema with data that will not be used for testing, but would be used to check
+    // schema
     // filtering. This one should not be visible in results
     createTestData(database, schemaToIgnore, streamName, testUserName, true);
   }
 
   protected JdbcDatabase createDatabase(final JsonNode config) {
-    return new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            RedshiftSource.DRIVER_CLASS,
-            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText())));
+    return new DefaultJdbcDatabase(DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        RedshiftSource.DRIVER_CLASS,
+        String.format(
+            DatabaseDriver.REDSHIFT.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText())));
   }
 
-  protected void createTestUser(final JdbcDatabase database, final JsonNode config, final String testUserName, final String testUserPassword)
+  protected void createTestUser(
+      final JdbcDatabase database,
+      final JsonNode config,
+      final String testUserName,
+      final String testUserPassword)
       throws SQLException {
-    final String createTestUserQuery = String.format("CREATE USER %s PASSWORD '%s'", testUserName, testUserPassword);
+    final String createTestUserQuery =
+        String.format("CREATE USER %s PASSWORD '%s'", testUserName, testUserPassword);
     database.execute(connection -> {
       connection.createStatement().execute(createTestUserQuery);
     });
-    final String grantSelectOnPgTablesQuery = String.format("GRANT SELECT ON TABLE pg_tables TO %s ", testUserName);
+    final String grantSelectOnPgTablesQuery =
+        String.format("GRANT SELECT ON TABLE pg_tables TO %s ", testUserName);
     database.execute(connection -> {
       connection.createStatement().execute(grantSelectOnPgTablesQuery);
     });
   }
 
-  protected void createTestData(final JdbcDatabase database,
-                                final String schemaName,
-                                final String tableName,
-                                final String testUserName,
-                                final Boolean isReadableByTestUser)
+  protected void createTestData(
+      final JdbcDatabase database,
+      final String schemaName,
+      final String tableName,
+      final String testUserName,
+      final Boolean isReadableByTestUser)
       throws SQLException {
     final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", schemaName);
     database.execute(connection -> {
@@ -116,31 +124,33 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     });
 
     final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, tableName);
-    final String createTestTable =
-        String.format(
-            "CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n",
-            fqTableName);
+    final String createTestTable = String.format(
+        "CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n",
+        fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(createTestTable);
     });
 
-    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n",
-        fqTableName);
+    final String insertTestData =
+        String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
     });
 
     if (!isReadableByTestUser) {
-      final String revokeSelect = String.format("REVOKE SELECT ON TABLE %s FROM %s;\n", fqTableName, testUserName);
+      final String revokeSelect =
+          String.format("REVOKE SELECT ON TABLE %s FROM %s;\n", fqTableName, testUserName);
       database.execute(connection -> {
         connection.createStatement().execute(revokeSelect);
       });
     } else {
-      final String grantUsageQuery = String.format("GRANT USAGE ON SCHEMA %s TO %s;\n", schemaName, testUserName);
+      final String grantUsageQuery =
+          String.format("GRANT USAGE ON SCHEMA %s TO %s;\n", schemaName, testUserName);
       database.execute(connection -> {
         connection.createStatement().execute(grantUsageQuery);
       });
-      final String grantSelectQuery = String.format("GRANT SELECT ON TABLE %s TO %s;\n", fqTableName, testUserName);
+      final String grantSelectQuery =
+          String.format("GRANT SELECT ON TABLE %s TO %s;\n", fqTableName, testUserName);
       database.execute(connection -> {
         connection.createStatement().execute(grantSelectQuery);
       });
@@ -149,13 +159,17 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
-    database.execute(connection -> connection.createStatement()
+    database.execute(connection -> connection
+        .createStatement()
         .execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schemaName)));
-    database.execute(connection -> connection.createStatement()
+    database.execute(connection -> connection
+        .createStatement()
         .execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schemaToIgnore)));
-    database.execute(connection -> connection.createStatement()
+    database.execute(connection -> connection
+        .createStatement()
         .execute(String.format("REVOKE SELECT ON table pg_tables FROM %s", testUserName)));
-    database.execute(connection -> connection.createStatement()
+    database.execute(connection -> connection
+        .createStatement()
         .execute(String.format("DROP USER IF EXISTS %s", testUserName)));
   }
 
@@ -195,5 +209,4 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     assertEquals(streamName, actualStream.getName());
     assertEquals(CatalogHelpers.fieldsToJsonSchema(FIELDS), actualStream.getJsonSchema());
   }
-
 }

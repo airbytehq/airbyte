@@ -34,10 +34,9 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     if (db == null) {
-      db = new MSSQLServerContainer<>(DockerImageName
-          .parse("airbyte/mssql_ssltest:dev")
-          .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-              .acceptLicense();
+      db = new MSSQLServerContainer<>(DockerImageName.parse("airbyte/mssql_ssltest:dev")
+              .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
+          .acceptLicense();
       db.start();
     }
 
@@ -54,19 +53,22 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
       database.query(ctx -> {
         ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
         ctx.fetch(String.format("USE %s;", dbName));
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
         ctx.fetch(
-            "INSERT INTO id_and_name (id, name, born) VALUES " +
-                "(1,'picard', '2124-03-04T01:01:01Z'),  " +
-                "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
-                "(3, 'vash', '2124-03-04T01:01:01Z');");
+            "CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
+        ctx.fetch("INSERT INTO id_and_name (id, name, born) VALUES "
+            + "(1,'picard', '2124-03-04T01:01:01Z'),  "
+            + "(2, 'crusher', '2124-03-04T01:01:01Z'), "
+            + "(3, 'vash', '2124-03-04T01:01:01Z');");
         return null;
       });
     }
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
+    ((ObjectNode) config)
+        .put(
+            "ssl_method",
+            Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
   }
 
   private static DSLContext getDslContext(final JsonNode baseConfig) {
@@ -74,7 +76,8 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
         baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
+        String.format(
+            "jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
             baseConfig.get(JdbcUtils.HOST_KEY).asText(),
             baseConfig.get(JdbcUtils.PORT_KEY).asInt()),
         null);
@@ -83,5 +86,4 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
   private static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
-
 }

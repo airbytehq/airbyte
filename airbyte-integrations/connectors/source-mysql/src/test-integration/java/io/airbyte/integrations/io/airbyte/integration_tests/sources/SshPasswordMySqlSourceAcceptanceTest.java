@@ -47,18 +47,24 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
     final Network network = Network.newNetwork();
     // set up env
     final MySQLContainer<?> db = startTestContainers(bastion, network);
-    config = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, bastion.getBasicDbConfigBuider(db, List.of("public")), true);
+    config = bastion.getTunnelConfig(
+        SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH,
+        bastion.getBasicDbConfigBuider(db, List.of("public")),
+        true);
     bastion.stopAndClose();
     final Source sshWrappedSource = MySqlSource.sshWrappedSource();
-    final Exception exception = assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(config));
+    final Exception exception =
+        assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(config));
 
-    final String expectedMessage = "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
+    final String expectedMessage =
+        "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
     final String actualMessage = exception.getMessage();
 
     assertTrue(actualMessage.contains(expectedMessage));
   }
 
-  private MySQLContainer startTestContainers(final SshBastionContainer bastion, final Network network) {
+  private MySQLContainer startTestContainers(
+      final SshBastionContainer bastion, final Network network) {
     bastion.initAndStartBastion(network);
     return initAndStartJdbcContainer(network);
   }
@@ -68,5 +74,4 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
     db.start();
     return db;
   }
-
 }

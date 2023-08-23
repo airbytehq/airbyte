@@ -53,29 +53,40 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   // This is to account for the references when deserialization to a PartialAirbyteMessage. The
   // calculation is as follows:
   // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with
-  // PartialStateMessage being larger with more nested objects within it. Using 8 bytes as we assumed
+  // PartialStateMessage being larger with more nested objects within it. Using 8 bytes as we
+  // assumed
   // a 64 bit JVM.
   final int PARTIAL_DESERIALIZE_REF_BYTES = 10 * 8;
 
-  public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                             final OnStartFunction onStart,
-                             final OnCloseFunction onClose,
-                             final DestinationFlushFunction flusher,
-                             final ConfiguredAirbyteCatalog catalog,
-                             final BufferManager bufferManager,
-                             final String defaultNamespace) {
-    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure(), defaultNamespace);
+  public AsyncStreamConsumer(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final OnStartFunction onStart,
+      final OnCloseFunction onClose,
+      final DestinationFlushFunction flusher,
+      final ConfiguredAirbyteCatalog catalog,
+      final BufferManager bufferManager,
+      final String defaultNamespace) {
+    this(
+        outputRecordCollector,
+        onStart,
+        onClose,
+        flusher,
+        catalog,
+        bufferManager,
+        new FlushFailure(),
+        defaultNamespace);
   }
 
   @VisibleForTesting
-  public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                             final OnStartFunction onStart,
-                             final OnCloseFunction onClose,
-                             final DestinationFlushFunction flusher,
-                             final ConfiguredAirbyteCatalog catalog,
-                             final BufferManager bufferManager,
-                             final FlushFailure flushFailure,
-                             final String defaultNamespace) {
+  public AsyncStreamConsumer(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final OnStartFunction onStart,
+      final OnCloseFunction onClose,
+      final DestinationFlushFunction flusher,
+      final ConfiguredAirbyteCatalog catalog,
+      final BufferManager bufferManager,
+      final FlushFailure flushFailure,
+      final String defaultNamespace) {
     this.defaultNamespace = defaultNamespace;
     hasStarted = false;
     hasClosed = false;
@@ -86,7 +97,12 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
     this.flushFailure = flushFailure;
-    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager());
+    flushWorkers = new FlushWorkers(
+        bufferManager.getBufferDequeue(),
+        flusher,
+        outputRecordCollector,
+        flushFailure,
+        bufferManager.getStateManager());
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
   }
 
@@ -110,16 +126,15 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
      * to try to use a thread pool to partially deserialize to get record type and stream name, we can
      * do it without touching buffer manager.
      */
-    deserializeAirbyteMessage(messageString)
-        .ifPresent(message -> {
-          if (Type.RECORD.equals(message.getType())) {
-            if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
-              message.getRecord().setNamespace(defaultNamespace);
-            }
-            validateRecord(message);
-          }
-          bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
-        });
+    deserializeAirbyteMessage(messageString).ifPresent(message -> {
+      if (Type.RECORD.equals(message.getType())) {
+        if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
+          message.getRecord().setNamespace(defaultNamespace);
+        }
+        validateRecord(message);
+      }
+      bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
+    });
   }
 
   /**
@@ -134,10 +149,13 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
    * @return PartialAirbyteMessage if the message is valid, empty otherwise
    */
   @VisibleForTesting
-  public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
-    // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage code
+  public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(
+      final String messageString) {
+    // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage
+    // code
     // parity. https://github.com/airbytehq/airbyte/issues/27530 for additional context
-    final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
+    final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(
+            messageString, PartialAirbyteMessage.class)
         .map(partial -> {
           if (Type.RECORD.equals(partial.getType()) && partial.getRecord().getData() != null) {
             return partial.withSerialized(partial.getRecord().getData().toString());
@@ -189,10 +207,10 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     }
   }
 
-  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final PartialAirbyteMessage message) {
-    throw new IllegalArgumentException(
-        String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-            Jsons.serialize(catalog), Jsons.serialize(message)));
+  private static void throwUnrecognizedStream(
+      final ConfiguredAirbyteCatalog catalog, final PartialAirbyteMessage message) {
+    throw new IllegalArgumentException(String.format(
+        "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+        Jsons.serialize(catalog), Jsons.serialize(message)));
   }
-
 }

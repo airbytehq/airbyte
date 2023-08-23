@@ -84,42 +84,49 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
   @ParameterizedTest
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
-  public void testBuildProducerMap(final ConfiguredAirbyteCatalog catalog,
-                                   final String streamName,
-                                   final String namespace,
-                                   final String topicPattern,
-                                   final String expectedTopic)
+  public void testBuildProducerMap(
+      final ConfiguredAirbyteCatalog catalog,
+      final String streamName,
+      final String namespace,
+      final String topicPattern,
+      final String expectedTopic)
       throws UnknownHostException {
     String brokers = Stream.concat(getIpAddresses().stream(), Stream.of("localhost"))
         .map(ip -> ip + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
         .collect(Collectors.joining(","));
-    final PulsarDestinationConfig config = PulsarDestinationConfig
-        .getPulsarDestinationConfig(getConfig(brokers, topicPattern));
+    final PulsarDestinationConfig config =
+        PulsarDestinationConfig.getPulsarDestinationConfig(getConfig(brokers, topicPattern));
     final PulsarClient pulsarClient = PulsarUtils.buildClient(config.getServiceUrl());
-    final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
-    final Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> producerMap = recordConsumer.buildProducerMap();
+    final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(
+        config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
+    final Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> producerMap =
+        recordConsumer.buildProducerMap();
     assertEquals(Sets.newHashSet(catalog.getStreams()).size(), producerMap.size());
 
-    final AirbyteStreamNameNamespacePair streamNameNamespacePair = new AirbyteStreamNameNamespacePair(streamName, namespace);
+    final AirbyteStreamNameNamespacePair streamNameNamespacePair =
+        new AirbyteStreamNameNamespacePair(streamName, namespace);
     assertEquals(expectedTopic, producerMap.get(streamNameNamespacePair).getTopic());
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
-    final PulsarDestinationConfig config = PulsarDestinationConfig
-        .getPulsarDestinationConfig(getConfig(PULSAR.getHost() + ":" + (PULSAR.getMappedPort(PulsarContainer.BROKER_PORT) + 10), "test-topic"));
+    final PulsarDestinationConfig config =
+        PulsarDestinationConfig.getPulsarDestinationConfig(getConfig(
+            PULSAR.getHost() + ":" + (PULSAR.getMappedPort(PulsarContainer.BROKER_PORT) + 10),
+            "test-topic"));
 
     final String streamName = "test-stream";
     final String namespace = "test-schema";
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createConfiguredAirbyteStream(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(CatalogHelpers.createConfiguredAirbyteStream(
             streamName,
             namespace,
             Field.of("id", JsonSchemaType.NUMBER),
             Field.of("name", JsonSchemaType.STRING))));
     final PulsarClient pulsarClient = PulsarUtils.buildClient(config.getServiceUrl());
-    final PulsarRecordConsumer consumer = new PulsarRecordConsumer(config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
+    final PulsarRecordConsumer consumer = new PulsarRecordConsumer(
+        config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
     final List<AirbyteMessage> expectedRecords = getNRecords(10, streamName, namespace);
 
     assertThrows(RuntimeException.class, consumer::start);
@@ -128,7 +135,8 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
 
     consumer.accept(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(namespace + "." + streamName, 0)))));
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.jsonNode(ImmutableMap.of(namespace + "." + streamName, 0)))));
     consumer.close();
   }
 
@@ -152,7 +160,8 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
         .build());
   }
 
-  private List<AirbyteMessage> getNRecords(final int n, final String streamName, final String namespace) {
+  private List<AirbyteMessage> getNRecords(
+      final int n, final String streamName, final String namespace) {
     return IntStream.range(0, n)
         .boxed()
         .map(i -> new AirbyteMessage()
@@ -163,7 +172,6 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
-
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -207,29 +215,57 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
       catalogs.add(new ConfiguredAirbyteCatalog().withStreams(List.of(stream1, stream1)));
       catalogs.add(new ConfiguredAirbyteCatalog().withStreams(List.of(stream1, stream2)));
 
-      return catalogs.stream()
-          .flatMap(catalog -> catalog.getStreams().stream()
-              .map(stream -> buildArgs(catalog, stream.getStream(), prefix))
-              .flatMap(Collection::stream));
+      return catalogs.stream().flatMap(catalog -> catalog.getStreams().stream()
+          .map(stream -> buildArgs(catalog, stream.getStream(), prefix))
+          .flatMap(Collection::stream));
     }
 
-    private List<Arguments> buildArgs(final ConfiguredAirbyteCatalog catalog, final AirbyteStream stream, final String prefix) {
+    private List<Arguments> buildArgs(
+        final ConfiguredAirbyteCatalog catalog, final AirbyteStream stream, final String prefix) {
       final String transformedTopic = NAMING_RESOLVER.getIdentifier(TOPIC_NAME);
       final String transformedName = NAMING_RESOLVER.getIdentifier(stream.getName());
       final String transformedNamespace = NAMING_RESOLVER.getIdentifier(stream.getNamespace());
 
       return ImmutableList.of(
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), TOPIC_NAME, prefix + "test_topic"),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "test-topic", prefix + "test_topic"),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}", prefix + transformedNamespace),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{stream}", prefix + transformedName),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}.{stream}." + TOPIC_NAME,
+          Arguments.of(
+              catalog, stream.getName(), stream.getNamespace(), TOPIC_NAME, prefix + "test_topic"),
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "test-topic",
+              prefix + "test_topic"),
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "{namespace}",
+              prefix + transformedNamespace),
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "{stream}",
+              prefix + transformedName),
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "{namespace}.{stream}." + TOPIC_NAME,
               prefix + transformedNamespace + "_" + transformedName + "_" + transformedTopic),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}-{stream}-" + TOPIC_NAME,
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "{namespace}-{stream}-" + TOPIC_NAME,
               prefix + transformedNamespace + "_" + transformedName + "_" + transformedTopic),
-          Arguments.of(catalog, stream.getName(), stream.getNamespace(), "topic with spaces", prefix + "topic_with_spaces"));
+          Arguments.of(
+              catalog,
+              stream.getName(),
+              stream.getNamespace(),
+              "topic with spaces",
+              prefix + "topic_with_spaces"));
     }
-
   }
 
   @Override
@@ -247,12 +283,12 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
     // TODO: Unit tests should not use Testcontainers
     PULSAR = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.8.1"));
     PULSAR.start();
-    consumer = new PulsarRecordConsumer(config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
+    consumer = new PulsarRecordConsumer(
+        config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
   }
 
   @AfterEach
   void tearDown() {
     PULSAR.close();
   }
-
 }

@@ -20,12 +20,12 @@ public class CompressionTypeHelper {
     if (compressionConfig == null || compressionConfig.isNull()) {
       return DEFAULT_COMPRESSION_TYPE;
     }
-    final String compressionType = compressionConfig.get(COMPRESSION_TYPE_ARG_NAME).asText();
+    final String compressionType =
+        compressionConfig.get(COMPRESSION_TYPE_ARG_NAME).asText();
     if (compressionType.toUpperCase().equals(CompressionType.GZIP.name())) {
       return CompressionType.GZIP;
     } else {
       return CompressionType.NO_COMPRESSION;
     }
   }
-
 }

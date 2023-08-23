@@ -34,12 +34,13 @@ public interface NormalizationRunner extends AutoCloseable {
    * @throws Exception - any exception thrown from configuration will be handled gracefully by the
    *         caller.
    */
-  boolean configureDbt(String jobId,
-                       int attempt,
-                       Path jobRoot,
-                       JsonNode config,
-                       ResourceRequirements resourceRequirements,
-                       OperatorDbt dbtConfig)
+  boolean configureDbt(
+      String jobId,
+      int attempt,
+      Path jobRoot,
+      JsonNode config,
+      ResourceRequirements resourceRequirements,
+      OperatorDbt dbtConfig)
       throws Exception;
 
   /**
@@ -56,14 +57,14 @@ public interface NormalizationRunner extends AutoCloseable {
    * @throws Exception - any exception thrown from normalization will be handled gracefully by the
    *         caller.
    */
-  boolean normalize(String jobId,
-                    int attempt,
-                    Path jobRoot,
-                    JsonNode config,
-                    ConfiguredAirbyteCatalog catalog,
-                    ResourceRequirements resourceRequirements)
+  boolean normalize(
+      String jobId,
+      int attempt,
+      Path jobRoot,
+      JsonNode config,
+      ConfiguredAirbyteCatalog catalog,
+      ResourceRequirements resourceRequirements)
       throws Exception;
 
   Stream<AirbyteTraceMessage> getTraceMessages();
-
 }

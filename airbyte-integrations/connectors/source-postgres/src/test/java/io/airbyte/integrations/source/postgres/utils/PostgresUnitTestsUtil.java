@@ -28,14 +28,24 @@ public class PostgresUnitTestsUtil {
     }
   }
 
-  public static AirbyteMessage createRecord(final String stream, final Map<Object, Object> data, String schemaName) {
-    return new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(schemaName));
+  public static AirbyteMessage createRecord(
+      final String stream, final Map<Object, Object> data, String schemaName) {
+    return new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withData(Jsons.jsonNode(data))
+            .withStream(stream)
+            .withNamespace(schemaName));
   }
 
-  public static AirbyteMessage createRecord(final String stream, final String namespace, final Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(namespace));
+  public static AirbyteMessage createRecord(
+      final String stream, final String namespace, final Map<Object, Object> data) {
+    return new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withData(Jsons.jsonNode(data))
+            .withStream(stream)
+            .withNamespace(namespace));
   }
 
   public static Map<Object, Object> map(final Object... entries) {
@@ -50,42 +60,46 @@ public class PostgresUnitTestsUtil {
           put(entries[i++], entries[i]);
         }
       }
-
     };
   }
 
-  public static AirbyteStateMessage generateStateMessage(final String streamName, final String namespace, final JsonNode stateData) {
+  public static AirbyteStateMessage generateStateMessage(
+      final String streamName, final String namespace, final JsonNode stateData) {
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(new AirbyteStreamState()
-            .withStreamDescriptor(new StreamDescriptor()
-                .withName(streamName)
-                .withNamespace(namespace))
+            .withStreamDescriptor(
+                new StreamDescriptor().withName(streamName).withNamespace(namespace))
             .withStreamState(stateData));
   }
 
   public static List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages) {
-    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+    return messages.stream()
+        .filter(r -> r.getType() == Type.STATE)
+        .map(AirbyteMessage::getState)
         .collect(Collectors.toList());
   }
 
-  public static List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages, final String streamName) {
-    return messages.stream().filter(r -> r.getType() == Type.STATE &&
-        r.getState().getStream().getStreamDescriptor().getName().equals(streamName)).map(AirbyteMessage::getState)
+  public static List<AirbyteStateMessage> extractStateMessage(
+      final List<AirbyteMessage> messages, final String streamName) {
+    return messages.stream()
+        .filter(r -> r.getType() == Type.STATE
+            && r.getState().getStream().getStreamDescriptor().getName().equals(streamName))
+        .map(AirbyteMessage::getState)
         .collect(Collectors.toList());
   }
 
   public static List<AirbyteMessage> filterRecords(final List<AirbyteMessage> messages) {
-    return messages.stream().filter(r -> r.getType() == Type.RECORD)
-        .collect(Collectors.toList());
+    return messages.stream().filter(r -> r.getType() == Type.RECORD).collect(Collectors.toList());
   }
 
-  public static List<String> extractSpecificFieldFromCombinedMessages(final List<AirbyteMessage> messages,
-                                                                      final String streamName,
-                                                                      final String field) {
+  public static List<String> extractSpecificFieldFromCombinedMessages(
+      final List<AirbyteMessage> messages, final String streamName, final String field) {
     return extractStateMessage(messages).stream()
         .filter(s -> s.getStream().getStreamDescriptor().getName().equals(streamName))
-        .map(s -> s.getStream().getStreamState().get(field) != null ? s.getStream().getStreamState().get(field).asText() : "").toList();
+        .map(s -> s.getStream().getStreamState().get(field) != null
+            ? s.getStream().getStreamState().get(field).asText()
+            : "")
+        .toList();
   }
-
 }

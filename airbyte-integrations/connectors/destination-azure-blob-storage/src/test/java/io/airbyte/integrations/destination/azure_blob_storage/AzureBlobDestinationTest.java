@@ -23,11 +23,10 @@ public class AzureBlobDestinationTest {
         .put("azure_blob_storage_endpoint_domain_name", "accDomainName.com")
         .put("format", getFormatConfig())
         .build());
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
-    assertEquals("https://accName.accDomainName.com",
-        azureBlobStorageConfig.getEndpointUrl());
+    assertEquals("https://accName.accDomainName.com", azureBlobStorageConfig.getEndpointUrl());
   }
 
   @Test
@@ -37,11 +36,10 @@ public class AzureBlobDestinationTest {
         .put("azure_blob_storage_account_key", "accKey")
         .put("format", getFormatConfig())
         .build());
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
-    assertEquals("https://accName.blob.core.windows.net",
-        azureBlobStorageConfig.getEndpointUrl());
+    assertEquals("https://accName.blob.core.windows.net", azureBlobStorageConfig.getEndpointUrl());
   }
 
   @Test
@@ -52,8 +50,7 @@ public class AzureBlobDestinationTest {
         .put("format", getFormatConfig())
         .build());
     final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
-        AzureBlobStorageDestinationConfig
-            .getAzureBlobStorageConfig(config);
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
     assertNotNull(azureBlobStorageConfig);
   }
@@ -65,15 +62,16 @@ public class AzureBlobDestinationTest {
         .put("azure_blob_storage_account_key", "accKey")
         .put("format", getFormatConfig())
         .build());
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
     assertEquals("airbytecontainer", azureBlobStorageConfig.getContainerName());
   }
 
   @Test
   public void testSpec() throws Exception {
-    final AzureBlobStorageDestination azureBlobStorageDestination = new AzureBlobStorageDestination();
+    final AzureBlobStorageDestination azureBlobStorageDestination =
+        new AzureBlobStorageDestination();
     final ConnectorSpecification spec = azureBlobStorageDestination.spec();
     final JsonNode connectionSpecification = spec.getConnectionSpecification();
 
@@ -89,11 +87,10 @@ public class AzureBlobDestinationTest {
         .put("azure_blob_storage_output_buffer_size", 10)
         .put("format", getFormatConfig())
         .build());
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
-    assertEquals(10 * 1024 * 1024,
-        azureBlobStorageConfig.getOutputStreamBufferSize());
+    assertEquals(10 * 1024 * 1024, azureBlobStorageConfig.getOutputStreamBufferSize());
   }
 
   @Test
@@ -107,17 +104,13 @@ public class AzureBlobDestinationTest {
         .put("format", getFormatConfig())
         .build());
 
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
-    assertEquals((long) 500 * 1024 * 1024,
-        azureBlobStorageConfig.getBlobSpillSize());
+    assertEquals((long) 500 * 1024 * 1024, azureBlobStorageConfig.getBlobSpillSize());
   }
 
   private JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}");
+    return Jsons.deserialize("{\n" + "  \"format_type\": \"JSONL\"\n" + "}");
   }
-
 }

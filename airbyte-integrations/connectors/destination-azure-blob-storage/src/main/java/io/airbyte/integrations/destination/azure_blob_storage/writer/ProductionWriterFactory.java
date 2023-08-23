@@ -18,9 +18,10 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public AzureBlobStorageWriter create(final AzureBlobStorageDestinationConfig config,
-                                       final AppendBlobClient appendBlobClient,
-                                       final ConfiguredAirbyteStream configuredStream)
+  public AzureBlobStorageWriter create(
+      final AzureBlobStorageDestinationConfig config,
+      final AppendBlobClient appendBlobClient,
+      final ConfiguredAirbyteStream configuredStream)
       throws Exception {
     final AzureBlobStorageFormat format = config.getFormatConfig().getFormat();
 
@@ -36,5 +37,4 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
 
     throw new RuntimeException("Unexpected AzureBlobStorage destination format: " + format);
   }
-
 }
