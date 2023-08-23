@@ -43,6 +43,17 @@ def prepare_create_customer(headers: Dict[str, str], customer: Customer):
     customer_data.pop("bank_account")
     return HttpRequest(method="POST", url=url, headers=headers, body=customer_data)
 
+def prepare_create_bank_account(headers: Dict[str, str], customer: Customer):
+    if customer.id is None:
+        raise ValueError(f"Cannot create bank account for uninitialized customer {customer}")
+    if customer.bank_account is None:
+        raise ValueError(f"Cannot create bank account for customer without bank account information: {customer}")
+
+    url = f"https://api.stripe.com/v1/customers/{customer.id}/sources"
+    bank_account_data = {"source": customer.bank_account.dict(exclude_none=True)}
+    bank_account_data["source"]["account_holder_name"] = customer.name
+    return HttpRequest(method="POST", url=url, headers=headers, body=bank_account_data)
+
 
 @click.group()
 def _main():
@@ -107,12 +118,8 @@ def create_customer(headers, customer):
 def create_bank_account(headers, customer: Customer):
     if customer.id is None:
         raise ValueError(f"Cannot create bank account for uninitialized customer {customer}")
-    print(f"bank_account:\n{customer.bank_account}")
-    url = f"https://api.stripe.com/v1/customers/{customer.id}/sources"
-    bank_account_data = {"source": customer.bank_account.dict()}
-    bank_account_data["source"]["account_holder_name"] = customer.name
-    print(f"bank account data before sending: {bank_account_data}")
-    return fetch(url, headers, bank_account_data)
+    request = prepare_create_bank_account(headers, customer)
+    return submit(request)
 
 
 def create_customer_and_bank_account(headers, customer: Customer):

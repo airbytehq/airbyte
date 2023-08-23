@@ -1,5 +1,6 @@
 from source_stripe.seed.seed import Customer, BankAccount, prepare_create_customer, HttpRequest, prepare_create_bank_account
 
+import pytest
 
 def test_prepare_create_customer_request():
     record = {
@@ -74,3 +75,38 @@ def test_prepare_create_bank_account_request():
     )
 
     assert http_request == expected_request
+
+def test_prepare_create_bank_account_request_fails_if_customer_has_no_bank_account():
+    record = {
+        "id": "12345",
+        "description": "A fake customer",
+        "email": "fake@airbyte.io",
+        "name": "First Last",
+        "balance": "900001",
+    }
+
+    customer = Customer.parse_obj(record)
+    headers = {"header_key": "header_value"}
+    with pytest.raises(ValueError):
+        prepare_create_bank_account(headers, customer)
+
+def test_prepare_create_bank_account_request_fails_if_user_has_no_id():
+    record = {
+        "description": "A fake customer",
+        "email": "fake@airbyte.io",
+        "name": "First Last",
+        "balance": "900001",
+        "bank_account": {
+            "object": "bank_account",
+            "country": "US",
+            "currency": "usd",
+            "account_holder_type": "individual",
+            "routing_number": "110000000",
+            "account_number": "000123456789"
+        }
+    }
+
+    customer = Customer.parse_obj(record)
+    headers = {"header_key": "header_value"}
+    with pytest.raises(ValueError):
+        prepare_create_bank_account(headers, customer)
