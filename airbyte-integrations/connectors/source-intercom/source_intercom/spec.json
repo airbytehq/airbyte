@@ -20,6 +20,18 @@
         "type": "string",
         "description": "Access Token for making authenticated requests.",
         "airbyte_secret": true
+      },
+      "client_id": {
+        "title": "Client Id",
+        "type": "string",
+        "description": "Client Id for your Intercom application.",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "title": "Client Secret",
+        "type": "string",
+        "description": "Client Secret for your Intercom application.",
+        "airbyte_secret": true
       }
     }
   },

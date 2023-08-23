@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-intercom
   githubIssueLabel: source-intercom
   icon: intercom.svg
