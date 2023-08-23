@@ -20,13 +20,14 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_MAX_HISTORY_SIZE, FileBasedSource
+from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
 from avro import datafile
-from pydantic import AnyUrl, Field
+from pydantic import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -41,7 +42,7 @@ class InMemoryFilesSource(FileBasedSource):
         stream_reader: Optional[AbstractFileBasedStreamReader],
         catalog: Optional[Mapping[str, Any]],
         file_write_options: Mapping[str, Any],
-        max_history_size: int,
+        cursor_cls: Optional[AbstractFileBasedCursor],
     ):
         # Attributes required for test purposes
         self.files = files
@@ -59,7 +60,7 @@ class InMemoryFilesSource(FileBasedSource):
             discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
             parsers=parsers,
             validation_policies=validation_policies or DEFAULT_SCHEMA_VALIDATION_POLICIES,
-            max_history_size=max_history_size or DEFAULT_MAX_HISTORY_SIZE,
+            cursor_cls=cursor_cls or DefaultFileBasedCursor,
         )
 
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
@@ -84,14 +85,15 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     def get_matching_files(
         self,
         globs: List[str],
+        prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        yield from AbstractFileBasedStreamReader.filter_files_by_globs([
+        yield from self.filter_files_by_globs_and_start_date([
             RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
             for f, data in self.files.items()
         ], globs)
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         if self.file_type == "csv":
             return self._make_csv_file_contents(file.uri)
         elif self.file_type == "jsonl":
@@ -100,7 +102,14 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             raise NotImplementedError(f"No implementation for file type: {self.file_type}")
 
     def _make_csv_file_contents(self, file_name: str) -> IOBase:
+
+        # Some tests define the csv as an array of strings to make it easier to validate the handling
+        # of quotes, delimiter, and escpare chars.
+        if isinstance(self.files[file_name]["contents"][0], str):
+            return io.StringIO("\n".join([s.strip() for s in self.files[file_name]["contents"]]))
+
         fh = io.StringIO()
+
         if self.file_write_options:
             csv.register_dialect("in_memory_dialect", **self.file_write_options)
             writer = csv.writer(fh, dialect="in_memory_dialect")
@@ -130,22 +139,13 @@ class InMemorySpec(AbstractFileBasedSpec):
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
 
-    start_date: Optional[str] = Field(
-        title="Start Date",
-        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
-        examples=["2021-01-01T00:00:00Z"],
-        format="date-time",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        order=1,
-    )
-
 
 class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
     """
     A file reader that writes RemoteFiles to a temporary file and then reads them back.
     """
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         return io.BytesIO(self._create_file(file.uri))
 
     def _create_file(self, file_name: str) -> bytes:
@@ -166,7 +166,7 @@ class TemporaryAvroFilesStreamReader(InMemoryFilesStreamReader):
     A file reader that writes RemoteFiles to a temporary file and then reads them back.
     """
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         return io.BytesIO(self._make_file_contents(file.uri))
 
     def _make_file_contents(self, file_name: str) -> bytes:

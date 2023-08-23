@@ -29,6 +29,18 @@
                 "title": "Access Token",
                 "description": "OAuth access token",
                 "airbyte_secret": true
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client Id",
+                "description": "OAuth Client Id",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client ssecret",
+                "description": "OAuth Client secret",
+                "airbyte_secret": true
               }
             }
           },

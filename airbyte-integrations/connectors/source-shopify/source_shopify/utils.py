@@ -44,7 +44,7 @@ SCOPES_MAPPING = {
     "read_locations": ["Locations", "MetafieldLocations"],
     "read_inventory": ["InventoryItems", "InventoryLevels"],
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
-    "read_shopify_payments_payouts": ["BalanceTransactions"],
+    "read_shopify_payments_payouts": ["BalanceTransactions", "Disputes"],
     "read_online_store_pages": ["Articles", "MetafieldArticles", "Blogs", "MetafieldBlogs"],
 }
 
@@ -58,6 +58,7 @@ class ShopifyNonRetryableErrors:
             402: f"Stream `{stream}`. The shop's plan does not have access to this feature. Please upgrade your plan to be  able to access this stream.",
             403: f"Stream `{stream}`. Unable to access Shopify endpoint for {stream}. Check that you have the appropriate access scopes to read data from this endpoint.",
             404: f"Stream `{stream}`. Not available or missing.",
+            500: f"Stream `{stream}`. Entity might not be available or missing."
             # extend the mapping with more handable errors, if needed.
         }
 

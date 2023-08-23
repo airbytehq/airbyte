@@ -20,8 +20,7 @@
             "properties": {
               "instance": {
                 "type": "string",
-                "enum": ["standalone"],
-                "default": "standalone"
+                "const": "standalone"
               },
               "host": {
                 "title": "Host",
@@ -47,8 +46,7 @@
             "properties": {
               "instance": {
                 "type": "string",
-                "enum": ["replica"],
-                "default": "replica"
+                "const": "replica"
               },
               "server_addresses": {
                 "title": "Server Addresses",
@@ -67,13 +65,12 @@
           },
           {
             "title": "MongoDB Atlas",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "required": ["instance", "cluster_url"],
             "properties": {
               "instance": {
                 "type": "string",
-                "enum": ["atlas"],
-                "default": "atlas"
+                "const": "atlas"
               },
               "cluster_url": {
                 "title": "Cluster URL",

@@ -15,7 +15,7 @@ from xmlrpc.client import Boolean
 import dpath.util
 import jsonschema
 import pytest
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
     AirbyteTraceMessage,
@@ -46,13 +46,14 @@ from connector_acceptance_test.utils.common import (
     find_all_values_for_key_in_schema,
     find_keyword_schema,
 )
+from connector_acceptance_test.utils.compare import diff_dicts
 from connector_acceptance_test.utils.json_schema_helper import (
     JsonSchemaHelper,
+    flatten_tuples,
     get_expected_schema_structure,
     get_object_structure,
     get_paths_in_connector_config,
 )
-from jsonschema._utils import flatten
 
 
 @pytest.fixture(name="connector_spec_dict")
@@ -87,12 +88,9 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
-@pytest.mark.default_timeout(30)
+# The connector fixture can be long to load, we have to increase the default timeout...
+@pytest.mark.default_timeout(5 * 60)
 class TestSpec(BaseTest):
-
-    spec_cache: ConnectorSpecification = None
-    previous_spec_cache: ConnectorSpecification = None
-
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
         self,
@@ -118,7 +116,6 @@ class TestSpec(BaseTest):
         """Check that config matches the actual schema from the spec call"""
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
-
         try:
             jsonschema.validate(instance=config, schema=actual_connector_spec.connectionSpecification)
         except jsonschema.exceptions.ValidationError as err:
@@ -126,10 +123,12 @@ class TestSpec(BaseTest):
         except jsonschema.exceptions.SchemaError as err:
             pytest.fail(f"Spec is invalid: {err}")
 
-    def test_match_expected(self, connector_spec: Optional[ConnectorSpecification], actual_connector_spec: ConnectorSpecification):
+    def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
             assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
+        else:
+            pytest.skip("The spec.yaml or spec.json does not exist. Hence, comparison with the actual one can't be performed")
 
     def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that enum lists in specs contain distinct values."""
@@ -182,11 +181,11 @@ class TestSpec(BaseTest):
             for n, variant in enumerate(variants):
                 prop_obj = variant["properties"][const_common_prop]
                 assert (
-                    "default" not in prop_obj
-                ), f"There should not be 'default' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
-                assert (
-                    "enum" not in prop_obj
-                ), f"There should not be 'enum' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
+                    "default" not in prop_obj or prop_obj["default"] == prop_obj["const"]
+                ), f"'default' needs to be identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
+                assert "enum" not in prop_obj or (
+                    len(prop_obj["enum"]) == 1 and prop_obj["enum"][0] == prop_obj["const"]
+                ), f"'enum' needs to be an array with a single item identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
@@ -547,45 +546,41 @@ class TestSpec(BaseTest):
     # This test should not be part of TestSpec because it's testing the connector's docker image content, not the spec itself
     # But it's cumbersome to declare a separate, non configurable, test class
     # See https://github.com/airbytehq/airbyte/issues/15551
-    def test_image_labels(self, docker_runner: ConnectorRunner, connector_metadata: dict):
+    async def test_image_labels(self, docker_runner: ConnectorRunner, connector_metadata: dict):
         """Check that connector's docker image has required labels"""
-        assert docker_runner.labels.get("io.airbyte.name"), "io.airbyte.name must be set in dockerfile"
-        assert docker_runner.labels.get("io.airbyte.version"), "io.airbyte.version must be set in dockerfile"
         assert (
-            docker_runner.labels.get("io.airbyte.name") == connector_metadata["data"]["dockerRepository"]
+            await docker_runner.get_container_label("io.airbyte.name") == connector_metadata["data"]["dockerRepository"]
         ), "io.airbyte.name must be equal to dockerRepository in metadata.yaml"
         assert (
-            docker_runner.labels.get("io.airbyte.version") == connector_metadata["data"]["dockerImageTag"]
+            await docker_runner.get_container_label("io.airbyte.version") == connector_metadata["data"]["dockerImageTag"]
         ), "io.airbyte.version must be equal to dockerImageTag in metadata.yaml"
 
     # This test should not be part of TestSpec because it's testing the connector's docker image content, not the spec itself
     # But it's cumbersome to declare a separate, non configurable, test class
     # See https://github.com/airbytehq/airbyte/issues/15551
-    def test_image_environment_variables(self, docker_runner: ConnectorRunner):
+    async def test_image_environment_variables(self, docker_runner: ConnectorRunner):
         """Check that connector's docker image has required envs"""
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
-            docker_runner.entry_point
-        ), "env should be equal to space-joined entrypoint"
+        assert await docker_runner.get_container_env_variable_value("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+        assert await docker_runner.get_container_env_variable_value("AIRBYTE_ENTRYPOINT") == await docker_runner.get_container_entrypoint()
 
 
 @pytest.mark.default_timeout(30)
 class TestConnection(BaseTest):
-    def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
+    async def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
-            output = docker_runner.call_check(config=connector_config)
+            output = await docker_runner.call_check(config=connector_config)
             con_messages = filter_output(output, Type.CONNECTION_STATUS)
 
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.SUCCEEDED
         elif inputs.status == ConnectionTestConfig.Status.Failed:
-            output = docker_runner.call_check(config=connector_config)
+            output = await docker_runner.call_check(config=connector_config)
             con_messages = filter_output(output, Type.CONNECTION_STATUS)
 
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.FAILED
         elif inputs.status == ConnectionTestConfig.Status.Exception:
-            output = docker_runner.call_check(config=connector_config, raise_container_error=False)
+            output = await docker_runner.call_check(config=connector_config, raise_container_error=False)
             trace_messages = filter_output(output, Type.TRACE)
             assert len(trace_messages) == 1, "A trace message should be emitted in case of unexpected errors"
             trace = trace_messages[0].trace
@@ -637,9 +632,9 @@ class TestDiscovery(BaseTest):
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
         return False
 
-    def test_discover(self, connector_config, docker_runner: ConnectorRunner):
+    async def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         """Verify that discover produce correct schema."""
-        output = docker_runner.call_discover(config=connector_config)
+        output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
@@ -782,7 +777,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(5 * 60)
+@pytest.mark.default_timeout(10 * 60)
 class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
@@ -849,7 +844,7 @@ class TestBasicRead(BaseTest):
         In case of `oneOf` or `anyOf` schema props, compare only choice which is present in records.
         """
         expected_paths = get_expected_schema_structure(schema, annotate_one_of=True)
-        expected_paths = set(flatten(tuple(expected_paths)))
+        expected_paths = set(flatten_tuples(tuple(expected_paths)))
 
         for record in records:
             record_paths = set(get_object_structure(record))
@@ -897,14 +892,8 @@ class TestBasicRead(BaseTest):
         for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
             detailed_logger.info(f"Actual records for stream {stream_name}:")
-            detailed_logger.log_json_list(actual)
-            detailed_logger.info(f"Expected records for stream {stream_name}:")
-            detailed_logger.log_json_list(expected)
-
+            detailed_logger.info(actual)
             ignored_field_names = [field.name for field in ignored_fields.get(stream_name, [])]
-            detailed_logger.info(f"Ignored fields for stream {stream_name}:")
-            detailed_logger.log_json_list(ignored_field_names)
-
             self.compare_records(
                 stream_name=stream_name,
                 actual=actual,
@@ -965,7 +954,7 @@ class TestBasicRead(BaseTest):
         else:
             return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
 
-    def test_read(
+    async def test_read(
         self,
         connector_config,
         configured_catalog,
@@ -979,7 +968,7 @@ class TestBasicRead(BaseTest):
         docker_runner: ConnectorRunner,
         detailed_logger,
     ):
-        output = docker_runner.call_read(connector_config, configured_catalog)
+        output = await docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
         assert records, "At least one record should be read using provided catalog"
@@ -1009,7 +998,7 @@ class TestBasicRead(BaseTest):
                 detailed_logger=detailed_logger,
             )
 
-    def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
+    async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:
             pytest.skip("Skipping `test_airbyte_trace_message_on_failure` because `inputs.expect_trace_message_on_failure=False`")
             return
@@ -1029,7 +1018,7 @@ class TestBasicRead(BaseTest):
             ]
         )
 
-        output = docker_runner.call_read(connector_config, invalid_configured_catalog, raise_container_error=False)
+        output = await docker_runner.call_read(connector_config, invalid_configured_catalog, raise_container_error=False)
         trace_messages = filter_output(output, Type.TRACE)
         error_trace_messages = list(filter(lambda m: m.trace.type == TraceType.ERROR, trace_messages))
 
@@ -1063,16 +1052,30 @@ class TestBasicRead(BaseTest):
     ):
         """Compare records using combination of restrictions"""
         if exact_order:
-            for r1, r2 in zip(expected, actual):
+            if ignored_fields:
+                for item in actual:
+                    delete_fields(item, ignored_fields)
+                for item in expected:
+                    delete_fields(item, ignored_fields)
+
+            cleaned_actual = []
+            if extra_fields:
+                for r1, r2 in zip(expected, actual):
+                    if r1 and r2:
+                        cleaned_actual.append(TestBasicRead.remove_extra_fields(r2, r1))
+                    else:
+                        break
+
+            cleaned_actual = cleaned_actual or actual
+            complete_diff = "\n".join(diff_dicts(cleaned_actual, expected, use_markup=False))
+            for r1, r2 in zip(expected, cleaned_actual):
                 if r1 is None:
                     assert extra_records, f"Stream {stream_name}: There are more records than expected, but extra_records is off"
                     break
-                if extra_fields:
-                    r2 = TestBasicRead.remove_extra_fields(r2, r1)
-                if ignored_fields:
-                    delete_fields(r1, ignored_fields)
-                    delete_fields(r2, ignored_fields)
-                assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
+
+                # to avoid printing the diff twice, we avoid the == operator here (see plugin.pytest_assertrepr_compare)
+                equals = r1 == r2
+                assert equals, f"Stream {stream_name}: Mismatch of record order or values\nDiff actual vs expected:{complete_diff}"
         else:
             _make_hashable = functools.partial(make_hashable, exclude_fields=ignored_fields) if ignored_fields else make_hashable
             expected = set(map(_make_hashable, expected))

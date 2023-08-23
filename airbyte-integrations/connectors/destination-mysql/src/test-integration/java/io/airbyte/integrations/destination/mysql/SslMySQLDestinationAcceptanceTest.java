@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -84,7 +85,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
 

@@ -263,7 +263,11 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.1   | 2023-08-21 | [29308](https://github.com/airbytehq/airbyte/pull/29308)   | CDC: Enable frequent state emissions during incremental runs                                                                                    |
+| 3.0.0   | 2023-08-08 | [28756](https://github.com/airbytehq/airbyte/pull/28756)   | CDC: Set a default cursor                                                                                                                       |
+| 2.1.2   | 2023-08-08 | [29220](https://github.com/airbytehq/airbyte/pull/29220)   | Add indicator that CDC is the recommended update method                                                                                         |
+| 2.1.1   | 2023-07-31 | [28882](https://github.com/airbytehq/airbyte/pull/28882)   | Improve replication method labels and descriptions                                                                                              |
 | 2.1.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737)   | License Update: Elv2                                                                                                                            |
 | 2.0.25  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212)   | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                        |
 | 2.0.24  | 2023-05-25 | [26473](https://github.com/airbytehq/airbyte/pull/26473)   | CDC : Limit queue size                                                                                                                          |

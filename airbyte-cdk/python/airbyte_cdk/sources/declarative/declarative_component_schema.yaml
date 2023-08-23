@@ -578,10 +578,11 @@ definitions:
           - "created_at"
           - "{{ config['record_cursor'] }}"
       datetime_format:
-        title: Cursor Field Datetime Format
+        title: Outgoing Datetime Format
         description: |
-          The datetime format of the Cursor Field. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
+          The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
             * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)
@@ -613,6 +614,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d"
           - "%s"
+          - "%ms"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -626,7 +628,7 @@ definitions:
           - "{{ config['start_time'] }}"
       cursor_datetime_formats:
         title: Cursor Datetime Formats
-        description: The possible formats for the cursor field
+        description: The possible formats for the cursor field, in order of preference. The first format that matches the cursor field value will be used to parse it. If not provided, the `datetime_format` will be used.
         type: array
         items:
           type: string
@@ -1413,6 +1415,7 @@ definitions:
         description: |
           Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%ms**: Epoch unix timestamp - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
             * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)

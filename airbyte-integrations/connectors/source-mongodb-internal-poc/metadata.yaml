@@ -7,14 +7,14 @@ data:
   githubIssueLabel: source-mongodb-internal-poc
   icon: mongodb.svg
   license: ELv2
-  name: MongoDb
+  name: MongoDb POC
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-internal-poc
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   tags:
     - language:java
 metadataSpecVersion: "1.0"
