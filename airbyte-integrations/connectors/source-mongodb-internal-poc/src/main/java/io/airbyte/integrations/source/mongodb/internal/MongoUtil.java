@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
-
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
@@ -23,7 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.bson.Document;
@@ -32,10 +29,12 @@ import org.bson.conversions.Bson;
 public class MongoUtil {
 
   /**
-   * The maximum number of documents to retrieve when attempting to discover the unique keys/types for
-   * a collection.
+   * The maximum number of documents to sample when attempting to discover the unique keys/types for a
+   * collection. Inspired by the
+   * <a href="https://www.mongodb.com/docs/compass/current/sampling/#sampling-method">sampling method
+   * utilized by the MongoDB Compass client</a>.
    */
-  private static final Integer DISCOVERY_LIMIT = 100;
+  private static final Integer DISCOVERY_SAMPLE_SIZE = 1000;
 
   /**
    * Set of collection prefixes that should be ignored when performing operations, such as discover to
@@ -97,8 +96,7 @@ public class MongoUtil {
        */
       final Set<Field> discoveredFields = new HashSet<>();
       final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
-      discoveredFields.addAll(getFieldsInCollection(mongoCollection, Optional.empty()));
-      discoveredFields.addAll(getFieldsInCollection(mongoCollection, Optional.of(DEFAULT_CURSOR_FIELD)));
+      discoveredFields.addAll(getFieldsInCollection(mongoCollection));
       return createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields));
     }).collect(Collectors.toList());
   }
@@ -107,7 +105,7 @@ public class MongoUtil {
     return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
   }
 
-  private static Set<Field> getFieldsInCollection(final MongoCollection collection, final Optional<String> sortField) {
+  private static Set<Field> getFieldsInCollection(final MongoCollection collection) {
     final Set<Field> discoveredFields = new HashSet<>();
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
         "as", "each",
@@ -121,8 +119,7 @@ public class MongoUtil {
     groupMap.put("fields", Map.of("$addToSet", "$fields"));
 
     final List<Bson> aggregateList = new ArrayList<>();
-    aggregateList.add(Aggregates.limit(DISCOVERY_LIMIT));
-    sortField.ifPresent(s -> aggregateList.add(Aggregates.sort(new Document(s, -1))));
+    aggregateList.add(Aggregates.sample(DISCOVERY_SAMPLE_SIZE));
     aggregateList.add(Aggregates.project(new Document("fields", arrayToObjectAggregation)));
     aggregateList.add(Aggregates.unwind("$fields"));
     aggregateList.add(new Document("$group", groupMap));

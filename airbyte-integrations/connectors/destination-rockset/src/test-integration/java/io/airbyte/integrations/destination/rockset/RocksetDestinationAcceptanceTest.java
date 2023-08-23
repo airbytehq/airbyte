@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -147,7 +148,7 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // Nothing to do
   }
 

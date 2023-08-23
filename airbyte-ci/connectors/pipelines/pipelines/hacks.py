@@ -6,11 +6,9 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import TYPE_CHECKING, Callable, List
 
 import requests
-import yaml
 from connector_ops.utils import ConnectorLanguage
 from dagger import DaggerError
 
@@ -60,35 +58,6 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
     return connector_dir.with_new_file("build.gradle", contents="\n".join(patched_gradle_file))
 
 
-def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Directory:
-    """
-    Patch the acceptance-test-config.yml file of the connector under test to use the connector image with git revision tag and not dev.
-
-
-    Underlying issue:
-        acceptance-test-config.yml targets the connector image with the dev tag by default
-        in order to make sure the correct connector image is used when running the acceptance tests we tag the connector under test image with the git revision.
-        we patch the acceptance-test-config.yml file to use the connector image with the git revision tag.
-
-    Hack:
-        This function is called by patch_connector_dir, which is called every time the connector source directory is read by the pipeline.
-
-    Args:
-        context (ConnectorContext): The initialized connector context.
-        connector_dir (Directory): The directory containing the acceptance-test-config.yml file to patch.
-    """
-    if not context.connector.acceptance_test_config:
-        return connector_dir
-
-    context.logger.info("Patching acceptance-test-config.yml to use connector image with git revision tag and not dev.")
-
-    patched_cat_config = deepcopy(context.connector.acceptance_test_config)
-    patched_cat_config["connector_image"] = context.connector.acceptance_test_config["connector_image"].replace(
-        ":dev", f":{context.git_revision}"
-    )
-    return connector_dir.with_new_file("acceptance-test-config.yml", contents=yaml.safe_dump(patched_cat_config))
-
-
 async def patch_connector_dir(context: ConnectorContext, connector_dir: Directory) -> Directory:
     """Patch a connector directory: patch cat config, gradle file and dockerfile.
 
@@ -99,7 +68,6 @@ async def patch_connector_dir(context: ConnectorContext, connector_dir: Director
         Directory: The directory containing the patched connector.
     """
     patched_connector_dir = await _patch_gradle_file(context, connector_dir)
-    patched_connector_dir = _patch_cat_config(context, patched_connector_dir)
     return patched_connector_dir.with_timestamps(1)
 
 
@@ -162,6 +130,6 @@ def never_fail_exec(command: List[str]) -> Callable:
     """
 
     def never_fail_exec_inner(container: Container):
-        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"])
+        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
 
     return never_fail_exec_inner
