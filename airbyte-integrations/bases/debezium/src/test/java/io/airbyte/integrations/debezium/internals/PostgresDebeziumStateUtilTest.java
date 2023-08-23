@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.debezium.connector.postgresql.connection.Lsn;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
@@ -204,6 +205,53 @@ public class PostgresDebeziumStateUtilTest {
           .get(0);
     } catch (final SQLException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @Test
+  public void formatTest() {
+    final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
+    final JsonNode debeziumState = postgresDebeziumStateUtil.format(23904232L, 506L, "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
+    final Map<String, String> stateAsMap = Jsons.object(debeziumState, Map.class);
+    Assertions.assertEquals(1, stateAsMap.size());
+    Assertions.assertTrue(stateAsMap.containsKey("[\"db_fgnfxvllud\",{\"server\":\"db_fgnfxvllud\"}]"));
+    Assertions.assertEquals("{\"transaction_id\":null,\"lsn\":23904232,\"txId\":506,\"ts_usec\":1686040570341842}",
+        stateAsMap.get("[\"db_fgnfxvllud\",{\"server\":\"db_fgnfxvllud\"}]"));
+
+  }
+
+  @Test
+  public void debeziumInitialStateConstructTest() {
+    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    try (final PostgreSQLContainer<?> container = new PostgreSQLContainer<>(myImage)) {
+      container.start();
+
+      final String initScriptName = "init_" + dbName.concat(".sql");
+      final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
+
+      final Map<String, String> databaseConfig = Map.of(JdbcUtils.USERNAME_KEY, container.getUsername(),
+          JdbcUtils.PASSWORD_KEY, container.getPassword(),
+          JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+              container.getHost(),
+              container.getFirstMappedPort(),
+              dbName));
+
+      final JdbcDatabase database = new DefaultJdbcDatabase(
+          DataSourceFactory.create(
+              databaseConfig.get(JdbcUtils.USERNAME_KEY),
+              databaseConfig.get(JdbcUtils.PASSWORD_KEY),
+              DatabaseDriver.POSTGRESQL.getDriverClassName(),
+              databaseConfig.get(JdbcUtils.JDBC_URL_KEY)));
+
+      final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
+      final JsonNode debeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database, dbName);
+      final Map<String, String> stateAsMap = Jsons.object(debeziumState, Map.class);
+      Assertions.assertEquals(1, stateAsMap.size());
+      Assertions.assertTrue(stateAsMap.containsKey("[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]"));
+      Assertions.assertNotNull(stateAsMap.get("[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]"));
+      container.stop();
     }
   }
 

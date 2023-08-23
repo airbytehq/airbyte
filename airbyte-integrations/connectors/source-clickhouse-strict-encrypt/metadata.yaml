@@ -18,5 +18,7 @@ data:
   license: MIT
   name: ClickHouse
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/clickhouse
+  documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

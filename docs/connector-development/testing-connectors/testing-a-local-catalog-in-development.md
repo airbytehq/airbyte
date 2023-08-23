@@ -1,46 +1,36 @@
-# Testing The Local Catalog
+# Testing A Custom Registry
 
 ## Purpose of this document
 This document describes how to
-1. Generate the OSS catalog in the `airbyte` repo
-1. Move the OSS catalog to the `airbyte-platform` repo
-1. Point the platform to the new catalog
-1. Run the platform
+1. Modify the connector catalog used by the platform
+2. Use the newly modified catalog in the platform
 
 ## Why you might need to
 1. You've added/updated/deleted a generally available connector and want to test it in the platform UI
 1. You've added/updated/deleted a generally available connector and want to test it in the platform API
 
-## Steps
+## Method 1: Edit the registry by hand (easiest)
 
-### 1. Generate the OSS Catalog
-In the `airbyte` repo run
-```sh
-SUB_BUILD=ALL_CONNECTORS ./gradlew :airbyte-config:specs:generateOssConnectorCatalog
+### 1. Download the current OSS Registry
+Download the current registry from [here](https://connectors.airbyte.com/files/registries/v0/oss_registry.json) to somewhere on your local machine.
+
+### 2. Modify the registry
+Modify the registry as you see fit. For example, you can add a new connector, update an existing connector, or delete a connector.
+
+### 3. Upload the modified registry to a public location
+Upload the modified registry to a public location. For example, you can upload it to a public S3 bucket, or you can upload it to a public GitHub repo, or a service like file.io
+
+### 4. Point the platform to the modified registry
+Run the platform with the following environment variable set:
+```
+REMOTE_CONNECTOR_CATALOG_URL = <url of the modified registry>
 ```
 
-### 2. Move the OSS catalog to platform
-In the `airbyte` repo run
-```sh
-cp airbyte-config-oss/init-oss/src/main/resources/seed/oss_catalog.json <PATH_TO_PLATFORM_REPO>/airbyte-config-oss/init-oss/src/main/resources/seed/local_dev_catalog.json
-```
+## Method 2: Use the registry generator (more involved)
 
-### 3. Point the platform to the new catalog
-In the `airbyte-platform` repo modify `.env` add the environment variable
-```sh
-LOCAL_CONNECTOR_CATALOG_PATH=seed/local_dev_catalog.json
-```
+Follow the steps in the [Metadata Orchestrator Readme](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/metadata_service/orchestrator/README.md)) to setup the orchestrator.
 
-### 4. Build the platform
-In the `airbyte-platform` run
-```sh
-SUB_BUILD=PLATFORM ./gradlew build -x test
+You can then use the public GCS url of the registry created by the orchestrator to point the platform to the modified registry.
 ```
-
-### 4. Run platform
-In the `airbyte-platform` run
-```sh
-VERSION=dev docker-compose up
+REMOTE_CONNECTOR_CATALOG_URL = <url of the modified registry>
 ```
-
-Success! Your new catalog should now be loaded into the database.

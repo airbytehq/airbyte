@@ -21,30 +21,6 @@ def get_docker_hub_auth_token() -> str:
     return token
 
 
-def get_image_tags(repo: str, image: str) -> List[str]:
-    token = get_docker_hub_auth_token()
-    headers = {"Authorization": f"JWT {token}"}
-
-    tags_url = f"https://hub.docker.com/v2/repositories/{repo}/{image}/tags/"
-    params = {"page_size": 100}
-    tags = []
-
-    while True:
-        response = requests.get(tags_url, headers=headers, params=params)
-        if response.status_code != 200:
-            raise ValueError("Failed to fetch image tags from Docker Hub.")
-
-        data = response.json()
-        tags.extend([result["name"] for result in data.get("results", [])])
-
-        if data.get("next"):
-            tags_url = data["next"]
-        else:
-            break
-
-    return tags
-
-
 def is_image_on_docker_hub(image_name: str, version: str) -> bool:
     """Check if a given image and version exists on Docker Hub.
 
@@ -55,7 +31,10 @@ def is_image_on_docker_hub(image_name: str, version: str) -> bool:
     Returns:
         bool: True if the image and version exists on Docker Hub, False otherwise.
     """
-    repo, image = image_name.split("/", 1)
-    tags = get_image_tags(repo, image)
 
-    return version in tags
+    token = get_docker_hub_auth_token()
+    headers = {"Authorization": f"JWT {token}"}
+    tag_url = f"https://registry.hub.docker.com/v2/repositories/{image_name}/tags/{version}"
+    response = requests.get(tag_url, headers=headers)
+
+    return response.ok

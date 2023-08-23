@@ -10,17 +10,13 @@ package io.airbyte.commons.features;
  */
 public interface FeatureFlags {
 
-  boolean autoDisablesFailingConnections();
-
-  boolean forceSecretMigration();
-
   boolean useStreamCapableState();
 
   boolean autoDetectSchema();
 
   boolean logConnectorMessages();
 
-  boolean needStateValidation();
+  boolean concurrentSourceStreamRead();
 
   /**
    * Return true if field selection should be applied. See also fieldSelectionWorkspaces.

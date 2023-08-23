@@ -3,24 +3,21 @@
 #
 
 
-from unittest.mock import patch
-
 import pytest
 import requests
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from source_linkedin_ads.source import (
     Accounts,
     AccountUsers,
     AdCampaignAnalytics,
     AdCreativeAnalytics,
-    AdDirectSponsoredContents,
     CampaignGroups,
     Campaigns,
     Creatives,
-    LinkedinAdsOAuth2Authenticator,
     SourceLinkedinAds,
 )
+from source_linkedin_ads.streams import LINKEDIN_VERSION_API
 
 TEST_OAUTH_CONFIG: dict = {
     "start_date": "2021-08-01",
@@ -43,9 +40,31 @@ TEST_CONFIG: dict = {
     },
 }
 
+TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
+  "start_date": "2021-01-01",
+  "account_ids": [],
+  "credentials": {
+    "auth_method": "oAuth2.0",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "ad_analytics_reports": [
+    {
+      "name": "ShareAdByMonth",
+      "pivot_by": "COMPANY",
+      "time_granularity": "MONTHLY"
+    },
+    {
+      "name": "ShareAdByMonth",
+      "pivot_by": "COMPANY",
+      "time_granularity": "MONTHLY"
+    }
+  ]
+}
+
 
 class TestAllStreams:
-
     _instance: SourceLinkedinAds = SourceLinkedinAds()
 
     @pytest.mark.parametrize(
@@ -64,30 +83,15 @@ class TestAllStreams:
         assert isinstance(test, (Oauth2Authenticator, TokenAuthenticator))
 
     @pytest.mark.parametrize(
-        "response, check_passed",
-        [
-            (iter({"id": 123}), True),
-            (requests.HTTPError(), False),
-        ],
-        ids=["Success", "Fail"],
-    )
-    def test_check(self, response, check_passed):
-        with patch.object(Accounts, "read_records", return_value=response) as mock_method:
-            result = self._instance.check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
-            mock_method.assert_called()
-            assert check_passed == result[0]
-
-    @pytest.mark.parametrize(
         "stream_cls",
         [
-            (Accounts),
-            (AccountUsers),
-            (CampaignGroups),
-            (Campaigns),
-            (Creatives),
-            (AdDirectSponsoredContents),
-            (AdCampaignAnalytics),
-            (AdCreativeAnalytics),
+            Accounts,
+            AccountUsers,
+            CampaignGroups,
+            Campaigns,
+            Creatives,
+            AdCampaignAnalytics,
+            AdCreativeAnalytics,
         ],
         ids=[
             "Accounts",
@@ -95,7 +99,6 @@ class TestAllStreams:
             "CampaignGroups",
             "Campaigns",
             "Creatives",
-            "AdDirectSponsoredContents",
             "AdCampaignAnalytics",
             "AdCreativeAnalytics",
         ],
@@ -107,16 +110,15 @@ class TestAllStreams:
                 assert isinstance(stream, stream_cls)
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        "stream_cls, stream_slice, expected",
         [
-            (Accounts, "adAccountsV2"),
-            (AccountUsers, "adAccountUsersV2"),
-            (CampaignGroups, "adCampaignGroupsV2"),
-            (Campaigns, "adCampaignsV2"),
-            (Creatives, "adCreativesV2"),
-            (AdDirectSponsoredContents, "adDirectSponsoredContents"),
-            (AdCampaignAnalytics, "adAnalyticsV2"),
-            (AdCreativeAnalytics, "adAnalyticsV2"),
+            (Accounts, None, "adAccounts"),
+            (AccountUsers, None, "adAccountUsers"),
+            (CampaignGroups, {"account_id": 123}, "adAccounts/123/adCampaignGroups"),
+            (Campaigns, {"account_id": 123}, "adAccounts/123/adCampaigns"),
+            (Creatives, {"account_id": 123}, "adAccounts/123/creatives"),
+            (AdCampaignAnalytics, None, "adAnalytics"),
+            (AdCreativeAnalytics, None, "adAnalytics"),
         ],
         ids=[
             "Accounts",
@@ -124,19 +126,17 @@ class TestAllStreams:
             "CampaignGroups",
             "Campaigns",
             "Creatives",
-            "AdDirectSponsoredContents",
             "AdCampaignAnalytics",
             "AdCreativeAnalytics",
         ],
     )
-    def test_path(self, stream_cls, expected):
-        stream = stream_cls(TEST_CONFIG)
-        result = stream.path()
+    def test_path(self, stream_cls, stream_slice, expected):
+        stream = stream_cls(config=TEST_CONFIG)
+        result = stream.path(stream_slice=stream_slice)
         assert result == expected
 
 
 class TestLinkedinAdsStream:
-
     stream: Accounts = Accounts(TEST_CONFIG)
     url = f"{stream.url_base}/{stream.path()}"
 
@@ -172,7 +172,7 @@ class TestLinkedinAdsStream:
         assert result is True
 
     def test_request_headers(self):
-        expected = {"X-RestLi-Protocol-Version": "2.0.0"}
+        expected = {"X-RestLi-Protocol-Version": "2.0.0", "Linkedin-Version": LINKEDIN_VERSION_API}
         result = self.stream.request_headers(stream_state={})
         assert result == expected
 
@@ -181,7 +181,7 @@ class TestAccountUsers:
     stream: AccountUsers = AccountUsers(TEST_CONFIG)
 
     def test_state_checkpoint_interval(self):
-        assert self.stream.state_checkpoint_interval == 500
+        assert self.stream.state_checkpoint_interval == 100
 
     def test_get_updated_state(self):
         state = self.stream.get_updated_state(
@@ -195,32 +195,27 @@ class TestLinkedInAdsStreamSlicing:
         "stream_cls, slice, expected",
         [
             (
-                AccountUsers,
-                {"account_id": 123},
-                {"count": 500, "q": "accounts", "accounts": "urn:li:sponsoredAccount:123"},
+                    AccountUsers,
+                    {"account_id": 123},
+                    "count=500&q=accounts&accounts=urn:li:sponsoredAccount:123",
             ),
             (
-                CampaignGroups,
-                {"account_id": 123},
-                {"count": 500, "q": "search", "search.account.values[0]": "urn:li:sponsoredAccount:123"},
+                    CampaignGroups,
+                    {"account_id": 123},
+                    "count=500&q=search&search=(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))",
             ),
             (
-                Campaigns,
-                {"account_id": 123},
-                {"count": 500, "q": "search", "search.account.values[0]": "urn:li:sponsoredAccount:123"},
+                    Campaigns,
+                    {"account_id": 123},
+                    "count=500&q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
             ),
             (
-                Creatives,
-                {"campaign_id": 123},
-                {"count": 500, "q": "search", "search.campaign.values[0]": "urn:li:sponsoredCampaign:123"},
-            ),
-            (
-                AdDirectSponsoredContents,
-                {"account_id": 123},
-                {"count": 500, "q": "account", "account": "urn:li:sponsoredAccount:123", "owner": None},
-            ),
+                    Creatives,
+                    {"campaign_id": 123},
+                    "count=100&q=criteria",
+            )
         ],
-        ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives", "AdDirectSponsoredContents"],
+        ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives"],
     )
     def test_request_params(self, stream_cls, slice, expected):
         stream = stream_cls(TEST_CONFIG)
@@ -252,8 +247,8 @@ class TestLinkedInAdsAnalyticsStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (AdCampaignAnalytics, {"q": "analytics", "pivot": "CAMPAIGN", "timeGranularity": "DAILY"}),
-            (AdCreativeAnalytics, {"q": "analytics", "pivot": "CREATIVE", "timeGranularity": "DAILY"}),
+            (AdCampaignAnalytics, {"pivot": "(value:CAMPAIGN)", "q": "analytics", "timeGranularity": "(value:DAILY)"}),
+            (AdCreativeAnalytics, {"pivot": "(value:CREATIVE)", "q": "analytics", "timeGranularity": "(value:DAILY)"}),
         ],
         ids=[
             "AdCampaignAnalytics",
@@ -261,7 +256,7 @@ class TestLinkedInAdsAnalyticsStream:
         ],
     )
     def test_base_analytics_params(self, stream_cls, expected):
-        stream = stream_cls(TEST_CONFIG)
+        stream = stream_cls(config=TEST_CONFIG)
         result = stream.base_analytics_params
         assert result == expected
 
@@ -269,60 +264,31 @@ class TestLinkedInAdsAnalyticsStream:
         "stream_cls, slice, expected",
         [
             (
-                AdCampaignAnalytics,
-                {
-                    "dateRange": {"start.day": 1, "start.month": 1, "start.year": 1, "end.day": 2, "end.month": 2, "end.year": 2},
-                    "fields": ["field1", "field2"],
-                },
-                {
-                    "q": "analytics",
-                    "pivot": "CAMPAIGN",
-                    "timeGranularity": "DAILY",
-                    "campaigns[0]": "urn:li:sponsoredCampaign:None",
-                    "dateRange.start.day": 1,
-                    "dateRange.start.month": 1,
-                    "dateRange.start.year": 1,
-                    "dateRange.end.day": 2,
-                    "dateRange.end.month": 2,
-                    "dateRange.end.year": 2,
-                    "fields": [
-                        "field1",
-                        "field2",
-                    ],
-                },
+                    AdCampaignAnalytics,
+                    {
+                        "dateRange": {"start.day": 1, "start.month": 1, "start.year": 1, "end.day": 2, "end.month": 2, "end.year": 2},
+                        "fields": ["field1", "field2"],
+                    },
+                    "q=analytics&pivot=(value:CAMPAIGN)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&campaigns=List(urn%3Ali%3AsponsoredCampaign%3ANone)",
             ),
             (
-                AdCreativeAnalytics,
-                {
-                    "dateRange": {
-                        "start.day": 1,
-                        "start.month": 1,
-                        "start.year": 1,
-                        "end.day": 2,
-                        "end.month": 2,
-                        "end.year": 2,
+                    AdCreativeAnalytics,
+                    {
+                        "dateRange": {
+                            "start.day": 1,
+                            "start.month": 1,
+                            "start.year": 1,
+                            "end.day": 2,
+                            "end.month": 2,
+                            "end.year": 2,
+                        },
+                        "fields": [
+                            "field1",
+                            "field2",
+                        ],
+                        "creative_id": "urn:li:sponsoredCreative:1234"
                     },
-                    "fields": [
-                        "field1",
-                        "field2",
-                    ],
-                },
-                {
-                    "q": "analytics",
-                    "pivot": "CREATIVE",
-                    "timeGranularity": "DAILY",
-                    "creatives[0]": "urn:li:sponsoredCreative:None",
-                    "dateRange.start.day": 1,
-                    "dateRange.start.month": 1,
-                    "dateRange.start.year": 1,
-                    "dateRange.end.day": 2,
-                    "dateRange.end.month": 2,
-                    "dateRange.end.year": 2,
-                    "fields": [
-                        "field1",
-                        "field2",
-                    ],
-                },
+                    "q=analytics&pivot=(value:CREATIVE)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&creatives=List(urn%3Ali%3AsponsoredCreative%3A1234)",
             ),
         ],
         ids=[
@@ -331,7 +297,7 @@ class TestLinkedInAdsAnalyticsStream:
         ],
     )
     def test_request_params(self, stream_cls, slice, expected):
-        stream = stream_cls(TEST_CONFIG)
+        stream = stream_cls(config=TEST_CONFIG)
         result = stream.request_params(stream_state={}, stream_slice=slice)
         assert expected == result
 
@@ -342,7 +308,7 @@ def test_retry_get_access_token(requests_mock):
         "https://www.linkedin.com/oauth/v2/accessToken",
         [{"status_code": 429}, {"status_code": 429}, {"status_code": 200, "json": {"access_token": "token", "expires_in": 3600}}],
     )
-    auth = LinkedinAdsOAuth2Authenticator(
+    auth = Oauth2Authenticator(
         token_refresh_endpoint="https://www.linkedin.com/oauth/v2/accessToken",
         client_id="client_id",
         client_secret="client_secret",
@@ -351,3 +317,26 @@ def test_retry_get_access_token(requests_mock):
     token = auth.get_access_token()
     assert len(requests_mock.request_history) == 3
     assert token == "token"
+
+
+@pytest.mark.parametrize(
+    "record, expected",
+    [
+        ({}, {}),
+        ({"lastModified": "2021-05-27 11:59:53.710000"}, {"lastModified": "2021-05-27T11:59:53.710000+00:00"}),
+        ({"lastModified": None}, {"lastModified": None}),
+        ({"lastModified": ""}, {"lastModified": ""}),
+    ],
+    ids=["empty_record", "transformed_record", "null_value", "empty_value"],
+)
+def test_date_time_to_rfc3339(record, expected):
+    stream = Accounts(TEST_CONFIG)
+    result = stream._date_time_to_rfc3339(record)
+    assert result == expected
+
+
+def test_duplicated_custom_ad_analytics_report():
+    with pytest.raises(AirbyteTracedException) as e:
+        SourceLinkedinAds().streams(TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS)
+    expected_message = "Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {'ShareAdByMonth'}"
+    assert e.value.message == expected_message

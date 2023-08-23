@@ -11,10 +11,12 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
+import java.util.HashSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
@@ -27,18 +29,20 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   /**
-   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This
-   * function will be called before EACH test.
+   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This function will be called before EACH test.
    *
-   * @see DestinationAcceptanceTest#setUpInternal()
-   * @param testEnv - information about the test environment.
+   * @param testEnv      - information about the test environment.
+   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
+   * @see DestinationAcceptanceTest#setUpInternal()
    */
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     // use secrets file with GCS staging config
     secretsFile = Path.of("secrets/credentials-gcs-staging.json");
     setUpBigQuery();
+
+    DestinationConfig.initialize(config);
 
     // the setup steps below are specific to GCS staging use case
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
@@ -49,12 +53,12 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   /**
    * Removes data from bigquery and GCS This function will be called after EACH test
    *
-   * @see DestinationAcceptanceTest#tearDownInternal()
    * @param testEnv - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.
+   * @see DestinationAcceptanceTest#tearDownInternal()
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     tearDownBigQuery();
     tearDownGcs();
   }
@@ -76,19 +80,19 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   @Test
   public void testGetFileBufferMaxLimited() {
     final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
     final BigQueryDestination destination = new BigQueryDestination();
-    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+    assertEquals(FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER, destination.getNumberOfFileBuffers(defaultConfig));
   }
 
   @Test
   public void testGetMinimumFileBufferCount() {
     final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
+    ((ObjectNode) defaultConfig.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
     final BigQueryDestination destination = new BigQueryDestination();
     // User cannot set number of file counts below the default file buffer count, which is existing
     // behavior
-    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+    assertEquals(FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER, destination.getNumberOfFileBuffers(defaultConfig));
   }
 
 }

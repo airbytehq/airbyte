@@ -5,6 +5,8 @@ data:
   registries:
     oss:
       enabled: false
+    cloud:
+      enabled: false
   connectorSubtype: database
   connectorType: destination
   definitionId: FAKE-UUID-0000-0000-000000000000
@@ -16,5 +18,8 @@ data:
   name: Scaffold Destination Python
   releaseDate: TODO
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/scaffold-destination-python
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/scaffold-destination-python
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

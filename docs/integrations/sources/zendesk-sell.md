@@ -1,4 +1,4 @@
-# Zendesk Sunshine
+# Zendesk Sell
 
 ## Sync overview
 

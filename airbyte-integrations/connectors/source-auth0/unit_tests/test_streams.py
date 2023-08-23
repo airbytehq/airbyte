@@ -9,7 +9,15 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from source_auth0.source import Auth0Stream, IncrementalAuth0Stream, Users
+from source_auth0.source import (
+    Auth0Stream,
+    Clients,
+    IncrementalAuth0Stream,
+    OrganizationMemberRoles,
+    OrganizationMembers,
+    Organizations,
+    Users,
+)
 
 
 @pytest.fixture
@@ -55,8 +63,8 @@ class TestAuth0Stream:
             "page": 0,
             "per_page": 50,
             "include_totals": "false",
-            "sort": "None:1",
-            "q": "None:{ TO *]",
+            "sort": "updated_at:1",
+            "q": "updated_at:{ TO *]",
         }
         assert stream.request_params(**inputs) == expected_params
 
@@ -97,8 +105,6 @@ class TestAuth0Stream:
             cursor_field = "lastUpdated"
 
         stream = TestIncrementalAuth0Stream(url_base=url_base)
-        stream._cursor_field = "lastUpdated"
-        assert stream._cursor_value == ""
         stream.state = {"lastUpdated": "123"}
         assert stream._cursor_value == "123"
 
@@ -239,3 +245,112 @@ class TestStreamUsers:
             json=[users_instance],
         )
         assert list(stream.parse_response(response=requests.get(f"{api_url}/users"))) == [users_instance]
+
+
+class TestStreamClients:
+    def test_stream_clients(self, patch_base_class, clients_instance, url_base, api_url, requests_mock):
+        stream = Clients(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/clients",
+            json={"total": 1, "start": 0, "limit": 50, "clients": [clients_instance]},
+        )
+        inputs = {"sync_mode": SyncMode.full_refresh}
+        assert list(stream.read_records(**inputs)) == [clients_instance]
+
+    def test_clients_source_parse_response(self, requests_mock, patch_base_class, clients_instance, url_base, api_url):
+        stream = Clients(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/clients",
+            json={"total": 1, "start": 0, "limit": 50, "clients": [clients_instance]},
+        )
+        assert list(stream.parse_response(response=requests.get(f"{api_url}/clients"))) == [clients_instance]
+
+
+class TestStreamOrganizations:
+    def test_stream_organizations(self, patch_base_class, organization_instance, url_base, api_url, requests_mock):
+        stream = Organizations(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/organizations",
+            json={"total": 1, "start": 0, "limit": 50, "organizations": [organization_instance]},
+        )
+        inputs = {"sync_mode": SyncMode.full_refresh}
+        assert list(stream.read_records(**inputs)) == [organization_instance]
+
+    def test_organizations_source_parse_response(self, requests_mock, patch_base_class, organization_instance, url_base, api_url):
+        stream = Organizations(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/organizations",
+            json={"total": 1, "start": 0, "limit": 50, "organizations": [organization_instance]},
+        )
+        assert list(stream.parse_response(response=requests.get(f"{api_url}/organizations"))) == [organization_instance]
+
+
+class TestStreamOrganizationsMembers:
+    def test_stream_organizations(
+        self, patch_base_class, organization_instance, organization_member_instance, url_base, api_url, requests_mock
+    ):
+        stream = OrganizationMembers(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/organizations",
+            json={"total": 1, "start": 0, "limit": 50, "organizations": [organization_instance]},
+        )
+        requests_mock.get(
+            f"{api_url}/organizations/my_org_id/members",
+            json={"total": 1, "start": 0, "limit": 50, "members": [organization_member_instance]},
+        )
+        inputs = {"sync_mode": SyncMode.full_refresh}
+        assert list(stream.read_records(**inputs)) == [organization_member_instance]
+
+    def test_organizations_source_parse_response(self, requests_mock, patch_base_class, organization_member_instance, url_base, api_url):
+        stream = OrganizationMembers(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/organizations/my_org_id/members",
+            json={"total": 1, "start": 0, "limit": 50, "members": [organization_member_instance]},
+        )
+        stream_slice = {"organization_id": "my_org_id"}
+        assert list(
+            stream.parse_response(response=requests.get(f"{api_url}/organizations/my_org_id/members"), stream_slice=stream_slice)
+        ) == [organization_member_instance]
+
+
+class TestStreamOrganizationsMemberRoles:
+    def test_stream_organizations(
+        self,
+        patch_base_class,
+        organization_instance,
+        organization_member_instance,
+        organization_member_roles_instance,
+        url_base,
+        api_url,
+        requests_mock,
+    ):
+        stream = OrganizationMemberRoles(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/organizations",
+            json={"total": 1, "start": 0, "limit": 50, "organizations": [organization_instance]},
+        )
+        requests_mock.get(
+            f"{api_url}/organizations/my_org_id/members",
+            json={"total": 1, "start": 0, "limit": 50, "members": [organization_member_instance]},
+        )
+        requests_mock.get(
+            f"{api_url}/organizations/my_org_id/members/my_user_id/roles",
+            json={"total": 1, "start": 0, "limit": 50, "roles": [organization_member_roles_instance]},
+        )
+        inputs = {"sync_mode": SyncMode.full_refresh}
+        assert list(stream.read_records(**inputs)) == [organization_member_roles_instance]
+
+    def test_organizations_source_parse_response(
+        self, requests_mock, patch_base_class, organization_member_roles_instance, url_base, api_url
+    ):
+        stream = OrganizationMemberRoles(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/organizations/my_org_id/members/my_user_id/roles",
+            json={"total": 1, "start": 0, "limit": 50, "roles": [organization_member_roles_instance]},
+        )
+        stream_slice = {"organization_id": "my_org_id", "user_id": "my_user_id"}
+        assert list(
+            stream.parse_response(
+                response=requests.get(f"{api_url}/organizations/my_org_id/members/my_user_id/roles"), stream_slice=stream_slice
+            )
+        ) == [organization_member_roles_instance]

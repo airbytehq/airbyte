@@ -13,6 +13,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -24,12 +25,13 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("type", TestDestinationType.SILENT.name()));
+    return Jsons.jsonNode(
+        Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", TestDestinationType.SILENT.name())));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("type", "invalid"));
+    return Jsons.jsonNode(Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", "invalid")));
   }
 
   @Override
@@ -41,7 +43,7 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     // do nothing
   }
 

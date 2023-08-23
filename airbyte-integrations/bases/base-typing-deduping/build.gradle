@@ -1,0 +1,8 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation libs.airbyte.protocol
+    implementation project(path: ':airbyte-integrations:bases:base-java')
+}

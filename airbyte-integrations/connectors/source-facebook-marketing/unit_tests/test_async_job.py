@@ -40,6 +40,7 @@ def job_fixture(api, account):
     params = {
         "level": "ad",
         "action_breakdowns": [],
+        "action_report_time": "mixed",
         "breakdowns": [],
         "fields": ["field1", "field2"],
         "time_increment": 1,
@@ -342,7 +343,10 @@ class TestInsightAsyncJob:
                 "breakdowns": [],
                 "fields": [id_field],
                 "level": next_edge_class.__name__.lower(),
-                "time_range": {"since": (today - pendulum.duration(months=37)).to_date_string(), "until": end.to_date_string()},
+                "time_range": {
+                    "since": (today - pendulum.duration(months=37) + pendulum.duration(days=1)).to_date_string(),
+                    "until": end.to_date_string()
+                },
             }
         )
         assert len(small_jobs) == 3

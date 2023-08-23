@@ -10,12 +10,19 @@ from source_google_analytics_v4.custom_reports_validator import CustomReportsVal
 @pytest.mark.parametrize(
     "custom_reports, expected",
     (
-        ([{"name": "test", "dimensions": ["ga+test"], "metrics": ["ga!test"]}], "errors: incorrect field reference"),
-        ([{"name": [], "dimensions": ["ga:test"], "metrics": ["ga:test"]}], "errors: type errors"),
-        ([{"name": "test", "dimensions": ["ga:test"], "metrics": ["ga:test"], "added_field": "test"}], "errors: fields not permitted"),
-        ([{"missing_name": "test", "dimensions": ["ga:test"], "metrics": ["ga:test"]}], "errors: fields required"),
+            ([{"name": "test", "dimensions": ["ga+test"], "metrics": ["ga!test"]}], "errors: incorrect field reference"),
+            ([{"name": [], "dimensions": ["ga:test"], "metrics": ["ga:test"]}], "errors: type errors"),
+            ([{"name": "test", "dimensions": ["ga:test"], "metrics": ["ga:test"], "added_field": "test"}], "errors: fields not permitted"),
+            ([{"name": "missing_segment_dimension", "dimensions": ["ga:test"], "segments": ["another_segment"],"metrics": ["ga:test"]}], "errors: `ga:segment` is required"),
+            ([{"missing_name": "test", "dimensions": ["ga:test"], "metrics": ["ga:test"]}], "errors: fields required"),
     ),
-    ids=["incorrrect field reference", "type_error", "not_permitted", "missing"],
+    ids=[
+        "incorrrect field reference",
+        "type_error",
+        "not_permitted",
+        "missing",
+        "missing_segment_dimension"
+    ]
 )
 def test_custom_reports_validator(custom_reports, expected):
     try:

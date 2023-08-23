@@ -3,91 +3,127 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
+    "email": {
+      "type": ["null", "string"]
+    },
+    "customerId": {
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "companyName": {
+      "type": ["null", "string"]
+    },
+    "companyId": {
+      "type": ["null", "string"]
+    },
+    "sentDate": {
+      "type": ["null", "string"],
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+    },
+    "channel": {
+      "type": ["null", "string"]
+    },
+    "personTags": {
+      "type": ["array", "null"],
+      "items": { "type": "string" }
+    },
+    "campaign": {
+      "type": ["null", "string"]
+    },
+    "campaignId": {
+      "type": ["null", "string"]
+    },
+    "surveyTemplateId": {
+      "type": ["null", "string"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "sentBy": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
     "attributes": {
-      "type": "object",
+      "type": ["null","object"],
       "additionalProperties": true,
-      "properties": {}
+      "properties": {
+        "customerTags": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "customProps": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "label": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "detailedStatus": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "isOpened": {
+          "type": ["null", "boolean"]
+        },
+        "openedDate": {
+          "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+          "type": ["null", "string"]
+        },
+        "isResponded": {
+          "type": ["null", "boolean"]
+        },
+        "respondedDate": {
+          "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+          "type": ["null", "string"]
+        },
+        "hasFeedback": {
+          "type": ["null", "boolean"]
+        },
+        "isOptedOut": {
+          "type": ["null", "boolean"]
+        },
+        "isBounced": {
+          "type": ["null", "boolean"]
+        }
+      }
     },
     "mandrillMessageId": {
       "type": ["null", "string"]
     },
-    "personTags": {
+    "additionalRecipients": {
       "type": ["null", "array"],
       "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      },
+      "mandrillMessageId": {
         "type": ["null", "string"]
       }
-    },
-    "email": {
-      "type": "string"
-    },
-    "customerId": {
-      "type": "string"
-    },
-    "firstName": {
-      "type": "string"
-    },
-    "lastName": {
-      "type": "string"
-    },
-    "companyName": {
-      "type": "string"
-    },
-    "companyId": {
-      "type": "string"
-    },
-    "sentDate": {
-      "type": "string"
-    },
-    "channel": {
-      "type": "string"
-    },
-    "campaign": {
-      "type": "string"
-    },
-    "campaignId": {
-      "type": "string"
-    },
-    "surveyTemplateId": {
-      "type": "string"
-    },
-    "subject": {
-      "type": "string"
-    },
-    "sentBy": {
-      "type": "string"
-    },
-    "status": {
-      "type": "string"
-    },
-    "detailedStatus": {
-      "type": "object",
-      "properties": {
-        "isOpened": {
-          "type": "boolean"
-        },
-        "openedDate": {
-          "type": "string"
-        },
-        "isResponded": {
-          "type": "boolean"
-        },
-        "respondedDate": {
-          "type": "string"
-        },
-        "hasFeedback": {
-          "type": "boolean"
-        },
-        "isOptedOut": {
-          "type": "boolean"
-        },
-        "isBounced": {
-          "type": "boolean"
-        }
-      }
-    },
-    "additionalRecipients": {
-      "type": "array",
-      "items": { "type": "object" }
     }
   }
 }

@@ -90,4 +90,25 @@ public class ClickhouseDestinationSpecTest {
     assertNotNull(spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
   }
 
+  @Test
+  void testHostMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("host");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("port");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testUsernameMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("username");
+    assertFalse(validator.test(schema, config));
+  }
+
 }

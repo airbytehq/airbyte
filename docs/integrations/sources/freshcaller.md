@@ -40,4 +40,8 @@ The Freshcaller connector should not run into Freshcaller API limitations under 
 Please read [How to find your API key](https://support.freshdesk.com/en/support/solutions/articles/225435-where-can-i-find-my-api-key-).
 
 ## Changelog
-| 0.1.0   | 2022-08-11 | [14759](https://github.com/airbytehq/airbyte/pull/14759)   | 🎉 New Source: Freshcaller       |
+
+| Version | Date       | Pull Request                                             | Subject                              |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------|
+| 0.2.0   | 2023-05-15 | [26065](https://github.com/airbytehq/airbyte/pull/26065) | Fix spec type check for `start_date` |
+| 0.1.0   | 2022-08-11 | [14759](https://github.com/airbytehq/airbyte/pull/14759) | 🎉 New Source: Freshcaller           |

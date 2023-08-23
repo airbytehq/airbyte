@@ -39,7 +39,7 @@ public class MssqlCdcHelper {
    * The default "SNAPSHOT" mode can prevent other (non-Airbyte) transactions from updating table rows
    * while we snapshot. References:
    * https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
-   * https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
+   * https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
    */
   public enum SnapshotIsolation {
 
@@ -69,7 +69,7 @@ public class MssqlCdcHelper {
 
   }
 
-  // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-snapshot-mode
+  // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-snapshot-mode
   public enum DataToSync {
 
     EXISTING_AND_NEW("Existing and New", "initial"),
@@ -120,8 +120,8 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
       return SnapshotIsolation.from(snapshotIsolation.asText());
     }
@@ -131,8 +131,8 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static DataToSync getDataToSyncConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
       return DataToSync.from(dataToSync.asText());
     }
@@ -146,9 +146,9 @@ public class MssqlCdcHelper {
     final Properties props = new Properties();
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");
 
-    // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-include-schema-changes
+    // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-include-schema-changes
     props.setProperty("include.schema.changes", "false");
-    // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
+    // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");

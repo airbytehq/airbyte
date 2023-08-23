@@ -1,26 +1,28 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isActive": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "templateId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "metric": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "channel": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

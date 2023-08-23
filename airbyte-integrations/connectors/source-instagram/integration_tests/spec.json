@@ -18,18 +18,68 @@
         "description": "The value of the access token generated with <b>instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram Public Content Access</b> permissions. See the <a href=\"https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram\">docs</a> for more information",
         "airbyte_secret": true,
         "type": "string"
+      },
+      "client_id": {
+        "title": "Client Id",
+        "description": "The Client ID for your Oauth application",
+        "airbyte_secret": true,
+        "airbyte_hidden": true,
+        "type": "string"
+      },
+      "client_secret": {
+        "title": "Client Secret",
+        "description": "The Client Secret for your Oauth application",
+        "airbyte_secret": true,
+        "airbyte_hidden": true,
+        "type": "string"
       }
     },
     "required": ["start_date", "access_token"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": [],
-      "oauthFlowInitParameters": [],
-      "oauthFlowOutputParameters": [["access_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": [
+              "access_token"
+            ]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": [
+              "client_id"
+            ]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": [
+              "client_secret"
+            ]
+          }
+        }
+      }
     }
   }
 }

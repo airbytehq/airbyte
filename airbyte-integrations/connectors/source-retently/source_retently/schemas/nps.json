@@ -3,15 +3,35 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "score": { "type": "integer" },
-    "scoreSum": { "type": "integer" },
-    "metricsType": { "type": "string" },
-    "promoters": { "type": "integer" },
-    "passives": { "type": "integer" },
-    "detractors": { "type": "integer" },
-    "promotersCount": { "type": "integer" },
-    "passivesCount": { "type": "integer" },
-    "detractorsCount": { "type": "integer" },
-    "totalResponses": { "type": "integer" }
+    "score": {
+      "type": ["null", "integer"]
+    },
+    "scoreSum": {
+      "type": ["null", "integer"]
+    },
+    "metricsType": {
+      "type": ["null", "string"]
+    },
+    "promoters": {
+      "type": ["null", "integer"]
+    },
+    "passives": {
+      "type": ["null", "integer"]
+    },
+    "detractors": {
+      "type": ["null", "integer"]
+    },
+    "promotersCount": {
+      "type": ["null", "integer"]
+    },
+    "passivesCount": {
+      "type": ["null", "integer"]
+    },
+    "detractorsCount": {
+      "type": ["null", "integer"]
+    },
+    "totalResponses": {
+      "type": ["null", "integer"]
+    }
   }
 }

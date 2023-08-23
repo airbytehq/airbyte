@@ -23,9 +23,15 @@ import static io.airbyte.integrations.source.postgres.PostgresType.TINYINT;
 import static io.airbyte.integrations.source.postgres.PostgresType.VARCHAR;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +47,8 @@ public class PostgresUtils {
   public static final Duration MIN_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(2);
   public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
   public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
+  private static final int MIN_QUEUE_SIZE = 1000;
+  private static final int MAX_QUEUE_SIZE = 10000;
 
   public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
@@ -69,6 +77,45 @@ public class PostgresUtils {
       return Optional.of(seconds);
     }
     return Optional.empty();
+  }
+
+  private static OptionalInt extractQueueSizeFromConfig(final JsonNode config) {
+    final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod != null && replicationMethod.has("queue_size")) {
+      final int queueSize = config.get("replication_method").get("queue_size").asInt();
+      return OptionalInt.of(queueSize);
+    }
+    return OptionalInt.empty();
+  }
+
+  public static int getQueueSize(final JsonNode config) {
+    final OptionalInt sizeFromConfig = extractQueueSizeFromConfig(config);
+    if (sizeFromConfig.isPresent()) {
+      int size = sizeFromConfig.getAsInt();
+      if (size < MIN_QUEUE_SIZE) {
+        LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
+            MIN_QUEUE_SIZE);
+        return MIN_QUEUE_SIZE;
+      } else if (size > MAX_QUEUE_SIZE) {
+        LOGGER.warn("Queue size is overridden to {} , which is the max allowed for safety.",
+            MAX_QUEUE_SIZE);
+        return MAX_QUEUE_SIZE;
+      }
+      return size;
+    }
+    return MAX_QUEUE_SIZE;
+  }
+
+  public static void checkQueueSize(final JsonNode config) {
+    final OptionalInt queueSize = extractQueueSizeFromConfig(config);
+    if (queueSize.isPresent()) {
+      final int size = queueSize.getAsInt();
+      if (size < MIN_QUEUE_SIZE || size > MAX_QUEUE_SIZE) {
+        throw new IllegalArgumentException(
+            String.format("queue_size must be between %d and %d ",
+                MIN_QUEUE_SIZE, MAX_QUEUE_SIZE));
+      }
+    }
   }
 
   public static void checkFirstRecordWaitTime(final JsonNode config) {
@@ -110,6 +157,25 @@ public class PostgresUtils {
 
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
     return firstRecordWaitTime;
+  }
+
+  public static boolean isXmin(final JsonNode config) {
+    final boolean isXmin = config.hasNonNull("replication_method")
+        && config.get("replication_method").get("method").asText().equals("Xmin");
+    LOGGER.info("using Xmin: {}", isXmin);
+    return isXmin;
+  }
+
+  public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
+        .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
+  }
+
+  public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {
+    return streamList.
+        stream().
+        map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).
+        collect(Collectors.joining(", "));
   }
 
 }

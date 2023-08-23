@@ -5,6 +5,8 @@ data:
   registries:
     oss:
       enabled: false
+    cloud:
+      enabled: false
   connectorSubtype: api
   connectorType: source
   definitionId: {{generateDefinitionId}}
@@ -16,5 +18,8 @@ data:
   name: {{capitalCase name}}
   releaseDate: TODO
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
+  tags:
+    - language:lowcode
 metadataSpecVersion: "1.0"

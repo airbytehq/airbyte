@@ -1,0 +1,192 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "start_time": {
+      "type":  ["null", "string"],
+      "format": "date-time"
+    },
+    "end_time": {
+      "type":  ["null", "string"],
+      "format": "date-time"
+    },
+    "calendar_id": {
+      "type": ["null", "string"]
+    },
+    "calendar_type": {
+      "type": ["null", "string"]
+    },
+    "meeting_type": {
+      "type": ["null", "string"]
+    },
+    "recipient_name": {
+      "type": ["null", "string"]
+    },
+    "recipient_email": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "event_id": {
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "type": ["null", "string"]
+    },
+    "task_id": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type":  ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type":  ["null", "string"],
+      "format": "date-time"
+    },
+    "guests": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "attendees": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "email": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "organizer": {
+            "type": ["null", "boolean"]
+          },
+          "status": {
+            "type": ["null", "string"]
+          },
+          "status_changed": {
+            "type": ["null", "boolean"]
+          },
+          "deleted_at": {
+            "type":  ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "person": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "cadence": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "step": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "booked_by_user": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "crm_references": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "event_source": {
+      "type": ["null", "string"]
+    },
+    "canceled_at": {
+      "type":  ["null", "string"],
+      "format": "date-time"
+    },
+    "all_day": {
+      "type": ["null", "boolean"]
+    },
+    "no_show": {
+      "type": ["null", "boolean"]
+    },
+    "crm_custom_fields": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "strict_attribution": {
+      "type": ["null", "boolean"]
+    },
+    "i_cal_uid": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "reschedule_status": {
+      "type": ["null", "string"]
+    },
+    "owned_by_meetings_settings": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "email_address": ["null", "string"]
+        }
+      }
+    },
+    "booked_by_meetings_settings": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "email_address": ["null", "string"]
+        }
+      }
+    }
+  }
+}

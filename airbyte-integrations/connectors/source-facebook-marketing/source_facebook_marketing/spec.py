@@ -52,6 +52,17 @@ class InsightConfig(BaseModel):
         default=[],
     )
 
+    action_report_time: str = Field(
+        title="Action Report Time",
+        description=(
+            "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st "
+            "but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
+            "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd."
+        ),
+        default="mixed",
+        enum=["conversion", "impression", "mixed"],
+    )
+
     time_increment: Optional[PositiveInt] = Field(
         title="Time Increment",
         description=(
@@ -102,6 +113,8 @@ class ConnectorConfig(BaseConfig):
             " Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. "
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
+        pattern="^[0-9]+$",
+        pattern_descriptor="1234567890",
         examples=["111111111111111"],
     )
 
@@ -188,7 +201,7 @@ class ConnectorConfig(BaseConfig):
         default=28,
     )
 
-    max_batch_size: Optional[PositiveInt] = Field(
+    max_batch_size: Optional[int] = Field(
         title="Maximum size of Batched Requests",
         order=9,
         description=(
@@ -196,10 +209,24 @@ class ConnectorConfig(BaseConfig):
             "Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
         ),
         default=50,
+        gt=0,
+        le=50,
     )
 
     action_breakdowns_allow_empty: bool = Field(
         description="Allows action_breakdowns to be an empty list",
         default=True,
+        airbyte_hidden=True,
+    )
+
+    client_id: Optional[str] = Field(
+        description="The Client Id for your OAuth app",
+        airbyte_secret=True,
+        airbyte_hidden=True,
+    )
+
+    client_secret: Optional[str] = Field(
+        description="The Client Secret for your OAuth app",
+        airbyte_secret=True,
         airbyte_hidden=True,
     )

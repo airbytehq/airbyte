@@ -18,6 +18,7 @@ The primary key for the following streams is `id`:
 - engagements_notes
 - engagements_tasks
 - forms
+- goals
 - line_items
 - marketing_emails
 - owners
@@ -34,6 +35,10 @@ The primary key for the following streams is `canonical-vid`:
 The primary key for the following streams is `pipelineId`:
 
 - deal_pipelines
+
+The primary key for the following streams is `vid-to-merge`:
+
+- contacts_merged_audit
 
 The following streams do not have a primary key:
 

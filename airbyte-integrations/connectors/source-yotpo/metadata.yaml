@@ -10,9 +10,16 @@ data:
   name: Yotpo
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/yotpo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yotpo
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
 metadataSpecVersion: '1.0'

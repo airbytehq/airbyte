@@ -5,28 +5,28 @@
 import logging
 from typing import List
 
-import yaml
-
-SOURCE_DEFINITIONS_FILE_PATH = "../../../../../airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
-
+import requests
 
 logging.basicConfig(level=logging.DEBUG)
 
+CONNECTOR_REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
+
+
+def download_and_parse_registry_json():
+    response = requests.get(CONNECTOR_REGISTRY_URL)
+    response.raise_for_status()
+    return response.json()
+
 
 def read_source_definitions():
-    with open(SOURCE_DEFINITIONS_FILE_PATH, "r") as source_definitions_file:
-        return yaml.safe_load(source_definitions_file)
+    return download_and_parse_registry_json()["sources"]
 
 
-def find_by_release_stage(source_definitions, release_stage):
-    if release_stage == "other":
-        return [
-            definition
-            for definition in source_definitions
-            if definition.get("releaseStage", "") not in ["alpha", "beta", "generally_available"]
-        ]
+def find_by_support_level(source_definitions, support_level):
+    if support_level == "other":
+        return [definition for definition in source_definitions if definition.get("supportLevel", "") not in ["community", "certified"]]
     else:
-        return [definition for definition in source_definitions if definition.get("releaseStage") == release_stage]
+        return [definition for definition in source_definitions if definition.get("supportLevel") == support_level]
 
 
 def find_by_name(connector_names: List[str]):
@@ -47,7 +47,6 @@ def is_airbyte_connector(connector_definition):
 
 
 ALL_DEFINITIONS = read_source_definitions()
-GA_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "generally_available")
-BETA_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "beta")
-ALPHA_DEFINTIONS = find_by_release_stage(ALL_DEFINITIONS, "alpha")
-OTHER_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "other")
+CERTIFIED_DEFINITIONS = find_by_support_level(ALL_DEFINITIONS, "certified")
+COMMUNITY_DEFINITIONS = find_by_support_level(ALL_DEFINITIONS, "community")
+OTHER_DEFINITIONS = find_by_support_level(ALL_DEFINITIONS, "other")

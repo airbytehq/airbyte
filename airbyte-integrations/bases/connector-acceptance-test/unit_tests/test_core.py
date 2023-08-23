@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from _pytest.outcomes import Failed
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
@@ -25,6 +25,8 @@ from connector_acceptance_test.config import BasicReadTestConfig, Config, Expect
 from connector_acceptance_test.tests import test_core
 
 from .conftest import does_not_raise
+
+pytestmark = pytest.mark.anyio
 
 
 @pytest.mark.parametrize(
@@ -236,6 +238,215 @@ def test_additional_properties_is_true(discovered_catalog, expectation):
 
 
 @pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": "string"}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": ["null", "string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"user": {"type": "object", "properties": {"name": {"type": "string"}}}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": "unsupported"}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": ["null", "unsupported"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": "string", "format": "date"}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": "string", "format": "date-time"}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": "string", "format": "datetime"}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": "number", "format": "date"}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": "string", "format": "date", "airbyte_type": "unsupported"}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"username": {"type": "number", "airbyte_type": "timestamp_with_timezone"}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {
+                            "properties": {"user": {"type": "object", "properties": {"name": {"type": "string", "format": "unsupported"}}}}
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "user": {"type": "object", "properties": {"name with space": {"type": "string", "format": "unsupported"}}}
+                            }
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"type": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"with/slash": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"with space": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+    ],
+)
+def test_catalog_has_supported_data_types(discovered_catalog, expectation):
+    t = test_core.TestDiscovery()
+    with expectation:
+        t.test_catalog_has_supported_data_types(discovered_catalog)
+
+
+@pytest.mark.parametrize(
     "test_strictness_level, configured_catalog_path",
     [
         (Config.TestStrictnessLevel.high, None),
@@ -280,22 +491,8 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
 @pytest.mark.parametrize(
     "schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation",
     [
-        (
-            {"type": "object"},
-            {},
-            ExpectedRecordsConfig(path="foobar"),
-            {"aa": 23},
-            {},
-            does_not_raise()
-        ),
-        (
-            {"type": "object"},
-            {},
-            ExpectedRecordsConfig(path="foobar"),
-            {},
-            {},
-            does_not_raise()
-        ),
+        ({"type": "object"}, {}, ExpectedRecordsConfig(path="foobar"), {"aa": 23}, {}, does_not_raise()),
+        ({"type": "object"}, {}, ExpectedRecordsConfig(path="foobar"), {}, {}, does_not_raise()),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
             {},
@@ -310,7 +507,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             ExpectedRecordsConfig(path="foobar"),
             {"created": "23"},
             {},
-            does_not_raise()
+            does_not_raise(),
         ),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
@@ -367,7 +564,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         ),
     ],
 )
-def test_read(schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation):
+async def test_read(mocker, schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation):
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -377,13 +574,14 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
             )
         ]
     )
-    docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = [
-        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
-    ]
+    docker_runner_mock = mocker.MagicMock(
+        call_read=mocker.AsyncMock(
+            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))]
+        )
+    )
     t = test_core.TestBasicRead()
     with expectation:
-        t.test_read(
+        await t.test_read(
             connector_config=None,
             configured_catalog=configured_catalog,
             expect_records_config=expect_records_config,
@@ -398,14 +596,19 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
         )
 
 
-@pytest.mark.parametrize("config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail", [
+@pytest.mark.parametrize(
+    "config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail",
+    [
         (True, True, True),
         (True, False, False),
         (False, False, False),
         (False, True, False),
-])
+    ],
+)
 @pytest.mark.parametrize("additional_properties", [True, False, None])
-def test_fail_on_extra_columns(config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail, additional_properties):
+async def test_fail_on_extra_columns(
+    mocker, config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail, additional_properties
+):
     schema = {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}}
     if additional_properties:
         schema["additionalProperties"] = additional_properties
@@ -423,14 +626,16 @@ def test_fail_on_extra_columns(config_fail_on_extra_columns, record_has_unexpect
             )
         ]
     )
-    docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = [
-        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
-    ]
+    docker_runner_mock = mocker.MagicMock(
+        call_read=mocker.AsyncMock(
+            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))]
+        )
+    )
+
     t = test_core.TestBasicRead()
     if expectation_should_fail:
         with pytest.raises(Failed, match="test_stream"):
-            t.test_read(
+            await t.test_read(
                 connector_config=None,
                 configured_catalog=configured_catalog,
                 expect_records_config=ExpectedRecordsConfig(path="foobar"),
@@ -534,18 +739,17 @@ def test_fail_on_extra_columns(config_fail_on_extra_columns, record_has_unexpect
         ([], False, False),
     ],
 )
-def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failure, should_fail):
+async def test_airbyte_trace_message_on_failure(mocker, output, expect_trace_message_on_failure, should_fail):
     t = test_core.TestBasicRead()
     input_config = BasicReadTestConfig(expect_trace_message_on_failure=expect_trace_message_on_failure)
-    docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = output
+    docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(return_value=output))
 
     with patch.object(pytest, "skip", return_value=None):
         if should_fail:
             with pytest.raises(AssertionError, match="Connector should emit at least one error trace message"):
-                t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
+                await t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
         else:
-            t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
+            await t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
 
 
 @pytest.mark.parametrize(

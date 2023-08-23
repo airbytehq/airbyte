@@ -176,3 +176,18 @@ def test_get_updated_state(config, last_record, current_state, expected):
 def test_parse_response_with_bad_json(config, response_with_bad_json):
     stream = Customers(config)
     assert list(stream.parse_response(response_with_bad_json)) == [{}]
+
+
+@pytest.mark.parametrize(
+    "shop, expected",
+    [
+        ("test-store", "test-store"),
+        ("test-store.myshopify.com", "test-store"),
+    ],
+    ids=["old style", "oauth style"]
+)
+def test_get_shop_name(config, shop, expected):
+    source = SourceShopify()
+    config["shop"] = shop
+    actual = source.get_shop_name(config)
+    assert actual == expected

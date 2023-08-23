@@ -57,6 +57,9 @@
     "scoreboard_level_id": {
       "type": ["null", "integer"]
     },
+    "scoreboard_points": {
+      "type": ["null", "integer"]
+    },
     "ticket_scope": {
       "type": ["null", "string"]
     },
@@ -136,7 +139,13 @@
       "type": ["null", "array"]
     },
     "workspace_info": {
-      "type": ["null", "string"]
+      "type": ["null","array"],
+      "items": {
+        "additionalProperties": true
+      }
+    },
+    "work_schedule_id": {
+      "type": ["null", "integer"]
     }
   }
 }

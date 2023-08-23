@@ -17,7 +17,7 @@ You can find or create authentication tokens within [Waiteraid](https://app.wait
 4. Enter your `auth_token` - Waiteraid Authentication Token.
 5. Enter your `restaurant ID` - The Waiteraid ID of the Restaurant you wanto sync. 
 6. Click **Set up source**.
-
+<!-- env:oss -->
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
@@ -36,7 +36,7 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 | Incremental Sync  | No         |
 | SSL connection    | No         |
 | Namespaces        | No         |
-
+<!-- /env:oss -->
 ## Supported Streams
 
 * [Bookings](https://app.waiteraid.com/api-docs/index.html#api_get_bookings)

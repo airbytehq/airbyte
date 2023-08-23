@@ -31,7 +31,7 @@ Currently, this source connector works with `Standard` subscription plan only. `
 When using OAuth, you may see a `400` or `401` error causing a failed sync. You can re-authenticate your Airtable connector to solve the issue temporarily. We are working on a permanent fix that you can follow [here](https://github.com/airbytehq/airbyte/issues/25278).
 :::
 
-1. Click **Set up source**.
+5. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -44,6 +44,8 @@ When using OAuth, you may see a `400` or `401` error causing a failed sync. You 
 5. Click **Set up source**.
 <!-- /env:oss -->
 
+### Note on changed table names and deleted tables
+Please keep in mind that if you start syncing a table via Airbyte, then rename it in your Airtable account, the connector will not continue syncing that table until you reset your connection schema and select it again. At that point, the table will begin syncing to a table with the new name in the destination. This is because there is no way for Airtable to tell Airbyte which tables have been renamed.  Similarly, if you delete a table that was previously syncing, the connector will stop syncing it. 
 
 ## Supported sync modes
 
@@ -109,6 +111,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------|
+| 3.0.1   | 2023-05-10 | [25946](https://github.com/airbytehq/airbyte/pull/25946) | Skip stream if it does not appear in catalog                                  |
 | 3.0.0   | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness                                  |
 | 2.0.4   | 2023-03-15 | [24093](https://github.com/airbytehq/airbyte/pull/24093) | Update spec and doc                                             |
 | 2.0.3   | 2023-02-02 | [22311](https://github.com/airbytehq/airbyte/pull/22311) | Fix for `singleSelect` types when discovering the schema        |

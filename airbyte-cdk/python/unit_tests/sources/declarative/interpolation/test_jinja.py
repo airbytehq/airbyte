@@ -190,3 +190,30 @@ def test_undeclared_variables(template_string, expected_error, expected_value):
     else:
         actual_value = interpolation.eval(template_string, config=config, **{"to_be": "that_is_the_question"})
         assert actual_value == expected_value
+
+
+@freeze_time("2021-09-01")
+@pytest.mark.parametrize("template_string, expected_value",[
+    pytest.param("{{ now_utc() }}", "2021-09-01 00:00:00+00:00", id="test_now_utc"),
+    pytest.param("{{ now_utc().strftime('%Y-%m-%d') }}", "2021-09-01", id="test_now_utc_strftime"),
+    pytest.param("{{ today_utc() }}", "2021-09-01", id="test_today_utc"),
+    pytest.param("{{ today_utc().strftime('%Y/%m/%d') }}", "2021/09/01", id="test_todat_utc_stftime"),
+    pytest.param("{{ timestamp(1646006400) }}", 1646006400, id="test_timestamp_from_timestamp"),
+    pytest.param("{{ timestamp('2022-02-28') }}", 1646006400, id="test_timestamp_from_timestamp"),
+    pytest.param("{{ timestamp('2022-02-28T00:00:00Z') }}", 1646006400, id="test_timestamp_from_timestamp"),
+    pytest.param("{{ timestamp('2022-02-28 00:00:00Z') }}", 1646006400, id="test_timestamp_from_timestamp"),
+    pytest.param("{{ timestamp('2022-02-28T00:00:00-08:00') }}", 1646035200, id="test_timestamp_from_date_with_tz"),
+    pytest.param("{{ max(2, 3) }}", 3, id="test_max_with_arguments"),
+    pytest.param("{{ max([2, 3]) }}", 3, id="test_max_with_list"),
+    pytest.param("{{ day_delta(1) }}", "2021-09-02T00:00:00.000000+0000", id="test_day_delta"),
+    pytest.param("{{ day_delta(-1) }}", "2021-08-31T00:00:00.000000+0000", id="test_day_delta_negative"),
+    pytest.param("{{ day_delta(1, format='%Y-%m-%d') }}", "2021-09-02", id="test_day_delta_with_format"),
+    pytest.param("{{ duration('P1D') }}", "1 day, 0:00:00", id="test_duration_one_day"),
+    pytest.param("{{ duration('P6DT23H') }}", "6 days, 23:00:00", id="test_duration_six_days_and_23_hours"),
+    pytest.param("{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}", "2021-08-31T00:00:00Z", id="test_now_utc_with_duration_and_format"),
+])
+def test_macros_examples(template_string, expected_value):
+    # The outputs of this test are referenced in declarative_component_schema.yaml
+    # If you change the expected output, you must also change the expected output in declarative_component_schema.yaml
+    now_utc = interpolation.eval(template_string, {})
+    assert now_utc == expected_value

@@ -18,6 +18,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.PrimaryKeyAttributesFromDb;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -29,8 +31,11 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -192,6 +197,62 @@ public class MySqlSourceTests {
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
+  }
+
+  @Test
+  void testParseJdbcParameters() {
+    Map<String, String> parameters =
+        MySqlSource.parseJdbcParameters("theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
+    assertEquals("max_execution_time=10000", parameters.get("sessionVariables"));
+    assertEquals("42", parameters.get("theAnswerToLiveAndEverything"));
+    assertEquals("bar", parameters.get("foo"));
+  }
+
+  @Test
+  public void testJDBCSessionVariable() throws Exception {
+    // start DB
+    try (final MySQLContainer<?> container = new MySQLContainer<>("mysql:8.0")
+        .withUsername(TEST_USER)
+        .withPassword(TEST_PASSWORD)
+        .withEnv("MYSQL_ROOT_HOST", "%")
+        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)
+        .withLogConsumer(new Slf4jLogConsumer(LOGGER))) {
+
+      container.start();
+      final Properties properties = new Properties();
+      properties.putAll(ImmutableMap.of("user", "root", JdbcUtils.PASSWORD_KEY, TEST_PASSWORD));
+      DriverManager.getConnection(container.getJdbcUrl(), properties);
+      final String dbName = Strings.addRandomSuffix("db", "_", 10);
+      final JsonNode config = getConfig(container, dbName, "sessionVariables=MAX_EXECUTION_TIME=28800000");
+
+      try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
+        connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+        connection.createStatement().execute("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
+      }
+      final AirbyteConnectionStatus check = new MySqlSource().check(config);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
+    }
+  }
+
+  @Test
+  public void testPrimaryKeyOrder() {
+    final List<PrimaryKeyAttributesFromDb> primaryKeys = new ArrayList<>();
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col1", 3));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol1", 3));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col2", 2));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol2", 2));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col3", 1));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol3", 1));
+
+    final Map<String, List<String>> result = AbstractJdbcSource.aggregatePrimateKeys(primaryKeys);
+    assertEquals(2, result.size());
+    assertTrue(result.containsKey("stream-a"));
+    assertEquals(3, result.get("stream-a").size());
+    assertEquals(Arrays.asList("col3", "col2", "col1"), result.get("stream-a"));
+
+    assertTrue(result.containsKey("stream-b"));
+    assertEquals(3, result.get("stream-b").size());
+    assertEquals(Arrays.asList("xcol3", "xcol2", "xcol1"), result.get("stream-b"));
   }
 
 }

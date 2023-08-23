@@ -82,6 +82,19 @@ class CustomConversions(FBMarketingStream):
         return self._api.account.get_custom_conversions(params=params)
 
 
+class CustomAudiences(FBMarketingStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
+
+    entity_prefix = "customaudience"
+    enable_deleted = False
+    # The `rule` field is excluded from the list because it caused the error message "Please reduce the amount of data" for certain connections.
+    # https://github.com/airbytehq/oncall/issues/2765
+    fields_exceptions = ["rule"]
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_custom_audiences(params=params)
+
+
 class Ads(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup"""
 
@@ -227,4 +240,65 @@ class AdsInsightsPlatformAndDevice(AdsInsights):
 
 class AdsInsightsActionType(AdsInsights):
     breakdowns = []
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsActionCarouselCard(AdsInsights):
+    action_breakdowns = ["action_carousel_card_id", "action_carousel_card_name"]
+
+
+class AdsInsightsActionConversionDevice(AdsInsights):
+    breakdowns = ["device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsActionProductID(AdsInsights):
+    breakdowns = ["product_id"]
+    action_breakdowns = []
+
+
+class AdsInsightsActionReaction(AdsInsights):
+    action_breakdowns = ["action_reaction"]
+
+
+class AdsInsightsActionVideoSound(AdsInsights):
+    action_breakdowns = ["action_video_sound"]
+
+
+class AdsInsightsActionVideoType(AdsInsights):
+    action_breakdowns = ["action_video_type"]
+
+
+class AdsInsightsDeliveryDevice(AdsInsights):
+    breakdowns = ["device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDeliveryPlatform(AdsInsights):
+    breakdowns = ["publisher_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDeliveryPlatformAndDevicePlatform(AdsInsights):
+    breakdowns = ["publisher_platform", "device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsAge(AdsInsights):
+    breakdowns = ["age"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsCountry(AdsInsights):
+    breakdowns = ["country"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsDMARegion(AdsInsights):
+    breakdowns = ["dma"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsGender(AdsInsights):
+    breakdowns = ["gender"]
     action_breakdowns = ["action_type"]

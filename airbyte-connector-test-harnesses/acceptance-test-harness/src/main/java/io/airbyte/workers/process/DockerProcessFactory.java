@@ -96,6 +96,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final Map<String, String> labels,
                         final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
+                        final Map<String, String> additionalEnvironmentVariables,
                         final String... args)
       throws TestHarnessException {
     try {
@@ -142,7 +143,7 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION));
       }
 
-      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, envMap);
+      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, envMap, additionalEnvironmentVariables);
       for (final Map.Entry<String, String> envEntry : allEnvMap.entrySet()) {
         cmd.add("-e");
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());

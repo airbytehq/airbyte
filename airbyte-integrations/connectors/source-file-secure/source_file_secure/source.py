@@ -4,7 +4,8 @@
 
 import json
 import os
-import sys
+
+import source_file
 
 # some integration tests doesn't setup dependences from
 # requirements.txt file and Python can return a exception.
@@ -12,26 +13,10 @@ import sys
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 
-try:
-    import source_file.source
-except ModuleNotFoundError:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_source_local = os.path.join(current_dir, "../../source-file")
-    if os.path.isdir(parent_source_local):
-        sys.path.append(parent_source_local)
-    else:
-        raise RuntimeError("not found parent source folder")
-    import source_file.source
-
-#  import original classes of the native Source File
-from source_file import SourceFile as ParentSourceFile
-from source_file.client import Client
-from source_file.client import URLFile as ParentURLFile
-
 LOCAL_STORAGE_NAME = "local"
 
 
-class URLFileSecure(ParentURLFile):
+class URLFileSecure(source_file.client.URLFile):
     """Updating of default logic:
     This connector shouldn't work with local files.
     """
@@ -43,7 +28,7 @@ class URLFileSecure(ParentURLFile):
         super().__init__(url, provider, binary, encoding)
 
 
-class SourceFileSecure(ParentSourceFile):
+class SourceFileSecure(source_file.SourceFile):
     """Updating of default source logic
     This connector shouldn't work with local files.
     The base logic of this connector are implemented in the "source-file" connector.
@@ -52,7 +37,7 @@ class SourceFileSecure(ParentSourceFile):
     @property
     def client_class(self):
         # replace a standard class variable to the new one
-        class ClientSecure(Client):
+        class ClientSecure(source_file.client.Client):
             reader_class = URLFileSecure
 
         return ClientSecure

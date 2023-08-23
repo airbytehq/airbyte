@@ -33,8 +33,6 @@ repos:
         exclude: |
           (?x)^.*(
               .github/|
-              source_specs.yaml|
-              destination_specs.yaml|
               .gitlab-ci.yml
           ).?$
 

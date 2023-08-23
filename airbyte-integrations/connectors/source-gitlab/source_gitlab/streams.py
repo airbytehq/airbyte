@@ -5,7 +5,6 @@
 import datetime
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import urlparse
 
 import pendulum
 import requests
@@ -13,6 +12,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+
+from .utils import parse_url
 
 
 class GitlabStream(HttpStream, ABC):
@@ -22,6 +23,7 @@ class GitlabStream(HttpStream, ABC):
     flatten_id_keys = []
     flatten_list_keys = []
     per_page = 50
+    non_retriable_codes: List[int] = (403, 404)
 
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
@@ -52,12 +54,7 @@ class GitlabStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        parse_result = urlparse(self.api_url)
-        # Default scheme to "https" if URL doesn't contain
-        scheme = parse_result.scheme if parse_result.scheme else "https"
-        # hostname without a scheme will result in `path` attribute
-        # Use path if netloc is not detected
-        host = parse_result.netloc if parse_result.netloc else parse_result.path
+        _, scheme, host = parse_url(self.api_url)
         return f"{scheme}://{host}/api/v4/"
 
     @property
@@ -66,17 +63,17 @@ class GitlabStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
-        if response.status_code == 403:
+        if response.status_code in self.non_retriable_codes:
             setattr(self, "raise_on_http_errors", False)
             self.logger.warning(
-                f"Got 403 error when accessing URL {response.request.url}."
+                f"Got {response.status_code} error when accessing URL {response.request.url}."
                 f" Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise."
             )
             return False
         return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if response.status_code != 200:
+        if response.status_code in self.non_retriable_codes:
             return
         response_data = response.json()
         if isinstance(response_data, dict):
@@ -86,7 +83,7 @@ class GitlabStream(HttpStream, ABC):
             return {"page": self.page}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code == 403:
+        if response.status_code in self.non_retriable_codes:
             return []
         response_data = response.json()
         if isinstance(response_data, list):
@@ -107,7 +104,7 @@ class GitlabStream(HttpStream, ABC):
         return record
 
     def _flatten_id(self, record: Dict[str, Any], target: str):
-        target_value = record.pop(target, None)
+        target_value = record.get(target, None)
         record[target + "_id"] = target_value.get("id") if target_value else None
 
     def _flatten_list(self, record: Dict[str, Any], target: str):
