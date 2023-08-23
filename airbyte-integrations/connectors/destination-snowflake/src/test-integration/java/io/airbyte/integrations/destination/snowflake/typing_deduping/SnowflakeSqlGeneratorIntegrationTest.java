@@ -1,9 +1,11 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
+import static io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.timestampToString;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,20 +19,23 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperations;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<SnowflakeTableDefinition> {
 
   private static String databaseName;
@@ -39,7 +44,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @BeforeAll
   public static void setupSnowflake() {
-    JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")));
+    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")));
     databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
     dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     database = SnowflakeDatabase.getDatabase(dataSource);
@@ -61,12 +66,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void createNamespace(String namespace) throws SQLException {
-    database.execute("CREATE SCHEMA \"" + namespace + '"');
+  protected void createNamespace(final String namespace) throws SQLException {
+    database.execute("CREATE SCHEMA IF NOT EXISTS \"" + namespace + '"');
   }
 
   @Override
-  protected void createRawTable(StreamId streamId) throws Exception {
+  protected void createRawTable(final StreamId streamId) throws Exception {
     database.execute(new StringSubstitutor(Map.of(
         "raw_table_id", streamId.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
         """
@@ -80,8 +85,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception {
-    String cdcDeletedAt = includeCdcDeletedAt ? "\"_ab_cdc_deleted_at\" TIMESTAMP_TZ," : "";
+  protected void createFinalTable(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix) throws Exception {
+    final String cdcDeletedAt = includeCdcDeletedAt ? "\"_ab_cdc_deleted_at\" TIMESTAMP_TZ," : "";
     database.execute(new StringSubstitutor(Map.of(
         "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
         "cdc_deleted_at", cdcDeletedAt
@@ -112,45 +117,34 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception {
+  protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
     return SnowflakeTestUtils.dumpRawTable(database, streamId.rawTableId(SnowflakeSqlGenerator.QUOTE));
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
+  protected List<JsonNode> dumpFinalTableRecords(final StreamId streamId, final String suffix) throws Exception {
     return SnowflakeTestUtils.dumpFinalTable(
         database,
         databaseName,
-        namespace,
+        streamId.finalNamespace(),
         streamId.finalName() + suffix);
   }
 
   @Override
-  protected void teardownNamespace(String namespace) throws SQLException {
+  protected void teardownNamespace(final String namespace) throws SQLException {
     database.execute("DROP SCHEMA IF EXISTS \"" + namespace + '"');
   }
 
   @Override
-  protected void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws Exception {
-    List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
-    String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
-    String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
-    String recordsText = records.stream()
+  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix, final List<JsonNode> records) throws Exception {
+    final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
+    final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
+    final String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
+    final String recordsText = records.stream()
                                 // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
                                 .map(record -> columnNames.stream()
                                                           .map(record::get)
-                                                          .map(r -> {
-                                                            if (r == null) {
-                                                              return "NULL";
-                                                            }
-                                                            String stringContents;
-                                                            if (r.isTextual()) {
-                                                              stringContents = r.asText();
-                                                            } else {
-                                                              stringContents = r.toString();
-                                                            }
-                                                            return "$$" + stringContents + "$$";
-                                                          })
+                                                          .map(this::dollarQuoteWrap)
                                                           .collect(joining(",")))
                                 .map(row -> "(" + row + ")")
                                 .collect(joining(","));
@@ -213,26 +207,24 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             """));
   }
 
+  private String dollarQuoteWrap(final JsonNode node) {
+    if (node == null) {
+      return "NULL";
+    }
+    final String stringContents = node.isTextual() ? node.asText() : node.toString();
+    // Use dollar quotes to avoid needing to escape quotes
+    return StringUtils.wrap(stringContents.replace("$$", "\\$\\$"), "$$");
+  }
+
   @Override
-  protected void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception {
-    String recordsText = records.stream()
+  protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+    final String recordsText = records.stream()
                                 // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
-                                .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES.stream()
-                                                                                          .map(record::get)
-                                                                                          .map(r -> {
-                                                                                            if (r == null) {
-                                                                                              return "NULL";
-                                                                                            }
-                                                                                            String stringContents;
-                                                                                            if (r.isTextual()) {
-                                                                                              stringContents = r.asText();
-                                                                                            } else {
-                                                                                              stringContents = r.toString();
-                                                                                            }
-                                                                                            // Use dollar quotes to avoid needing to escape anything
-                                                                                            return "$$" + stringContents + "$$";
-                                                                                          })
-                                                                                          .collect(joining(",")))
+                                .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
+                                    .stream()
+                                    .map(record::get)
+                                    .map(this::dollarQuoteWrap)
+                                    .collect(joining(",")))
                                 .map(row -> "(" + row + ")")
                                 .collect(joining(","));
     database.execute(new StringSubstitutor(
@@ -266,13 +258,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    String sql = generator.createTable(incrementalDedupStream, "");
+    final String sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
-    Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))
+    final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))
                                          .stream().map(record -> record.get("kind").asText())
                                          .findFirst();
-    Map<String, String> columns = database.queryJsons(
+    final Map<String, String> columns = database.queryJsons(
                                               """
                                                   SELECT column_name, data_type, numeric_precision, numeric_scale
                                                   FROM information_schema.columns
@@ -288,7 +280,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                           .collect(toMap(
                                               record -> record.get("COLUMN_NAME").asText(),
                                               record -> {
-                                                String type = record.get("DATA_TYPE").asText();
+                                                final String type = record.get("DATA_TYPE").asText();
                                                 if (type.equals("NUMBER")) {
                                                   return String.format("NUMBER(%s, %s)", record.get("NUMERIC_PRECISION").asText(),
                                                                        record.get("NUMERIC_SCALE").asText()
@@ -327,16 +319,94 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected void createV1RawTable(final StreamId v1RawTable) throws Exception {
-
+    database.execute(String.format(
+        """
+                CREATE SCHEMA IF NOT EXISTS %s;
+                CREATE TABLE IF NOT EXISTS %s.%s (
+                  %s VARCHAR PRIMARY KEY,
+                  %s VARIANT,
+                  %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
+                ) data_retention_time_in_days = 0;
+            """,
+        v1RawTable.rawNamespace(),
+        v1RawTable.rawNamespace(),
+        v1RawTable.rawName(),
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+    ));
   }
 
   @Override
   protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
-
+    final var recordsText = records
+        .stream()
+        .map(record -> JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
+            .stream()
+            .map(record::get)
+            .map(value -> value == null ? "NULL" : value.isTextual() ? value.asText() : value.toString())
+            .map(v -> "NULL".equals(v) ? v : StringUtils.wrap(v, "$$"))
+            .collect(joining(",")))
+        .map(row -> "(%s)".formatted(row))
+        .collect(joining(","));
+    final var insert = new StringSubstitutor(Map.of(
+        "v1_raw_table_id", String.join(".", streamId.rawNamespace(), streamId.rawName()),
+        "records", recordsText
+    ),
+                                             // Use different delimiters because we're using dollar quotes in the query.
+                                             "#{",
+                                             "}"
+    ).replace(
+        """
+            INSERT INTO #{v1_raw_table_id} (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at)
+            SELECT column1, PARSE_JSON(column2), column3 FROM VALUES
+              #{records};
+            """
+    );
+    database.execute(insert);
   }
 
   @Override
-  public void testV1V2migration() throws Exception {
-    super.testV1V2migration();
+  protected List<JsonNode> dumpV1RawTableRecords(final StreamId streamId) throws Exception {
+    final var columns = Stream.of(
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        timestampToString(JavaBaseConstants.COLUMN_NAME_EMITTED_AT),
+        JavaBaseConstants.COLUMN_NAME_DATA
+    ).collect(joining(","));
+    return database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(new StringSubstitutor(Map.of(
+        "columns", columns,
+        "table", String.join(".", streamId.rawNamespace(), streamId.rawName())
+    )).replace(
+        """
+            SELECT ${columns} FROM ${table} ORDER BY _airbyte_emitted_at ASC
+            """
+    )), new SnowflakeTestSourceOperations()::rowToJson);
+  }
+
+  @Override
+  protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
+    final var v2RecordMap = v2RawRecords.stream().collect(Collectors.toMap(
+        record -> record.get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText(),
+        Function.identity()
+    ));
+    assertAll(
+        () -> assertEquals(5, v1RawRecords.size()),
+        () -> assertEquals(5, v2RawRecords.size())
+    );
+    v1RawRecords.forEach(v1Record -> {
+      final var v1id = v1Record.get(JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase()).asText();
+      assertAll(
+          () -> assertEquals(v1id, v2RecordMap.get(v1id).get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText()),
+          () -> assertEquals(v1Record.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT.toUpperCase()).asText(), v2RecordMap.get(v1id).get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT).asText()),
+          () -> assertNull(v2RecordMap.get(v1id).get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT))
+      );
+      JsonNode originalData = v1Record.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase());
+      JsonNode migratedData = v2RecordMap.get(v1id).get(JavaBaseConstants.COLUMN_NAME_DATA);
+      migratedData = migratedData.isTextual() ? Jsons.deserializeExact(migratedData.asText()) : migratedData;
+      originalData = originalData.isTextual() ? Jsons.deserializeExact(migratedData.asText()) : originalData;
+      // hacky thing because we only care about the data contents.
+      // diffRawTableRecords makes some assumptions about the structure of the blob.
+      DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
+    });
   }
 }

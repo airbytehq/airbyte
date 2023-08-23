@@ -21,9 +21,9 @@ data:
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
-    - language:lowcode
-  _ab_internal:
-    _sl: 200
-    _ql: 300
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
   supportLevel: certified
 metadataSpecVersion: "1.0"
