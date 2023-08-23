@@ -145,12 +145,22 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
           sql = String.format("SELECT %s FROM %s WHERE %s >= ? ORDER BY %s", wrappedColumnNames, fullTableName,
               quotedCursorField, quotedCursorField);
         } else {
-          sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
-              quotedCursorField, quotedCursorField, chunkSize);
+          // The pk max value could be null - this can happen in the case of empty tables. In this case, we can just issue a query
+          // without any chunking.
+          if (pkInfo.pkMaxValue() != null) {
+            sql = String.format("SELECT %s FROM %s WHERE %s > ? AND %s <= ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
+                quotedCursorField, quotedCursorField, quotedCursorField, chunkSize);
+          } else {
+            sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s", wrappedColumnNames, fullTableName,
+                quotedCursorField, quotedCursorField);
+          }
         }
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         final MysqlType cursorFieldType = pkInfo.fieldType();
         sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());
+        if (!isCompositeKeyLoad && pkInfo.pkMaxValue() != null) {
+          sourceOperations.setCursorField(preparedStatement, 2, cursorFieldType, pkInfo.pkMaxValue());
+        }
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       }
