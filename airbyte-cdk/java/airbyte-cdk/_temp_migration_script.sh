@@ -1,8 +1,8 @@
 #!/bin/bash
-set -e  # Exit immediately if a command exits with a non-zero status.
-
-# This file is an audit tool for the migration.
+#
+# This file is an audit and automation tool for the CDK migration itself.
 # It may be deleted befor the PR is merged.
+#
 # Usage:
 #   MIGRATE_SH=./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.sh
 #   $MIGRATE_SH <OLD_PACKAGE_ROOT> <SUBPACKAGE_PATH>
@@ -100,35 +100,39 @@ OLD_PROJECT_NAME=$(echo "$OLD_PACKAGE_ROOT" | sed 's/.*\/\(.*\)/\1/')
 # Store the second value as "FLAG" if it exists
 FLAG="$2"
 
-# These lines should not need to be changed
-OLD_SRC_PATH="$OLD_PACKAGE_ROOT/src/main/java/io/airbyte"
+# Declare source directories
+OLD_MAIN_PATH="$OLD_PACKAGE_ROOT/src/main/java/io/airbyte"
 OLD_TEST_PATH="$OLD_PACKAGE_ROOT/src/test/java/io/airbyte"
+OLD_INTEGTEST_PATH="$OLD_PACKAGE_ROOT/src/test-integration/java/io/airbyte"
 OLD_TESTFIXTURE_PATH="$OLD_PACKAGE_ROOT/src/testFixtures/java/io/airbyte"
+OLD_MAIN_RESOURCES_PATH="$OLD_PACKAGE_ROOT/src/main/resources"
+OLD_TEST_RESOURCES_PATH="$OLD_PACKAGE_ROOT/src/test/resources"
+OLD_INTEGTEST_RESOURCES_PATH="$OLD_PACKAGE_ROOT/src/test-integration/resources"
 
+# Declare destination directories
 CDK_ROOT="airbyte-cdk/java/airbyte-cdk"
-DEST_MAIN="$CDK_ROOT/src/main/java/io/airbyte/cdk"
-DEST_TEST="$CDK_ROOT/src/test/java/io/airbyte/cdk"
+DEST_MAIN_PATH="$CDK_ROOT/src/main/java/io/airbyte/cdk"
+DEST_TEST_PATH="$CDK_ROOT/src/test/java/io/airbyte/cdk"
+DEST_INTEGTEST_PATH="$CDK_ROOT/src/test-integration/java/io/airbyte/cdk"
 DEST_TESTFIXTURE_PATH="$CDK_ROOT/src/testFixtures/java/io/airbyte/cdk"
+DEST_MAIN_RESOURCES_PATH="$CDK_ROOT/src/main/resources/$OLD_PROJECT_NAME"
+DEST_TEST_RESOURCES_PATH="$CDK_ROOT/src/test/resources/$OLD_PROJECT_NAME"
+DEST_INTEGTEST_RESOURCES_PATH="$CDK_ROOT/src/test-integration/resources/$OLD_PROJECT_NAME"
 
 # Check if flag is 'asTestFixture'. If so, send 'main/java' to 'testFixtures/java':
 if [ "$FLAG" = "asTestFixture" ]; then
-  DEST_MAIN="$DEST_TESTFIXTURE_PATH"
+  DEST_MAIN_PATH="$DEST_TESTFIXTURE_PATH"
 fi
 
-echo -e "Moving main files (ignoring existing)... \n - From: $OLD_SRC_PATH\n - To:   $DEST_MAIN"
-# find "$OLD_SRC_PATH/" -type f | head
-mkdir -p "$DEST_MAIN/"
-rsync -av --ignore-existing --remove-source-files "$OLD_SRC_PATH/" "$DEST_MAIN/"
+declare -a PATH_DESC=(  "main classes"   "main test classes" "integ test classes"   "test fixtures"          "main resources"            "test resources"            "integ test resources")
+declare -a SOURCE_DIRS=("$OLD_MAIN_PATH" "$OLD_TEST_PATH"    "$OLD_INTEGTEST_PATH"  "$OLD_TESTFIXTURE_PATH"  "$OLD_MAIN_RESOURCES_PATH"  "$OLD_TEST_RESOURCES_PATH"  "$OLD_INTEGTEST_RESOURCES_PATH")
+declare -a DEST_DIRS=( "$DEST_MAIN_PATH" "$DEST_TEST_PATH"   "$DEST_INTEGTEST_PATH" "$DEST_TESTFIXTURE_PATH" "$DEST_MAIN_RESOURCES_PATH" "$DEST_TEST_RESOURCES_PATH" "$DEST_INTEGTEST_RESOURCES_PATH")
 
-echo -e "Moving test files (ignoring existing)... \n - From: $OLD_TEST_PATH\n - To:   $DEST_TEST"
-# find "$OLD_TEST_PATH/" -type f | head
-mkdir -p "$DEST_TEST/"
-rsync -av --ignore-existing --remove-source-files "$OLD_TEST_PATH/" "$DEST_TEST/"
-
-echo -e "Moving testFixture files (ignoring existing)... \n - From: $OLD_TEST_PATH\n - To:   $DEST_TEST"
-# find "$OLD_TEST_PATH/" -type f | head
-mkdir -p "$DEST_TEST/"
-rsync -av --ignore-existing --remove-source-files "$OLD_TESTFIXTURE_PATH/" "$DEST_TESTFIXTURE/"
+for ((i=0;i<${#SOURCE_DIRS[@]};++i)); do
+  echo -e "Moving '${PATH_DESC[$i]}' files (ignoring existing)... \n - From: ${SOURCE_DIRS[$i]}\n - To:   ${DEST_DIRS[$i]}"
+  mkdir -p "${DEST_DIRS[$i]}"
+  rsync -av --ignore-existing --remove-source-files "${SOURCE_DIRS[$i]}/" "${DEST_DIRS[$i]}/"
+done
 
 # Remove empty directories in the OLD_PACKAGE_ROOT
 find "$OLD_PACKAGE_ROOT/" -type d -empty -delete
