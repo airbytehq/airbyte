@@ -22,6 +22,79 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
         timeout_seconds: 600
         empty_streams:
+          - name: "account_labels"
+            bypass_reason: "Unable to seed the stream"
+          - name: "unhappytable"
+            bypass_reason: "Empty testing stream"
+          - name: "display_topics_performance_report"
+            bypass_reason: "Stream not filled yet."
+          - name: "shopping_performance_report"
+            bypass_reason: "Stream not filled yet."
+          - name: "ad_group_ad_label_custom"
+            bypass_reason: "Stream not filled yet."
+          - name: "click_view"
+            bypass_reason: "Next config"
+        ignored_fields:
+          accounts:
+            - name: customer.optimization_score_weight
+              bypass_reason: "can be updated, also it is sometimes integer, sometimes float"
+            - name: customer.optimization_score
+              bypass_reason: "value can be changed because it is real-life recommendation from Amazon"
+      - config_path: "secrets/config_click_view.json"
+        expect_records:
+          path: "integration_tests/expected_records_click.jsonl"
+        timeout_seconds: 600
+        empty_streams:
+          - name: "account_performance_report"
+            bypass_reason: "Floating data"
+          - name: "accounts"
+            bypass_reason: "Floating data"
+          - name: "ad_group_ad_labels"
+            bypass_reason: "Stream not filled yet."
+          - name: "ad_group_ad_report"
+            bypass_reason: "Unable to seed the stream"
+          - name: "ad_group_ads"
+            bypass_reason: "Unable to seed the stream"
+          - name: "ad_group_bidding_strategies"
+            bypass_reason: "Stream not filled yet."
+          - name: "ad_group_criterion_labels"
+            bypass_reason: "Stream not filled yet."
+          - name: "ad_group_criterions"
+            bypass_reason: "Stream not filled yet."
+          - name: "ad_group_custom"
+            bypass_reason: "Stream not filled yet."
+          - name: "ad_group_labels"
+            bypass_reason: "Stream not filled yet."
+          - name: 'ad_groups'
+            bypass_reason: "Stream not filled yet."
+          - name: 'ad_listing_group_criterions'
+            bypass_reason: "Stream not filled yet."
+          - name: 'audience'
+            bypass_reason: "Stream not filled yet."
+          - name: 'campaign_bidding_strategies'
+            bypass_reason: "Stream not filled yet."
+          - name: 'campaign_budget'
+            bypass_reason: "Stream not filled yet."
+          - name: 'campaign_labels'
+            bypass_reason: "Stream not filled yet."
+          - name: 'campaigns'
+            bypass_reason: "Stream not filled yet."
+          - name: 'custom_audience'
+            bypass_reason: "Stream not filled yet."
+          - name: 'display_keyword_performance_report'
+            bypass_reason: "Stream not filled yet."
+          - name: 'geographic_report'
+            bypass_reason: "Stream not filled yet."
+          - name: 'happytable'
+            bypass_reason: "Stream not filled yet."
+          - name: 'keyword_report'
+            bypass_reason: "Stream not filled yet."
+          - name: "labels"
+            bypass_reason: "Stream not filled yet."
+          - name: 'user_interest'
+            bypass_reason: "Stream not filled yet."
+          - name: 'user_location_report'
+            bypass_reason: "Stream not filled yet."
           - name: "display_topics_performance_report"
             bypass_reason: "Stream not filled yet."
           - name: "account_labels"

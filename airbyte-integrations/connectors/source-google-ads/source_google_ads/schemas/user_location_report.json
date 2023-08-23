@@ -39,6 +39,9 @@
     "user_location_view.country_criterion_id": {
       "type": ["null", "integer"]
     },
+    "user_location_view.targeting_location": {
+      "type": ["null", "boolean"]
+    },
     "user_location_view.resource_name": {
       "type": ["null", "string"]
     },

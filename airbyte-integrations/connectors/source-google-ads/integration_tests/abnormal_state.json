@@ -110,5 +110,19 @@
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
       "stream_descriptor": { "name": "ad_group_bidding_strategies" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "change_status.last_change_date_time" : "2023-08-16 13:20:01.003295" }},
+      "stream_descriptor": { "name": "ad_group_criterions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "change_status.last_change_date_time" : "2023-08-16 13:20:01.003295" }},
+      "stream_descriptor": { "name": "campaign_criterion" }
+    }
   }
 ]

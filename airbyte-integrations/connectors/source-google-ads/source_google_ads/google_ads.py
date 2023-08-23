@@ -32,9 +32,11 @@ REPORT_MAPPING = {
     "audience": "audience",
     "campaigns": "campaign",
     "campaign_real_time_bidding_settings": "campaign",
+    "campaign_criterion": "campaign_criterion",
     "campaign_bidding_strategies": "campaign",
     "campaign_budget": "campaign_budget",
     "campaign_labels": "campaign_label",
+    "change_status": "change_status",
     "click_view": "click_view",
     "display_keyword_performance_report": "display_keyword_view",
     "display_topics_performance_report": "topic_view",
@@ -113,7 +115,7 @@ class GoogleAds:
 
     @staticmethod
     def convert_schema_into_query(
-        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None
+        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None, id_list: List[str] = None, id_field: str = None, resource_type: str = None, limit: int = None
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
@@ -121,8 +123,28 @@ class GoogleAds:
 
         query_template = f"SELECT {fields} FROM {from_category}"
 
+        conditions = []
+
+        # time condition
+        if cursor_field and from_date and to_date:
+            conditions.append(f"{cursor_field} >= '{from_date}' AND {cursor_field} <= '{to_date}'")
+
+        # filter by ids if needed
+        if id_list and id_field:
+            id_list_str = ", ".join(f"'{str(id_)}'" for id_ in id_list)
+            conditions.append(f"{id_field} IN ({id_list_str})")
+
+        if resource_type:
+            conditions.append(f"change_status.resource_type = '{resource_type}'")
+
+        if conditions:
+            query_template += " WHERE " + " AND ".join(conditions)
+
         if cursor_field:
-            query_template += f" WHERE {cursor_field} >= '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
+            query_template += f" ORDER BY {cursor_field} ASC"
+
+        if limit:
+            query_template += f" LIMIT {limit}"
 
         return query_template
 

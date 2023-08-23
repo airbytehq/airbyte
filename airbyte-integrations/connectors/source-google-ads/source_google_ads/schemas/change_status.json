@@ -1,0 +1,65 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "change_status.last_change_date_time" : {
+      "type" : [
+        "null",
+        "string"
+      ],
+      "format" : "date"
+    },
+    "change_status.resource_type" : {
+      "type" : [
+        "null",
+        "string"
+      ],
+      "enum" : [
+        "AD_GROUP",
+        "AD_GROUP_AD",
+        "AD_GROUP_ASSET",
+        "AD_GROUP_BID_MODIFIER",
+        "AD_GROUP_CRITERION",
+        "AD_GROUP_FEED",
+        "ASSET",
+        "CAMPAIGN",
+        "CAMPAIGN_ASSET",
+        "CAMPAIGN_CRITERION",
+        "CAMPAIGN_FEED",
+        "CAMPAIGN_SHARED_SET",
+        "COMBINED_AUDIENCE",
+        "CUSTOMER_ASSET",
+        "FEED",
+        "FEED_ITEM",
+        "SHARED_SET",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
+    },
+    "change_status.resource_status" : {
+      "type" : [
+        "null",
+        "string"
+      ],
+      "enum" : [
+        "ADDED",
+        "CHANGED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
+    },
+    "change_status.ad_group_criterion" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "change_status.campaign_criterion" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

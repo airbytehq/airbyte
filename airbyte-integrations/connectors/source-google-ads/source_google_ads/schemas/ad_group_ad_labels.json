@@ -22,6 +22,9 @@
     },
     "label.resource_name": {
       "type": ["null", "string"]
+    },
+    "label.id": {
+      "type": ["null", "integer"]
     }
   }
 }
