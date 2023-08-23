@@ -31,6 +31,9 @@ class PublishPyPIConnector(Step):
             """
             )
 
+            twine_username = self.context.dagger_client.set_secret("twine_username", self.context.pypi_username)
+            twine_password = self.context.dagger_client.set_secret("twine_password", self.context.pypi_password)
+
             pypi_stdout = await (
                 self.context.dagger_client.container()
                 .from_("python:3.10-slim")
@@ -42,8 +45,8 @@ class PublishPyPIConnector(Step):
                 .with_new_file("setup.cfg", setup_cfg)
                 .with_exec(["pip", "install", "--upgrade", "setuptools", "wheel"])
                 .with_exec(["python", "setup.py", "sdist", "bdist_wheel"])
-                .with_env_variable("TWINE_USERNAME", self.context.pypi_username)
-                .with_env_variable("TWINE_PASSWORD", self.context.pypi_password)
+                .with_secret_variable("TWINE_USERNAME", twine_username)
+                .with_secret_variable("TWINE_PASSWROD", twine_password)
                 .with_exec(["twine", "upload", "--verbose", "--repository", self.context.pypi_repository, "dist/*"])
             ).stdout()
 
