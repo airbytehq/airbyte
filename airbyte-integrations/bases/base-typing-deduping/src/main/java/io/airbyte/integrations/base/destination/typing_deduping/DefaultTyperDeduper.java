@@ -138,7 +138,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   public void commitFinalTables() throws Exception {
     LOGGER.info("Committing final tables");
     for (final StreamConfig streamConfig : parsedCatalog.streams()) {
-      if (streamsWithSuccesfulSetup.contains(streamConfig.id()) && DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
+      if (!streamsWithSuccesfulSetup.contains(streamConfig.id())) {
+        LOGGER.warn("Skipping committing final table for for {}.{} because we could not set up the tables for this stream.", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
+        continue;
+      }
+      if (DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
         final StreamId streamId = streamConfig.id();
         final String finalSuffix = getFinalTableSuffix(streamId);
         if (!StringUtils.isEmpty(finalSuffix)) {
