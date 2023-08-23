@@ -1,6 +1,1 @@
-<<<<<<< HEAD
--e ../../bases/connector-acceptance-test
 -e .
-=======
--e .
->>>>>>> 1219e66fb966f03620db5a2157148e8a5b28abdb
