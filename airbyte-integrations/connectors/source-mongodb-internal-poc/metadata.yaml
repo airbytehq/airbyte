@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: 
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   tags:
     - language:java
 metadataSpecVersion: "1.0"

@@ -42,7 +42,6 @@ class TestCheckConnectorImageDoesNotExists:
             assert step_result.status == StepStatus.SKIPPED
 
     async def test_run_success_when_already_published(self, publish_context):
-
         publish_context.docker_image = "airbyte/source-pokeapi:0.0.0"
         step = publish.CheckConnectorImageDoesNotExist(publish_context)
         step_result = await step.run()
