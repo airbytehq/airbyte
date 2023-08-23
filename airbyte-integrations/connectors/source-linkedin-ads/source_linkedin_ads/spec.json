@@ -122,12 +122,7 @@
               "title": "Time granularity",
               "description": "Set time granularity for report: \nALL - Results grouped into a single result across the entire time range of the report.\nDAILY - Results grouped by day.\nMONTHLY - Results grouped by month.\nYEARLY - Results grouped by year.",
               "type": "string",
-              "enum": [
-                "ALL",
-                "DAILY",
-                "MONTHLY",
-                "YEARLY"
-              ]
+              "enum": ["ALL", "DAILY", "MONTHLY", "YEARLY"]
             }
           }
         },
