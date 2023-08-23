@@ -41,6 +41,8 @@ class FBMarketingStream(Stream, ABC):
     enable_deleted = True
     # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
     entity_prefix = None
+    # In case of Error 'Too much data was requested in batch' some fields should be removed from request
+    fields_exceptions = []
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -76,8 +78,13 @@ class FBMarketingStream(Stream, ABC):
             self.max_batch_size = self._initial_max_batch_size
             records.append(response.json())
 
-        def reduce_batch_size():
-            if self.max_batch_size == 1:
+        def reduce_batch_size(request: FacebookRequest):
+            if self.max_batch_size == 1 and set(self.fields_exceptions) & set(request._fields):
+                logger.warning(
+                    f"Removing fields from object {self.name} with id={request._node_id} : {set(self.fields_exceptions) & set(request._fields)}"
+                )
+                request._fields = [x for x in request._fields if x not in self.fields_exceptions]
+            elif self.max_batch_size == 1:
                 raise RuntimeError("Batch request failed with only 1 request in it")
             self.max_batch_size = ceil(self.max_batch_size / 2)
             logger.warning(f"Caught retryable error: Too much data was requested in batch. Reducing batch size to {self.max_batch_size}")
@@ -89,7 +96,7 @@ class FBMarketingStream(Stream, ABC):
             if not isinstance(resp_body, dict):
                 raise RuntimeError(f"Batch request failed with response: {resp_body}")
             elif resp_body.get("error", {}).get("message") == "Please reduce the amount of data you're asking for, then retry your request":
-                reduce_batch_size()
+                reduce_batch_size(request)
             elif resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE:
                 raise RuntimeError(f"Batch request failed with response: {resp_body}; unknown error code")
             requests_q.put(request)
