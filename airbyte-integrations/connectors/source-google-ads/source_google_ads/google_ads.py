@@ -115,7 +115,15 @@ class GoogleAds:
 
     @staticmethod
     def convert_schema_into_query(
-        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None, id_list: List[str] = None, id_field: str = None, resource_type: str = None, limit: int = None
+        schema: Mapping[str, Any],
+        report_name: str,
+        from_date: str = None,
+        to_date: str = None,
+        cursor_field: str = None,
+        id_list: List[str] = None,
+        id_field: str = None,
+        resource_type: str = None,
+        limit: int = None,
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)

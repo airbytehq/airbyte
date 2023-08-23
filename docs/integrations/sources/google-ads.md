@@ -97,6 +97,13 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
+#### Change Status
+Only provide events for recent 3 months.
+
+
+#### Incremental Campaign Criterion and Ad Group Criterion
+This streams offer support for incremental deletions and is built using the Change Status stream. However, it only provides updates for the most recent three months.
+
 ## Supported Streams
 
 The Google Ads source connector can sync the following tables. It can also sync custom queries using GAQL.
