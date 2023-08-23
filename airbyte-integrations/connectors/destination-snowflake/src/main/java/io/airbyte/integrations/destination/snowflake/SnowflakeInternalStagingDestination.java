@@ -134,22 +134,17 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final ParsedCatalog parsedCatalog;
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-      final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
-      final CatalogParser catalogParser;
-      if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
-        catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
-      } else {
-        catalogParser = new CatalogParser(sqlGenerator);
-      }
-      parsedCatalog = catalogParser.parseCatalog(catalog);
-      final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
+    final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
+    final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
+    final CatalogParser catalogParser;
+    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
+      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
     } else {
-      parsedCatalog = null;
-      typerDeduper = new NoopTyperDeduper();
+      catalogParser = new CatalogParser(sqlGenerator);
     }
+    parsedCatalog = catalogParser.parseCatalog(catalog);
+    final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
 
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
