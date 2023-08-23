@@ -65,12 +65,14 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
           && Objects.nonNull(lastCtid)
           && StringUtils.isNotBlank(lastCtid)) {
+        final Long fileNode = fileNodeHandler.getFileNode(pair);
+        assert fileNode != null;
         final CtidStatus ctidStatus = new CtidStatus()
             .withVersion(CTID_STATUS_VERSION)
             .withStateType(StateType.CTID)
             .withCtid(lastCtid)
             .withIncrementalState(streamStateForIncrementalRun)
-            .withRelationFilenode(fileNodeHandler.getFileNode(pair));
+            .withRelationFilenode(fileNode);
         LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
         recordCount = 0L;
         lastCheckpoint = Instant.now();
