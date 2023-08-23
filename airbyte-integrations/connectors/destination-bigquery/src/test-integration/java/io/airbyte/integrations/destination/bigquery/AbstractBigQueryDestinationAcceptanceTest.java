@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQuery.DatasetDeleteOption;
 import com.google.cloud.bigquery.BigQuery.DatasetListOption;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.ConnectionProperty;
@@ -188,18 +189,20 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   protected void removeOldNamespaces() {
+    int datasetsDeletedCount = 0;
     // todo (cgardens) - hardcoding to testing project to de-risk this running somewhere unexpected.
-    bigquery.listDatasets("dataline-integration-testing", DatasetListOption.all())
-        .iterateAll()
-        .forEach(dataset -> {
-          if (TestingNamespaces.isOlderThan2Days(dataset.getDatasetId().getDataset())) {
-            try {
-              bigquery.delete(dataset.getDatasetId(), BigQuery.DatasetDeleteOption.deleteContents());
-            } catch (final BigQueryException e) {
-              LOGGER.error("Failed to delete old dataset: {}", dataset.getDatasetId().getDataset(), e);
-            }
-          }
-        });
+    for (final Dataset dataset1 : bigquery.listDatasets("dataline-integration-testing", DatasetListOption.all())
+        .iterateAll()) {
+      if (TestingNamespaces.isOlderThan2Days(dataset1.getDatasetId().getDataset())) {
+        try {
+          bigquery.delete(dataset1.getDatasetId(), DatasetDeleteOption.deleteContents());
+          datasetsDeletedCount++;
+        } catch (final BigQueryException e) {
+          LOGGER.error("Failed to delete old dataset: {}", dataset1.getDatasetId().getDataset(), e);
+        }
+      }
+    }
+    LOGGER.info("Deleted {} old datasets.", datasetsDeletedCount);
   }
 
   protected void tearDownBigQuery() {
