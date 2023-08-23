@@ -1,4 +1,5 @@
-from source_stripe.seed.seed import Customer, BankAccount, prepare_create_customer, HttpRequest, prepare_create_bank_account
+from source_stripe.seed.seed import Customer, BankAccount, prepare_create_customer, HttpRequest, prepare_create_bank_account, \
+    prepare_search_customer
 
 import pytest
 
@@ -110,3 +111,21 @@ def test_prepare_create_bank_account_request_fails_if_user_has_no_id():
     headers = {"header_key": "header_value"}
     with pytest.raises(ValueError):
         prepare_create_bank_account(headers, customer)
+
+def test_prepare_search_customer_request():
+    customer_name = "First Last"
+
+    headers = {"header_key": "header_value"}
+
+    expected_request = HttpRequest(
+        method="GET",
+        url="https://api.stripe.com/v1/customers/search",
+        headers=headers,
+        body={
+            "query": "name: 'First Last'"
+        }
+    )
+
+    http_request = prepare_search_customer(headers, customer_name)
+
+    assert http_request == expected_request

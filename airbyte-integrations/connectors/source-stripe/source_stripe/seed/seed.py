@@ -54,14 +54,16 @@ def prepare_create_bank_account(headers: Dict[str, str], customer: Customer):
     bank_account_data["source"]["account_holder_name"] = customer.name
     return HttpRequest(method="POST", url=url, headers=headers, body=bank_account_data)
 
+def prepare_search_customer(headers: Dict[str, str], customer_name: str) -> HttpRequest:
+    url = f"https://api.stripe.com/v1/customers/search"
+    data = {"query": f"name: '{customer_name}'"}
+    return HttpRequest(method="GET", url=url, headers=headers, body=data)
+
 
 @click.group()
 def _main():
     pass
 
-
-def dict_to_urlencoded(d):
-    return kv_translation(d, "", "")
 
 
 def kv_translation(d, line, final_str):
@@ -138,9 +140,8 @@ def create_customer_and_bank_account(headers, customer: Customer):
 
 
 def search_customer(customer_name, headers):
-    url = f"https://api.stripe.com/v1/customers/search"
-    data = {"query": f"name: '{customer_name}'"}
-    response = fetch(url, headers, data, requests.get)
+    request = prepare_search_customer(headers, customer_name)
+    response = submit(request)
     return response.get("data", [])
 
 
