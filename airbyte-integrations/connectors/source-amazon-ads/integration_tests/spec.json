@@ -12,42 +12,50 @@
       },
       "client_id": {
         "title": "Client ID",
-        "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+        "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">Amazon docs</a> for more information.",
         "order": 1,
         "type": "string"
       },
       "client_secret": {
         "title": "Client Secret",
-        "description": "The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+        "description": "The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">Amazon docs</a> for more information.",
         "airbyte_secret": true,
         "order": 2,
         "type": "string"
       },
       "refresh_token": {
         "title": "Refresh Token",
-        "description": "Amazon Ads refresh token. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens\">docs</a> for more information on how to obtain this token.",
+        "description": "The refresh token of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens\">Amazon docs</a> for more information on how to obtain this token.",
         "airbyte_secret": true,
         "order": 3,
         "type": "string"
       },
       "region": {
         "title": "Region",
-        "description": "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
-        "enum": ["NA", "EU", "FE"],
+        "description": "The region to pull data from. The options are NA(North America), EU(European Union) and FE(Far East). See the <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">Amazon docs</a> for more information.",
+        "enum": [
+          "NA",
+          "EU",
+          "FE"
+        ],
         "type": "string",
         "default": "NA",
         "order": 4
       },
       "start_date": {
         "title": "Start Date",
-        "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
-        "examples": ["2022-10-10", "2022-10-22"],
+        "description": "The start date for collecting reports, in the format YYYY-MM-DD. Due to API constraints, do not set this value more than 60 days in the past.",
+        "pattern_descriptor": "YYYY-MM-DD",
+        "examples": [
+          "2022-10-10",
+          "2022-10-22"
+        ],
         "order": 5,
         "type": "string"
       },
       "profiles": {
         "title": "Profile IDs",
-        "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details.",
+        "description": "The Profile IDs you want to fetch data for. Leave this field blank to fetch data from all profiles associated with your Amazon Ads account. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">Amazon docs</a> for more details.",
         "order": 6,
         "type": "array",
         "items": {
@@ -55,27 +63,34 @@
         }
       },
       "state_filter": {
-        "title": "State Filter",
-        "description": "Reflects the state of the Display, Product, and Brand Campaign streams as enabled, paused, or archived. If you do not populate this field, it will be ignored completely.",
+        "title": "Campaign State Filter",
+        "description": "Filter Sponsored Display, Product, and Brand Campaign streams by state (enabled/paused/archived). Leaving this field blank will not apply any filters. For more information, see our <a href=\"https://docs.airbyte.io/integrations/sources/amazon-ads#setup-guide\">full docs</a>.",
         "items": {
           "type": "string",
-          "enum": ["enabled", "paused", "archived"]
+          "enum": [
+            "enabled",
+            "paused",
+            "archived"
+          ]
         },
         "type": "array",
         "uniqueItems": true,
         "order": 7
       },
       "look_back_window": {
-        "title": "Look Back Window",
-        "description": "The amount of days to go back in time to get the updated data from Amazon Ads",
+        "title": "Lookback Window",
+        "description": "The number of days to look back and re-fetch data to capture potential recent changes. See our <a href='https://docs.airbyte.io/integrations/sources/amazon-ads#setup-guide'>full docs</a> for more information.",
+        "examples": [
+          3,
+          10
+        ],
+        "type": "integer",
         "default": 3,
-        "examples": [3, 10],
-        "order": 8,
-        "type": "integer"
+        "order": 8
       },
       "report_record_types": {
-        "title": "Report Record Types",
-        "description": "Optional configuration which accepts an array of string of record types. Leave blank for default behaviour to pull all report types. Use this config option only if you want to pull specific report type(s). See <a href=\"https://advertising.amazon.com/API/docs/en-us/reporting/v2/report-types\">docs</a> for more details",
+        "title": "Report Types",
+        "description": "Optional configuration to select specific report types related to your Amazon Ads campaings. Use this option if you want to specify one or more report type(s) to pull, or leave blank to pull all report types. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/reporting/v3/report-types\">Amazon docs</a> for more information.",
         "items": {
           "type": "string",
           "enum": [
@@ -94,12 +109,18 @@
         "order": 9
       }
     },
-    "required": ["client_id", "client_secret", "refresh_token"],
+    "required": [
+      "client_id",
+      "client_secret",
+      "refresh_token"
+    ],
     "additionalProperties": true
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": ["auth_type"],
+    "predicate_key": [
+      "auth_type"
+    ],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
@@ -108,7 +129,9 @@
         "properties": {
           "refresh_token": {
             "type": "string",
-            "path_in_connector_config": ["refresh_token"]
+            "path_in_connector_config": [
+              "refresh_token"
+            ]
           }
         }
       },
@@ -130,11 +153,15 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": ["client_id"]
+            "path_in_connector_config": [
+              "client_id"
+            ]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": ["client_secret"]
+            "path_in_connector_config": [
+              "client_secret"
+            ]
           }
         }
       }
