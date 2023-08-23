@@ -16,7 +16,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://{{ config['region'] }}.babelforce.com/api/v2/
-        path: calls/reporting
+        path: calls/reporting/simple
         http_method: GET
         request_parameters: {}
         request_headers:
