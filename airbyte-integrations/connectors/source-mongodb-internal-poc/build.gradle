@@ -19,7 +19,6 @@ dependencies {
 
     implementation 'org.mongodb:mongodb-driver-sync:4.10.2'
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation "org.jetbrains.kotlinx:kotlinx-cli:0.3.5"
 }
 

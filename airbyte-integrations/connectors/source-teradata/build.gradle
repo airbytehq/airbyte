@@ -15,7 +15,5 @@ dependencies {
 
     implementation 'com.teradata.jdbc:terajdbc:20.00.00.06'
 
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 }
