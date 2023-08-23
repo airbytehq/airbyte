@@ -131,7 +131,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   // 1. exec into mssql container (not the test container container)
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     dslContext = getDslContext(configWithoutDbName);
@@ -150,7 +150,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     dslContext.close();
   }
 
