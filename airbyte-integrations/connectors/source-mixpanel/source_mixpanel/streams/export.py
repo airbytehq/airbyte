@@ -77,6 +77,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     primary_key: str = None
     cursor_field: str = "time"
+    state_checkpoint_interval = 100
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
