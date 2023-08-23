@@ -28,9 +28,8 @@ class Chunk:
 class DocumentProcessor:
     streams: Mapping[str, ConfiguredAirbyteStream]
 
-    def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog, max_metadata_size: Optional[int] = None):
+    def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):
         self.streams = {self._stream_identifier(stream.stream): stream for stream in catalog.streams}
-        self.max_metadata_size = max_metadata_size
 
         self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap

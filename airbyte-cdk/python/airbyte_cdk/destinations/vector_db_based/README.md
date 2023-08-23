@@ -1,5 +1,7 @@
 # Vector DB based destinations
 
+## Note: All helpers in this directory are experimental and subject to change
+
 This directory contains several helpers that can be used to create a destination that processes and chunks records, embeds their text part and loads them into a vector database.
 The specific loading behavior is defined by the destination connector itself, but chunking and embedding behavior is handled by the helpers.
 
