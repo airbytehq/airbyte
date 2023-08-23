@@ -101,7 +101,7 @@ class TestSourceFacebookMarketing:
     def test_streams(self, config, api, fb_marketing):
         streams = fb_marketing.streams(config)
 
-        assert len(streams) == 29
+        assert len(streams) == 30
 
     def test_spec(self, fb_marketing):
         spec = fb_marketing.spec()

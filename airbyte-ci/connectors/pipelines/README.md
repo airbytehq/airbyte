@@ -119,7 +119,7 @@ Available commands:
 | -------------------------------------------------------------- | -------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--use-remote-secrets`                                         | False    | True                             | If True, connectors configuration will be pulled from Google Secret Manager. Requires the GCP_GSM_CREDENTIALS environment variable to be set with a service account with permission to read GSM secrets. If False the connector configuration will be read from the local connector `secrets` folder. |
 | `--name`                                                       | True     |                                  | Select a specific connector for which the pipeline will run. Can be used multiple time to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                        |
-| `--support-level`                                              | True     |                                  | Select connectors with a specific support level: `community`, `certified`.  Can be used multiple times to select multiple support levels.                                                                                                                                               |
+| `--support-level`                                              | True     |                                  | Select connectors with a specific support level: `community`, `certified`.  Can be used multiple times to select multiple support levels.                                                                                                                                                             |
 | `--language`                                                   | True     |                                  | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
 | `--modified`                                                   | False    | False                            | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
 | `--concurrency`                                                | False    | 5                                | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
@@ -226,6 +226,18 @@ flowchart TD
     tests-->report
     static-->report
 ```
+
+#### Options
+
+| Option              | Multiple | Default value | Description                                                                                                                                                                                             |
+| ------------------- | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                     |
+| `--fast-tests-only` | True     | False         | Run unit tests only, skipping integration tests or any tests explicitly tagged as slow. Use this for more frequent checks, when it is not feasible to run the entire test suite.                        |
+| `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development.|
+
+Note:
+
+* The above options are implemented for Java connectors but may not be available for Python connectors. If an option is not supported, the pipeline will not fail but instead the 'default' behavior will be executed.
 
 ### <a id="connectors-build-command"></a>`connectors build` command
 Run a build pipeline for one or multiple connectors and export the built docker image to the local docker host.
@@ -373,12 +385,25 @@ This command runs tests for the metadata service orchestrator.
 ### <a id="tests-command"></a>`tests` command
 This command runs the Python tests for a airbyte-ci poetry package.
 
+#### Arguments
+| Option             | Required | Default | Mapped environment variable | Description                                                      |
+| ------------------ | -------- | ------- | --------------------------- | ---------------------------------------------------------------- |
+| `poetry_package_path` | True    |    |                             | The path to poetry package to test. |
+
+#### Options
+| Option             | Required | Default | Mapped environment variable | Description                                                      |
+| ------------------ | -------- | ------- | --------------------------- | ---------------------------------------------------------------- |
+| `--test-directory` | False    | tests   |                             | The path to the directory on which pytest should discover tests, relative to the poetry package. |
+
+
 #### Example
-`airbyte-ci tests connectors/pipelines`
+`airbyte-ci test airbyte-ci/connectors/pipelines --test-directory=tests`
+`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --test-directory=unit_tests`
 
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 | ------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1.1.0   | [#29509](https://github.com/airbytehq/airbyte/pull/29509) | Refactor the airbyte-ci test command to run tests on any poetry package.                                  |
 | 1.0.0   | [#28000](https://github.com/airbytehq/airbyte/pull/29232) | Remove release stages in favor of support level from airbyte-ci.                                          |
 | 0.5.0   | [#28000](https://github.com/airbytehq/airbyte/pull/28000) | Run connector acceptance tests with dagger-in-dagger.                                                     |
 | 0.4.7   | [#29156](https://github.com/airbytehq/airbyte/pull/29156) | Improve how we check existence of requirement.txt or setup.py file to not raise early pip install errors. |

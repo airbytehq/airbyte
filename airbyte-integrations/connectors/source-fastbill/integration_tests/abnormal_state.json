@@ -1,5 +1,5 @@
 {
-  "customers": {
-    "CUSTOMER_TYPE": 12
+  "todo-stream-name": {
+    "todo-field-name": "todo-abnormal-value"
   }
 }
