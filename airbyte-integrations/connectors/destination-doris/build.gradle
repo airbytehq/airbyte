@@ -14,8 +14,4 @@ dependencies {
     implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-doris')
 }

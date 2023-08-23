@@ -7,8 +7,6 @@ plugins {
 
 dependencies {
     implementation project(':airbyte-commons')
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-config-oss:config-models-oss')
@@ -16,13 +14,10 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.bundles.datadog
 
-    testImplementation project(':airbyte-test-utils')
-
     testImplementation libs.postgresql
     testImplementation libs.connectors.testcontainers.postgresql
 
     testImplementation libs.junit.jupiter.system.stubs
-
 }
 
 jsonSchema2Pojo {

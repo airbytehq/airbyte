@@ -16,8 +16,6 @@ def assertVersion = '3.21.0'
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-
 
     // https://mvnrepository.com/artifact/redis.clients/jedis
     implementation "redis.clients:jedis:${redisDriver}"
@@ -29,7 +27,4 @@ dependencies {
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     testImplementation libs.connectors.testcontainers
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-redis')
 }

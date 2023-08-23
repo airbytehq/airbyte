@@ -11,21 +11,9 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
     implementation libs.airbyte.protocol
-
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation project(':airbyte-integrations:connectors:source-mssql')
-
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.connectors.testcontainers.mssqlserver
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mssql-strict-encrypt')
-
 }
-

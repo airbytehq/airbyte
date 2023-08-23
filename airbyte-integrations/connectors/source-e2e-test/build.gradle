@@ -10,7 +10,6 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation 'org.apache.commons:commons-lang3:3.11'
@@ -23,8 +22,6 @@ dependencies {
     implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.1'
 
     testImplementation project(":airbyte-json-validation")
-    testImplementation project(':airbyte-test-utils')
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-e2e-test')
 }

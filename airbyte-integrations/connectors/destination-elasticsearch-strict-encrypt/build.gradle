@@ -13,7 +13,6 @@ application {
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
@@ -34,8 +33,6 @@ dependencies {
     integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
 
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-elasticsearch')
 }
 
 repositories {

@@ -11,10 +11,7 @@ application {
 
 
 dependencies {
-    implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
-    implementation project(':airbyte-config-oss:config-models-oss')
 
     implementation "com.azure:azure-storage-blob:12.20.2"
     implementation "com.github.saasquatch:json-schema-inferrer:0.1.5"
@@ -22,8 +19,4 @@ dependencies {
     testImplementation "org.assertj:assertj-core:3.23.1"
     testImplementation "org.testcontainers:junit-jupiter:1.17.5"
     testImplementation 'org.skyscreamer:jsonassert:1.5.1'
-
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-azure-blob-storage')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-
 }
