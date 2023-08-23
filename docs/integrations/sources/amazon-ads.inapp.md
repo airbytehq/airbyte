@@ -23,7 +23,7 @@ To use the Amazon Ads source connector with **Airbyte Open Source**, you will fi
 3. Select the **Region** of the country you selected when registering your Amazon account. The options are **North America (NA)**, **Europe (EU)**, and **Far East (FE)**. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for a list of each region's associated Marketplaces.
 4. (Optional) For **Start Date**, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. This determines the starting date for pulling reports generated from the API. Please do not set this value more than [60 days in the past](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api). If left blank, today's date is used. The date is tied to the timezone of the associated profile.
 5. (Optional) For **Profile IDs**, you may enter one or more IDs of profiles associated with your account that you want to fetch data for. If left blank, data will be fetched from all profiles associated with the Amazon Ads account. See the [Amazon docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more information on profiles.
-6. (Optional) For **State Filter**, you may enter one or more "states" to filter the data for the Display, Product, and Brand Campaign streams. The options are:
+6. (Optional) For **Campaign State Filter**, you may enter one or more "states" to filter the data for the Display, Product, and Brand Campaign streams. The options are:
 
   **enabled**: Filters for campaigns that are currently active and running.
   **paused**: Filters for campaigns that are set up but not currently running.
