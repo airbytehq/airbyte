@@ -43,6 +43,9 @@ acceptance_tests:
           ads_insights_demographics_dma_region:
             - name: cost_per_estimated_ad_recallers
               bypass_reason: can be missing
+          ads_insights_dma:
+            - name: cost_per_estimated_ad_recallers
+              bypass_reason: can be missing
         empty_streams:
           - name: "ads_insights_action_product_id"
             bypass_reason: "Data not permanent"
