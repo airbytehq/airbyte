@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group."
+        description: "Options to pass to the 'airbyte-ci connectors' command group"
         default: "--name=source-pokeapi"
       pypi-repository:
         type: choice
-        description: "PyPI repository to publish to."
+        description: "PyPI repository to publish to"
         default: testpypi
         required: true
         options:
