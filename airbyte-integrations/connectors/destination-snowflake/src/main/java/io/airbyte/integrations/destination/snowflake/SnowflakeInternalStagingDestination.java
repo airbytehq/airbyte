@@ -162,7 +162,8 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         new TypeAndDedupeOperationValve(),
         typerDeduper,
         parsedCatalog,
-        defaultNamespace);
+        defaultNamespace,
+        true);
   }
 
 }

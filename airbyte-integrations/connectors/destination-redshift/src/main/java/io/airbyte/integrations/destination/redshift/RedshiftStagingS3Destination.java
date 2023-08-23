@@ -65,7 +65,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   private boolean isEphemeralKeysAndPurgingStagingData(final JsonNode config, final EncryptionConfig encryptionConfig) {
-    return !isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
+    return !isPurgeStagingData(config) && encryptionConfig instanceof final AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
   }
 
   @Override
@@ -147,7 +147,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
     final EncryptionConfig encryptionConfig =
             config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
@@ -174,7 +174,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         // The parsedcatalog is only used in v2 mode, so just pass null for now
         null,
         // Overwriting null namespace with null is perfectly safe
-        null);
+        null,
+        // still using v1 table format
+        false);
   }
 
   /**
