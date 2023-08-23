@@ -2,15 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unittest import mock
+
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
-
-from unittest import mock
+from source_amazon_ads.schemas import Profile
 
 from .utils import command_check, url_strip_query
-from source_amazon_ads.schemas import Profile
 
 
 def setup_responses():
