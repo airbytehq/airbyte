@@ -38,25 +38,17 @@ class LegacyConfigTransformer:
         }
 
         if legacy_config.provider.start_date:
-            transformed_config["start_date"] = cls._transform_seconds_to_micros(
-                legacy_config.provider.start_date
-            )
+            transformed_config["start_date"] = cls._transform_seconds_to_micros(legacy_config.provider.start_date)
         if legacy_config.provider.aws_access_key_id:
-            transformed_config[
-                "aws_access_key_id"
-            ] = legacy_config.provider.aws_access_key_id
+            transformed_config["aws_access_key_id"] = legacy_config.provider.aws_access_key_id
         if legacy_config.provider.aws_secret_access_key:
-            transformed_config[
-                "aws_secret_access_key"
-            ] = legacy_config.provider.aws_secret_access_key
+            transformed_config["aws_secret_access_key"] = legacy_config.provider.aws_secret_access_key
         if legacy_config.provider.endpoint:
             transformed_config["endpoint"] = legacy_config.provider.endpoint
         if legacy_config.user_schema and legacy_config.user_schema != "{}":
             transformed_config["streams"][0]["input_schema"] = legacy_config.user_schema
         if legacy_config.format:
-            transformed_config["streams"][0]["format"] = cls._transform_file_format(
-                legacy_config.format
-            )
+            transformed_config["streams"][0]["format"] = cls._transform_file_format(legacy_config.format)
 
         return transformed_config
 
@@ -73,23 +65,15 @@ class LegacyConfigTransformer:
             parsed_datetime = datetime.strptime(datetime_str, SECONDS_FORMAT)
             return parsed_datetime.strftime(MICROS_FORMAT)
         except ValueError as e:
-            raise ValueError(
-                "Timestamp could not be parsed when transforming legacy connector config"
-            ) from e
+            raise ValueError("Timestamp could not be parsed when transforming legacy connector config") from e
 
     @classmethod
-    def _transform_file_format(
-        cls, format_options: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat]
-    ) -> Mapping[str, Any]:
+    def _transform_file_format(cls, format_options: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat]) -> Mapping[str, Any]:
         if isinstance(format_options, AvroFormat):
             return {"filetype": "avro"}
         elif isinstance(format_options, CsvFormat):
-            additional_reader_options = cls.parse_config_options_str(
-                "additional_reader_options", format_options.additional_reader_options
-            )
-            advanced_options = cls.parse_config_options_str(
-                "advanced_options", format_options.advanced_options
-            )
+            additional_reader_options = cls.parse_config_options_str("additional_reader_options", format_options.additional_reader_options)
+            advanced_options = cls.parse_config_options_str("advanced_options", format_options.advanced_options)
 
             csv_options = {
                 "filetype": "csv",
@@ -119,18 +103,10 @@ class LegacyConfigTransformer:
                         "null",
                     ],
                 ),
-                "true_values": additional_reader_options.pop(
-                    "true_values", ["1", "True", "TRUE", "true"]
-                ),
-                "false_values": additional_reader_options.pop(
-                    "false_values", ["0", "False", "FALSE", "false"]
-                ),
-                "inference_type": "Primitive Types Only"
-                if format_options.infer_datatypes
-                else "None",
-                "strings_can_be_null": additional_reader_options.pop(
-                    "strings_can_be_null", False
-                ),
+                "true_values": additional_reader_options.pop("true_values", ["1", "True", "TRUE", "true"]),
+                "false_values": additional_reader_options.pop("false_values", ["0", "False", "FALSE", "false"]),
+                "inference_type": "Primitive Types Only" if format_options.infer_datatypes else "None",
+                "strings_can_be_null": additional_reader_options.pop("strings_can_be_null", False),
             }
 
             if format_options.escape_char:
@@ -139,21 +115,16 @@ class LegacyConfigTransformer:
                 csv_options["encoding"] = format_options.encoding
             if skip_rows := advanced_options.pop("skip_rows", None):
                 csv_options["skip_rows_before_header"] = skip_rows
-            if skip_rows_after_names := advanced_options.pop(
-                "skip_rows_after_names", None
-            ):
+            if skip_rows_after_names := advanced_options.pop("skip_rows_after_names", None):
                 csv_options["skip_rows_after_header"] = skip_rows_after_names
-            if autogenerate_column_names := advanced_options.pop(
-                "autogenerate_column_names", None
-            ):
+            if autogenerate_column_names := advanced_options.pop("autogenerate_column_names", None):
                 csv_options["autogenerate_column_names"] = autogenerate_column_names
 
             cls._filter_legacy_noops(advanced_options)
 
             if advanced_options or additional_reader_options:
                 raise ValueError(
-                    "The config options you selected are no longer supported.\n"
-                    + f"advanced_options={advanced_options}"
+                    "The config options you selected are no longer supported.\n" + f"advanced_options={advanced_options}"
                     if advanced_options
                     else "" + f"additional_reader_options={additional_reader_options}"
                     if additional_reader_options
@@ -168,21 +139,15 @@ class LegacyConfigTransformer:
             return {"filetype": "parquet", "decimal_as_float": True}
         else:
             # This should never happen because it would fail schema validation
-            raise ValueError(
-                f"Format filetype {format_options} is not a supported file type"
-            )
+            raise ValueError(f"Format filetype {format_options} is not a supported file type")
 
     @classmethod
-    def parse_config_options_str(
-        cls, options_field: str, options_value: Optional[str]
-    ) -> Dict[str, Any]:
+    def parse_config_options_str(cls, options_field: str, options_value: Optional[str]) -> Dict[str, Any]:
         options_str = options_value or "{}"
         try:
             return json.loads(options_str)
         except json.JSONDecodeError as error:
-            raise ValueError(
-                f"Malformed {options_field} config json: {error}. Please ensure that it is a valid JSON."
-            )
+            raise ValueError(f"Malformed {options_field} config json: {error}. Please ensure that it is a valid JSON.")
 
     @staticmethod
     def _filter_legacy_noops(advanced_options: Dict[str, Any]):
