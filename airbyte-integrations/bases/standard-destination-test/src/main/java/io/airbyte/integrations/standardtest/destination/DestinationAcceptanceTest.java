@@ -100,7 +100,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
-  private static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
+  protected static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
 
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
@@ -334,10 +334,9 @@ public abstract class DestinationAcceptanceTest {
    * destination so that there is no contamination across tests.
    *
    * @param testEnv - information about the test environment.
-   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
+  protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
   /**
    * @deprecated This method is moved to the AdvancedTestDataComparator. Please move your destination
@@ -372,7 +371,7 @@ public abstract class DestinationAcceptanceTest {
 
   @AfterEach
   void tearDownInternal() throws Exception {
-    tearDown(testEnv, TEST_SCHEMAS);
+    tearDown(testEnv);
   }
 
   /**
@@ -1804,11 +1803,14 @@ public abstract class DestinationAcceptanceTest {
           Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON));
       return MoreIterators.toList(testCases.elements()).stream()
           .filter(testCase -> testCase.get("enabled").asBoolean())
-          .map(testCase -> Arguments.of(
-              testCase.get("id").asText(),
-              // Randomise namespace to avoid collisions between tests.
-              Strings.addRandomSuffix(testCase.get("namespace").asText(), "", 5),
-              testCase.get("normalized").asText()));
+          .map(testCase -> {
+            final String randomSuffix = Strings.addRandomSuffix("", "", 5);
+            return Arguments.of(
+                testCase.get("id").asText(),
+                // Randomise namespace to avoid collisions between tests.
+                testCase.get("namespace").asText() + randomSuffix,
+                testCase.get("normalized").asText() + randomSuffix);
+          });
     }
 
   }
