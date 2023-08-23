@@ -47,26 +47,26 @@ definitions:
     http_method: "POST"
     request_body_json:
       query: "{
-          'operator': 'OR',
-          'value': [
-              {
-                  'field': 'updated_at',
-                  'operator': '>',
-                  'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
-              },
-              {
-                  'field': 'updated_at',
-                  'operator': '=',
-                  'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
-              },
-          ],
-      }"
+            'operator': 'OR',
+            'value': [
+                {
+                    'field': 'updated_at',
+                    'operator': '>',
+                    'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
+                },
+                {
+                    'field': 'updated_at',
+                    'operator': '=',
+                    'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
+                },
+            ],
+        }"
       sort: "{'field': 'updated_at', 'order': 'ascending'}"
       pagination: "{
-        'per_page': {{ parameters.get('page_size') }},
-        'page': {{ next_page_token.get('next_page_token').get('page') }},
-        'starting_after': '{{ next_page_token.get('next_page_token').get('starting_after') }}'
-      }"
+          'per_page': {{ parameters.get('page_size') }},
+          'page': {{ next_page_token.get('next_page_token').get('page') }},
+          'starting_after': '{{ next_page_token.get('next_page_token').get('starting_after') }}'
+        }"
   
   ## streams
   # full-refresh
