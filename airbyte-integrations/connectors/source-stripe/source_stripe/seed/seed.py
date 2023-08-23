@@ -46,11 +46,14 @@ def recursive_url_encode(data, parent_key=None):
     return items
 
 
-def fetch(url, headers, json_payload):
-    encoded_data = recursive_url_encode(json_payload)
+def fetch(url, headers, json_payload, method=requests.post):
     print(f"headers:{headers}")
-    print(f"encoded data: {encoded_data}")
-    return requests.post(url, headers=headers, data=encoded_data).json()
+    if json_payload:
+        encoded_data = recursive_url_encode(json_payload)
+        print(f"encoded data: {encoded_data}")
+        return method(url, headers=headers, data=encoded_data).json()
+    else:
+        return method(url, headers=headers).json()
 
 
 def create_customer(headers, customer):
@@ -78,30 +81,56 @@ def create_customer_and_bank_account(headers, customer_data, bank_account_data):
         bank_account = None
     return customer, bank_account
 
+def search_customer(customer_name, headers):
+    url = f"https://api.stripe.com/v1/customers/search"
+    data = {
+        "query": f"name: '{customer_name}'"
+    }
+    response =  fetch(url, headers, data, requests.get)
+    return response.get("data", [])
+
+def _load_config(path_to_config):
+    with open(path_to_config, "r") as f:
+        return json.loads(f.read())
+
 
 @_main.command()
 @click.argument("path_to_config")
 @click.argument("path_to_data")
 def generate_records(path_to_config, path_to_data):
-    with open(path_to_config, "r") as f:
-        config = json.loads(f.read())
-    with open(path_to_data, "r") as f:
-        records = json.loads(f.read())
+    config = _load_config(path_to_config)
+    records = _load_config(path_to_data)
     CONCURRENCY = 1
     headers = {"Authorization": f"Bearer {config['client_secret']}"}
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
         for record in records:
             customer_data = record
-            bank_account_data = customer_data.pop("bank_account")
-            print(f"customer_data: {customer_data}")
-            print(f"bank_account_data: {bank_account_data}")
-            f = executor.submit(create_customer_and_bank_account, headers, customer_data, bank_account_data)
-            futures.append(f)
+            customer_name = customer_data["name"]
+            customer_exists = is_customer_already_created(customer_name, headers)
+            if customer_exists:
+                print(f"Customer {customer_name} already exists. Skipping...")
+            else:
+                bank_account_data = customer_data.pop("bank_account")
+                f = executor.submit(create_customer_and_bank_account, headers, customer_data, bank_account_data)
+                futures.append(f)
     concurrent.futures.wait(futures)
 
     for f in futures:
         print(f"f: {f.result()}")
+
+def is_customer_already_created(customer_name, headers):
+    customer = search_customer(customer_name, headers)
+    return len(customer) > 0
+
+@_main.command()
+@click.argument("path_to_config")
+@click.argument("customer_id")
+def get_customer(path_to_config, customer_id):
+    config = _load_config(path_to_config)
+    headers = {"Authorization": f"Bearer {config['client_secret']}"}
+    customer = customer_exists(customer_id, headers)
+    print(customer)
 
 
 if __name__ == "__main__":
