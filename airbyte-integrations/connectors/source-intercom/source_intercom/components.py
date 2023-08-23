@@ -173,18 +173,16 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
             )
 
             for parent_record in parent_records_gen:
-                try:
-                    substream_slice_value = parent_record[self.parent_field]
-                except KeyError:
-                    continue
-                cursor_field = self.cursor_field.eval(self.config)
-                yield {
-                    self.substream_slice_field: substream_slice_value,
-                    cursor_field: self._state.get(cursor_field),
-                    self.parent_stream_name: {
-                        self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
-                    },
-                }
+                substream_slice_value = parent_record.get(self.parent_field)
+                if substream_slice_value:
+                    cursor_field = self.cursor_field.eval(self.config)
+                    yield {
+                        self.substream_slice_field: substream_slice_value,
+                        cursor_field: self._state.get(cursor_field),
+                        self.parent_stream_name: {
+                            self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
+                        },
+                    }
 
 
 @dataclass
