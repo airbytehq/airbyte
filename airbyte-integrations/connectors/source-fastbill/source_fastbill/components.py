@@ -2,7 +2,6 @@ from dataclasses import dataclass
 import base64 
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.types import Config
-from isodate import Duration, parse_duration
 
 
 @dataclass
