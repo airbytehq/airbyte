@@ -276,8 +276,6 @@ class CsvParser(FileTypeParser):
                         warnings.append(_format_warning(key, value, prop_type))
 
                 result[key] = cast_value
-            else:
-                warnings.append(_format_warning(key, value, prop_type))
 
         if warnings:
             logger.warning(
