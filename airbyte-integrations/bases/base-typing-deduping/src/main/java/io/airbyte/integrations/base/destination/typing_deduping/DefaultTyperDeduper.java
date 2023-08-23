@@ -40,6 +40,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private final V2RawTableMigrator<DialectTableDefinition> v2RawTableMigrator;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
+  private final Set<StreamId> streamsWithSuccesfulSetup;
 
   public DefaultTyperDeduper(final SqlGenerator<DialectTableDefinition> sqlGenerator,
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
@@ -51,6 +52,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.parsedCatalog = parsedCatalog;
     this.v1V2Migrator = v1V2Migrator;
     this.v2RawTableMigrator = v2RawTableMigrator;
+    this.streamsWithSuccesfulSetup = new HashSet<>();
   }
 
   public DefaultTyperDeduper(
@@ -100,6 +102,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         // The table doesn't exist. Create it. Don't force.
         destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX, false));
       }
+
+      streamsWithSuccesfulSetup.add(stream.id());
     }
   }
 
@@ -115,6 +119,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   public void typeAndDedupe(final String originalNamespace, final String originalName) throws Exception {
     LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
+    if (streamsWithSuccesfulSetup.stream().noneMatch(streamId -> streamId.originalNamespace().equals(originalNamespace) && streamId.originalName().equals(originalName))) {
+      // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close, we should skip it.
+      LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace, originalName);
+      return;
+    }
     final String suffix = getFinalTableSuffix(streamConfig.id());
     final String sql = sqlGenerator.updateTable(streamConfig, suffix);
     destinationHandler.execute(sql);
@@ -129,7 +138,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   public void commitFinalTables() throws Exception {
     LOGGER.info("Committing final tables");
     for (final StreamConfig streamConfig : parsedCatalog.streams()) {
-      if (DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
+      if (streamsWithSuccesfulSetup.contains(streamConfig.id()) && DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
         final StreamId streamId = streamConfig.id();
         final String finalSuffix = getFinalTableSuffix(streamId);
         if (!StringUtils.isEmpty(finalSuffix)) {
