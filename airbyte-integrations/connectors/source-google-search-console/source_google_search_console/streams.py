@@ -27,6 +27,7 @@ class GoogleSearchConsole(HttpStream, ABC):
     url_base = BASE_URL
     primary_key = None
     data_field = ""
+    raise_on_http_errors = True
 
     def __init__(
         self,
@@ -63,6 +64,17 @@ class GoogleSearchConsole(HttpStream, ABC):
             records = response.json().get(self.data_field) or []
             for record in records:
                 yield record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        response_json = response.json()
+        if "error" in response_json:
+            error = response_json.get("error", {})
+            # handle the `HTTP-403` - insufficient permissions
+            if error.get("code", 0) == 403:
+                self.logger.error(f"Stream {self.name}. {error.get('message')}. Skipping.")
+                setattr(self, "raise_on_http_errors", False)
+                return False
+        return super().should_retry(response)
 
 
 class Sites(GoogleSearchConsole):
