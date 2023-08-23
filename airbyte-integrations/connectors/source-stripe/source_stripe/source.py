@@ -194,7 +194,7 @@ class SourceStripe(AbstractSource):
             IncrementalStripeStream(
                 name="charges",
                 path="charges",
-                extra_request_params={"expand[]": ["data.refunds"]},
+                expand_items=["data.refunds"],
                 event_types=[
                     "charge.captured",
                     "charge.expired",
@@ -244,7 +244,7 @@ class SourceStripe(AbstractSource):
             IncrementalStripeStream(
                 name="plans",
                 path="plans",
-                extra_request_params={"expand[]": ["data.tiers"]},
+                expand_items=["data.tiers"],
                 event_types=["plan.created", "plan.updated"],
                 **incremental_args,
             ),

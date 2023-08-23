@@ -39,7 +39,7 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
         return False, reason
 
 
-class StripeSubStreamAvailabilityStrategy(HttpAvailabilityStrategy):
+class StripeSubStreamAvailabilityStrategy(StripeAvailabilityStrategy):
     def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """Traverse through all the parents of a given stream and run availability strategy on each of them"""
         try:

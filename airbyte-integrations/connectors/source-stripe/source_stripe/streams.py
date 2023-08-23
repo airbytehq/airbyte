@@ -97,6 +97,10 @@ class StripeStream(HttpStream, ABC):
     def use_cache(self) -> bool:
         return self._use_cache
 
+    @property
+    def expand_items(self) -> Optional[List[str]]:
+        return self._expand_items
+
     def extra_request_params(self, *args, **kwargs) -> Mapping[str, Any]:
         if callable(self._extra_request_params):
             return self._extra_request_params(self, *args, **kwargs)
@@ -116,6 +120,7 @@ class StripeStream(HttpStream, ABC):
         name: Optional[str] = None,
         path: Optional[Union[Callable, str]] = None,
         use_cache: bool = False,
+        expand_items: Optional[List[str]] = None,
         extra_request_params: Optional[Union[Mapping[str, Any], Callable]] = None,
         primary_key: Optional[str] = "id",
         **kwargs,
@@ -127,6 +132,7 @@ class StripeStream(HttpStream, ABC):
         self._name = name
         self._path = path
         self._use_cache = use_cache
+        self._expand_items = expand_items
         self._extra_request_params = extra_request_params
         self._primary_key = primary_key
         super().__init__(*args, **kwargs)
@@ -145,6 +151,8 @@ class StripeStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         # Stripe default pagination is 10, max is 100
         params = {"limit": 100, **self.extra_request_params(stream_state, stream_slice, next_page_token)}
+        if self.expand_items:
+            params["expand[]"] = self.expand_items
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
             params.update(next_page_token)
@@ -182,9 +190,17 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
     def cursor_field(self) -> str:
         return self._cursor_field
 
-    def __init__(self, *args, lookback_window_days: int = 0, cursor_field: str = "created", **kwargs):
+    def __init__(
+        self,
+        *args,
+        lookback_window_days: int = 0,
+        start_date_max_days_from_now: Optional[int] = None,
+        cursor_field: str = "created",
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.lookback_window_days = lookback_window_days
+        self.start_date_max_days_from_now = start_date_max_days_from_now
         self._cursor_field = cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -232,6 +248,13 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
             start_point = int(pendulum.from_timestamp(start_point).subtract(days=abs(self.lookback_window_days)).timestamp())
 
+        if self.start_date_max_days_from_now:
+            allowed_start_date = pendulum.now().subtract(days=self.start_date_max_days_from_now).int_timestamp
+            if start_point < allowed_start_date:
+                self.logger.info(
+                    f"Applying the restriction of maximum {self.start_date_max_days_from_now} days lookback to stream {self.name}"
+                )
+                start_point = allowed_start_date
         return start_point
 
 
@@ -299,6 +322,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         self.events_stream = Events(
             authenticator=self.authenticator,
             lookback_window_days=self.lookback_window_days,
+            start_date_max_days_from_now=30,
             account_id=self.account_id,
             start_date=self.start_date,
             slice_range=self.slice_range,
@@ -395,7 +419,16 @@ class IncrementalStripeStream(StripeStream):
             event_types=event_types,
             **kwargs,
         )
+        self._parent_stream = None
         self.stream_selector = IncrementalStripeStreamSelector(created_cursor_stream, updated_cursor_stream)
+
+    @property
+    def parent_stream(self):
+        return self._parent_stream
+
+    @parent_stream.setter
+    def parent_stream(self, stream):
+        self._parent_stream = stream
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -404,12 +437,11 @@ class IncrementalStripeStream(StripeStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent = self.stream_selector.get_parent_stream(stream_state)
-        yield from parent.stream_slices(sync_mode, cursor_field, stream_state)
+        self.parent_stream = self.stream_selector.get_parent_stream(stream_state)
+        yield from self.parent_stream.stream_slices(sync_mode, cursor_field, stream_state)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        parent = self.stream_selector.get_parent_stream(current_stream_state)
-        return parent.get_updated_state(current_stream_state, latest_record)
+        return self.parent_stream.get_updated_state(current_stream_state, latest_record)
 
     def read_records(
         self,
@@ -418,7 +450,7 @@ class IncrementalStripeStream(StripeStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self.stream_selector.get_parent_stream(stream_state).read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        yield from self.parent_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
 class CheckoutSessionsLineItems(CreatedCursorIncrementalStripeStream):
@@ -426,10 +458,11 @@ class CheckoutSessionsLineItems(CreatedCursorIncrementalStripeStream):
     API docs: https://stripe.com/docs/api/checkout/sessions/line_items
     """
 
-    def extra_request_params(self, *args, **kwargs):
-        return {"expand[]": ["data.discounts", "data.taxes"]}
-
     cursor_field = "checkout_session_expires_at"
+
+    @property
+    def expand_items(self) -> Optional[List[str]]:
+        return ["data.discounts", "data.taxes"]
 
     @property
     def checkout_session(self):
@@ -470,6 +503,8 @@ class CheckoutSessionsLineItems(CreatedCursorIncrementalStripeStream):
     ) -> MutableMapping[str, Any]:
         # override to not refer to slice values
         params = {"limit": 100, **self.extra_request_params(stream_state, stream_slice, next_page_token)}
+        if self.expand_items:
+            params["expand[]"] = self.expand_items
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -779,17 +814,25 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             response_filter=response_filter,
             **kwargs,
         )
+        self._parent_stream = None
         self.stream_selector = IncrementalStripeLazySubStreamSelector(updated_cursor_incremental_stream, lazy_substream)
+
+    @property
+    def parent_stream(self):
+        return self._parent_stream
+
+    @parent_stream.setter
+    def parent_stream(self, stream):
+        self._parent_stream = stream
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream = self.stream_selector.get_parent_stream(stream_state)
-        yield from parent_stream.stream_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        self.parent_stream = self.stream_selector.get_parent_stream(stream_state)
+        yield from self.parent_stream.stream_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        parent_stream = self.stream_selector.get_parent_stream(current_stream_state)
-        return parent_stream.get_updated_state(current_stream_state, latest_record)
+        return self.parent_stream.get_updated_state(current_stream_state, latest_record)
 
     def read_records(
         self,
@@ -798,5 +841,6 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        parent_stream = self.stream_selector.get_parent_stream(stream_state)
-        yield from parent_stream.read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+        yield from self.parent_stream.read_records(
+            sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )

@@ -114,6 +114,7 @@ The Stripe source connector supports the following streams:
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
+Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode.
 :::
 
 ### Data type mapping
