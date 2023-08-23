@@ -9,7 +9,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
 
 /**
@@ -18,12 +20,14 @@ import org.apache.commons.lang3.RandomStringUtils;
  * but there are exception cases that can prevent that from happening. We want to be able to
  * identify namespaces for which this has happened from their name so we can take action.
  * <p>
- * The convention we follow is `<test-provided prefix>_YYYYMMDD_<8-character random suffix>`.
+ * The convention we follow is `integration_test_<test-provided prefix>_YYYYMMDD_<8-character random
+ * suffix>`.
  */
 public class TestingNamespaces {
 
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
   private static final int SUFFIX_LENGTH = 5;
+  public static final String STANDARD_PREFIX = "test_";
 
   /**
    * Generates a namespace that matches our testing namespace convention.
@@ -31,7 +35,7 @@ public class TestingNamespaces {
    * @return convention-compliant namespace
    */
   public static String generate() {
-    return generate("test_namespace");
+    return generate(null);
   }
 
   /**
@@ -41,7 +45,8 @@ public class TestingNamespaces {
    * @return convention-compliant namespace
    */
   public static String generate(final String prefix) {
-    return prefix + "_" + FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC"))) + "_" + generateSuffix();
+    final String userDefinedPrefix = prefix != null ? prefix + "_" : "";
+    return STANDARD_PREFIX + userDefinedPrefix + FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC"))) + "_" + generateSuffix();
   }
 
   /**
@@ -56,10 +61,31 @@ public class TestingNamespaces {
 
   @SuppressWarnings("SameParameterValue")
   private static boolean isOlderThan(final String namespace, final int timeMagnitude, final ChronoUnit timeUnit) {
+    return ifTestNamespaceGetDate(namespace)
+        .map(namespaceInstant -> namespaceInstant.isBefore(Instant.now().minus(timeMagnitude, timeUnit)))
+        .orElse(false);
+  }
+
+  private static Optional<Instant> ifTestNamespaceGetDate(final String namespace) {
+    if (!namespace.startsWith(STANDARD_PREFIX)) {
+      return Optional.empty();
+    }
+
     final String[] parts = namespace.split("_");
-    final Instant namespaceInstant = LocalDate.parse(parts[parts.length - 2], FORMATTER).atStartOfDay().toInstant(ZoneOffset.UTC);
-    final Instant now = Instant.now();
-    return namespaceInstant.isBefore(now.minus(timeMagnitude, timeUnit));
+
+    if (parts.length < 2) {
+      return Optional.empty();
+    }
+
+    return parseDateOrEmpty(parts[parts.length - 2]);
+  }
+
+  private static Optional<Instant> parseDateOrEmpty(final String dateCandidate) {
+    try {
+      return Optional.ofNullable(LocalDate.parse(dateCandidate, FORMATTER).atStartOfDay().toInstant(ZoneOffset.UTC));
+    } catch (final DateTimeParseException e) {
+      return Optional.empty();
+    }
   }
 
   private static String generateSuffix() {

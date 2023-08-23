@@ -20,29 +20,32 @@ class TestingNamespacesTest {
   void testGenerate() {
     final String[] namespace = TestingNamespaces.generate().split("_");
     assertEquals("test", namespace[0]);
-    assertEquals("namespace", namespace[1]);
-    assertEquals(FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC")).toLocalDate()), namespace[2]);
-    assertFalse(namespace[3].isBlank());
-  }
-
-  @Test
-  void testGenerateWithPrefix() {
-    final String[] namespace = TestingNamespaces.generate("myprefix").split("_");
-    assertEquals("myprefix", namespace[0]);
     assertEquals(FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC")).toLocalDate()), namespace[1]);
     assertFalse(namespace[2].isBlank());
   }
 
   @Test
-  void testIsOlderThan2Days() {
-    assertFalse(TestingNamespaces.isOlderThan2Days("myprefix_" + getDate(0) + "_12345"));
-    assertTrue(TestingNamespaces.isOlderThan2Days("myprefix_" + getDate(2) + "_12345"));
+  void testGenerateWithPrefix() {
+    final String[] namespace = TestingNamespaces.generate("myprefix").split("_");
+    assertEquals("test", namespace[0]);
+    assertEquals("myprefix", namespace[1]);
+    assertEquals(FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC")).toLocalDate()), namespace[2]);
+    assertFalse(namespace[3].isBlank());
   }
 
   @Test
-  void testIsOlderThan2DaysWithExtraUnderscores() {
-    assertFalse(TestingNamespaces.isOlderThan2Days("_my_prefix_" + getDate(0) + "_12345"));
-    assertTrue(TestingNamespaces.isOlderThan2Days("_my_prefix_" + getDate(2) + "_12345"));
+  void testIsOlderThan2Days() {
+    assertFalse(TestingNamespaces.isOlderThan2Days("test_myprefix_" + getDate(0) + "_12345"));
+    assertTrue(TestingNamespaces.isOlderThan2Days("test_myprefix_" + getDate(2) + "_12345"));
+  }
+
+  @Test
+  void doesNotFailOnNonConventionalNames() {
+    assertFalse(TestingNamespaces.isOlderThan2Days("12345"));
+    assertFalse(TestingNamespaces.isOlderThan2Days("test_12345"));
+    assertFalse(TestingNamespaces.isOlderThan2Days("test_hello_12345"));
+    assertFalse(TestingNamespaces.isOlderThan2Days("test1_myprefix_" + getDate(2) + "_12345"));
+
   }
 
   private static String getDate(final int daysAgo) {
