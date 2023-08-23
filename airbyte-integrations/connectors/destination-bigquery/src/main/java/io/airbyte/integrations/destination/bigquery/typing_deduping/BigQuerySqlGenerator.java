@@ -14,6 +14,7 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
@@ -34,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -115,34 +117,36 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON null).
       // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
-          CASE
+          PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
-              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${column_name}"')) != 'object'
+              OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'object'
               THEN NULL
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
-          END
+          END, wide_number_mode=>'round')
           """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
-          CASE
+          PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
-              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${column_name}"')) != 'array'
+              OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'array'
               THEN NULL
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
-          END
+          END, wide_number_mode=>'round')
           """);
     } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
-      // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
-      // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
-      // This is to avoid needing to convert the raw SQL type back into JSON.
-      return "JSON_QUERY(`_airbyte_data`, '$.\"" + column.originalName() + "\"')";
+      // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse the airbyte_data to json
+      // and json_query it directly (which preserves nulls correctly).
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
+          """
+          JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')
+          """);
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + column.originalName() + "\"') as " + dialectType.name() + ")";
+      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"') as " + dialectType.name() + ")";
     }
   }
 
@@ -163,15 +167,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String createTable(final StreamConfig stream, final String suffix) {
+  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final String columnDeclarations = columnsAndTypes(stream);
     final String clusterConfig = clusteringColumns(stream).stream()
             .map(c -> StringUtils.wrap(c, QUOTE))
             .collect(joining(", "));
+    final String forceCreateTable = force ? "OR REPLACE" : "";
 
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
         "dataset_location", datasetLocation,
+        "force_create_table", forceCreateTable,
         "final_table_id", stream.id().finalTableId(QUOTE, suffix),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig)).replace(
@@ -179,7 +185,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             CREATE SCHEMA IF NOT EXISTS ${final_namespace}
             OPTIONS(location="${dataset_location}");
 
-            CREATE OR REPLACE TABLE ${final_table_id} (
+            CREATE ${force_create_table} TABLE ${final_table_id} (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,
@@ -216,9 +222,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream,
                            final TableDefinition existingTable) throws TableNotMigratedException {
     final var alterTableReport = buildAlterTableReport(stream, existingTable);
-    if (!alterTableReport.isDestinationV2Format()) {
-      throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
-    }
     boolean tableClusteringMatches = false;
     boolean tablePartitioningMatches = false;
     if (existingTable instanceof final StandardTableDefinition standardExistingTable) {
@@ -272,8 +275,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     // Columns in the current schema that are no longer in the StreamConfig
     final Set<String> columnsToRemove = existingSchema.keySet().stream()
-            .filter(name -> !containsIgnoreCase(streamSchema.keySet(), name) && !containsIgnoreCase(FINAL_TABLE_AIRBYTE_COLUMNS, name))
-            .collect(Collectors.toSet());
+                                                      .filter(name -> !containsIgnoreCase(streamSchema.keySet(), name) && !containsIgnoreCase(
+                                                          JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS, name))
+                                                      .collect(Collectors.toSet());
 
     // Columns that are typed differently than the StreamConfig
     final Set<String> columnsToChangeType = streamSchema.keySet().stream()
@@ -296,18 +300,19 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   /**
    * Checks the schema to determine whether the table contains all expected final table airbyte columns
+   *
    * @param columnNames the column names of the schema to check
-   * @return whether all the {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS} are present
+   * @return whether all the {@link JavaBaseConstants#V2_FINAL_TABLE_METADATA_COLUMNS} are present
    */
   @VisibleForTesting
   public static boolean schemaContainAllFinalTableV2AirbyteColumns(final Collection<String> columnNames) {
-    return FINAL_TABLE_AIRBYTE_COLUMNS.stream()
-            .allMatch(column -> containsIgnoreCase(columnNames, column));
+    return JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
+                                                            .allMatch(column -> containsIgnoreCase(columnNames, column));
   }
 
   @Override
   public String softReset(final StreamConfig stream) {
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
@@ -339,7 +344,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
+      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
@@ -396,7 +401,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               );
 
             IF missing_pk_count > 0 THEN
-              RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
+              RAISE USING message = FORMAT('Raw table has %s rows missing a primary key', CAST(missing_pk_count AS STRING));
             END IF
             ;""");
   }
@@ -413,15 +418,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     } else {
       columnErrors = "ARRAY_CONCAT(" + streamColumns.entrySet().stream().map(
               col -> new StringSubstitutor(Map.of(
-                  "raw_col_name", col.getKey().originalName(),
+                  "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
                   "col_type", toDialectType(col.getValue()).name(),
                   "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+                  // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
+                  // and necessary because json_query
                   """
                       CASE
-                        WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
-                          AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"')) != 'null')
+                        WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
+                          AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
                           AND (${json_extract} IS NULL)
-                          THEN ["Problem with `${raw_col_name}`"]
+                          THEN ['Problem with `${raw_col_name}`']
                         ELSE []
                       END"""))
           .collect(joining(",\n")) + ")";
@@ -476,21 +483,24 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   String dedupFinalTable(final StreamId id,
                          final String finalSuffix,
                          final List<ColumnId> primaryKey,
-                         final ColumnId cursor) {
+                         final Optional<ColumnId> cursor) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+    final String cursorOrderClause = cursor
+        .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
+        .orElse("");
 
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
-        "cursor_name", cursor.name(QUOTE))
-        ).replace(
+        "cursor_order_clause", cursorOrderClause
+        )).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE
               `_airbyte_raw_id` IN (
                 SELECT `_airbyte_raw_id` FROM (
                   SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC NULLS LAST, `_airbyte_extracted_at` DESC
+                    PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
                   ) as row_number FROM ${final_table_id}
                 )
                 WHERE row_number != 1
@@ -530,7 +540,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 ${pk_extracts}
               )
             FROM  ${raw_table_id}
-            WHERE JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
+            WHERE JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at'), wide_number_mode=>'round')) != 'null'
           )
         ;"""
     );
@@ -595,10 +605,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         """
             CREATE SCHEMA IF NOT EXISTS ${raw_namespace}
             OPTIONS(location="${dataset_location}");
-                 
+
             CREATE OR REPLACE TABLE ${v2_raw_table} (
               _airbyte_raw_id STRING,
-              _airbyte_data JSON,
+              _airbyte_data STRING,
               _airbyte_extracted_at TIMESTAMP,
               _airbyte_loaded_at TIMESTAMP
             )
@@ -607,12 +617,37 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             AS (
                 SELECT
                     _airbyte_ab_id AS _airbyte_raw_id,
-                    PARSE_JSON(_airbyte_data) AS _airbyte_data,
+                    _airbyte_data AS _airbyte_data,
                     _airbyte_emitted_at AS _airbyte_extracted_at,
                     CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
                 FROM ${v1_raw_table}
             );
             """);
+  }
+
+  /**
+   * Does two things: escape single quotes (for use inside sql string literals),and escape double quotes
+   * (for use inside JSON paths). For example, if a column name is foo'bar"baz, then we want to end up
+   * with something like {@code SELECT JSON_QUERY(..., '$."foo\'bar\\"baz"')}. Note the single-backslash
+   * for single-quotes (needed for SQL) and the double-backslash for double-quotes (needed for JSON path).
+   */
+  private String escapeColumnNameForJsonPath(final String stringContents) {
+    // This is not a place of honor.
+    return stringContents
+        // Consider the JSON blob {"foo\\bar": 42}.
+        // This is an object with key foo\bar.
+        // The JSONPath for this is (something like...?) $."foo\\bar" (i.e. 2 backslashes).
+        // TODO is that jsonpath correct?
+        // When we represent that path as a SQL string, the backslashes are doubled (to 4): '$."foo\\\\bar"'
+        // And we're writing that in a Java string, so we have to type out 8 backslashes: "'$.\"foo\\\\\\\\bar\"'"
+        .replace("\\", "\\\\\\\\")
+        // Similar situation here:
+        // a literal " needs to be \" in a JSONPath: $."foo\"bar"
+        // which is \\" in a SQL string: '$."foo\\"bar"'
+        // The backslashes become \\\\ in java, and the quote becomes \": "'$.\"foo\\\\\"bar\"'"
+        .replace("\"", "\\\\\"")
+        // Here we're escaping a SQL string, so we only need a single backslash (which is 2, beacuse Java).
+        .replace("'", "\\'");
   }
 
 }
