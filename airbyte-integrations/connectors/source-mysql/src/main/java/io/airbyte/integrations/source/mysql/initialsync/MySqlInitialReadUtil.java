@@ -238,6 +238,9 @@ public class MySqlInitialReadUtil {
   private static PrimaryKeyInfo getPrimaryKeyInfo(final ConfiguredAirbyteStream stream, final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable) {
     // For cursor-based syncs, we cannot always assume a primary key field exists. We need to handle the case where it does not exist when we support
     // cursor-based syncs.
+    if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
+      LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}", stream.getStream().getNamespace(), stream.getStream().getName());
+    }
     final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
     final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), (stream.getStream().getName()));
     final TableInfo<CommonField<MysqlType>> table = tableNameToTable

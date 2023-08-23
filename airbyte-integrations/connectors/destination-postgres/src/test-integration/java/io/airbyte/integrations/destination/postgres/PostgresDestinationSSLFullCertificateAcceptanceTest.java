@@ -142,7 +142,7 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     db.stop();
     db.close();
   }

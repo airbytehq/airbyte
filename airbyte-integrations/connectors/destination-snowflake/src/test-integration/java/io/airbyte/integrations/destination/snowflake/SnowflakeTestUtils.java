@@ -79,7 +79,7 @@ public class SnowflakeTestUtils {
     return '"' + name + '"';
   }
 
-  private static String timestampToString(String quotedName) {
+  public static String timestampToString(String quotedName) {
     return "TO_VARCHAR(" + quotedName + ", 'YYYY-MM-DD\"T\"HH24:MI:SS.FFTZH:TZM') as " + quotedName;
   }
 }
