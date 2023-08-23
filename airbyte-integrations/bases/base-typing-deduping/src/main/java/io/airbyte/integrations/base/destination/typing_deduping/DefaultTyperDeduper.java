@@ -119,8 +119,10 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   public void typeAndDedupe(final String originalNamespace, final String originalName) throws Exception {
     LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
-    if (streamsWithSuccesfulSetup.stream().noneMatch(streamId -> streamId.originalNamespace().equals(originalNamespace) && streamId.originalName().equals(originalName))) {
-      // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close, we should skip it.
+    if (streamsWithSuccesfulSetup.stream()
+        .noneMatch(streamId -> streamId.originalNamespace().equals(originalNamespace) && streamId.originalName().equals(originalName))) {
+      // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
+      // we should skip it.
       LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace, originalName);
       return;
     }
@@ -139,7 +141,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     LOGGER.info("Committing final tables");
     for (final StreamConfig streamConfig : parsedCatalog.streams()) {
       if (!streamsWithSuccesfulSetup.contains(streamConfig.id())) {
-        LOGGER.warn("Skipping committing final table for for {}.{} because we could not set up the tables for this stream.", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
+        LOGGER.warn("Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
+            streamConfig.id().originalNamespace(), streamConfig.id().originalName());
         continue;
       }
       if (DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
