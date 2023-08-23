@@ -155,7 +155,7 @@ class TestBaseStream:
 
     def test_batch_reduce_amount_with_fields_exceptions(self, api, batch, mock_batch_responses, caplog):
         """Reduce batch size to 1 and finally success with message"""
-    
+
         retryable_message = "Please reduce the amount of data you're asking for, then retry your request"
         expected_record = {"name": "Page A Name", "id": "some_id"}
         mock_batch_responses(
@@ -169,7 +169,7 @@ class TestBaseStream:
             ]
             + [{"json": [{"code": 200, "body": expected_record}]}]
         )
-    
+
         stream = SomeTestStream(api=api)
         stream.fields = ["field_1", "field_2", "field_exception_1", "field_exception_2"]
         stream.fields_exceptions = ["field_exception_1", "field_exception_2"]
