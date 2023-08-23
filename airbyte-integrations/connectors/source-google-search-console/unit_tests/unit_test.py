@@ -222,9 +222,9 @@ def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
 def test_streams(config_gen):
     source = SourceGoogleSearchConsole()
     streams = source.streams(config_gen())
-    assert len(streams) == 14
+    assert len(streams) == 15
     streams = source.streams(config_gen(custom_reports=...))
-    assert len(streams) == 13
+    assert len(streams) == 14
 
 
 def test_get_start_date():
