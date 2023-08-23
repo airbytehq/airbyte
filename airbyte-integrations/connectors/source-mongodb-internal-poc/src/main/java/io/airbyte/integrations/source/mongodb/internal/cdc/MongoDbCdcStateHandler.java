@@ -40,12 +40,15 @@ public class MongoDbCdcStateHandler implements CdcStateHandler {
 
   @Override
   public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
-    throw new RuntimeException("Debezium is not used to carry out the snapshot of tables.");
+    LOGGER.info("Snapshot of new collections is complete, saving state...");
+
+    final AirbyteStateMessage stateMessage = stateManager.toState();
+    return new AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage);
   }
 
   @Override
   public boolean isCdcCheckpointEnabled() {
-    return false;
+    return true;
   }
 
 }
