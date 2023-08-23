@@ -21,7 +21,7 @@ def setup_responses():
     responses.add(
         responses.GET,
         "https://advertising-api.amazon.com/v2/profiles",
-        json=[],
+        json=[{"profileId": 111, "timezone": "gtm", "accountInfo": {"marketplaceStringId": "mkt_id_1", "id": "111", "type": "vendor"}}],
     )
 
 
