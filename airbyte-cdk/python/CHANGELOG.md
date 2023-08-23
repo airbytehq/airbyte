@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.4
+Source-S3 V4: feature parity rollout
+
 ## 0.51.3
 File-based CDK: Do not stop processing files in slice on error
 
