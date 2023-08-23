@@ -456,18 +456,12 @@ def publish_pypi(
     pypi_password: str,
     pypi_repository: str,
 ):
-    selected_connectors_and_files = ctx.obj["selected_connectors_and_files"]
-    selected_connectors_names = ctx.obj["selected_connectors_names"]
-
-    main_logger.info(f"Will publish the following connectors to PyPI: {', '.join(selected_connectors_names)}")
-
     connectors_contexts = [
         PublishPyPIContext(
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
-            modified_files=modified_files,
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
@@ -479,10 +473,10 @@ def publish_pypi(
             pypi_password=pypi_password,
             pypi_repository=pypi_repository,
         )
-        for connector, modified_files in selected_connectors_and_files.items()
+        for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
+    main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel PyPI publish pipelines.")
     ctx.obj["concurrency"] = 1
 
     connectors_contexts = anyio.run(

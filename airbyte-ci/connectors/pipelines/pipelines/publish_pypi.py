@@ -6,6 +6,7 @@ from textwrap import dedent
 from typing import List
 
 import anyio
+from connector_ops.utils import ConnectorLanguage
 from dagger import ExecError
 from pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from pipelines.contexts import PublishConnectorContext
@@ -16,7 +17,7 @@ class PublishPyPIConnector(Step):
     title = "Publish connector to PyPI"
 
     async def _run(self) -> StepResult:
-        if self.context.connector.language not in ["python", "low-code"]:
+        if self.context.connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
             return self.skip("Only Python connectors can be published to PyPI.")
 
         try:
