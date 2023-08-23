@@ -832,7 +832,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
           });
 
-      final String createTable = generator.createTable(stream, "");
+      final String createTable = generator.createTable(stream, "", false);
       destinationHandler.execute(createTable);
       final String updateTable = generator.updateTable(stream, "");
       // Not verifying anything about the data; let's just make sure we don't crash.
