@@ -30,6 +30,6 @@ data:
         upgradeDeadline: "2023-07-24"
   ab_internal:
     sl: 300
-    ql: 300
+    ql: 400
   supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -38,7 +38,8 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                     {
                         "name": "test_data",
                         "file_type": "avro",
-                        "globs": ["a_folder/**/*.avro"],
+                        "globs": ["**/*.avro"],
+                        "legacy_prefix": "a_folder/",
                         "validation_policy": "Emit Record",
                         "input_schema": '{"col1": "string", "col2": "integer"}',
                         "format": {"filetype": "avro"},
@@ -66,6 +67,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "name": "test_data",
                         "file_type": "avro",
                         "globs": ["**/*.avro"],
+                        "legacy_prefix": "",
                         "validation_policy": "Emit Record",
                         "format": {"filetype": "avro"},
                     }
@@ -73,7 +75,35 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
             },
             id="test_convert_no_optional_fields",
         ),
-    ],
+        pytest.param(
+            {
+                "dataset": "test_data",
+                "provider": {
+                    "storage": "S3",
+                    "bucket": "test_bucket",
+                    "path_prefix": "a_prefix/",
+                },
+                "format": {
+                    "filetype": "avro",
+                },
+                "path_pattern": "*.csv|**/*",
+            },
+            {
+                "bucket": "test_bucket",
+                "streams": [
+                    {
+                        "name": "test_data",
+                        "file_type": "avro",
+                        "globs": ["*.csv", "**/*"],
+                        "validation_policy": "Emit Record",
+                        "legacy_prefix": "a_prefix/",
+                        "format": {"filetype": "avro"},
+                    }
+                ]
+            }
+            , id="test_convert_with_multiple_path_patterns"
+        ),
+    ]
 )
 def test_convert_legacy_config(legacy_config, expected_config):
     parsed_legacy_config = SourceS3Spec(**legacy_config)
@@ -173,11 +203,78 @@ def test_convert_legacy_config(legacy_config, expected_config):
         pytest.param(
             "csv",
             {
+                "additional_reader_options": '{"include_columns": ""}',
+            },
+            None,
+            ValueError,
+            id="test_unsupported_additional_reader_options",
+        ),
+        pytest.param(
+            "csv",
+            {
                 "advanced_options": '{"not_valid": "at all}',
             },
             None,
             ValueError,
             id="test_malformed_advanced_options",
+        ),
+        pytest.param(
+            "csv",
+            {
+                "advanced_options": '{"column_names": ""}',
+            },
+            None,
+            ValueError,
+            id="test_unsupported_advanced_options",
+        ),
+        pytest.param(
+            "csv",
+            {
+                "advanced_options": '{"check_utf8": false}',
+            },
+            {
+                "filetype": "csv",
+                "delimiter": ",",
+                "quote_char": '"',
+                "encoding": "utf8",
+                "double_quote": True,
+                "null_values": ["", "null", "NULL", "N/A", "NA", "NaN", "None"],
+                "true_values": ["y", "yes", "t", "true", "on", "1"],
+                "false_values": ["n", "no", "f", "false", "off", "0"],
+                "inference_type": "Primitive Types Only",
+                "strings_can_be_null": False,
+            },
+            None,
+            id="test_unsupported_advanced_options_by_value_succeeds_if_value_matches_ignored_values",
+        ),
+        pytest.param(
+            "csv",
+            {
+                "advanced_options": '{"check_utf8": true}',
+            },
+            None,
+            ValueError,
+            id="test_unsupported_advanced_options_by_value_fails_if_value_doesnt_match_ignored_values",
+        ),
+        pytest.param(
+            "csv",
+            {
+                "advanced_options": '{"auto_dict_encode": ""}',
+            },
+            {
+                "filetype": "csv",
+                "delimiter": ",",
+                "quote_char": '"',
+                "encoding": "utf8",
+                "double_quote": True,
+                "null_values": ["", "null", "NULL", "N/A", "NA", "NaN", "None"],
+                "true_values": ["y", "yes", "t", "true", "on", "1"],
+                "false_values": ["n", "no", "f", "false", "off", "0"],
+                "inference_type": "Primitive Types Only",
+                "strings_can_be_null": False,
+            },
+            None,
+            id="test_ignored_advanced_options",
         ),
         pytest.param(
             "jsonl",
@@ -236,6 +333,7 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
                 "name": "test_data",
                 "file_type": file_type,
                 "globs": [f"**/*.{file_type}"],
+                "legacy_prefix": "",
                 "validation_policy": "Emit Record",
                 "format": expected_format_config,
             }

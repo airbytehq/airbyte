@@ -1,5 +1,6 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
+import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
@@ -106,24 +107,26 @@ public class MySqlInitialReadUtil {
         || stateManager.getCdcStateManager().getCdcState().getState() == null)) ? new CdcState().withState(initialDebeziumState)
         : stateManager.getCdcStateManager().getCdcState();
 
+    final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+
     // If there are streams to sync via primary key load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
-
       LOGGER.info("Streams to be synced via primary key : {}", initialLoadStreams.streamsForInitialLoad().size());
       LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(initialLoadStreams.streamsForInitialLoad()));
       final MySqlInitialLoadStateManager initialLoadStateManager =
           new MySqlInitialLoadGlobalStateManager(initialLoadStreams, initPairToPrimaryKeyInfoMap(initialLoadStreams, tableNameToTable),
               stateToBeUsed, catalog);
       final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
+
       final MySqlInitialLoadSourceOperations sourceOperations =
           new MySqlInitialLoadSourceOperations(
-              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, new MySqlCdcConnectorMetadataInjector())));
-
+              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,
           quoteString,
           initialLoadStateManager,
-          namespacePair -> Jsons.emptyObject());
+          namespacePair -> Jsons.emptyObject(),
+          getTableSizeInfoForStreams(database, catalog.getStreams(), quoteString));
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
@@ -140,7 +143,7 @@ public class MySqlInitialReadUtil {
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
         new MySqlCdcSavedInfoFetcher(stateToBeUsed),
         new MySqlCdcStateHandler(stateManager),
-        new MySqlCdcConnectorMetadataInjector(),
+        metadataInjector,
         MySqlCdcProperties.getDebeziumProperties(database),
         emittedAt,
         false);
@@ -235,6 +238,9 @@ public class MySqlInitialReadUtil {
   private static PrimaryKeyInfo getPrimaryKeyInfo(final ConfiguredAirbyteStream stream, final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable) {
     // For cursor-based syncs, we cannot always assume a primary key field exists. We need to handle the case where it does not exist when we support
     // cursor-based syncs.
+    if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
+      LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}", stream.getStream().getNamespace(), stream.getStream().getName());
+    }
     final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
     final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), (stream.getStream().getName()));
     final TableInfo<CommonField<MysqlType>> table = tableNameToTable

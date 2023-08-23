@@ -32,6 +32,15 @@ If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denot
 7. In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
 8. (Optional) In the **Custom Reports** field, you may optionally provide a JSON array describing any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
+
+:::caution
+
+It's important to consider how dimensions like `month` or `yearMonth` are specified. These dimensions organize the data according to your preferences.
+However, keep in mind that the data presentation is also influenced by the chosen date range for the report. In cases where a very specific date range is selected, such as a single day (**Data Request Interval (Days)** set to one day), duplicated data entries for each day might appear.
+To mitigate this, we recommend adjusting the **Data Request Interval (Days)** value to 364. By doing so, you can obtain more precise results and prevent the occurrence of duplicated data. 
+
+:::
+
 10. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
@@ -74,6 +83,15 @@ If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denot
 6. In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
 7. (Optional) In the **Custom Reports** field, you may optionally provide a JSON array describing any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 8. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
+
+:::caution
+
+It's important to consider how dimensions like `month` or `yearMonth` are specified. These dimensions organize the data according to your preferences.
+However, keep in mind that the data presentation is also influenced by the chosen date range for the report. In cases where a very specific date range is selected, such as a single day (**Data Request Interval (Days)** set to one day), duplicated data entries for each day might appear.
+To mitigate this, we recommend adjusting the **Data Request Interval (Days)** value to 364. By doing so, you can obtain more precise results and prevent the occurrence of duplicated data. 
+
+:::
+
 9. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
