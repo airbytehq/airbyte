@@ -6,8 +6,7 @@
       "type" : [
         "null",
         "string"
-      ],
-      "format" : "date"
+      ]
     },
     "change_status.resource_type" : {
       "type" : [
@@ -47,6 +46,12 @@
         "REMOVED",
         "UNKNOWN",
         "UNSPECIFIED"
+      ]
+    },
+    "change_status.resource_name": {
+      "type" : [
+        "null",
+        "string"
       ]
     },
     "change_status.ad_group_criterion" : {

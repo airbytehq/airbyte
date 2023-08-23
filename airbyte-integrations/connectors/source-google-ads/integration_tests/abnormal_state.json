@@ -114,15 +114,22 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "4651612872": { "change_status.last_change_date_time" : "2023-08-16 13:20:01.003295" }},
+      "stream_state": { "change_status": {"4651612872": { "change_status.last_change_date_time" : "2024-08-16 13:20:01.003295" }}},
       "stream_descriptor": { "name": "ad_group_criterions" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "4651612872": { "change_status.last_change_date_time" : "2023-08-16 13:20:01.003295" }},
+      "stream_state": { "change_status": {"4651612872": { "change_status.last_change_date_time" : "2024-08-16 13:20:01.003295" }}},
       "stream_descriptor": { "name": "campaign_criterion" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "change_status.last_change_date_time" : "2024-08-16 13:20:01.003295" }},
+      "stream_descriptor": { "name": "change_status" }
     }
   }
 ]

@@ -381,13 +381,16 @@ class AccountPerformanceReport(IncrementalGoogleAdsStream):
     AccountPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v11/customer
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance
     """
+
     primary_key = ["customer.id", "segments.date", "segments.ad_network_type", "segments.device"]
+
 
 class AdGroupAdReport(IncrementalGoogleAdsStream):
     """
     AdGroupAdReport stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
     """
+
     primary_key = ["customer.id", "ad_group_ad.ad.id", "segments.date", "segments.ad_network_type"]
 
 
@@ -396,7 +399,15 @@ class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
     DisplayKeywordPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v11/display_keyword_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance
     """
-    primary_key = ["customer.id", "ad_group.id", "ad_group_criterion.criterion_id", "segments.date", "segments.ad_network_type", "segments.device"]
+
+    primary_key = [
+        "customer.id",
+        "ad_group.id",
+        "ad_group_criterion.criterion_id",
+        "segments.date",
+        "segments.ad_network_type",
+        "segments.device",
+    ]
 
 
 class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
@@ -404,7 +415,15 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
     DisplayTopicsPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v11/topic_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance
     """
-    primary_key = ["customer.id", "ad_group.id", "ad_group_criterion.criterion_id", "segments.date", "segments.ad_network_type", "segments.device"]
+
+    primary_key = [
+        "customer.id",
+        "ad_group.id",
+        "ad_group_criterion.criterion_id",
+        "segments.date",
+        "segments.ad_network_type",
+        "segments.device",
+    ]
 
 
 class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
@@ -412,6 +431,7 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v11/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
     """
+
     primary_key = ["customer.id", "segments.date", "segments.ad_network_type", "segments.device"]
 
 
@@ -420,12 +440,21 @@ class UserLocationReport(IncrementalGoogleAdsStream):
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/user_location_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#geo_performance
     """
-    primary_key = ["customer.id", "user_location_view.country_criterion_id", "user_location_view.targeting_location", "segments.date", "segments.ad_network_type"]
+
+    primary_key = [
+        "customer.id",
+        "user_location_view.country_criterion_id",
+        "user_location_view.targeting_location",
+        "segments.date",
+        "segments.ad_network_type",
+    ]
+
 
 class GeographicReport(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/geographic_view
     """
+
     primary_key = ["customer.id", "geographic_view.country_criterion_id", "geographic_view.location_type", "segments.date"]
 
 
@@ -433,6 +462,7 @@ class KeywordReport(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/keyword_view
     """
+
     primary_key = ["customer.id", "ad_group_criterion.criterion_id", "ad_group.id", "segments.date"]
 
 
@@ -476,14 +506,24 @@ class ChangeStatus(IncrementalGoogleAdsStream):
 
     def __init__(self, start_date: str = None, conversion_window_days: int = 14, end_date: str = None, **kwargs):
         if start_date is None:
+            # default value of two month ago is used because Google Ads returns only data for last 90 days otherwise returns error
             start_date = pendulum.now().subtract(months=2).to_date_string()
         if end_date is None:
             end_date = pendulum.now().add(days=1).to_date_string()
         super().__init__(start_date, conversion_window_days, end_date, **kwargs)
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
-        query = GoogleAds.convert_schema_into_query(schema=self.get_json_schema(), report_name=self.name, from_date=stream_slice.get("start_date"), to_date=stream_slice.get("end_date"), cursor_field=self.cursor_field, resource_type=stream_slice.get("resource_type"), limit=1000)
+        query = GoogleAds.convert_schema_into_query(
+            schema=self.get_json_schema(),
+            report_name=self.name,
+            from_date=stream_slice.get("start_date"),
+            to_date=stream_slice.get("end_date"),
+            cursor_field=self.cursor_field,
+            resource_type=stream_slice.get("resource_type"),
+            limit=10000,
+        )
         return query
+
 
 class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
     primary_key = None
@@ -491,7 +531,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
     parent_id_field = None
     cursor_field = None
 
-    def __init__(self, parent_stream = None, **kwargs):
+    def __init__(self, parent_stream=None, **kwargs):
         self.parent_stream = parent_stream
         self.parent_stream_name: str = self.parent_stream.name
         self.parent_cursor_field: str = self.parent_stream.cursor_field
@@ -521,7 +561,9 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
     def read_parent_stream(
         self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
     ) -> Iterable[Mapping[str, Any]]:
-        for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state.get(self.parent_stream_name)):
+        for parent_slice in self.parent_stream.stream_slices(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state.get(self.parent_stream_name)
+        ):
             customer_id = parent_slice.get("customer_id")
             child_slice = {"customer_id": customer_id, "updated_ids": set(), "deleted_ids": set()}
             if not self.current_state(customer_id):
@@ -536,7 +578,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
                     continue
                 stream_is_updated = True
                 # Add ids to set of changed or deleted items
-                if parent_record.get('change_status.resource_status') == "REMOVED":
+                if parent_record.get("change_status.resource_status") == "REMOVED":
                     child_slice["deleted_ids"].add(substream_id)
                 else:
                     child_slice["updated_ids"].add(substream_id)
@@ -546,19 +588,22 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 self._state = {self.parent_stream_name: self.parent_stream.state}
             else:
                 # full refresh sync without parent stream
-                self._state = {self.parent_stream_name: {
-                    self.parent_cursor_field: pendulum.today().start_of('day').format("YYYY-MM-DD HH:mm:ss.SSSSSS")}}
+                self._state = {
+                    self.parent_stream_name: {
+                        self.parent_cursor_field: pendulum.today().start_of("day").format("YYYY-MM-DD HH:mm:ss.SSSSSS")
+                    }
+                }
 
             if stream_is_updated:
                 yield child_slice
             else:
                 yield from []
+
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         """
-        This method is overridden to handle GoogleAdsException with EXPIRED_PAGE_TOKEN error code,
-        and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
+        This method is overridden to read records using parent stream
         """
         self.incremental_sieve_logger.bump()
 
@@ -573,7 +618,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             self._state = {self.parent_stream_name: self.parent_stream.state}
         else:
             # full refresh sync without parent stream
-            self._state = {self.parent_stream_name: {self.parent_cursor_field: pendulum.today().start_of('day').format("YYYY-MM-DD HH:mm:ss.SSSSSS")}}
+            self._state = {self.parent_stream_name: {self.parent_cursor_field: pendulum.today().start_of("day").format("YYYY-MM-DD")}}
 
         # yield deleted items
         record_fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
@@ -584,12 +629,11 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         query = GoogleAds.convert_schema_into_query(
-            schema=self.get_json_schema(),
-            report_name=self.name,
-            id_field=self.id_field,
-            id_list=stream_slice.get("updated_ids")
+            schema=self.get_json_schema(), report_name=self.name, id_field=self.id_field, id_list=stream_slice.get("updated_ids")
         )
         return query
+
+
 class AdGroupCriterions(IncrementalEventsStream):
     """
     Ad Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
@@ -601,6 +645,7 @@ class AdGroupCriterions(IncrementalEventsStream):
     id_field = "ad_group_criterion.resource_name"
     resource_type = "AD_GROUP_CRITERION"
     cursor_field = "change_status.last_change_date_time"
+
 
 class CampaignCriterion(IncrementalEventsStream):
     """

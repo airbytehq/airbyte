@@ -381,7 +381,7 @@
       "destination_sync_mode": "overwrite",
       "primary_key": [["customer.id"], ["ad_group.id"], ["ad_group_criterion.criterion_id"], ["label.id"]]
     },
-        {
+    {
       "stream": {
         "name": "campaign_criterion",
         "json_schema": {},
@@ -391,6 +391,19 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["campaign_criterion.resource_name"]]
+    },
+    {
+      "stream": {
+        "name": "change_status",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["change_status.resource_name"]],
+        "default_cursor_field": ["change_status.last_change_date_time"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["change_status.resource_name"]],
+      "cursor_field": ["change_status.last_change_date_time"]
     }
   ]
 }

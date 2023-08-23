@@ -97,6 +97,13 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
+#### Change Status
+Only provide events for recent 3 months.
+
+
+#### Incremental Campaign Criterion and Ad Group Criterion
+This streams offer support for incremental deletions and is built using the Change Status stream. However, it only provides updates for the most recent three months.
+
 ## Supported Streams
 
 The Google Ads source connector can sync the following tables. It can also sync custom queries using GAQL.
@@ -190,8 +197,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
-|:---------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------------|
-| `0.8.0`  | 2023-09-01 | [30071](https://github.com/airbytehq/airbyte/pull/30071) | Delete start_date from required parameters and fix pagination                                                                        |
+|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `1.0.0`  | 2023-08-23 | [28970](https://github.com/airbytehq/airbyte/pull/28970) | Add incremental deletes for Campaign and Ad Group Criterion streams                                                                  |
 | `0.7.4`  | 2023-07-28 | [28832](https://github.com/airbytehq/airbyte/pull/28832) | Update field descriptions                                                                                                            |
 | `0.7.3`  | 2023-07-24 | [28510](https://github.com/airbytehq/airbyte/pull/28510) | Set dates with client's timezone                                                                                                     |
 | `0.7.2`  | 2023-07-20 | [28535](https://github.com/airbytehq/airbyte/pull/28535) | UI improvement: Make the query field in custom reports a multi-line string field                                                     |

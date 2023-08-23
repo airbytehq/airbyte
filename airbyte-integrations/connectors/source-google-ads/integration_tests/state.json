@@ -41,5 +41,18 @@
         }
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "change_status"
+      },
+      "stream_state": {
+        "4651612872": {
+          "change_status.last_change_date_time": "2024-08-16 13:20:01.003295"
+        }
+      }
+    }
   }
 ]
