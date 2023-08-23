@@ -8,6 +8,9 @@
     "customer.descriptive_name": {
       "type": ["null", "string"]
     },
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
     "ad_group.id": {
       "type": ["null", "integer"]
     },

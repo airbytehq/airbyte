@@ -40,6 +40,8 @@ from .streams import (
     ClickView,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
+    ChangeStatus,
+    CampaignCriterion,
     GeographicReport,
     KeywordReport,
     Labels,
@@ -50,7 +52,7 @@ from .streams import (
 )
 from .utils import GAQL
 
-FULL_REFRESH_CUSTOM_TABLE = ["asset", "asset_group_listing_group_filter", "custom_audience", "geo_target_constant"]
+FULL_REFRESH_CUSTOM_TABLE = ["asset", "asset_group_listing_group_filter", "custom_audience", "geo_target_constant", "change_event", "change_status"]
 
 
 class SourceGoogleAds(AbstractSource):
@@ -163,12 +165,15 @@ class SourceGoogleAds(AbstractSource):
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
+        events_stream = ChangeStatus(**incremental_config)
+        incremental_events_config = {"api": google_api, "customers": customers, "parent_stream": events_stream}
         streams = [
+            events_stream,
             AdGroupAds(**incremental_config),
             AdGroupAdLabels(google_api, customers=customers),
             AdGroups(**incremental_config),
             AdGroupBiddingStrategies(**incremental_config),
-            AdGroupCriterions(google_api, customers=customers),
+            AdGroupCriterions(**incremental_events_config),
             AdGroupCriterionLabels(google_api, customers=customers),
             AdGroupLabels(google_api, customers=customers),
             AdListingGroupCriterions(google_api, customers=customers),
@@ -177,6 +182,7 @@ class SourceGoogleAds(AbstractSource):
             Audience(google_api, customers=customers),
             CampaignBiddingStrategies(**incremental_config),
             CampaignBudget(**incremental_config),
+            CampaignCriterion(**incremental_events_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
             Labels(google_api, customers=customers),
