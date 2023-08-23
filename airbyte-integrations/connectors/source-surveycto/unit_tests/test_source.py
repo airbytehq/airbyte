@@ -1,6 +1,12 @@
-import pytest
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from unittest.mock import MagicMock, patch
+
+import pytest
 from source_surveycto.source import SourceSurveycto, SurveyctoStream
+
 
 @pytest.fixture(name='config')
 def config_fixture():
