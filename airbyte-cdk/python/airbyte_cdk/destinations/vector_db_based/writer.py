@@ -9,16 +9,16 @@ from airbyte_cdk.destinations.vector_db_based.batcher import Batcher
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, DocumentProcessor
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
 
 
 class Writer:
-    def __init__(self, processing_config: ProcessingConfigModel, indexer: Indexer, batch_size: int):
+    def __init__(self, processing_config: ProcessingConfigModel, indexer: Indexer, batch_size: int) -> None:
         self.processing_config = processing_config
         self.indexer = indexer
         self.batcher = Batcher(batch_size, lambda batch: self._process_batch(batch))
 
-    def _process_batch(self, batch: List[AirbyteRecordMessage]):
+    def _process_batch(self, batch: List[AirbyteRecordMessage]) -> None:
         documents: List[Chunk] = []
         ids_to_delete = []
         for record in batch:
