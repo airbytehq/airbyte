@@ -4,6 +4,7 @@
 
 import concurrent.futures
 import json
+from copy import deepcopy
 from typing import Any, Dict, Optional
 
 import click
@@ -148,7 +149,7 @@ def create_customer_and_bank_account(customer: Customer, stripe_api: StripeAPI):
     return customer
 
 
-def _load_config(path_to_config):
+def _load_json_file(path_to_config):
     with open(path_to_config, "r") as f:
         return json.loads(f.read())
 
@@ -163,16 +164,16 @@ def populate_customer(customer: Customer, stripe_api: StripeAPI):
 
 
 @_main.command()
-@click.argument("path_to_config")
-@click.argument("path_to_data")
-def generate_records(path_to_config, path_to_data):
-    config = _load_config(path_to_config)
-    records = _load_config(path_to_data)
-    CONCURRENCY = 1
+@click.option("--config-path")
+@click.option("--data-path")
+@click.option("--concurrency", default=1, type=int)
+def populate_customers(config_path, data_path, concurrency):
+    config = _load_json_file(config_path)
+    records = _load_json_file(data_path)
     futures = []
     requester = Requester()
     stripe_api = StripeAPI(config["client_secret"], requester)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
         for record in records:
             customer_data = record
             customer = Customer.parse_obj(customer_data)
@@ -180,8 +181,22 @@ def generate_records(path_to_config, path_to_data):
             futures.append(f)
         concurrent.futures.wait(futures)
 
-    for f in futures:
-        print(f"f: {f.result()}")
+
+@_main.command()
+@click.argument("path_to_template")
+@click.option("--tag")
+@click.option("--iterations", type=int)
+@click.option("--output-path")
+def generate_customers(path_to_template, tag, iterations, output_path):
+    template = _load_json_file(path_to_template)
+    all_records = []
+    for iteration in range(iterations):
+        output = deepcopy(template)
+        for record in output:
+            record["name"] = record["name"].replace("{TAG}", tag).replace("{ITERATION}", str(iteration))
+            all_records.append(record)
+    with open(output_path, "w") as f:
+        f.write(json.dumps(all_records, indent=2))
 
 
 if __name__ == "__main__":
