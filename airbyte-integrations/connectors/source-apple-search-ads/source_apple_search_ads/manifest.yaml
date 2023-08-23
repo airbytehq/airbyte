@@ -116,13 +116,13 @@ definitions:
           timeZone: "UTC"
           granularity: "{{ parameters.granularity }}"
           selector: '{
-            "orderBy": [
-              {
-                "field": "countryOrRegion",
-                "sortOrder": "ASCENDING"
-              }
-            ]
-          }'
+              "orderBy": [
+                {
+                  "field": "countryOrRegion",
+                  "sortOrder": "ASCENDING"
+                }
+              ]
+            }'
           groupBy: "[ 'countryOrRegion' ]"
 
   campaigns_report_daily_stream:
