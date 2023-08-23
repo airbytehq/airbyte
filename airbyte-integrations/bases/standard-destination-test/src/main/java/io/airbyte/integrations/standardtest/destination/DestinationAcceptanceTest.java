@@ -1804,7 +1804,7 @@ public abstract class DestinationAcceptanceTest {
       return MoreIterators.toList(testCases.elements()).stream()
           .filter(testCase -> testCase.get("enabled").asBoolean())
           .map(testCase -> {
-            final String randomSuffix = Strings.addRandomSuffix("", "", 5);
+            final String randomSuffix = Strings.addRandomSuffix("", "_", 5);
             return Arguments.of(
                 testCase.get("id").asText(),
                 // Randomise namespace to avoid collisions between tests.
