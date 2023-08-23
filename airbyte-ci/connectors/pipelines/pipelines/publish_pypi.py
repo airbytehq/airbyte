@@ -44,7 +44,7 @@ class PublishPyPIConnector(Step):
             .with_exec(["pip", "install", "--upgrade", "setuptools", "wheel"])
             .with_exec(["python", "setup.py", "sdist", "bdist_wheel"])
             .with_secret_variable("TWINE_USERNAME", twine_username)
-            .with_secret_variable("TWINE_PASSWROD", twine_password)
+            .with_secret_variable("TWINE_PASSWORD", twine_password)
             .with_exec(["twine", "upload", "--verbose", "--repository", self.context.pypi_repository, "dist/*"])
         )
 
