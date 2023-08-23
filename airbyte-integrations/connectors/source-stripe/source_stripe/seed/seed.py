@@ -15,6 +15,7 @@ import requests
 def _main():
     pass
 
+
 def dict_to_urlencoded(d):
     return kv_translation(d, "", "")
 
@@ -27,6 +28,7 @@ def kv_translation(d, line, final_str):
         else:
             final_str = kv_translation(d[key], line + key_str, final_str)
     return final_str
+
 
 def recursive_url_encode(data, parent_key=None):
     items = []
@@ -43,6 +45,7 @@ def recursive_url_encode(data, parent_key=None):
 
     return items
 
+
 def fetch(url, headers, json_payload):
     encoded_data = recursive_url_encode(json_payload)
     print(f"headers:{headers}")
@@ -54,14 +57,16 @@ def create_customer(headers, customer):
     url = "https://api.stripe.com/v1/customers"
     return fetch(url, headers, customer)
 
+
 def create_bank_account(headers, customer, bank_account_data):
     customer_id = customer["id"]
     customer_name = customer["name"]
     bank_account_data["bank_account"]["account_holder_name"] = customer_name
     print(f"bank_account:\n{bank_account_data}")
-    #url = f"https://api.stripe.com/v1/customers/{customer_id}/sources"
+    # url = f"https://api.stripe.com/v1/customers/{customer_id}/sources"
     url = f"https://api.stripe.com/v1/tokens"
     return fetch(url, headers, bank_account_data)
+
 
 def create_customer_and_bank_account(headers, customer_data, bank_account_data):
     customer = create_customer(headers, customer_data)

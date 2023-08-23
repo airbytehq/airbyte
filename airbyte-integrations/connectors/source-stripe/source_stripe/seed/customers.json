@@ -1,0 +1,15 @@
+[
+  {
+    "description": "A fake customer",
+    "email": "alexandre@airbyte.io",
+    "name": "Alexandre Girard",
+    "balance": "900001",
+    "bank_account": {
+      "country": "US",
+      "currency": "usd",
+      "account_holder_type": "individual",
+      "routing_number": 110000000,
+      "account_number": "000123456789"
+    }
+  }
+]
