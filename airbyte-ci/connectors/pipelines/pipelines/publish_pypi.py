@@ -32,7 +32,7 @@ class PublishPyPIConnector(Step):
         twine_username = self.context.dagger_client.set_secret("twine_username", self.context.pypi_username)
         twine_password = self.context.dagger_client.set_secret("twine_password", self.context.pypi_password)
 
-        twine_upload = await (
+        twine_upload = (
             self.context.dagger_client.container()
             .from_("python:3.10-slim")
             .with_exec(["apt-get", "update"])
@@ -48,7 +48,7 @@ class PublishPyPIConnector(Step):
             .with_exec(["twine", "upload", "--verbose", "--repository", self.context.pypi_repository, "dist/*"])
         )
 
-        return self.get_step_result(twine_upload)
+        return await self.get_step_result(twine_upload)
 
 
 async def run_connector_pypi_publish_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
