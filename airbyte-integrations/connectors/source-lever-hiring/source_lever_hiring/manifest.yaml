@@ -69,7 +69,7 @@ definitions:
     grant_type: refresh_token
   requester:
     type: HttpRequester
-    url_base: https://api.{{ "sandbox." if config['environment'] == "Sandbox" }}lever.co/
+    url_base: https://api.{{ "sandbox." if config['environment'] == "Sandbox" }}lever.co/v1/
     http_method: GET
     request_headers: {}
     authenticator:
