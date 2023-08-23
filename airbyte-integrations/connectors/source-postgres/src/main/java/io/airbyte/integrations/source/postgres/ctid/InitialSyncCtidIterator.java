@@ -27,9 +27,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
+public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CtidIterator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InitialSyncCtidIterator.class);
   private static final int MAX_ALLOWED_RESYNCS = 5;
   private static final int QUERY_TARGET_SIZE_GB = 1;
   private static final double MEGABYTE = Math.pow(1024, 2);
@@ -52,7 +52,7 @@ public class CtidIterator extends AbstractIterator<RowDataWithCtid> implements A
   private Long lastKnownFileNode;
   private int numberOfTimesReSynced = 0;
 
-  public CtidIterator(final CtidStateManager ctidStateManager,
+  public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
       final JdbcDatabase database,
       final CtidPostgresSourceOperations sourceOperations,
       final String quoteString,

@@ -458,13 +458,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               fileNodeHandler, tableBlockSizes, ctidStateManager,
               namespacePair -> Jsons.jsonNode(xminStatus));
 
-      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>(ctidHandler.getInitialSyncCtidIterator(
+      final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(ctidHandler.getInitialSyncCtidIterator(
           new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>(xminHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.remainingStreams().streamsForXminSync()), tableNameToTable, emittedAt));
 
       return Stream
-          .of(ctidIterators, xminIterators)
+          .of(initialSyncCtidIterators, xminIterators)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
 
@@ -526,7 +526,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               ctidStateManager,
               namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
 
-      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>(
+      final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(
           cursorBasedCtidHandler.getInitialSyncCtidIterator(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
               tableNameToTable,
               emittedAt));
@@ -538,7 +538,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           postgresCursorBasedStateManager, emittedAt));
 
       return Stream
-          .of(ctidIterators, cursorBasedIterators)
+          .of(initialSyncCtidIterators, cursorBasedIterators)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
     }

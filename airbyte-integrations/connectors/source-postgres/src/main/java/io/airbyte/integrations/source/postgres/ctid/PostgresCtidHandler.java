@@ -116,7 +116,7 @@ public class PostgresCtidHandler {
                                                                 final long blockSize) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return new CtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize, fileNodeHandler);
+    return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize, fileNodeHandler);
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}

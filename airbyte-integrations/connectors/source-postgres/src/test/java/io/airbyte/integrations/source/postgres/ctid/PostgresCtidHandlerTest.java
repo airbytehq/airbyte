@@ -10,7 +10,7 @@ public class PostgresCtidHandlerTest {
 
   @Test
   void testCtidQueryBounds() {
-    var chunks = CtidIterator.ctidQueryPlan(new Ctid(0,0),380545032192L, 8192L, 50);
+    var chunks = InitialSyncCtidIterator.ctidQueryPlan(new Ctid(0,0),380545032192L, 8192L, 50);
     var expected = List.of(
         Pair.of(Ctid.of(0,0), Ctid.of(6553600, 0)),
         Pair.of(Ctid.of(6553600,0), Ctid.of(13107200, 0)),
@@ -22,7 +22,7 @@ public class PostgresCtidHandlerTest {
         Pair.of(Ctid.of(45875200,0), null));
     assertEquals(expected, chunks);
 
-    chunks = CtidIterator.ctidQueryPlan(new Ctid("(23000000,123)"),380545032192L, 8192L, 45);
+    chunks = InitialSyncCtidIterator.ctidQueryPlan(new Ctid("(23000000,123)"),380545032192L, 8192L, 45);
     expected = List.of(
         Pair.of(Ctid.of("(23000000,123)"), Ctid.of(28898240, 0)),
         Pair.of(Ctid.of(28898240,0), Ctid.of("(34796480,0)")),
@@ -30,17 +30,17 @@ public class PostgresCtidHandlerTest {
         Pair.of(Ctid.of(40694720,0),null));
     assertEquals(expected, chunks);
 
-    chunks = CtidIterator.ctidQueryPlan(Ctid.of(0,0),380545L, 8192L, 45);
+    chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.of(0,0),380545L, 8192L, 45);
     expected = List.of(
         Pair.of(Ctid.of(0, 0), null));
     assertEquals(expected, chunks);
 
-    chunks = CtidIterator.ctidQueryPlan(Ctid.of(9876,5432),380545L, 8192L, 45);
+    chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.of(9876,5432),380545L, 8192L, 45);
     expected = List.of(
         Pair.of(Ctid.of(9876, 5432), null));
     assertEquals(expected, chunks);
 
-    chunks = CtidIterator.ctidQueryPlan(Ctid.of(0,0),4096L, 8192L, 45);
+    chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.of(0,0),4096L, 8192L, 45);
     expected = List.of(
         Pair.of(Ctid.of(0, 0), null));
     assertEquals(expected, chunks);
