@@ -44,7 +44,8 @@ class Indexer(ABC):
         pass
 
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 def chunks(iterable: Iterable[T], batch_size: int) -> Generator[Tuple[T, ...], None, None]:
     """A helper function to break an iterable into chunks of size batch_size."""

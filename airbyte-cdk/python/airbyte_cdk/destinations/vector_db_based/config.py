@@ -58,6 +58,7 @@ class FakeEmbeddingConfigModel(BaseModel):
             "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
         }
 
+
 class CohereEmbeddingConfigModel(BaseModel):
     mode: Literal["cohere"] = Field("cohere", const=True)
     cohere_key: str = Field(..., title="Cohere API key", airbyte_secret=True)

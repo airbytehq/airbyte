@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, Iterable, List, Mapping
+from typing import Iterable, List
 
 from airbyte_cdk.destinations.vector_db_based.batcher import Batcher
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
@@ -28,9 +28,7 @@ class Writer:
                 ids_to_delete.append(record_id_to_delete)
         self.indexer.index(documents, ids_to_delete)
 
-    def write(
-        self, configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
-    ) -> Iterable[AirbyteMessage]:
+    def write(self, configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]) -> Iterable[AirbyteMessage]:
         self.processor = DocumentProcessor(self.processing_config, configured_catalog)
         self.indexer.pre_sync(configured_catalog)
         for message in input_messages:

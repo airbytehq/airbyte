@@ -22,5 +22,5 @@ __all__ = [
     "OpenAIEmbedder",
     "CohereEmbedder",
     "Indexer",
-    "Writer"
+    "Writer",
 ]

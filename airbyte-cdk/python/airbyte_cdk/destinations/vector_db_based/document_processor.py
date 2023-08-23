@@ -16,12 +16,14 @@ from langchain.utils import stringify_dict
 METADATA_STREAM_FIELD = "_airbyte_stream"
 METADATA_RECORD_ID_FIELD = "_record_id"
 
+
 @dataclass
 class Chunk:
     page_content: str
     metadata: Dict[str, Any]
     stream: str
     namespace: Optional[str] = None
+
 
 class DocumentProcessor:
     streams: Mapping[str, ConfiguredAirbyteStream]
@@ -53,7 +55,12 @@ class DocumentProcessor:
         if doc is None:
             self.logger.warning(f"Record {str(record.data)[:250]}... does not contain any text fields. Skipping.")
             return [], None
-        chunks = [Chunk(page_content=chunk_document.page_content, metadata=chunk_document.metadata, stream=record.stream, namespace=record.namespace) for chunk_document in self._split_document(doc)]
+        chunks = [
+            Chunk(
+                page_content=chunk_document.page_content, metadata=chunk_document.metadata, stream=record.stream, namespace=record.namespace
+            )
+            for chunk_document in self._split_document(doc)
+        ]
         id_to_delete = doc.metadata[METADATA_RECORD_ID_FIELD] if METADATA_RECORD_ID_FIELD in doc.metadata else None
         return chunks, id_to_delete
 

@@ -17,10 +17,10 @@ avro_dependency = "avro~=1.11.2"
 fastavro_dependency = "fastavro~=1.8.0"
 pyarrow_dependency = "pyarrow==12.0.1"
 
-langchain_dependency="langchain==0.0.271"
-openai_dependency="openai[embeddings]==0.27.9"
-cohere_dependency="cohere==4.21"
-tiktoken_dependency="tiktoken==0.4.0"
+langchain_dependency = "langchain==0.0.271"
+openai_dependency = "openai[embeddings]==0.27.9"
+cohere_dependency = "cohere==4.21"
+tiktoken_dependency = "tiktoken==0.4.0"
 
 setup(
     name="airbyte-cdk",
@@ -90,7 +90,7 @@ setup(
             langchain_dependency,
             openai_dependency,
             cohere_dependency,
-            tiktoken_dependency
+            tiktoken_dependency,
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
@@ -101,11 +101,6 @@ setup(
             fastavro_dependency,
             pyarrow_dependency,
         ],
-        "vector-db-based": [
-            langchain_dependency,
-            openai_dependency,
-            cohere_dependency,
-            tiktoken_dependency
-        ]
+        "vector-db-based": [langchain_dependency, openai_dependency, cohere_dependency, tiktoken_dependency],
     },
 )

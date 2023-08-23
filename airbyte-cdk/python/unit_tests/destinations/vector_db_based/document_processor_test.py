@@ -64,6 +64,7 @@ def test_process_single_chunk_with_metadata(metadata_fields, expected_metadata):
     assert chunks[0].page_content == "id: 1\ntext: This is the text"
     assert id_to_delete is None
 
+
 def test_process_single_chunk_limit4ed_metadata():
     processor = initialize_processor()
 
@@ -182,6 +183,7 @@ def test_non_text_fields():
     assert len(chunks) == 0
     assert id_to_delete is None
     assert processor.logger.warning.called
+
 
 def test_process_multiple_chunks_with_relevant_fields():
     processor = initialize_processor()

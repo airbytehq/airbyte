@@ -5,7 +5,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-import openai
 from airbyte_cdk.destinations.vector_db_based.config import CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from langchain.embeddings.base import Embeddings
@@ -39,7 +38,7 @@ class OpenAIEmbedder(Embedder):
     def __init__(self, config: OpenAIEmbeddingConfigModel):
         super().__init__()
         # Client is set internally
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191) # type: ignore
+        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191)  # type: ignore
 
     def check(self) -> Optional[str]:
         try:
@@ -64,7 +63,7 @@ class CohereEmbedder(Embedder):
     def __init__(self, config: CohereEmbeddingConfigModel):
         super().__init__()
         # Client is set internally
-        self.embeddings = CohereEmbeddings(cohere_api_key=config.cohere_key, model="embed-english-light-v2.0") # type: ignore
+        self.embeddings = CohereEmbeddings(cohere_api_key=config.cohere_key, model="embed-english-light-v2.0")  # type: ignore
 
     def check(self) -> Optional[str]:
         try:

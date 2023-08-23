@@ -19,7 +19,9 @@ from airbyte_cdk.models.airbyte_protocol import (
 def _generate_record_message(index: int):
     return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="example_stream", emitted_at=1234, data={"column_name": f"value {index}", "id": index}))
 
+
 BATCH_SIZE = 32
+
 
 def test_write():
     """
