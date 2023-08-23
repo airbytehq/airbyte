@@ -596,7 +596,6 @@ class PublishPyPIContext(ConnectorContext):
     def __init__(
         self,
         connector: ConnectorWithModifiedFiles,
-        modified_files: List[str],
         pypi_username: str,
         pypi_password: str,
         pypi_repository: str,
@@ -620,7 +619,6 @@ class PublishPyPIContext(ConnectorContext):
         super().__init__(
             pipeline_name=pipeline_name,
             connector=connector,
-            modified_files=modified_files,
             report_output_prefix=report_output_prefix,
             ci_report_bucket=ci_report_bucket,
             is_local=is_local,
