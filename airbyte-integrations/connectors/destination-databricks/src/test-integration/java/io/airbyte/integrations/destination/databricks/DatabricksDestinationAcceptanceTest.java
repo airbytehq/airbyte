@@ -18,7 +18,6 @@ import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -68,7 +67,7 @@ public abstract class DatabricksDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
     DatabricksUtilTest.cleanUpData(databricksConfig);
   }
 

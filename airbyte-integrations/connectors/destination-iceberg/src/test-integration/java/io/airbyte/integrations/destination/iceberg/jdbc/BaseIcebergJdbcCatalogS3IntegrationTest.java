@@ -53,7 +53,7 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
   private MinioContainer s3Storage;
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     catalogDb = new PostgreSQLContainer<>("postgres:13-alpine");
     catalogDb.start();
     LOGGER.info("==> Started PostgreSQL docker container...");
@@ -63,7 +63,7 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     IcebergIntegrationTestUtil.stopAndCloseContainer(s3Storage, "Minio");
     IcebergIntegrationTestUtil.stopAndCloseContainer(catalogDb, "PostgreSQL");
   }
@@ -75,9 +75,9 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
 
   @Override
   protected JsonNode getConfig() {
-    String jdbcUrl = catalogDb.getJdbcUrl();
+    final String jdbcUrl = catalogDb.getJdbcUrl();
     LOGGER.info("Postgresql jdbc url: {}", jdbcUrl);
-    String s3Endpoint = "http://" + s3Storage.getHostAddress();
+    final String s3Endpoint = "http://" + s3Storage.getHostAddress();
     return Jsons.jsonNode(ofEntries(
         entry(ICEBERG_CATALOG_CONFIG_KEY,
             Jsons.jsonNode(ofEntries(
@@ -100,10 +100,10 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    String jdbcUrl = "jdbc:postgresql://%s:%d/%s".formatted(HostPortResolver.resolveHost(catalogDb),
+    final String jdbcUrl = "jdbc:postgresql://%s:%d/%s".formatted(HostPortResolver.resolveHost(catalogDb),
         HostPortResolver.resolvePort(catalogDb),
         catalogDb.getDatabaseName());
-    String s3Endpoint = "http://%s:%s".formatted(HostPortResolver.resolveHost(s3Storage),
+    final String s3Endpoint = "http://%s:%s".formatted(HostPortResolver.resolveHost(s3Storage),
         HostPortResolver.resolvePort(s3Storage));
     return Jsons.jsonNode(ofEntries(
         entry(ICEBERG_CATALOG_CONFIG_KEY,
@@ -126,10 +126,10 @@ public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends Destinatio
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
   }
