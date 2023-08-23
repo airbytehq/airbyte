@@ -5,10 +5,22 @@ import asyncio
 import concurrent
 import json
 import urllib
+from typing import Literal
 
 import aiohttp
 import click
 import requests
+
+from pydantic import BaseModel, Field
+
+
+class BankAccount(BaseModel):
+    object: str =  "bank_account"
+    country: str = Field()
+    currency: str = Field()
+    account_holder_type: str = Field()
+    routing_number: str = Field()
+    account_number: str = Field()
 
 
 @click.group()
@@ -61,33 +73,36 @@ def create_customer(headers, customer):
     return fetch(url, headers, customer)
 
 
-def create_bank_account(headers, customer, bank_account_data):
+def create_bank_account(headers, customer, bank_account: BankAccount):
     customer_id = customer["id"]
-    customer_name = customer["name"]
-    bank_account_data["source"]["account_holder_name"] = customer_name
-    print(f"bank_account:\n{bank_account_data}")
+    # bank_account_data["source"]["account_holder_name"] = customer_name
+    print(f"bank_account:\n{bank_account}")
     url = f"https://api.stripe.com/v1/customers/{customer_id}/sources"
-    #url = f"https://api.stripe.com/v1/tokens"
+    bank_account_data = {"source": bank_account.dict()}
+    bank_account_data["source"]["account_holder_name"] = customer["name"]
+    print(f"bank account data before sending: {bank_account_data}")
     return fetch(url, headers, bank_account_data)
 
 
-def create_customer_and_bank_account(headers, customer_data, bank_account_data):
+def create_customer_and_bank_account(headers, customer_data, bank_account: BankAccount):
     customer = create_customer(headers, customer_data)
     print(f"created customer: {customer}")
-    if bank_account_data:
-        bank_account = create_bank_account(headers, customer, bank_account_data)
+    if bank_account:
+        bank_account = create_bank_account(headers, customer, bank_account)
         print(f"created bank account {bank_account}")
     else:
         bank_account = None
     return customer, bank_account
+
 
 def search_customer(customer_name, headers):
     url = f"https://api.stripe.com/v1/customers/search"
     data = {
         "query": f"name: '{customer_name}'"
     }
-    response =  fetch(url, headers, data, requests.get)
+    response = fetch(url, headers, data, requests.get)
     return response.get("data", [])
+
 
 def _load_config(path_to_config):
     with open(path_to_config, "r") as f:
@@ -112,12 +127,15 @@ def generate_records(path_to_config, path_to_data):
                 print(f"Customer {customer_name} already exists. Skipping...")
             else:
                 bank_account_data = customer_data.pop("bank_account")
-                f = executor.submit(create_customer_and_bank_account, headers, customer_data, bank_account_data)
+                print(f"bank account data: {bank_account_data}")
+                bank_account = BankAccount.parse_obj(bank_account_data)
+                f = executor.submit(create_customer_and_bank_account, headers, customer_data, bank_account)
                 futures.append(f)
     concurrent.futures.wait(futures)
 
     for f in futures:
         print(f"f: {f.result()}")
+
 
 def is_customer_already_created(customer_name, headers):
     customer = search_customer(customer_name, headers)

@@ -5,14 +5,12 @@
     "name": "Alexandre Girard",
     "balance": "900001",
     "bank_account": {
-      "source": {
-        "object": "bank_account",
-        "country": "US",
-        "currency": "usd",
-        "account_holder_type": "individual",
-        "routing_number": 110000000,
-        "account_number": "000123456789"
-      }
+      "object": "bank_account",
+      "country": "US",
+      "currency": "usd",
+      "account_holder_type": "individual",
+      "routing_number": "110000000",
+      "account_number": "000123456789"
     }
   }
 ]
