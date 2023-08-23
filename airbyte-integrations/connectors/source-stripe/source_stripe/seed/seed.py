@@ -123,15 +123,6 @@ def is_customer_already_created(customer_name, headers):
     customer = search_customer(customer_name, headers)
     return len(customer) > 0
 
-@_main.command()
-@click.argument("path_to_config")
-@click.argument("customer_id")
-def get_customer(path_to_config, customer_id):
-    config = _load_config(path_to_config)
-    headers = {"Authorization": f"Bearer {config['client_secret']}"}
-    customer = customer_exists(customer_id, headers)
-    print(customer)
-
 
 if __name__ == "__main__":
     _main()
