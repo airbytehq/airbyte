@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,6 +33,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -765,6 +768,12 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             put(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER);
             put(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
             put(generator.buildColumnId("$starts_with_dollar_sign"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes\"doublequote"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes'singlequote"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes`backtick"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes.period"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("includes$$doubledollar"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("endswithbackslash\\"), AirbyteProtocolType.STRING);
           }
 
         });
@@ -779,6 +788,58 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpRawTableRecords(streamId),
         "sqlgenerator/weirdcolumnnames_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * Verify that we don't crash when there are special characters in the stream namespace, name,
+   * primary key, or cursor.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"$", "\"", "'", "`", ".", "$$", "\\"})
+  public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
+    final String str = namespace + "_" + specialChars;
+    final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
+    final StreamId modifiedStreamId = new StreamId(
+        originalStreamId.finalNamespace(),
+        originalStreamId.finalName(),
+        // hack for testing simplicity: put the raw tables in the final namespace. This makes cleanup
+        // easier.
+        originalStreamId.finalNamespace(),
+        "raw_table",
+        null,
+        null);
+    final ColumnId columnId = generator.buildColumnId(str);
+    try {
+      createNamespace(modifiedStreamId.finalNamespace());
+      createRawTable(modifiedStreamId);
+      insertRawTableRecords(
+          modifiedStreamId,
+          List.of(Jsons.jsonNode(Map.of(
+              "_airbyte_raw_id", "758989f2-b148-4dd3-8754-30d9c17d05fb",
+              "_airbyte_extracted_at", "2023-01-01T00:00:00Z",
+              "_airbyte_data", Map.of(str, "bar")))));
+      final StreamConfig stream = new StreamConfig(
+          modifiedStreamId,
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP,
+          List.of(columnId),
+          Optional.of(columnId),
+          new LinkedHashMap<>() {
+
+            {
+              put(columnId, AirbyteProtocolType.STRING);
+            }
+
+          });
+
+      final String createTable = generator.createTable(stream, "");
+      destinationHandler.execute(createTable);
+      final String updateTable = generator.updateTable(stream, "");
+      // Not verifying anything about the data; let's just make sure we don't crash.
+      destinationHandler.execute(updateTable);
+    } finally {
+      teardownNamespace(modifiedStreamId.finalNamespace());
+    }
   }
 
   /**

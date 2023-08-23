@@ -126,7 +126,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     return SnowflakeTestUtils.dumpFinalTable(
         database,
         databaseName,
-        namespace,
+        streamId.finalNamespace(),
         streamId.finalName() + suffix);
   }
 
@@ -207,13 +207,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             """));
   }
 
-  private String dollarQuoteWrap(JsonNode node) {
+  private String dollarQuoteWrap(final JsonNode node) {
     if (node == null) {
       return "NULL";
     }
     final String stringContents = node.isTextual() ? node.asText() : node.toString();
-    // Use dollar quotes to avoid needing to escape anything
-    return StringUtils.wrap(stringContents, "$$");
+    // Use dollar quotes to avoid needing to escape quotes
+    return StringUtils.wrap(stringContents.replace("$$", "\\$\\$"), "$$");
   }
 
   @Override
@@ -367,7 +367,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected List<JsonNode> dumpV1RawTableRecords(StreamId streamId) throws Exception {
+  protected List<JsonNode> dumpV1RawTableRecords(final StreamId streamId) throws Exception {
     final var columns = Stream.of(
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         timestampToString(JavaBaseConstants.COLUMN_NAME_EMITTED_AT),

@@ -117,7 +117,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON null).
       // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
           PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -128,7 +128,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
           PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -140,13 +140,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse the airbyte_data to json
       // and json_query it directly (which preserves nulls correctly).
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
           JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')
           """);
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + column.originalName() + "\"') as " + dialectType.name() + ")";
+      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"') as " + dialectType.name() + ")";
     }
   }
 
@@ -401,7 +401,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               );
 
             IF missing_pk_count > 0 THEN
-              RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
+              RAISE USING message = FORMAT('Raw table has %s rows missing a primary key', CAST(missing_pk_count AS STRING));
             END IF
             ;""");
   }
@@ -418,15 +418,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     } else {
       columnErrors = "ARRAY_CONCAT(" + streamColumns.entrySet().stream().map(
               col -> new StringSubstitutor(Map.of(
-                  "raw_col_name", col.getKey().originalName(),
+                  "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
                   "col_type", toDialectType(col.getValue()).name(),
                   "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+                  // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
+                  // and necessary because json_query
                   """
                       CASE
-                        WHEN (JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"') IS NOT NULL)
-                          AND (JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${raw_col_name}"'), wide_number_mode=>'round')) != 'null')
+                        WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
+                          AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
                           AND (${json_extract} IS NULL)
-                          THEN ["Problem with `${raw_col_name}`"]
+                          THEN ['Problem with `${raw_col_name}`']
                         ELSE []
                       END"""))
           .collect(joining(",\n")) + ")";
@@ -603,7 +605,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         """
             CREATE SCHEMA IF NOT EXISTS ${raw_namespace}
             OPTIONS(location="${dataset_location}");
-                 
+
             CREATE OR REPLACE TABLE ${v2_raw_table} (
               _airbyte_raw_id STRING,
               _airbyte_data STRING,
@@ -621,6 +623,31 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 FROM ${v1_raw_table}
             );
             """);
+  }
+
+  /**
+   * Does two things: escape single quotes (for use inside sql string literals),and escape double quotes
+   * (for use inside JSON paths). For example, if a column name is foo'bar"baz, then we want to end up
+   * with something like {@code SELECT JSON_QUERY(..., '$."foo\'bar\\"baz"')}. Note the single-backslash
+   * for single-quotes (needed for SQL) and the double-backslash for double-quotes (needed for JSON path).
+   */
+  private String escapeColumnNameForJsonPath(final String stringContents) {
+    // This is not a place of honor.
+    return stringContents
+        // Consider the JSON blob {"foo\\bar": 42}.
+        // This is an object with key foo\bar.
+        // The JSONPath for this is (something like...?) $."foo\\bar" (i.e. 2 backslashes).
+        // TODO is that jsonpath correct?
+        // When we represent that path as a SQL string, the backslashes are doubled (to 4): '$."foo\\\\bar"'
+        // And we're writing that in a Java string, so we have to type out 8 backslashes: "'$.\"foo\\\\\\\\bar\"'"
+        .replace("\\", "\\\\\\\\")
+        // Similar situation here:
+        // a literal " needs to be \" in a JSONPath: $."foo\"bar"
+        // which is \\" in a SQL string: '$."foo\\"bar"'
+        // The backslashes become \\\\ in java, and the quote becomes \": "'$.\"foo\\\\\"bar\"'"
+        .replace("\"", "\\\\\"")
+        // Here we're escaping a SQL string, so we only need a single backslash (which is 2, beacuse Java).
+        .replace("'", "\\'");
   }
 
 }
