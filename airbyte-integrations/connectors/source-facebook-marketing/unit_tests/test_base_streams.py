@@ -153,6 +153,37 @@ class TestBaseStream:
         for index, expected_batch_size in enumerate(["25", "13", "7", "4", "2", "1"]):
             assert expected_batch_size in caplog.messages[index]
 
+    def test_batch_reduce_amount_with_fields_exceptions(self, api, batch, mock_batch_responses, caplog):
+        """Reduce batch size to 1 and finally success with message"""
+    
+        retryable_message = "Please reduce the amount of data you're asking for, then retry your request"
+        expected_record = {"name": "Page A Name", "id": "some_id"}
+        mock_batch_responses(
+            [
+                {
+                    "json": [
+                        {"body": {"error": {"message": retryable_message}}, "code": 500, "headers": {}},
+                    ],
+                }
+                for _ in range(7)
+            ]
+            + [{"json": [{"code": 200, "body": expected_record}]}]
+        )
+    
+        stream = SomeTestStream(api=api)
+        stream.fields = ["field_1", "field_2", "field_exception_1", "field_exception_2"]
+        stream.fields_exceptions = ["field_exception_1", "field_exception_2"]
+        requests = [FacebookRequest("node", "GET", "endpoint").add_fields(stream.fields)]
+        records = list(stream.execute_in_batch(requests))
+        assert records == [expected_record]
+        assert batch.add_request.call_count == 8
+        assert batch.execute.call_count == 8
+        # assert batch size restored to default value after success message received
+        assert stream.max_batch_size == 50
+        warning_message = "Removing fields from object some_test_stream with id=node"
+        for index, message in enumerate(["25", "13", "7", "4", "2", "1", warning_message, "1"]):
+            assert message in caplog.messages[index]
+
     def test_execute_in_batch_retry_batch_error(self, api, batch, mock_batch_responses):
         """Should retry without exception when any request returns 960 error code"""
         mock_batch_responses(
