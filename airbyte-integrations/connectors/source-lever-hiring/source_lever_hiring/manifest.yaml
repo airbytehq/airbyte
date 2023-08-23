@@ -79,7 +79,6 @@ definitions:
     request_body_json: {}
   opportunity_child_stream:
     type: DeclarativeStream
-    name: '{{ parameters.name }}'
     primary_key: id
     retriever:
       type: SimpleRetriever
@@ -127,24 +126,19 @@ definitions:
         $ref: "#/definitions/paginator"
   applications_stream:
     $ref: "#/definitions/opportunity_child_stream"
-    $parameters:
-      name: applications
+    name: applications
   interviews_stream:
     $ref: "#/definitions/opportunity_child_stream"
-    $parameters:
-      name: interviews
+    name: interviews
   notes_stream:
     $ref: "#/definitions/opportunity_child_stream"
-    $parameters:
-      name: notes
+    name: notes
   offers_stream:
     $ref: "#/definitions/opportunity_child_stream"
-    $parameters:
-      name: offers
+    name: offers
   referrals_stream:
     $ref: "#/definitions/opportunity_child_stream"
-    $parameters:
-      name: referrals
+    name: referrals
 
 streams:
   - "#/definitions/opportunities_stream"
