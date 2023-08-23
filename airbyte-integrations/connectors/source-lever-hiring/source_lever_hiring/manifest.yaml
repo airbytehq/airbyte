@@ -62,14 +62,14 @@ definitions:
     username: "{{ config['credentials']['api_key']  }}"
   oauth2_authenticator:
     type: OAuthAuthenticator
-    token_refresh_endpoint: https://{{ "sandbox-lever.auth0.com/" if config['environment'] = Sandbox else "auth.lever.co/" }}
+    token_refresh_endpoint: https://{{ "sandbox-lever.auth0.com/" if config['environment'] == "Sandbox" else "auth.lever.co/" }}
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     grant_type: refresh_token
   requester:
     type: HttpRequester
-    url_base: https://api.{{ "sandbox." if config['environment'] = Sandbox }}lever.co/
+    url_base: https://api.{{ "sandbox." if config['environment'] == "Sandbox" }}lever.co/
     http_method: GET
     request_headers: {}
     authenticator:
