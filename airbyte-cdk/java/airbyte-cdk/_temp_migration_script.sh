@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit immediately if a command exits with a non-zero status.
 
 # This file is an audit tool for the migration.
 # It may be deleted befor the PR is merged.
@@ -10,19 +11,21 @@
 #   $MIGRATE_SH airbyte-db/db-lib db
 #   $MIGRATE_SH airbyte-integrations/bases/base-java
 #   $MIGRATE_SH airbyte-integrations/bases/base-java-s3
+#   $MIGRATE_SH airbyte-integrations/bases/base-normalization
 #   $MIGRATE_SH airbyte-integrations/bases/base-typing-deduping
-#   $MIGRATE_SH airbyte-integrations/bases/debezium
-#
-# Abstract DB connectors:
-#   $MIGRATE_SH airbyte-integrations/connectors/source-jdbc
 #   $MIGRATE_SH airbyte-integrations/connectors/source-relational-db
 #   $MIGRATE_SH airbyte-integrations/bases/bases-destination-jdbc
 #
-# Test capabilities:
-#   $MIGRATE_SH airbyte-integrations/bases/base-typing-deduping-test
-#   $MIGRATE_SH airbyte-integrations/bases/s3-destination-base-integration-test
-#   $MIGRATE_SH airbyte-integrations/bases/standard-destination-test
-#   $MIGRATE_SH airbyte-integrations/bases/standard-source-test
+# Hybrid projects: capabilities plus test fixtures:
+#   $MIGRATE_SH airbyte-integrations/bases/debezium
+#   $MIGRATE_SH airbyte-integrations/connectors/source-jdbc
+#
+# Test fixture projects:
+#   $MIGRATE_SH airbyte-integrations/bases/base-typing-deduping-test asTestFixture
+#   $MIGRATE_SH airbyte-integrations/bases/s3-destination-base-integration-test asTestFixture
+#   $MIGRATE_SH airbyte-integrations/bases/standard-destination-test asTestFixture
+#   $MIGRATE_SH airbyte-integrations/bases/standard-source-test asTestFixture
+#   $MIGRATE_SH airbyte-integrations/bases/base-standard-source-test-file asTestFixture
 #   $MIGRATE_SH airbyte-test-utils
 #
 # Post-run cleanup stesps:
@@ -91,24 +94,41 @@
 
 # Change these two lines for each new subpackage to move
 OLD_PACKAGE_ROOT="$1"
+# Get old project name from the OLD_PACKAGE_ROOT:
+OLD_PROJECT_NAME=$(echo "$OLD_PACKAGE_ROOT" | sed 's/.*\/\(.*\)/\1/')
+
+# Store the second value as "FLAG" if it exists
+FLAG="$2"
 
 # These lines should not need to be changed
 OLD_SRC_PATH="$OLD_PACKAGE_ROOT/src/main/java/io/airbyte"
 OLD_TEST_PATH="$OLD_PACKAGE_ROOT/src/test/java/io/airbyte"
+OLD_TESTFIXTURE_PATH="$OLD_PACKAGE_ROOT/src/testFixtures/java/io/airbyte"
 
 CDK_ROOT="airbyte-cdk/java/airbyte-cdk"
 DEST_MAIN="$CDK_ROOT/src/main/java/io/airbyte/cdk"
 DEST_TEST="$CDK_ROOT/src/test/java/io/airbyte/cdk"
+DEST_TESTFIXTURE_PATH="$CDK_ROOT/src/testFixtures/java/io/airbyte/cdk"
 
-echo -e "Moving files (ignoring existing)... \n - From: $OLD_SRC_PATH\n - To:   $DEST_MAIN"
+# Check if flag is 'asTestFixture'. If so, send 'main/java' to 'testFixtures/java':
+if [ "$FLAG" = "asTestFixture" ]; then
+  DEST_MAIN="$DEST_TESTFIXTURE_PATH"
+fi
+
+echo -e "Moving main files (ignoring existing)... \n - From: $OLD_SRC_PATH\n - To:   $DEST_MAIN"
 # find "$OLD_SRC_PATH/" -type f | head
 mkdir -p "$DEST_MAIN/"
-rsync -av --ignore-existing --remove-source-files "$OLD_SRC_PATH" "$DEST_MAIN"
+rsync -av --ignore-existing --remove-source-files "$OLD_SRC_PATH/" "$DEST_MAIN/"
 
-echo -e "Moving files (ignoring existing)... \n - From: $OLD_TEST_PATH\n - To:   $DEST_TEST"
+echo -e "Moving test files (ignoring existing)... \n - From: $OLD_TEST_PATH\n - To:   $DEST_TEST"
 # find "$OLD_TEST_PATH/" -type f | head
 mkdir -p "$DEST_TEST/"
 rsync -av --ignore-existing --remove-source-files "$OLD_TEST_PATH/" "$DEST_TEST/"
+
+echo -e "Moving testFixture files (ignoring existing)... \n - From: $OLD_TEST_PATH\n - To:   $DEST_TEST"
+# find "$OLD_TEST_PATH/" -type f | head
+mkdir -p "$DEST_TEST/"
+rsync -av --ignore-existing --remove-source-files "$OLD_TESTFIXTURE_PATH/" "$DEST_TESTFIXTURE/"
 
 # Remove empty directories in the OLD_PACKAGE_ROOT
 find "$OLD_PACKAGE_ROOT/" -type d -empty -delete
