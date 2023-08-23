@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.5
+File-based CDK: Remove CSV noisy log
+
 ## 0.51.4
 Source-S3 V4: feature parity rollout
 
