@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 1.1.1
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-mssql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
@@ -19,8 +19,10 @@ data:
   registries:
     cloud:
       dockerRepository: airbyte/source-mssql-strict-encrypt
+      dockerImageTag: 1.1.1
       enabled: true
     oss:
+      dockerImageTag: 1.1.1
       enabled: true
   releaseStage: alpha
   supportLevel: community
