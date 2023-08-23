@@ -49,7 +49,7 @@ TARGET_BUCKET=<YOUR-DEV_BUCKET> poetry poe replicate-prod
 ```
 
 ### Promote Connector Version to Latest
-This will promote the specified connector version to the latest version in the registry. This is useful for testing a connector prerelease version in your development bucket before promoting it to the latest version in the registry.
+This will promote the specified connector version to the latest version in the registry. This is useful for creating a mocked registry in which a prerelease connector is treated as if it was already published. 
 
 _💡 Note: A prerequisite is you have [gsutil](https://cloud.google.com/storage/docs/gsutil) installed and have run `gsutil auth login`_
 
