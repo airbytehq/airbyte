@@ -25,7 +25,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
-import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
@@ -231,30 +230,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final CatalogParser catalogParser;
-    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()) {
-      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
-    } else {
-      catalogParser = new CatalogParser(sqlGenerator);
-    }
+    final CatalogParser catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
     final ParsedCatalog parsedCatalog;
 
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper;
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      parsedCatalog = catalogParser.parseCatalog(catalog);
-      final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
-      final BigQueryV2RawTableMigrator v2RawTableMigrator = new BigQueryV2RawTableMigrator(bigquery);
-      typerDeduper = new DefaultTyperDeduper<>(
-          sqlGenerator,
-          new BigQueryDestinationHandler(bigquery, datasetLocation),
-          parsedCatalog,
-          migrator,
-          v2RawTableMigrator);
-    } else {
-      parsedCatalog = null;
-      typerDeduper = new NoopTyperDeduper();
-    }
+    parsedCatalog = catalogParser.parseCatalog(catalog);
+    final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
+    final BigQueryV2RawTableMigrator v2RawTableMigrator = new BigQueryV2RawTableMigrator(bigquery);
+    typerDeduper = new DefaultTyperDeduper<>(
+        sqlGenerator,
+        new BigQueryDestinationHandler(bigquery, datasetLocation),
+        parsedCatalog,
+        migrator,
+        v2RawTableMigrator);
 
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
@@ -266,12 +255,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
+  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>
+  getUploaderMap(
                                                                                             final BigQuery bigquery,
                                                                                             final JsonNode config,
                                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                                            final ParsedCatalog parsedCatalog,
-                                                                                            final boolean use1s1t)
+                                                                                            final ParsedCatalog parsedCatalog)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
@@ -280,13 +269,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       final String streamName = stream.getName();
       final String targetTableName;
-      if (use1s1t) {
-        parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
-        targetTableName = parsedStream.id().rawName();
-      } else {
-        parsedStream = null;
-        targetTableName = getTargetTableName(streamName);
-      }
+      parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+      targetTableName = parsedStream.id().rawName();
 
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
@@ -332,10 +316,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter(jsonSchema, namingResolver));
   }
 
-  protected String getTargetTableName(final String streamName) {
-    return namingResolver.getRawTableName(streamName);
-  }
-
   private AirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
                                                            final JsonNode config,
                                                            final ConfiguredAirbyteCatalog catalog,
@@ -348,8 +328,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         bigquery,
         config,
         catalog,
-        parsedCatalog,
-        TypingAndDedupingFlag.isDestinationV2());
+        parsedCatalog
+    );
 
     return new BigQueryRecordConsumer(
         bigquery,
@@ -411,7 +391,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         onCreateBuffer,
         recordFormatterCreator,
         namingResolver::getTmpTableName,
-        getTargetTableNameTransformer(namingResolver),
         typerDeduper,
         parsedCatalog,
         BigQueryUtils.getDatasetId(config)
@@ -424,10 +403,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected Function<JsonNode, BigQueryRecordFormatter> getRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
     return streamSchema -> new GcsAvroBigQueryRecordFormatter(streamSchema, namingResolver);
-  }
-
-  protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
-    return namingResolver::getRawTableName;
   }
 
   /**
