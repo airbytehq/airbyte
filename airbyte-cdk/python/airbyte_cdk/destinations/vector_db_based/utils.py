@@ -5,5 +5,5 @@
 import traceback
 
 
-def format_exception(exception: Exception) -> None:
+def format_exception(exception: Exception) -> str:
     return str(exception) + "\n" + "".join(traceback.TracebackException.from_exception(exception).format())

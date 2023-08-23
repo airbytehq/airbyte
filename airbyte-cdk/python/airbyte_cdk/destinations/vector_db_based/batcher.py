@@ -8,19 +8,19 @@ from typing import Any, Callable, List
 class Batcher:
     def __init__(self, batch_size: int, flush_handler: Callable[[List[Any]], None]):
         self.batch_size = batch_size
-        self.buffer = []
+        self.buffer: List[Any] = []
         self.flush_handler = flush_handler
 
-    def add(self, item: Any):
+    def add(self, item: Any) -> None:
         self.buffer.append(item)
         self._flush_if_necessary()
 
-    def flush(self):
+    def flush(self) -> None:
         if len(self.buffer) == 0:
             return
         self.flush_handler(list(self.buffer))
         self.buffer.clear()
 
-    def _flush_if_necessary(self):
+    def _flush_if_necessary(self) -> None:
         if len(self.buffer) >= self.batch_size:
             self.flush()
