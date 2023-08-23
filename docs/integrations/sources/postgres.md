@@ -300,7 +300,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.5   | 2023-08-22 | [29534](https://github.com/airbytehq/airbyte/pull/29534) | Support "options" JDBC URL parameter                                                                                                                                       |
 | 3.1.4   | 2023-08-21 | [28687](https://github.com/airbytehq/airbyte/pull/28687) | Under the hood: Add dependency on Java CDK v0.0.2.                                                                                                                          |
 | 3.1.3   | 2023-08-03 | [28708](https://github.com/airbytehq/airbyte/pull/28708) | Enable checkpointing snapshots in CDC connections                                                                                                                          |
 | 3.1.2   | 2023-08-01 | [28954](https://github.com/airbytehq/airbyte/pull/28954) | Fix an issue that prevented use of tables with names containing uppercase letters                                                                                          |

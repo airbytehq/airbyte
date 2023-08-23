@@ -1,6 +1,6 @@
 ## Prerequisites
-
-- Access to a Google spreadsheet
+- Spreadsheet Link - The link to the Google spreadsheet you want to sync.
+- A Google Workspace user with access to the spreadsheet
 
 :::info
 The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. To replicate multiple spreadsheets, set up multiple Google Sheets source connectors in your Airbyte instance.
@@ -39,9 +39,8 @@ For detailed instructions on how to generate a service account key or OAuth cred
 5. (Optional) For **Row Batch Size**, you may specify the number of records you want to fetch per request to the Google API. By adjusting this value, you can balance the efficiency of the data retrieval process with [Google's request quotas](#performance-consideration). The default value of 200 should suffice for most use cases.
 6. Click **Set up source** and wait for the tests to complete.
 
-### Google Sheets format requirements
+### Output schema
 
-- When replicating data to a SQL-based destination (such as Postgres or MySQL), sheet names and column headers must contain **only alphanumeric characters or `_`**. For example, if your sheet or column header is named `The Data 2022`, it should be renamed to `the_data_2022`. To automatically convert column names to this format, enable the **Convert Column Names to SQL-Compliant Format** option. Please note that this option only converts column names and not sheet names. This naming restriction does not apply to non-header cell values.
 - Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
 
 For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Google Sheets](https://docs.airbyte.com/integrations/sources/google-sheets/).
