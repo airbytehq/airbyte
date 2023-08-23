@@ -16,18 +16,19 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: 'https://api-m.{{ "sandbox." if config["is_sandbox"] == "true" else "" }}paypal.com/v1/reporting/' 
+    url_base: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/reporting/' 
     path: "{{ parameters.path }}"
     http_method: GET
     request_headers:
       Content-Type: application/json
     authenticator:
-      type: OAuthAuthenticator
+      type: CustomAuthenticator
+      class_name: source_paypal_transaction.components.PayPalOauth2Authenticator
       client_id: '{{ config[''client_id''] }}'
       client_secret: '{{ config[''client_secret''] }}'
       refresh_request_body:
         Content-Type: application/x-www-form-urlencoded
-      token_refresh_endpoint: 'https://api-m.{{ "sandbox." if config["is_sandbox"] == "true" else "" }}paypal.com/v1/oauth2/token' 
+      token_refresh_endpoint: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/oauth2/token' 
       grant_type: client_credentials
       expires_in_name: expires_in
       access_token_name: access_token
