@@ -125,27 +125,55 @@ def test_source_streams(config):
 
 def test_filter_profiles_exist():
     source = SourceAmazonAds()
-    mock_config = {
-        "profiles": [222]
-    }
-    mock_obj = {
-        "profileId": 111,
-        "timezone": "gtm",
-        "accountInfo": {
-            "marketplaceStringId": "mkt_id",
-            "id": "111",
-            "type": "vendor"
+    mock_objs = [
+        {
+            "profileId": 111,
+            "timezone": "gtm",
+            "accountInfo": {
+                "marketplaceStringId": "mkt_id_1",
+                "id": "111",
+                "type": "vendor"
+            }
+        },
+        {
+            "profileId": 222,
+            "timezone": "gtm",
+            "accountInfo": {
+                "marketplaceStringId": "mkt_id_2",
+                "id": "222",
+                "type": "vendor"
+            }
+        },
+        {
+            "profileId": 333,
+            "timezone": "gtm",
+            "accountInfo": {
+                "marketplaceStringId": "mkt_id_3",
+                "id": "333",
+                "type": "vendor"
+            }
         }
-    }
-    mock_profile_1 = Profile.parse_obj(mock_obj)
-
-    mock_profiles = [
-        mock_profile_1,
     ]
-    filtered_profiles = source._choose_profiles(mock_config, mock_profiles)
+
+    mock_profiles = [Profile.parse_obj(profile) for profile in mock_objs]
+
+    filtered_profiles = source._choose_profiles({}, mock_profiles)
+    assert len(filtered_profiles) == 3
+
+    filtered_profiles = source._choose_profiles({"profiles": [111]}, mock_profiles)
     assert len(filtered_profiles) == 1
     assert filtered_profiles[0].profileId == 111
 
-# profiles_in_config_but_doesnt_exist_in_response
-# marketplaceid 
-# marketplaceid + profile in config
+    filtered_profiles = source._choose_profiles({"profiles": [444]}, mock_profiles)
+    assert len(filtered_profiles) == 0
+
+    filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_1"]}, mock_profiles)
+    assert len(filtered_profiles) == 1
+    assert filtered_profiles[0].accountInfo.marketplaceStringId == "mkt_id_1"
+
+    filtered_profiles = source._choose_profiles({"profiles": [111], "marketplace_ids": ["mkt_id_2"]}, mock_profiles)
+    assert len(filtered_profiles) == 2
+
+    filtered_profiles = source._choose_profiles({"profiles": [111], "marketplace_ids": ["mkt_id_1"]}, mock_profiles)
+    assert len(filtered_profiles) == 1
+    assert filtered_profiles[0].profileId == 111

@@ -149,7 +149,7 @@ class SourceAmazonAds(AbstractSource):
             for profile in list(filter(lambda profile: profile.profileId in config["profiles"], profiles)):
                 filtered_profiles.append(profile)
         if config.get("marketplace_ids"):
-            for profile in list(filter(lambda profile: profile.accountInfo.marketPlaceId in config["marketplace_ids"], profiles)):
+            for profile in list(filter(lambda profile: profile.accountInfo.marketplaceStringId in config["marketplace_ids"], profiles)):
                 if profile not in filtered_profiles:
                     filtered_profiles.append(profile)
 
