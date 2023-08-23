@@ -2,7 +2,7 @@
   {
     "description": "A fake customer",
     "email": "alexandre@airbyte.io",
-    "name": "Alexandre Girard",
+    "name": "Alexandre Girard3",
     "balance": "900001",
     "bank_account": {
       "object": "bank_account",

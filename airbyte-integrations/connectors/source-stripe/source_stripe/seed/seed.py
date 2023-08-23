@@ -5,7 +5,7 @@ import asyncio
 import concurrent
 import json
 import urllib
-from typing import Literal
+from typing import Literal, Optional
 
 import aiohttp
 import click
@@ -21,6 +21,15 @@ class BankAccount(BaseModel):
     account_holder_type: str = Field()
     routing_number: str = Field()
     account_number: str = Field()
+
+
+
+class Customer(BaseModel):
+    id: Optional[str]
+    description: str
+    email: str
+    name: str
+    balance: str
 
 
 @click.group()
@@ -70,22 +79,27 @@ def fetch(url, headers, json_payload, method=requests.post):
 
 def create_customer(headers, customer):
     url = "https://api.stripe.com/v1/customers"
-    return fetch(url, headers, customer)
+    customer_data = customer.dict()
+    return fetch(url, headers, customer_data)
 
 
-def create_bank_account(headers, customer, bank_account: BankAccount):
-    customer_id = customer["id"]
-    # bank_account_data["source"]["account_holder_name"] = customer_name
+def create_bank_account(headers, customer: Customer, bank_account: BankAccount):
+    if customer.id is None:
+        raise ValueError(f"Cannot create bank account for uninitialized customer {customer}")
     print(f"bank_account:\n{bank_account}")
-    url = f"https://api.stripe.com/v1/customers/{customer_id}/sources"
+    url = f"https://api.stripe.com/v1/customers/{customer.id}/sources"
     bank_account_data = {"source": bank_account.dict()}
-    bank_account_data["source"]["account_holder_name"] = customer["name"]
+    bank_account_data["source"]["account_holder_name"] = customer.name
     print(f"bank account data before sending: {bank_account_data}")
     return fetch(url, headers, bank_account_data)
 
 
-def create_customer_and_bank_account(headers, customer_data, bank_account: BankAccount):
-    customer = create_customer(headers, customer_data)
+def create_customer_and_bank_account(headers, customer: Customer, bank_account: BankAccount):
+    customer_output = create_customer(headers, customer)
+    if "id" in customer_output:
+        customer.id = customer_output["id"]
+    else:
+        raise RuntimeError(f"Failed to created customer {customer}. Response: {customer_output}")
     print(f"created customer: {customer}")
     if bank_account:
         bank_account = create_bank_account(headers, customer, bank_account)
@@ -121,15 +135,15 @@ def generate_records(path_to_config, path_to_data):
     with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
         for record in records:
             customer_data = record
-            customer_name = customer_data["name"]
-            customer_exists = is_customer_already_created(customer_name, headers)
+            bank_account_data = customer_data.pop("bank_account")
+            customer = Customer.parse_obj(customer_data)
+            customer_exists = is_customer_already_created(customer.name, headers)
             if customer_exists:
-                print(f"Customer {customer_name} already exists. Skipping...")
+                print(f"Customer {customer.name} already exists. Skipping...")
             else:
-                bank_account_data = customer_data.pop("bank_account")
                 print(f"bank account data: {bank_account_data}")
                 bank_account = BankAccount.parse_obj(bank_account_data)
-                f = executor.submit(create_customer_and_bank_account, headers, customer_data, bank_account)
+                f = executor.submit(create_customer_and_bank_account, headers, customer, bank_account)
                 futures.append(f)
     concurrent.futures.wait(futures)
 
