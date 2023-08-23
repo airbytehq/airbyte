@@ -6,9 +6,14 @@ on:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
         default: "--name=source-pokeapi"
-      publish-options:
-        description: "Options to pass to the 'airbyte-ci connectors publish-pypi' command."
-        default: "--pypi-repository=testpypi"
+      pypi-repository:
+        type: choice
+        description: "PyPI repository to publish to."
+        default: testpypi
+        required: true
+        options:
+          - testpypi
+          - pypi
       runs-on:
         type: string
         default: conn-prod-xlarge-runner
@@ -38,4 +43,4 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish-pypi ${{ github.event.inputs.publish-options }}"
+          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish-pypi --pypi-repository=${{ github.event.inputs.pypi-repository }}"
