@@ -158,7 +158,7 @@ class CsvParser(FileTypeParser):
             deduped_property_types = CsvParser._pre_propcess_property_types(property_types)
         else:
             deduped_property_types = {}
-        cast_fn = CsvParser._get_cast_function(deduped_property_types, config_format, logger)
+        cast_fn = CsvParser._get_cast_function(deduped_property_types, config_format, logger, config.schemaless)
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         for row in data_generator:
             yield CsvParser._to_nullable(cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null)
@@ -170,10 +170,10 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger
+        deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger, schemaless: bool
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
-        if deduped_property_types:
+        if deduped_property_types and not schemaless:
             return partial(CsvParser._cast_types, deduped_property_types=deduped_property_types, config_format=config_format, logger=logger)
         else:
             # If no schema is provided, yield the rows as they are
@@ -275,10 +275,9 @@ class CsvParser(FileTypeParser):
                     except ValueError:
                         warnings.append(_format_warning(key, value, prop_type))
 
+                result[key] = cast_value
             else:
                 warnings.append(_format_warning(key, value, prop_type))
-
-            result[key] = cast_value
 
         if warnings:
             logger.warning(

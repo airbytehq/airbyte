@@ -100,7 +100,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
-  private static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
+  protected static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
 
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
@@ -334,10 +334,9 @@ public abstract class DestinationAcceptanceTest {
    * destination so that there is no contamination across tests.
    *
    * @param testEnv - information about the test environment.
-   * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception;
+  protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
   /**
    * @deprecated This method is moved to the AdvancedTestDataComparator. Please move your destination
@@ -372,7 +371,7 @@ public abstract class DestinationAcceptanceTest {
 
   @AfterEach
   void tearDownInternal() throws Exception {
-    tearDown(testEnv, TEST_SCHEMAS);
+    tearDown(testEnv);
   }
 
   /**
@@ -1082,12 +1081,13 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.NAMESPACE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
-        messages, namespace);
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
 
     final JsonNode config = getConfig();
     try {
       runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
+      // Add to the list of schemas to clean up.
+      TEST_SCHEMAS.add(namespace);
     } catch (final Exception e) {
       throw new IOException(String.format(
           "[Test Case %s] Destination failed to sync data to namespace %s, see \"namespace_test_cases.json for details\"",
@@ -1803,10 +1803,14 @@ public abstract class DestinationAcceptanceTest {
           Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON));
       return MoreIterators.toList(testCases.elements()).stream()
           .filter(testCase -> testCase.get("enabled").asBoolean())
-          .map(testCase -> Arguments.of(
-              testCase.get("id").asText(),
-              testCase.get("namespace").asText(),
-              testCase.get("normalized").asText()));
+          .map(testCase -> {
+            final String randomSuffix = Strings.addRandomSuffix("", "", 5);
+            return Arguments.of(
+                testCase.get("id").asText(),
+                // Randomise namespace to avoid collisions between tests.
+                testCase.get("namespace").asText() + randomSuffix,
+                testCase.get("normalized").asText() + randomSuffix);
+          });
     }
 
   }
