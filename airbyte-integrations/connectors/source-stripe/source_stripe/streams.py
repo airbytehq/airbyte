@@ -170,7 +170,7 @@ class Customers(IncrementalStripeStream):
     """
 
     cursor_field = "created"
-    use_cache = True
+    use_cache = False
 
     def path(self, **kwargs) -> str:
         return "customers"
