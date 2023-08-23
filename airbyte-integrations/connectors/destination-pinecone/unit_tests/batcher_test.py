@@ -5,7 +5,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from destination_langchain.batcher import Batcher
+from destination_pinecone.batcher import Batcher
 
 
 class BatcherTestCase(unittest.TestCase):

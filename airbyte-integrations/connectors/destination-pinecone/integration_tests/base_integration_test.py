@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import shutil
-import tempfile
 import unittest
 from typing import Any, Dict
 

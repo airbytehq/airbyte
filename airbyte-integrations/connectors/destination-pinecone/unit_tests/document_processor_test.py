@@ -8,12 +8,12 @@ from unittest.mock import MagicMock
 import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
-from destination_langchain.config import ProcessingConfigModel
-from destination_langchain.document_processor import DocumentProcessor
+from destination_pinecone.config import ProcessingConfigModel
+from destination_pinecone.document_processor import DocumentProcessor
 
 
 def initialize_processor():
-    config = ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None)
+    config = ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None)
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -56,7 +56,7 @@ def test_process_single_chunk_without_metadata():
 
 
 def test_process_single_chunk_without_namespace():
-    config = ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None)
+    config = ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None)
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -83,6 +83,7 @@ def test_process_single_chunk_without_namespace():
 
 def test_complex_text_fields():
     processor = initialize_processor()
+    processor.metadata_fields = ["non_text", "non_text_2", "id"]
 
     record = AirbyteRecordMessage(
         stream="stream1",
@@ -151,6 +152,7 @@ def test_non_text_fields():
 
 def test_metadata_normalization():
     processor = initialize_processor()
+    processor.metadata_fields = ["a_complex_field", "too_big", "small", "id"]
 
     record = AirbyteRecordMessage(
         stream="stream1",
@@ -197,6 +199,7 @@ def test_process_multiple_chunks_with_relevant_fields():
     )
 
     processor.text_fields = ["text"]
+    processor.metadata_fields = ["age"]
 
     chunks, id_to_delete = processor.process(record)
 

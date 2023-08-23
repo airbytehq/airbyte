@@ -55,7 +55,7 @@ class DocumentProcessor:
         relevant_fields = self._extract_relevant_fields(record)
         if len(relevant_fields) == 0:
             return None
-        metadata = self._extract_metadata(record)
+        metadata = self._truncate_metadata(self._extract_metadata(record))
         text = stringify_dict(relevant_fields)
         return Document(page_content=text, metadata=metadata)
 

@@ -68,14 +68,14 @@ class PineconeIndexer(Indexer):
     def __init__(self, config: PineconeIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
         pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment, threaded=True)
-        index_description = pinecone.describe_index(config.index)
-        self.pod_type = index_description.pod_type
 
         self.pinecone_index = pinecone.Index(config.index, pool_threads=10)
         self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
         self.embedding_dimensions = embedder.embedding_dimensions
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
+        index_description = pinecone.describe_index(self.config.index)
+        self._pod_type = index_description.pod_type
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 self.delete_vectors(filter={METADATA_STREAM_FIELD: stream.stream.name})
@@ -84,7 +84,7 @@ class PineconeIndexer(Indexer):
         return [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.WARN, message=self.embed_fn._get_stats()))]
 
     def delete_vectors(self, filter):
-        if self.pod_type == "starter":
+        if self._pod_type == "starter":
             # Starter pod types have a maximum of 100000 rows
             top_k = 10000
             self.delete_by_metadata(filter, top_k)
@@ -117,7 +117,10 @@ class PineconeIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         try:
-            pinecone.describe_index(self.config.index)
+            description = pinecone.describe_index(self.config.index)
+            actual_dimension = int(description.dimension)
+            if actual_dimension != self.embedder.embedding_dimensions:
+                return f"Your embedding configuration will produce vectors with dimension {self.embedder.embedding_dimensions:d}, but your index is configured with dimension {actual_dimension:d}. Make sure embedding and indexing configurations match."
         except Exception as e:
             return format_exception(e)
         return None

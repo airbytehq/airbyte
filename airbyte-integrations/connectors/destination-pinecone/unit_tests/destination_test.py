@@ -13,8 +13,8 @@ from airbyte_cdk.models.airbyte_protocol import (
     Level,
     Type,
 )
-from destination_langchain.config import ConfigModel
-from destination_langchain.destination import BATCH_SIZE, DestinationPinecone, embedder_map, indexer_map
+from destination_pinecone.config import ConfigModel
+from destination_pinecone.destination import BATCH_SIZE, DestinationPinecone, embedder_map, indexer_map
 
 
 def _generate_record_message(index: int):
@@ -28,7 +28,7 @@ def test_write():
     Basic test for the write method, batcher and document processor.
     """
     config = {
-        "processing": {"text_fields": ["column_name"], "chunk_size": 1000},
+        "processing": {"text_fields": ["column_name"], "metadata_fields": None, "chunk_size": 1000},
         "embedding": {"mode": "openai", "openai_key": "mykey"},
         "indexing": {
             "mode": "pinecone",
