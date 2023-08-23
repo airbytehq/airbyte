@@ -15,7 +15,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -23,7 +22,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.List;
-
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
@@ -143,7 +141,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream,  Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -178,7 +176,7 @@ class MongoDbStateIteratorTest {
     final var objectId = "64dfb6a7bb3c3458c30801f4";
 
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
-            new MongoDbStreamState(objectId));
+        new MongoDbStreamState(objectId));
 
     final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL);
 
