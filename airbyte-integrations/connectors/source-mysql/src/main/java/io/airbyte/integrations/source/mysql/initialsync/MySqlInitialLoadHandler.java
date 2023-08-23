@@ -89,7 +89,7 @@ public class MySqlInitialLoadHandler {
             .collect(Collectors.toList());
         final AutoCloseableIterator<JsonNode> queryStream =
             new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-                calculateChunkSize(tableSizeInfoMap.get(pair), pair));
+                calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -99,6 +99,10 @@ public class MySqlInitialLoadHandler {
       }
     }
     return iteratorList;
+  }
+
+  private static boolean isCompositePrimaryKey(final ConfiguredAirbyteStream stream) {
+    return stream.getStream().getSourceDefinedPrimaryKey().size() > 1;
   }
 
   // Calculates the number of rows to fetch per query.
