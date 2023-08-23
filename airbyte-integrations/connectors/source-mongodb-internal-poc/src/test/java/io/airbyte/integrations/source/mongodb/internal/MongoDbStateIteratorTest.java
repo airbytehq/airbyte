@@ -9,10 +9,13 @@ import static org.mockito.Mockito.when;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
+import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -20,7 +23,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
@@ -37,10 +40,12 @@ class MongoDbStateIteratorTest {
   @Mock
   private MongoCursor<Document> mongoCursor;
   private AutoCloseable closeable;
+  private MongoDbStateManager stateManager;
 
   @BeforeEach
   public void setup() {
     closeable = MockitoAnnotations.openMocks(this);
+    stateManager = MongoDbStateManager.createStateManager(null);
   }
 
   @AfterEach
@@ -80,7 +85,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty(), Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -106,7 +111,7 @@ class MongoDbStateIteratorTest {
     assertEquals(Type.STATE, message.getType());
     assertEquals(
         docs.get(1).get("_id").toString(),
-        message.getState().getStream().getStreamState().get("id").asText(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
         "state id should match last record id");
 
     assertTrue(iter.hasNext(), "alizarin crimson should be next");
@@ -119,7 +124,7 @@ class MongoDbStateIteratorTest {
     assertEquals(Type.STATE, message.getType());
     assertEquals(
         docs.get(2).get("_id").toString(),
-        message.getState().getStream().getStreamState().get("id").asText(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
         "state id should match last record id");
 
     assertFalse(iter.hasNext(), "should have no more records");
@@ -138,7 +143,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty(), Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream,  Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -156,7 +161,7 @@ class MongoDbStateIteratorTest {
     assertEquals(Type.STATE, message.getType());
     assertEquals(
         docs.get(0).get("_id").toString(),
-        message.getState().getStream().getStreamState().get("id").asText(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
         "state id should match last record id");
 
     assertFalse(iter.hasNext(), "should have no more records");
@@ -171,7 +176,11 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
     final var objectId = "64dfb6a7bb3c3458c30801f4";
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.of(new MongodbStreamState(objectId)), Instant.now(), CHECKPOINT_INTERVAL);
+
+    stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
+            new MongoDbStreamState(objectId));
+
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL);
 
     // the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -183,7 +192,7 @@ class MongoDbStateIteratorTest {
     assertEquals(Type.STATE, message.getType());
     assertEquals(
         objectId,
-        message.getState().getStream().getStreamState().get("id").asText(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
         "state id should match initial state ");
 
     assertFalse(iter.hasNext(), "should have no more records");

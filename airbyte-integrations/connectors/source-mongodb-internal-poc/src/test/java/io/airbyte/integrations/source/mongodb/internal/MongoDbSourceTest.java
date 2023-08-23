@@ -4,16 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.AggregateIterable;
@@ -30,15 +20,26 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import org.bson.Document;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.bson.Document;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class MongoDbSourceTest {
 
@@ -189,16 +190,6 @@ class MongoDbSourceTest {
   @Test
   void testIncrementalRefresh() throws Exception {
     // TODO implement
-  }
-
-  @Test
-  void testConvertState() {
-    final var state1 = Jsons.deserialize(
-        "[{\"type\":\"STREAM\",\"stream\":{\"stream_descriptor\":{\"name\":\"test.acceptance_test1\"},\"stream_state\":{\"id\":\"64c0029d95ad260d69ef28a2\"}}}]");
-    final var actual = source.convertState(state1);
-    assertTrue(actual.containsKey("test.acceptance_test1"), "missing test.acceptance_test1");
-    assertEquals("64c0029d95ad260d69ef28a2", actual.get("test.acceptance_test1").id(), "id value does not match");
-
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {
