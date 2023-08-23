@@ -12,8 +12,8 @@ definitions:
     http_method: "POST"
     authenticator:
       class_name: source_fastbill.components.CustomAuthenticator
-      username: "config['username']"
-      password: "config['api_key']"
+      username: "{{config['username']}}"
+      password: "{{config['api_key']}}"
     request_body_json:
       SERVICE: "{{ parameters.endpoint }}.get"
       LIMIT: 100
