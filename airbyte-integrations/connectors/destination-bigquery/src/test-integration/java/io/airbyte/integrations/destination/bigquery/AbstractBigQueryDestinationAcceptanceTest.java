@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQuery.DatasetListOption;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.ConnectionProperty;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.FieldList;
@@ -23,6 +25,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.TestingNamespaces;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -182,6 +185,21 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
+  }
+
+  protected void removeOldNamespaces() {
+    // todo (cgardens) - hardcoding to testing project to de-risk this running somewhere unexpected.
+    bigquery.listDatasets("dataline-integration-testing", DatasetListOption.all())
+        .iterateAll()
+        .forEach(dataset -> {
+          if (TestingNamespaces.isOlderThan2Days(dataset.getDatasetId().getDataset())) {
+            try {
+              bigquery.delete(dataset.getDatasetId(), BigQuery.DatasetDeleteOption.deleteContents());
+            } catch (final BigQueryException e) {
+              LOGGER.error("Failed to delete old dataset: {}", dataset.getDatasetId().getDataset(), e);
+            }
+          }
+        });
   }
 
   protected void tearDownBigQuery() {
