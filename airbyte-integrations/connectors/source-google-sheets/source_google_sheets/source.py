@@ -28,7 +28,7 @@ from .client import GoogleSheetsClient
 from .helpers import Helpers
 from .models.spreadsheet import Spreadsheet
 from .models.spreadsheet_values import SpreadsheetValues
-from .utils import safe_name_conversion
+from .utils import exception_description_by_status_code, safe_name_conversion
 
 # set default batch read size
 ROW_BATCH_SIZE = 200
@@ -131,23 +131,16 @@ class SourceGoogleSheets(Source):
             return AirbyteCatalog(streams=streams)
 
         except errors.HttpError as err:
-            reason = str(err)
+            error_description = exception_description_by_status_code(err.resp.status, spreadsheet_id)
             config_error_status_codes = [status_codes.NOT_FOUND, status_codes.FORBIDDEN]
             if err.resp.status in config_error_status_codes:
-                if err.resp.status == status_codes.NOT_FOUND:
-                    reason = f"Requested spreadsheet with id {spreadsheet_id} was not found"
-                if err.resp.status == status_codes.FORBIDDEN:
-                    reason = f"Forbidden when requesting spreadsheet with id {spreadsheet_id}"
-                message = (
-                    f"{reason}. {err.reason}. See docs for more details here: "
-                    f"https://cloud.google.com/service-infrastructure/docs/service-control/reference/rpc/google.api/servicecontrol.v1#code"
-                )
+                message = f"{error_description}. {err.reason}."
                 raise AirbyteTracedException(
                     message=message,
                     internal_message=message,
                     failure_type=FailureType.config_error,
                 ) from err
-            raise Exception(f"Could not run discovery: {reason}")
+            raise Exception(f"Could not discover the schema of your spreadsheet. {error_description}. {err.reason}.")
 
     def _read(
         self,
@@ -213,15 +206,24 @@ class SourceGoogleSheets(Source):
         catalog: ConfiguredAirbyteCatalog,
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Generator[AirbyteMessage, None, None]:
+        spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:
             yield from self._read(logger, config, catalog, state)
         except errors.HttpError as e:
-            if e.status_code == 429:
-                logger.info(f"Stopped syncing process due to rate limits. {e.reason}")
+            error_description = exception_description_by_status_code(e.status_code, spreadsheet_id)
+
+            if e.status_code == status_codes.FORBIDDEN:
+                raise AirbyteTracedException(
+                    message=f"Stopped syncing process. {error_description}",
+                    internal_message=error_description,
+                    failure_type=FailureType.config_error,
+                ) from e
+            if e.status_code == status_codes.TOO_MANY_REQUESTS:
+                logger.info(f"Stopped syncing process due to rate limits. {error_description}")
             else:
-                logger.info(f"{e.status_code}: {e.reason}")
+                logger.info(f"{e.status_code}: {e.reason}. {error_description}")
         finally:
-            logger.info(f"Finished syncing spreadsheet {Helpers.get_spreadsheet_id(config['spreadsheet_id'])}")
+            logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
 
     @staticmethod
     def get_credentials(config):
