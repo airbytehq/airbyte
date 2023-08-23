@@ -23,6 +23,7 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
         timeout_seconds: 120
+        expect_trace_message_on_failure: false
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
