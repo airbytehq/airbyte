@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest import mock
 
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
@@ -123,6 +122,7 @@ def test_source_streams(config):
     )
     assert not expected_stream_names - actual_stream_names
 
+
 def test_filter_profiles_exist():
     source = SourceAmazonAds()
     mock_objs = [
@@ -166,7 +166,7 @@ def test_filter_profiles_exist():
 
     filtered_profiles = source._choose_profiles({"profiles": [444]}, mock_profiles)
     assert len(filtered_profiles) == 0
-    
+
     filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_4"]}, mock_profiles)
     assert len(filtered_profiles) == 0
 
