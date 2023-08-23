@@ -17,7 +17,14 @@ class AuthenticatorLeverHiring(DeclarativeAuthenticator):
     oauth2: DeclarativeOauth2Authenticator
 
     def __new__(cls, basic_auth, oauth2, config, *args, **kwargs):
-        if config["credentials"]["api_key"]:
-            return basic_auth
-        else:
-            return oauth2
+        try:
+            if config["credentials"]["auth_type"] == "Api Key":
+                return basic_auth
+            elif config["credentials"]["auth_type"] == "Client":
+                return oauth2
+            else:
+                print("Auth type was not configured properly")
+                return None
+        except Exception as e:
+            print(f"{e.__class__} occurred, there's an issue with credentials in your config")
+            raise e
