@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
 /**
@@ -7,5 +11,4 @@ package io.airbyte.integrations.source.mongodb.internal.cdc;
  * @param order The order component of a timestmap.
  * @param resumeToken The resume token of the most recently processed change event.
  */
-public record MongoDbCdcState(int seconds, int order, String resumeToken) {
-}
+public record MongoDbCdcState(int seconds, int order, String resumeToken) {}

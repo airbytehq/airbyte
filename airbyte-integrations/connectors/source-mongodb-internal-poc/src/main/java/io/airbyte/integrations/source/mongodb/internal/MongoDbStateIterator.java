@@ -12,14 +12,11 @@ import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
-
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,12 +104,12 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       if (lastId != null) {
         // TODO add type support in here once more than ObjectId fields are supported
         stateManager.updateStreamState(stream.getStream().getName(),
-                stream.getStream().getNamespace(), new MongoDbStreamState(lastId));
+            stream.getStream().getNamespace(), new MongoDbStreamState(lastId));
       }
-      
+
       return new AirbyteMessage()
-              .withType(Type.STATE)
-              .withState(stateManager.toState());
+          .withType(Type.STATE)
+          .withState(stateManager.toState());
     }
 
     count++;

@@ -33,7 +33,6 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -117,10 +116,10 @@ public class MongoDbSource extends BaseConnector implements Source {
    * Converts the streams in the catalog into a list of AutoCloseableIterators.
    */
   private List<AutoCloseableIterator<AirbyteMessage>> convertCatalogToIterators(
-          final ConfiguredAirbyteCatalog catalog,
-          final MongoDbStateManager stateManager,
-          final MongoDatabase database,
-          final Instant emittedAt) {
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final MongoDbStateManager stateManager,
+                                                                                final MongoDatabase database,
+                                                                                final Instant emittedAt) {
     return catalog.getStreams()
         .stream()
         .peek(airbyteStream -> {
@@ -136,7 +135,8 @@ public class MongoDbSource extends BaseConnector implements Source {
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
           // find the existing state, if there is one, for this steam
-          final Optional<MongoDbStreamState> existingState = stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+          final Optional<MongoDbStreamState> existingState =
+              stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
 
           // The filter determines the starting point of this iterator based on the state of this collection.
           // If a state exists, it will use that state to create a query akin to
