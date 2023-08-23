@@ -27,7 +27,7 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
    * @see DestinationAcceptanceTest#setUpInternal()
    */
   @Override
-  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     secretsFile = Path.of("secrets/credentials-standard.json");
     setUpBigQuery();
   }
@@ -35,13 +35,12 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
   /**
    * Removes data from bigquery This function will be called after EACH test
    *
-   * @param testEnv      - information about the test environment.
-   * @param TEST_SCHEMAS
+   * @param testEnv - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.
    * @see DestinationAcceptanceTest#tearDownInternal()
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     tearDownBigQuery();
   }
 
