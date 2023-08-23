@@ -254,7 +254,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void detectNoSchemaChange() throws Exception {
-    final String createTable = generator.createTable(incrementalDedupStream, "");
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(createTable);
 
     final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
@@ -272,7 +272,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void detectColumnAdded() throws Exception {
-    final String createTable = generator.createTable(incrementalDedupStream, "");
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(createTable);
 
     final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
@@ -294,7 +294,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void detectColumnRemoved() throws Exception {
-    final String createTable = generator.createTable(incrementalDedupStream, "");
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(createTable);
 
     final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
@@ -314,7 +314,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void detectColumnChanged() throws Exception {
-    final String createTable = generator.createTable(incrementalDedupStream, "");
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(createTable);
 
     final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
@@ -769,7 +769,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
         });
 
-    final String createTable = generator.createTable(stream, "");
+    final String createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
     final String updateTable = generator.updateTable(stream, "");
     destinationHandler.execute(updateTable);
@@ -806,7 +806,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Optional.empty(),
         new LinkedHashMap<>());
 
-    final String createTable = generator.createTable(stream, "");
+    final String createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
     final String updateTable = generator.updateTable(stream, "");
     destinationHandler.execute(updateTable);
@@ -858,6 +858,19 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   protected List<JsonNode> dumpV1RawTableRecords(final StreamId streamId) throws Exception {
     return dumpRawTableRecords(streamId);
+  }
+
+  @Test
+  public void testCreateTableForce() throws Exception {
+    final String createTableNoForce = generator.createTable(incrementalDedupStream, "", false);
+    final String createTableForce = generator.createTable(incrementalDedupStream, "", true);
+
+    destinationHandler.execute(createTableNoForce);
+    assertThrows(Exception.class, () -> destinationHandler.execute(createTableNoForce));
+    // This should not throw an exception
+    destinationHandler.execute(createTableForce);
+
+    assertTrue(destinationHandler.findExistingTable(streamId).isPresent());
   }
 
   private void verifyRecords(final String expectedRawRecordsFile,

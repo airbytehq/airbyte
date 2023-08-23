@@ -357,7 +357,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    destinationHandler.execute(generator.createTable(incrementalDedupStream, ""));
+    destinationHandler.execute(generator.createTable(incrementalDedupStream, "", false));
 
     final Table table = bq.getTable(namespace, "users_final");
     // The table should exist
@@ -396,7 +396,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
 
-    destinationHandler.execute(new BigQuerySqlGenerator("asia-east1").createTable(incrementalDedupStream, ""));
+    destinationHandler.execute(new BigQuerySqlGenerator("asia-east1").createTable(incrementalDedupStream, "", false));
 
     // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
     // Give ourselves 2 minutes just in case.
@@ -440,7 +440,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
         });
 
-    final String createTable = generator.createTable(stream, "");
+    final String createTable = generator.createTable(stream, "", false);
     assertThrows(
         BigQueryException.class,
         () -> destinationHandler.execute(createTable)

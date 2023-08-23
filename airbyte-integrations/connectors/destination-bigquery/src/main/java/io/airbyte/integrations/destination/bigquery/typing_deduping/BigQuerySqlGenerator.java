@@ -167,15 +167,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String createTable(final StreamConfig stream, final String suffix) {
+  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final String columnDeclarations = columnsAndTypes(stream);
     final String clusterConfig = clusteringColumns(stream).stream()
             .map(c -> StringUtils.wrap(c, QUOTE))
             .collect(joining(", "));
+    final String forceCreateTable = force ? "OR REPLACE" : "";
 
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
         "dataset_location", datasetLocation,
+        "force_create_table", forceCreateTable,
         "final_table_id", stream.id().finalTableId(QUOTE, suffix),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig)).replace(
@@ -183,7 +185,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             CREATE SCHEMA IF NOT EXISTS ${final_namespace}
             OPTIONS(location="${dataset_location}");
 
-            CREATE OR REPLACE TABLE ${final_table_id} (
+            CREATE ${force_create_table} TABLE ${final_table_id} (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,
@@ -310,7 +312,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public String softReset(final StreamConfig stream) {
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
