@@ -3,70 +3,20 @@
 #
 import concurrent.futures
 import logging
-import threading
 import time
 from abc import ABC
-from queue import Empty, Queue
+from queue import Queue
+from threading import Semaphore
 from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteStateMessage,
-    ConfiguredAirbyteCatalog,
-    SyncMode,
-)
+from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.concurrent.queue_consumer import _SENTINEL, QueueConsumer
 
 
 class Partition:
     pass
-
-
-_SENTINEL = ("SENTINEL", "SENTINEL")
-
-
-class PartitionGenerator:
-    def __init__(self, queue: Queue):
-        self._queue = queue
-
-    def generate_partitions_for_stream(self, stream: Stream):
-        print("generate_partitions_for_stream")
-        all_partitions = []
-        for partition in stream.generate_partitions():
-            print("putting partition and stream on queue...")
-            self._queue.put((partition, stream))
-            all_partitions.append(partition)
-        return all_partitions
-
-
-class QueueConsumer:
-    def __init__(self):
-        self._iterations = 0
-
-    def consume_from_queue(self, queue: Queue):
-        current_thread = threading.current_thread().ident
-        print(f"consume from queue from {current_thread}")
-        records_and_streams = []
-        while True:
-            self._iterations += 1
-            try:
-                partition_and_stream = queue.get(timeout=2)
-                if partition_and_stream == _SENTINEL:
-                    print(f"found sentinel from {current_thread}")
-                    return records_and_streams
-                else:
-                    print(f"partition_and_stream: {partition_and_stream} from {current_thread}")
-                    partition, stream = partition_and_stream
-                    # cursor_field = None
-                    # stream_slice = None
-                    for record in stream.read_records(SyncMode.full_refresh, stream_slice=partition):
-                        records_and_streams.append((record, stream))
-                    print(f"done reading partition {partition_and_stream} from {current_thread}")
-            except Empty:
-                print(f"queue is empty from {current_thread}")
 
 
 class ConcurrentAbstractSource(AbstractSource, ABC):
@@ -89,6 +39,9 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
         """
         pass
 
+    def _get_num_dedicated_consumer_worker(self):
+        return max(self._max_workers - 4, 1)
+
     def read(
         self,
         logger: logging.Logger,
@@ -102,17 +55,17 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
         print(f"read with {self._max_workers} workers")
         partition_generation_futures = []
         queue_consumer_futures = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool") as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers + 10, thread_name_prefix="workerpool") as executor:
             start_time = time.time()
             for stream in streams:
                 print(f"generating partitions for stream: {stream.name}")
                 # Submit partition generation tasks
-                f = executor.submit(PartitionGenerator.generate_partitions_for_stream, self._partitions_generator, stream)
+                f = executor.submit(PartitionGenerator.generate_partitions_for_stream, self._partitions_generator, stream, executor)
                 partition_generation_futures.append(f)
 
             # Submit record generator tasks
-            for i in range(self._max_workers):  # FIXME?
-                f = executor.submit(QueueConsumer.consume_from_queue, self._queue_consumer, self._queue)
+            for i in range(self._get_num_dedicated_consumer_worker()):  # FIXME?
+                f = executor.submit(QueueConsumer.consume_from_queue, self._queue_consumer, self._queue, executor)
                 queue_consumer_futures.append(f)
 
             # Wait for all partitions to be generated

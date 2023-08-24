@@ -70,7 +70,7 @@ class SourceStripe(ConcurrentAbstractSource):
         queue = Queue()
         partition_generator = StripePartitionGenerator(queue)
         queue_consumer = QueueConsumer()
-        max_workers = 5
+        max_workers = 100
         super().__init__(partition_generator, queue_consumer, queue, max_workers)
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -96,17 +96,17 @@ class SourceStripe(ConcurrentAbstractSource):
             # ApplicationFees(**incremental_args),
             # ApplicationFeesRefunds(**args),
             # Authorizations(**incremental_args),
-            BalanceTransactions(**incremental_args),
-            # BankAccounts(**args),
+            # BalanceTransactions(**incremental_args),
+            BankAccounts(**args),
             # Cardholders(**incremental_args),
             # Cards(**incremental_args),
-            Charges(**incremental_args),
+            # Charges(**incremental_args),
             # CheckoutSessions(**args),
             # CheckoutSessionsLineItems(**args),
             # Coupons(**incremental_args),
             # CreditNotes(**args),
             # CustomerBalanceTransactions(**args),
-            Customers(**incremental_args),
+            # Customers(**incremental_args),
             # Disputes(**incremental_args),
             # EarlyFraudWarnings(**args),
             # Events(**incremental_args),
@@ -123,7 +123,7 @@ class SourceStripe(ConcurrentAbstractSource):
             # Persons(**incremental_args),
             # Plans(**incremental_args),
             # Prices(**incremental_args),
-            Products(**incremental_args),
+            # Products(**incremental_args),
             # PromotionCodes(**incremental_args),
             # Refunds(**incremental_args),
             # Reviews(**incremental_args),

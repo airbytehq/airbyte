@@ -41,6 +41,14 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         stream.read_records.side_effect = [iter(records) for records in records_per_partition]
         return stream
 
+    def _mock_substream(self, name: str, parent_stream, records_per_partition):
+        stream = Mock()
+        stream.name = name
+        stream.get_json_schema.return_value = {}
+        # stream.generate_partitions.return_value = iter(partitions)
+        stream.read_records.side_effect = [iter(records) for records in records_per_partition]
+        return stream
+
     def _read_messages_with_mocked_emitted_at(self, source):
         config = {}
         all_messages = list(source.read(self._logger, config, self._configured_catalog, self._state))
@@ -180,7 +188,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
 
         self._verify_output_messages(all_messages, expected_messages)
 
-    # def test_read_with_substream(self):
+    # def test_read_with_substream_one_record_per_parent_record(self):
     #     queue: Queue = Mock()
     #     partition_generator: PartitionGenerator = PartitionGenerator(queue)
     #     queue_consumer: QueueConsumer = QueueConsumer()
@@ -196,18 +204,41 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
     #     ]
     #     records_stream1_per_partition = [records_partition_1, records_partition_2]
     #     records_partition_1_stream_2 = [
-    #         {"id": 1, "partition": 1, "stream": "B"},
-    #         {"id": 2, "partition": 1, "stream": "B"},
-    #         {"id": 3, "partition": 1, "stream": "B"},
+    #         [{"id": 1, "partition": {"parent_id": 1}, "stream": "B"}],
+    #         [{"id": 2, "partition": {"parent_id": 2}, "stream": "B"}],
+    #         [{"id": 3, "partition": {"parent_id": 3}, "stream": "B"}],
     #     ]
     #     records_stream2_per_partition = [records_partition_1_stream_2]
     #
     #     partition1_stream1 = Partition()
     #     partition2_stream1 = Partition()
     #     partitions_stream1 = [partition1_stream1, partition2_stream1]
-    #     partition1_stream2 = Partition()
-    #     partitions_stream2 = [partition1_stream2]
     #
     #     stream1 = self._mock_stream("A", partitions_stream1, records_stream1_per_partition)
-    #     stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition)
+    #     stream2 = self._mock_substream("B", stream1, records_stream2_per_partition)
     #     streams = [stream1, stream2]
+    #
+    #     source = MockConcurrentAbstractSource(partition_generator, queue_consumer, self._queue, streams)
+    #
+    #     all_messages = self._read_messages_with_mocked_emitted_at(source)
+    #
+    #     expected_messages = [
+    #         AirbyteMessage(
+    #             type=MessageType.RECORD,
+    #             record=AirbyteRecordMessage(stream="A", data={"id": 1, "partition": 1, "stream": "A"}, emitted_at=1),
+    #         ),
+    #         AirbyteMessage(
+    #             type=MessageType.RECORD,
+    #             record=AirbyteRecordMessage(stream="A", data={"id": 2, "partition": 1, "stream": "A"}, emitted_at=1),
+    #         ),
+    #         AirbyteMessage(
+    #             type=MessageType.RECORD,
+    #             record=AirbyteRecordMessage(stream="A", data={"id": 3, "partition": 2, "stream": "A"}, emitted_at=1),
+    #         ),
+    #         AirbyteMessage(
+    #             type=MessageType.RECORD,
+    #             record=AirbyteRecordMessage(stream="A", data={"id": 4, "partition": 2, "stream": "A"}, emitted_at=1),
+    #         )
+    #     ]
+    #
+    #     self._verify_output_messages(all_messages, expected_messages)

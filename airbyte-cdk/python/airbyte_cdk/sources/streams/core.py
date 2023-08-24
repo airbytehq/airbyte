@@ -78,7 +78,7 @@ class Stream(ABC):
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
-    def generate_partitions(self):
+    def generate_partitions(self, executor):
         # FIXME
         return self.stream_slices(sync_mode=SyncMode.full_refresh)
 

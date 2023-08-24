@@ -1,15 +1,18 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import concurrent
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
+from queue import Queue
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.concurrent.queue_consumer import _SENTINEL, QueueConsumer
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -372,6 +375,38 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
 
     def get_parent_stream_instance(self):
         return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+
+    def generate_partitions(self, executor):
+        parent_stream = self.get_parent_stream_instance()
+        queue = Queue()
+        partition_generator = PartitionGenerator(queue)
+        queue_consumer = QueueConsumer()
+        max_workers = 10
+        queue_consumer_futures = []
+        f = executor.submit(PartitionGenerator.generate_partitions_for_stream, partition_generator, parent_stream, executor)
+        for i in range(max_workers):  # FIXME should it be allowed more?
+            f = executor.submit(QueueConsumer.consume_from_queue, queue_consumer, queue, executor)
+            queue_consumer_futures.append(f)
+
+        print(f"waiting for f...")
+        parent_partitions = [p for p in f.result()]
+        for _ in range(max_workers):
+            queue.put(_SENTINEL)
+        print(f"parent_partitions: {parent_partitions}")
+        done, unfinished = concurrent.futures.wait(queue_consumer_futures)
+        print(f"done: {done}")
+        print(f"unfinished: {unfinished}")
+        record_counter = 0
+        all_partitions = []
+        for future in done:
+            # Each result is an iterable of record
+            result = future.result()
+            print(f"result: {result}")
+            for partition_record_and_stream in result:
+                partition_record, stream = partition_record_and_stream
+                record_counter += 1
+                all_partitions.append(partition_record)
+        return all_partitions
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
