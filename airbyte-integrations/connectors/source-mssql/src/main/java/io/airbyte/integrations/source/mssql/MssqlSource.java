@@ -457,19 +457,20 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       final AirbyteDebeziumHandler<Lsn> handler =
           new AirbyteDebeziumHandler<>(sourceConfig,
-              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), trackSchemaHistory, firstRecordWaitTime,
+              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), trackSchemaHistory,
+              firstRecordWaitTime,
               OptionalInt.empty());
 
       final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
       final MssqlCdcSavedInfoFetcher cdcSavedInfoFetcher = new MssqlCdcSavedInfoFetcher(
-              stateManager.getCdcStateManager().getCdcState());
+          stateManager.getCdcStateManager().getCdcState());
       final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(
-              MssqlCdcHelper.getDebeziumProperties(database, catalog),
-              sourceConfig,
-              catalog,
-              AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
-              AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory,
-                      new AirbyteDebeziumHandler.EmptySavedInfo()));
+          MssqlCdcHelper.getDebeziumProperties(database, catalog),
+          sourceConfig,
+          catalog,
+          AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
+          AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory,
+              new AirbyteDebeziumHandler.EmptySavedInfo()));
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
           cdcSavedInfoFetcher,
           new MssqlCdcStateHandler(stateManager),

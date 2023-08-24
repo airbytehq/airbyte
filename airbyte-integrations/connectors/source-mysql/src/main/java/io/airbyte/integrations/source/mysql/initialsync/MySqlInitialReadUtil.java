@@ -151,16 +151,16 @@ public class MySqlInitialReadUtil {
     final boolean trackSchemaHistory = true;
     final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
         new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database),
-                trackSchemaHistory, firstRecordWaitTime, OptionalInt.empty());
+            trackSchemaHistory, firstRecordWaitTime, OptionalInt.empty());
     final MySqlCdcSavedInfoFetcher cdcSavedInfoFetcher = new MySqlCdcSavedInfoFetcher(stateToBeUsed);
 
     final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(
-            MySqlCdcProperties.getDebeziumProperties(database),
-            sourceConfig,
-            catalog,
-            AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
-            AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory,
-                    new AirbyteDebeziumHandler.EmptySavedInfo()));
+        MySqlCdcProperties.getDebeziumProperties(database),
+        sourceConfig,
+        catalog,
+        AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
+        AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory,
+            new AirbyteDebeziumHandler.EmptySavedInfo()));
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
         cdcSavedInfoFetcher,

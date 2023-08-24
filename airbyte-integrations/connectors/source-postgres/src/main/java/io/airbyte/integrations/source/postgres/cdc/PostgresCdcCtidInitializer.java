@@ -163,12 +163,12 @@ public class PostgresCdcCtidInitializer {
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final PostgresCdcSavedInfoFetcher cdcSavedInfoFetcher = new PostgresCdcSavedInfoFetcher(stateToBeUsed);
       final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(
-              PostgresCdcProperties.getDebeziumDefaultProperties(database),
-              sourceConfig,
-              catalog,
-              AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
-              AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory,
-                      new AirbyteDebeziumHandler.EmptySavedInfo()));
+          PostgresCdcProperties.getDebeziumDefaultProperties(database),
+          sourceConfig,
+          catalog,
+          AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
+          AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory,
+              new AirbyteDebeziumHandler.EmptySavedInfo()));
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
           cdcSavedInfoFetcher,

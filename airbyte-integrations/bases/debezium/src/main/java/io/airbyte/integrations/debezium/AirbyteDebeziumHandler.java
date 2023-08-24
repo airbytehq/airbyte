@@ -19,7 +19,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +123,8 @@ public class AirbyteDebeziumHandler<T> {
         syncCheckpointRecords));
   }
 
-  public static Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final boolean trackSchemaHistory, CdcSavedInfoFetcher cdcSavedInfoFetcher) {
+  public static Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final boolean trackSchemaHistory,
+                                                                           CdcSavedInfoFetcher cdcSavedInfoFetcher) {
     if (trackSchemaHistory) {
       return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()));
     }
