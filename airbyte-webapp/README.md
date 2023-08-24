@@ -33,6 +33,10 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.08.16
+1. Remove signup and signin page on airbyte-webapp
+#### 2023.08.15
+1. Open connection/source/destination in a new tab
 #### 2023.06.26
 1. Add source/destination/connection pages UI updates
 2. Update payment on payment fail add loading indicator

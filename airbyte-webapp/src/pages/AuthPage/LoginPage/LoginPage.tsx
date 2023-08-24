@@ -15,10 +15,10 @@ import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { FormHeaderSection } from "pages/AuthPage/components/FormHeaderSection";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
+import styles from "./LoginPage.module.scss";
 import { RoutePaths } from "../../routePaths";
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { GoogleAuthBtn } from "../GoogleAuthBtn";
-import styles from "./LoginPage.module.scss";
 
 const AuthSeperatorContainer = styled.div`
   width: 100%;
