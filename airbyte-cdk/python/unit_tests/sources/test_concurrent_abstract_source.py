@@ -35,6 +35,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
     # FIXME: need a test to confirm there are multiple sentinels added to the queue if there's many workers..
     def setUp(self):
         self._logger = Mock()
+        self._configured_catalog = Mock()
         self._state = None
 
     def _mock_stream(self, name: str, partitions, records_per_partition):
@@ -44,6 +45,18 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         stream.generate_partitions.return_value = iter(partitions)
         stream.read_records.side_effect = [iter(records) for records in records_per_partition]
         return stream
+
+    def _read_messages_with_mocked_emitted_at(self, source):
+        config = {}
+        all_messages = list(source.read(self._logger, config, self._configured_catalog, self._state))
+        for message in all_messages:
+            message.record.emitted_at = 1
+        return all_messages
+
+    def _verify_output_messages(self, actual_messages, expected_messages):
+        for expected_message in expected_messages:
+            assert expected_message in actual_messages
+        assert len(actual_messages) == len(expected_messages)
 
     def test_read_a_single_stream_with_a_single_partition(self):
         queue: Queue = Mock()
@@ -62,16 +75,10 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         stream = self._mock_stream("A", partitions, records_per_partition)
         streams = [stream]
         source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
-        config = {}
-        configured_catalog = Mock()  # FIXME?
-
         queue.get.side_effect = [(partition, stream), _SENTINEL]
 
-        all_messages = list(source.read(self._logger, config, configured_catalog, self._state))
-        for message in all_messages:
-            message.record.emitted_at = 1
+        all_messages = self._read_messages_with_mocked_emitted_at(source)
 
-        # partition_generator.generate_partitions_for_stream.assert_called_once_with(stream)
         put_calls = [call((partition, stream)), call(_SENTINEL)]
         queue.put.assert_has_calls(put_calls)
         assert queue.get.call_count == 2
@@ -81,9 +88,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
             AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 2, "partition": 1}, emitted_at=1)),
         ]
 
-        assert len(all_messages) == 2
-        for expected_message in expected_messages:
-            assert expected_message in all_messages
+        self._verify_output_messages(all_messages, expected_messages)
 
     def test_read_a_single_stream_with_two_partitions(self):
         queue: Queue = Mock()
@@ -106,16 +111,12 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         stream = self._mock_stream("A", partitions, records_per_partition)
         streams = [stream]
         source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
-        config = {}
-        configured_catalog = Mock()  # FIXME?
 
         stream.read_records.side_effect = [iter(records_partition_1), iter(records_partition_2)]
 
         queue.get.side_effect = [(partition1, stream), (partition2, stream), _SENTINEL]
 
-        all_messages = list(source.read(self._logger, config, configured_catalog, self._state))
-        for message in all_messages:
-            message.record.emitted_at = 1
+        all_messages = self._read_messages_with_mocked_emitted_at(source)
 
         # partition_generator.generate_partitions_for_stream.assert_called_once_with(stream)
         expected_put_calls = [call((partition1, stream)), call(partition2, stream), call(_SENTINEL)]
@@ -132,8 +133,6 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
 
         assert queue.get.call_count == 3
 
-        assert len(all_messages) == 4
-
         expected_messages = [
             AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 1, "partition": 1}, emitted_at=1)),
             AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 2, "partition": 1}, emitted_at=1)),
@@ -141,8 +140,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
             AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 4, "partition": 2}, emitted_at=1)),
         ]
 
-        for expected_message in expected_messages:
-            assert expected_message in all_messages
+        self._verify_output_messages(all_messages, expected_messages)
 
     def test_read_two_streams(self):
         queue: Queue = Mock()
@@ -176,14 +174,10 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition)
         streams = [stream1, stream2]
         source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
-        config = {}
-        configured_catalog = Mock()  # FIXME?
 
         queue.get.side_effect = [(partition1_stream1, stream1), (partition2_stream1, stream1), (partition1_stream2, stream2), _SENTINEL]
 
-        all_messages = list(source.read(self._logger, config, configured_catalog, self._state))
-        for message in all_messages:
-            message.record.emitted_at = 1
+        all_messages = self._read_messages_with_mocked_emitted_at(source)
 
         expected_put_calls = [
             call((partition1_stream1, stream1)),
@@ -203,8 +197,6 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         assert len(expected_put_calls) == len(actual_put_calls)
 
         assert queue.get.call_count == 4
-
-        assert len(all_messages) == 7
 
         expected_messages = [
             AirbyteMessage(
@@ -237,5 +229,4 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
             ),
         ]
 
-        for expected_message in expected_messages:
-            assert expected_message in all_messages
+        self._verify_output_messages(all_messages, expected_messages)
