@@ -230,7 +230,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final CatalogParser catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
+    final CatalogParser catalogParser;
+    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()) {
+      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
+    } else {
+      catalogParser = new CatalogParser(sqlGenerator);
+    }
     final ParsedCatalog parsedCatalog;
 
     final BigQuery bigquery = getBigQuery(config);
