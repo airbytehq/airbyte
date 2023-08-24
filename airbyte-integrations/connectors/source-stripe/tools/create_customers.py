@@ -194,6 +194,8 @@ def generate_customers(path_to_template, tag, iterations, output_path):
         output = deepcopy(template)
         for record in output:
             record["name"] = record["name"].replace("{TAG}", tag).replace("{ITERATION}", str(iteration))
+            if "email" not in record:
+                record["email"] = f"{record['name'].split('__')[0]}@fakenews.io".lower()
             all_records.append(record)
     with open(output_path, "w") as f:
         f.write(json.dumps(all_records, indent=2))

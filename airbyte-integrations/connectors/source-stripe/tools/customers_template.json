@@ -1,0 +1,60 @@
+[
+  {
+    "name": "Alice__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "100"
+  },
+  {
+    "name": "Bob__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "2000"
+  },
+  {
+    "name": "Caroline__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "30000"
+  },
+  {
+    "name": "Dominic__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "400000"
+  },
+  {
+    "name": "Elena__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "500000"
+  },
+  {
+    "name": "Finley__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "600000"
+  },
+  {
+    "name": "Gabriella__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "700000"
+  },
+  {
+    "name": "Harrison__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "800000"
+  },
+  {
+    "name": "Isabel__{TAG}__{ITERATION}",
+    "description": "A fake customer",
+    "balance": "900000"
+  },
+  {
+    "description": "A fake customer with a bank account",
+    "name": "Jack__{TAG}__{ITERATION}",
+    "balance": "1",
+    "bank_account": {
+      "object": "bank_account",
+      "country": "US",
+      "currency": "usd",
+      "account_holder_type": "individual",
+      "routing_number": "110000000",
+      "account_number": "000123456789"
+    }
+  }
+]
