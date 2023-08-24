@@ -66,7 +66,7 @@ public class BigQueryStagingConsumerFactory {
     final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
         incrementalTypingAndDedupingStreamConsumer(typerDeduper);
 
-    final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog, typeAndDedupeStreamFunction);
+    final var flusher = new BigQueryAsyncStagingFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog, typeAndDedupeStreamFunction);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),

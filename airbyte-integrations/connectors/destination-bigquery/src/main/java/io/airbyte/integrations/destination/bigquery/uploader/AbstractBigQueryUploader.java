@@ -24,6 +24,7 @@ import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.s3.writer.DestinationWriter;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -76,6 +77,20 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
           "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
           writer.toString(),
           airbyteMessage.getRecord()));
+      printHeapMemoryConsumption();
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void upload(final PartialAirbyteMessage airbyteMessage) {
+    try {
+      writer.write(recordFormatter.formatRecord(airbyteMessage.getRecord()));
+    } catch (final IOException | RuntimeException e) {
+      LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
+      LOGGER.error(String.format(
+              "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
+              writer.toString(),
+              airbyteMessage.getRecord()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }

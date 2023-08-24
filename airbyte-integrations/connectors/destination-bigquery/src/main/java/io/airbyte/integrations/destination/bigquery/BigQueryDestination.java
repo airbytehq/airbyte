@@ -12,12 +12,14 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.TableId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
@@ -63,6 +65,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -213,18 +217,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final String defaultNamespace = BigQueryUtils.getDatasetId(config);
-    setDefaultStreamNamespace(catalog, defaultNamespace);
-
-    final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final ParsedCatalog parsedCatalog = parseCatalog(catalog, datasetLocation);
-    final BigQuery bigquery = getBigQuery(config);
-    final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
-
-    LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
-        "Please use the GCS upload mode if you are syncing a large amount of data.");
-    return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
+    throw new IllegalStateException("Should use getSerializedMessageConsumer");
   }
 
 
@@ -235,7 +228,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       throws Exception {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod != UploadingMethod.GCS) {
-      return Destination.super.getSerializedMessageConsumer(config, catalog, outputRecordCollector);
+      final String defaultNamespace = BigQueryUtils.getDatasetId(config);
+      setDefaultStreamNamespace(catalog, defaultNamespace);
+
+      final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
+      final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
+      final ParsedCatalog parsedCatalog = parseCatalog(catalog, datasetLocation);
+      final BigQuery bigquery = getBigQuery(config);
+      final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
+
+      LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
+              "Please use the GCS upload mode if you are syncing a large amount of data.");
+      return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
     }
 
     // Shared code start
@@ -347,7 +351,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return namingResolver.getRawTableName(streamName);
   }
 
-  private AirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
+  private SerializedAirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
                                                            final JsonNode config,
                                                            final ConfiguredAirbyteCatalog catalog,
                                                            final ParsedCatalog parsedCatalog,
@@ -362,13 +366,48 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         parsedCatalog,
         TypingAndDedupingFlag.isDestinationV2());
 
-    return new BigQueryRecordConsumer(
+    return new BigQueryRecordStandardConsumer(
+            outputRecordCollector,
+            () -> {
+              final boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
+
+              if (use1s1t) {
+              // Set up our raw tables
+                writeConfigs.forEach((streamId, uploader) -> {
+                final StreamConfig stream = parsedCatalog.getStream(streamId);
+                if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+                  // For streams in overwrite mode, truncate the raw table.
+                  // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
+                  // 1s1t mode.
+                  final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+                  bigquery.delete(rawTableId);
+                  BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+                } else {
+                  uploader.createRawTable();
+                }
+              });
+            }
+              },
+            () -> {
+              LOGGER.info("Started closing all connections");
+              final List<Exception> exceptionsThrown = new ArrayList<>();
+              writeConfigs.forEach((streamId, uploader) -> {
+                try {
+                  typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+                } catch (final Exception e) {
+                  exceptionsThrown.add(e);
+                  LOGGER.error("Exception while closing uploader {}", uploader, e);
+                }
+              });
+              typerDeduper.commitFinalTables();
+              if (!exceptionsThrown.isEmpty()) {
+                throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
+              }},
         bigquery,
-        writeConfigs,
-        outputRecordCollector,
+            catalog,
         BigQueryUtils.getDatasetId(config),
-        typerDeduper,
-        parsedCatalog);
+            writeConfigs
+        );
   }
 
 

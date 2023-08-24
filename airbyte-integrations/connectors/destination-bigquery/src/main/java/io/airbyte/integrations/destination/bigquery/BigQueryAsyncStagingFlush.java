@@ -25,14 +25,14 @@ import org.apache.commons.io.FileUtils;
  * Async flushing logic. Flushing async prevents backpressure and is the superior flushing strategy.
  */
 @Slf4j
-class BigQueryAsyncFlush implements DestinationFlushFunction {
+class BigQueryAsyncStagingFlush implements DestinationFlushFunction {
 
   private final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig;
   private final BigQueryStagingOperations stagingOperations;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer;
 
-  public BigQueryAsyncFlush(
+  public BigQueryAsyncStagingFlush(
                             final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
                             final BigQueryStagingOperations stagingOperations,
                             final ConfiguredAirbyteCatalog catalog,
