@@ -59,7 +59,9 @@ class CohereEmbeddingConfigModel(BaseModel):
 
     class Config:
         title = "Cohere"
-        schema_extra = {"description": "Use the Cohere API to embed text."}
+        schema_extra = {
+            "description": "Use the Cohere API to embed text. This option is using the embed-english-light-v2.0 model with 1024 embedding dimensions."
+        }
 
 
 class FakeEmbeddingConfigModel(BaseModel):
