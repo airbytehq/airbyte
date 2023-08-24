@@ -52,8 +52,7 @@ class DocumentProcessor:
         """
         doc = self._generate_document(record)
         if doc is None:
-            self.logger.warning(f"Record {str(record.data)[:250]}... does not contain any text fields. Skipping.")
-            return [], None
+            raise ValueError(f"Record {str(record.data)[:250]}... does not contain any text fields.")
         chunks = [
             Chunk(
                 page_content=chunk_document.page_content, metadata=chunk_document.metadata, stream=record.stream, namespace=record.namespace
@@ -64,31 +63,26 @@ class DocumentProcessor:
         return chunks, id_to_delete
 
     def _generate_document(self, record: AirbyteRecordMessage) -> Optional[Document]:
-        relevant_fields = self._extract_relevant_fields(record)
+        relevant_fields = self._extract_relevant_fields(record, self.text_fields)
         if len(relevant_fields) == 0:
             return None
         text = stringify_dict(relevant_fields)
         metadata = self._extract_metadata(record)
         return Document(page_content=text, metadata=metadata)
 
-    def _extract_relevant_fields(self, record: AirbyteRecordMessage) -> Dict[str, Any]:
+    def _extract_relevant_fields(self, record: AirbyteRecordMessage, fields: Optional[List[str]]) -> Dict[str, Any]:
         relevant_fields = {}
-        if self.text_fields and len(self.text_fields) > 0:
-            for field in self.text_fields:
+        if fields and len(fields) > 0:
+            for field in fields:
                 values = dpath.util.values(record.data, field, separator=".")
                 if values and len(values) > 0:
-                    relevant_fields[field] = values
+                    relevant_fields[field] = values if len(values) > 1 else values[0]
         else:
             relevant_fields = record.data
         return relevant_fields
 
     def _extract_metadata(self, record: AirbyteRecordMessage) -> Dict[str, Any]:
-        metadata = {}
-        if self.metadata_fields and len(self.metadata_fields) > 0:
-            for field in self.metadata_fields:
-                metadata[field] = record.data[field] if field in record.data else None
-        else:
-            metadata = record.data
+        metadata = self._extract_relevant_fields(record, self.metadata_fields)
         stream_identifier = self._stream_identifier(record)
         current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
         metadata[METADATA_STREAM_FIELD] = stream_identifier
