@@ -78,6 +78,9 @@ class Stream(ABC):
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
+    def generate_partitions(self):
+        pass
+
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self) -> logging.Logger:
