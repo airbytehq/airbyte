@@ -53,11 +53,20 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
     ) -> Iterator[AirbyteMessage]:
         # FIXME: what's the deal with the split config?
         # config, internal_config = split_config(config)
-        streams = self.streams(config)
-        print(f"read with {self._max_workers} workers")
-        partition_generation_futures = []
-        queue_consumer_futures = []
-        for stream in streams:
+        stream_instances = {s.name: s for s in self.streams(config)}
+        # FIXME NEed a test to make sure this only reads from streams in the configured catalog
+        for configured_stream in catalog.streams:
+            print(f"configured_stream: {configured_stream}")
+            stream = stream_instances.get(configured_stream.stream.name)
+            if not stream:
+                raise ValueError("unexpected. needs to be handled!") #FIXME
+            # FIXME: I think this could be done async too...
+            stream_is_available, reason = stream.check_availability(logger, self)
+            if not stream_is_available:
+                logger.warning(f"Skipped syncing stream '{stream.name}' because it was unavailable. {reason}")
+                continue
+            partition_generation_futures = []
+            queue_consumer_futures = []
             with concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers + 10, thread_name_prefix="workerpool") as executor:
                 start_time = time.time()
                 print(f"generating partitions for stream: {stream.name}")
@@ -93,7 +102,7 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
                 for future in done:
                     # Each result is an iterable of record
                     result = future.result()
-                    print(f"result: {result}")
+                    #print(f"result: {result}")
                     for partition_record_and_stream in result:
                         partition_record, stream = partition_record_and_stream
                         record_counter += 1

@@ -390,8 +390,7 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
 
         print(f"waiting for f...")
         done, unfinished = concurrent.futures.wait([f_partitions])
-        exit()
-        parent_partitions = [p for p in f.result()]
+        parent_partitions = [p for p in f_partitions.result()]
         for _ in range(max_workers + 4):
             print(f"{self.name} adding sentinels to the queue")
             queue.put(_SENTINEL)
@@ -404,7 +403,7 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
         for future in done:
             # Each result is an iterable of record
             result = future.result()
-            print(f"result: {result}")
+            #print(f"result: {result}")
             for partition_record_and_stream in result:
                 partition_record, stream = partition_record_and_stream
                 record_counter += 1
@@ -415,6 +414,8 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        print(f"calling wrong stream_slices!")
+        self.logger.error("calling wrong stream_slices")
         parent_stream = self.get_parent_stream_instance()
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:
