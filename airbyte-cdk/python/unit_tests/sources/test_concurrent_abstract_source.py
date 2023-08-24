@@ -35,13 +35,16 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         self._partition_generator = PartitionGenerator(self._queue, self._name)
         self._queue_consumer = QueueConsumer(self._name)
 
-    def _mock_stream(self, name: str, partitions, records_per_partition):
+    def _mock_stream(self, name: str, partitions, records_per_partition, available):
         stream = Mock()
         stream.name = name
         stream.get_json_schema.return_value = {}
         stream.generate_partitions.return_value = iter(partitions)
         stream.read_records.side_effect = [iter(records) for records in records_per_partition]
-        stream.check_availability.return_value = True, None
+        if available:
+            stream.check_availability.return_value = True, None
+        else:
+            stream.check_availability.return_value = False, "A reason why the stream is unavailable"
         return stream
 
     def _mock_configured_catalog(self, streams_to_sync):
@@ -75,7 +78,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         ]
         records_per_partition = [records]
 
-        stream = self._mock_stream("A", partitions, records_per_partition)
+        stream = self._mock_stream("A", partitions, records_per_partition, True)
         streams = [stream]
         source = MockConcurrentAbstractSource(self._partition_generator, self._queue_consumer, self._queue, streams)
         configured_catalog = self._mock_configured_catalog(streams)
@@ -88,6 +91,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         ]
 
         self._verify_output_messages(all_messages, expected_messages)
+        assert self._queue.empty()
 
     def test_read_a_single_stream_with_two_partitions(self):
         partition1 = Partition()
@@ -104,7 +108,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
             {"id": 4, "partition": 2},
         ]
         records_per_partition = [records_partition_1, records_partition_2]
-        stream = self._mock_stream("A", partitions, records_per_partition)
+        stream = self._mock_stream("A", partitions, records_per_partition, True)
         streams = [stream]
         source = MockConcurrentAbstractSource(self._partition_generator, self._queue_consumer, self._queue, streams)
         configured_catalog = self._mock_configured_catalog(streams)
@@ -121,6 +125,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         ]
 
         self._verify_output_messages(all_messages, expected_messages)
+        assert self._queue.empty()
 
     def test_read_two_streams(self):
         records_partition_1 = [
@@ -146,8 +151,8 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         partition1_stream2 = Partition()
         partitions_stream2 = [partition1_stream2]
 
-        stream1 = self._mock_stream("A", partitions_stream1, records_stream1_per_partition)
-        stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition)
+        stream1 = self._mock_stream("A", partitions_stream1, records_stream1_per_partition, True)
+        stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition, True)
         streams = [stream1, stream2]
         source = MockConcurrentAbstractSource(self._partition_generator, self._queue_consumer, self._queue, streams)
         configured_catalog = self._mock_configured_catalog(streams)
@@ -186,6 +191,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         ]
 
         self._verify_output_messages(all_messages, expected_messages)
+        assert self._queue.empty()
 
     def test_only_streams_in_configured_catalog_are_synced(self):
         records_partition_1 = [
@@ -211,8 +217,8 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         partition1_stream2 = Partition()
         partitions_stream2 = [partition1_stream2]
 
-        stream1 = self._mock_stream("A", partitions_stream1, records_stream1_per_partition)
-        stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition)
+        stream1 = self._mock_stream("A", partitions_stream1, records_stream1_per_partition, True)
+        stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition, True)
         streams = [stream1, stream2]
         source = MockConcurrentAbstractSource(self._partition_generator, self._queue_consumer, self._queue, streams)
         configured_catalog = self._mock_configured_catalog([stream2])
@@ -235,3 +241,54 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         ]
 
         self._verify_output_messages(all_messages, expected_messages)
+        assert self._queue.empty()
+
+    def test_only_streams_if_they_are_available(self):
+        records_partition_1 = [
+            {"id": 1, "partition": 1, "stream": "A"},
+            {"id": 2, "partition": 1, "stream": "A"},
+        ]
+
+        records_partition_2 = [
+            {"id": 3, "partition": 2, "stream": "A"},
+            {"id": 4, "partition": 2, "stream": "A"},
+        ]
+        records_stream1_per_partition = [records_partition_1, records_partition_2]
+        records_partition_1_stream_2 = [
+            {"id": 1, "partition": 1, "stream": "B"},
+            {"id": 2, "partition": 1, "stream": "B"},
+            {"id": 3, "partition": 1, "stream": "B"},
+        ]
+        records_stream2_per_partition = [records_partition_1_stream_2]
+
+        partition1_stream1 = Partition()
+        partition2_stream1 = Partition()
+        partitions_stream1 = [partition1_stream1, partition2_stream1]
+        partition1_stream2 = Partition()
+        partitions_stream2 = [partition1_stream2]
+
+        stream1 = self._mock_stream("A", partitions_stream1, records_stream1_per_partition, False)
+        stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition, True)
+        streams = [stream1, stream2]
+        source = MockConcurrentAbstractSource(self._partition_generator, self._queue_consumer, self._queue, streams)
+        configured_catalog = self._mock_configured_catalog(streams)
+
+        all_messages = self._read_messages_with_mocked_emitted_at(source, configured_catalog)
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 1, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 2, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 3, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+        ]
+
+        self._verify_output_messages(all_messages, expected_messages)
+        assert self._queue.empty()
