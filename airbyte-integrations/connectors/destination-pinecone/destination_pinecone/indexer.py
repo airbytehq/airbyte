@@ -100,7 +100,7 @@ class PineconeIndexer(Indexer):
 
     def index(self, document_chunks, delete_ids):
         if len(delete_ids) > 0:
-            self.delete_vectors(filter={METADATA_RECORD_ID_FIELD: delete_ids})
+            self.delete_vectors(filter={METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
         embedding_vectors = self.embed_fn([chunk.page_content for chunk in document_chunks])
         pinecone_docs = []
         for i in range(len(document_chunks)):

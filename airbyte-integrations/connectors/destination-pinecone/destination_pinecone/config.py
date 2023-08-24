@@ -6,6 +6,7 @@ import json
 import re
 from typing import List, Literal, Optional, Union
 
+import dpath.util
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
@@ -72,7 +73,6 @@ class FakeEmbeddingConfigModel(BaseModel):
 
 
 class PineconeIndexingModel(BaseModel):
-    mode: Literal["pinecone"] = Field("pinecone", const=True)
     pinecone_key: str = Field(..., title="Pinecone API key", airbyte_secret=True)
     pinecone_environment: str = Field(..., title="Pinecone environment", description="Pinecone environment to use")
     index: str = Field(..., title="Index", description="Pinecone index to use")
@@ -114,9 +114,15 @@ class ConfigModel(BaseModel):
         del pyschema["definitions"]
         return pyschema
 
+    @staticmethod
+    def remove_discriminator(schema: dict) -> None:
+        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        dpath.util.delete(schema, "properties/*/discriminator")
+
     @classmethod
     def schema(cls):
         """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema()
         schema = cls.resolve_refs(schema)
+        cls.remove_discriminator(schema)
         return schema

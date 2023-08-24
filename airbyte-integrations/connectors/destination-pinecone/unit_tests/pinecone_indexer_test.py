@@ -57,7 +57,7 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
         ],
         ["delete_id1", "delete_id2"],
     )
-    indexer.pinecone_index.delete.assert_called_with(filter={"_record_id": ["delete_id1", "delete_id2"]})
+    indexer.pinecone_index.delete.assert_called_with(filter={"_record_id": {"$in": ["delete_id1", "delete_id2"]}})
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
             (ANY, [1, 2, 3], {"_airbyte_stream": "abc", "text": "test"}),
@@ -79,7 +79,7 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         ],
         ["delete_id1", "delete_id2"],
     )
-    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_record_id": ["delete_id1", "delete_id2"]}, top_k=10_000)
+    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000)
     indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"])
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(

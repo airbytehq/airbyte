@@ -38,7 +38,7 @@ class DestinationPinecone(Destination):
 
     def _init_indexer(self, config: ConfigModel):
         self.embedder = embedder_map[config.embedding.mode](config.embedding)
-        self.indexer = indexer_map[config.indexing.mode](config.indexing, self.embedder)
+        self.indexer = indexer_map["pinecone"](config.indexing, self.embedder)
 
     def _process_batch(self, batch: List[AirbyteRecordMessage]):
         documents: List[Document] = []
