@@ -12,7 +12,7 @@
       "client_id",
       "client_secret"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "region": {
         "type": "string",

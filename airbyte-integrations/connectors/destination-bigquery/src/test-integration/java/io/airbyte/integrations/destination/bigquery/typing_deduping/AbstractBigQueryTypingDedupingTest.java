@@ -13,9 +13,16 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedupingTest {
 
@@ -38,25 +45,25 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   }
 
   @Override
-  protected List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws InterruptedException {
+  protected List<JsonNode> dumpRawTableRecords(String streamNamespace, final String streamName) throws InterruptedException {
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
+    final TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws InterruptedException {
+  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws InterruptedException {
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamNamespace + "." + streamName));
+    final TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamNamespace + "." + streamName));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
   @Override
-  protected void teardownStreamAndNamespace(String streamNamespace, String streamName) {
+  protected void teardownStreamAndNamespace(String streamNamespace, final String streamName) {
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
@@ -64,6 +71,43 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     // so we don't need to do any existence checks here.
     bq.delete(TableId.of(getRawDataset(), StreamId.concatenateRawTableName(streamNamespace, streamName)));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
+  }
+
+  /**
+   * Run a sync using 1.9.0 (which is the highest version that still creates v2 raw tables with JSON _airbyte_data).
+   * Then run a sync using our current version.
+   */
+  @Test
+  public void testRawTableJsonToStringMigration() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+
+    runSync(catalog, messages1, "airbyte/destination-bigquery:1.9.0");
+
+    // 1.9.0 is known-good, but we might as well check that we're in good shape before continuing.
+    // If this starts erroring out because we added more test records and 1.9.0 had a latent bug,
+    // just delete these three lines :P
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   /**
