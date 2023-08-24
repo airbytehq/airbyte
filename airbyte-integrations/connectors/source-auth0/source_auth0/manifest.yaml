@@ -71,8 +71,8 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: "PT0.000001S"
       start_datetime:
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime: "{{ config.get('start_date', '2023-08-23') }}"
+        datetime_format: "%Y-%m-%d"
       end_datetime:
         datetime: "{{ today_utc() }}"
         datetime_format: "%Y-%m-%d"

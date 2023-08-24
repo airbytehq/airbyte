@@ -17,7 +17,10 @@ class AuthenticatorAuth0(DeclarativeAuthenticator):
     oauth: DeclarativeOauth2Authenticator
 
     def __new__(cls, bearer, oauth, config, *args, **kwargs):
-        if config.get("credentials", {}).get("oauth2_access_token"):
+        auth_type = config.get("credentials", {}).get("auth_type") 
+        if  auth_type == "oauth2_access_token":
             return bearer
-        else:
+        elif auth_type == "oauth2_confidential_application":
             return oauth
+        else:
+            raise Exception("Not possible configure Auth method")
