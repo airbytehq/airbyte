@@ -15,6 +15,8 @@ from airbyte_cdk.sources.concurrent.concurrent_abstract_source import (
     QueueConsumer,
 )
 from airbyte_cdk.sources.streams import Stream
+from airbyte_protocol.models import AirbyteMessage, AirbyteRecordMessage
+from airbyte_protocol.models import Type as MessageType
 
 
 class MockConcurrentAbstractSource(ConcurrentAbstractSource):
@@ -40,6 +42,8 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
         stream = Mock()
+        stream.name = "A"
+        stream.get_json_schema.return_value = {}
         streams = [stream]
         source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
         config = {}
@@ -59,21 +63,30 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         queue.get.side_effect = [(partition, stream), _SENTINEL]
 
         all_messages = list(source.read(self._logger, config, configured_catalog, self._state))
+        for message in all_messages:
+            message.record.emitted_at = 1
 
         # partition_generator.generate_partitions_for_stream.assert_called_once_with(stream)
         put_calls = [call((partition, stream)), call(_SENTINEL)]
         queue.put.assert_has_calls(put_calls)
         assert queue.get.call_count == 2
 
+        expected_messages = [
+            AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 1, "partition": 1}, emitted_at=1)),
+            AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 2, "partition": 1}, emitted_at=1)),
+        ]
+
         assert len(all_messages) == 2
-        for expected_record in records:
-            assert expected_record in all_messages
+        for expected_message in expected_messages:
+            assert expected_message in all_messages
 
     def test_read_a_single_stream_with_two_partitions(self):
         queue: Queue = Mock()
         partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
         stream = Mock()
+        stream.name = "A"
+        stream.get_json_schema.return_value = {}
         streams = [stream]
         source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
         config = {}
@@ -99,6 +112,8 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         queue.get.side_effect = [(partition1, stream), (partition2, stream), _SENTINEL]
 
         all_messages = list(source.read(self._logger, config, configured_catalog, self._state))
+        for message in all_messages:
+            message.record.emitted_at = 1
 
         # partition_generator.generate_partitions_for_stream.assert_called_once_with(stream)
         expected_put_calls = [call((partition1, stream)), call(partition2, stream), call(_SENTINEL)]
@@ -117,15 +132,26 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
 
         assert len(all_messages) == 4
 
-        for expected_record in [*records_partition_1, *records_partition_2]:
-            assert expected_record in all_messages
+        expected_messages = [
+            AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 1, "partition": 1}, emitted_at=1)),
+            AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 2, "partition": 1}, emitted_at=1)),
+            AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 3, "partition": 2}, emitted_at=1)),
+            AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="A", data={"id": 4, "partition": 2}, emitted_at=1)),
+        ]
+
+        for expected_message in expected_messages:
+            assert expected_message in all_messages
 
     def test_read_two_streams(self):
         queue: Queue = Mock()
         partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
         stream1 = Mock()
+        stream1.name = "A"
+        stream1.get_json_schema.return_value = {}
         stream2 = Mock()
+        stream2.name = "B"
+        stream2.get_json_schema.return_value = {}
         streams = [stream1, stream2]
         source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
         config = {}
@@ -161,6 +187,8 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         queue.get.side_effect = [(partition1_stream1, stream1), (partition2_stream1, stream1), (partition1_stream2, stream2), _SENTINEL]
 
         all_messages = list(source.read(self._logger, config, configured_catalog, self._state))
+        for message in all_messages:
+            message.record.emitted_at = 1
 
         # partition_generator.generate_partitions_for_stream.assert_called_once_with(stream)
         expected_put_calls = [
@@ -184,5 +212,36 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
 
         assert len(all_messages) == 7
 
-        for expected_record in [*records_partition_1, *records_partition_2, *records_partition_1_stream_2]:
-            assert expected_record in all_messages
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="A", data={"id": 1, "partition": 1, "stream": "A"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="A", data={"id": 2, "partition": 1, "stream": "A"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="A", data={"id": 3, "partition": 2, "stream": "A"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="A", data={"id": 4, "partition": 2, "stream": "A"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 1, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 2, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 3, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+        ]
+
+        for expected_message in expected_messages:
+            assert expected_message in all_messages
