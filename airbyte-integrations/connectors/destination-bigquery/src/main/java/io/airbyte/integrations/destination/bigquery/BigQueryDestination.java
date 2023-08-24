@@ -37,6 +37,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryReco
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV1V2Migrator;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV2RawTableMigrator;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -289,7 +290,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final StreamConfig parsedStream;
 
       final String streamName = stream.getName();
-      String targetTableName;
+      final String targetTableName;
       if (use1s1t) {
         parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
         targetTableName = parsedStream.id().rawName();
@@ -352,7 +353,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final ParsedCatalog parsedCatalog,
                                                            final Consumer<AirbyteMessage> outputRecordCollector,
                                                            final TyperDeduper typerDeduper)
-      throws IOException {
+      throws Exception {
+    typerDeduper.prepareTables();
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
         config,
@@ -368,6 +370,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         typerDeduper,
         parsedCatalog);
   }
+
 
   protected Function<JsonNode, BigQueryRecordFormatter> getCsvRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
     return streamSchema -> new GcsCsvBigQueryRecordFormatter(streamSchema, namingResolver);
@@ -407,16 +410,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                          final ParsedCatalog parsedCatalog,
                                          final BigQuery bigquery,
                                          final String datasetLocation) {
-    if (!TypingAndDedupingFlag.isDestinationV2()) {
-      return new NoopTyperDeduper();
-    }
-
-    final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
-    return new DefaultTyperDeduper<>(
-        sqlGenerator,
-        new BigQueryDestinationHandler(bigquery, datasetLocation),
-        parsedCatalog,
-        migrator);
+        final TyperDeduper typerDeduper;
+        if (TypingAndDedupingFlag.isDestinationV2()) {
+          final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
+          final BigQueryV2RawTableMigrator v2RawTableMigrator = new BigQueryV2RawTableMigrator(bigquery);
+          typerDeduper = new DefaultTyperDeduper<>(
+                  sqlGenerator,
+                  new BigQueryDestinationHandler(bigquery, datasetLocation),
+                  parsedCatalog,
+                  migrator,
+                  v2RawTableMigrator);
+        } else {
+          typerDeduper = new NoopTyperDeduper();
+        }
+        return typerDeduper;
   }
 
   /**

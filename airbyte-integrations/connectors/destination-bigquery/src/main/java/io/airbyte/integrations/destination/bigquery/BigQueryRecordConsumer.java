@@ -65,13 +65,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void startTracked() throws Exception {
+  protected void startTracked() {
     // todo (cgardens) - move contents of #write into this method.
-    typerDeduper.prepareTables();
     if (use1s1t) {
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {
-        StreamConfig stream = catalog.getStream(streamId);
+        final StreamConfig stream = catalog.getStream(streamId);
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
           // For streams in overwrite mode, truncate the raw table.
           // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in

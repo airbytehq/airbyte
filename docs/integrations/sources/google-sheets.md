@@ -6,9 +6,17 @@ This page contains the setup guide and reference information for the Google Shee
 The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each sheet (tab) within a spreadsheet can be replicated. To replicate multiple spreadsheets, set up multiple Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are accessed.
 :::
 
-## Prerequisites
-
-- Access to a Google spreadsheet
+### Prerequisites
+- Spreadsheet Link - The link to the Google spreadsheet you want to sync.
+<env:cloud>
+- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
+</env:cloud>
+<env:oss>
+-  **For Airbyte Open Source:** 
+  - A GCP project
+  - Enable the Google Sheets API in your GCP project
+  - Service Account Key with access to the Spreadsheet you want to replicate
+</env:oss>
 
 ## Setup guide
 
@@ -94,10 +102,6 @@ To set up Google Sheets as a source in Airbyte Cloud:
 
 Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
 
-:::caution
-When replicating data to a SQL-based destination (such as Postgres or MySQL), sheet names and column headers must contain **only alphanumeric characters or `_`**. For example, if your sheet or column header is named `The Data 2022`, it should be renamed to `the_data_2022`. To automatically convert column names to this format, enable the **Convert Column Names to SQL-Compliant Format** option. Please note that this option only converts column names and not sheet names. This naming restriction does not apply to non-header cell values.
-:::
-
 Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
 
 ## Supported sync modes
@@ -107,10 +111,10 @@ The Google Sheets source connector supports the following sync modes:
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
-## Data type mapping
+## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
+|:-----------------|:-------------|:------|
 | any type         | `string`     |       |
 
 ## Performance consideration
@@ -122,10 +126,14 @@ The [Google API rate limits](https://developers.google.com/sheets/api/limits) ar
 
 Airbyte batches requests to the API in order to efficiently pull data and respect these rate limits. We recommend not using the same user or service account for more than 3 instances of the Google Sheets source connector to ensure high transfer speeds.
 
+## Troubleshooting
+- If your sheet is completely empty(no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.3.6   | 2023-08-16 | [29491](https://github.com/airbytehq/airbyte/pull/29491) | Update to latest CDK                                                              |
 | 0.3.5   | 2023-08-16 | [29427](https://github.com/airbytehq/airbyte/pull/29427) | Add stop reading in case of 429 error                                             |
 | 0.3.4   | 2023-05-15 | [29453](https://github.com/airbytehq/airbyte/pull/29453) | Update spec descriptions                                                          |
 | 0.3.3   | 2023-08-10 | [29327](https://github.com/airbytehq/airbyte/pull/29327) | Add user-friendly error message for 404 and 403 error while discover              |

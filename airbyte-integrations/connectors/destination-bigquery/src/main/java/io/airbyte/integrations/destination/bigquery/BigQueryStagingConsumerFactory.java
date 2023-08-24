@@ -154,8 +154,7 @@ public class BigQueryStagingConsumerFactory {
       }
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
-                    writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName()
-        );
+            writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
         // In Destinations V2, we will always use the 'airbyte' schema/namespace for raw tables
         final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? DEFAULT_AIRBYTE_INTERNAL_NAMESPACE : writeConfig.datasetId();
         // Regardless, ensure the schema the customer wants to write to exists
