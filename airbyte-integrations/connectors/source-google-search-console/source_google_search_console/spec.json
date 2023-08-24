@@ -12,25 +12,27 @@
           "type": "string"
         },
         "title": "Website URL Property",
-        "description": "The URLs of the website property attached to your GSC account. Read more <a href=\"https://support.google.com/webmasters/answer/34592?hl=en\">here</a>.",
+        "description": "The URLs of the website property attached to your GSC account. Learn more about properties <a href=\"https://support.google.com/webmasters/answer/34592?hl=en\">here</a>.",
         "examples": ["https://example1.com/", "sc-domain:example2.com"],
         "order": 0
       },
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
+        "description": "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
         "examples": ["2021-01-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "pattern_descriptor": "YYYY-MM-DD",
         "order": 1,
         "format": "date"
       },
       "end_date": {
         "type": "string",
         "title": "End Date",
-        "description": "UTC date in the format 2017-01-25. Any data after this date will not be replicated. Must be greater or equal to the start date field.",
+        "description": "UTC date in the format YYYY-MM-DD. Any data created after this date will not be replicated. Must be greater or equal to the start date field. Leaving this field blank will replicate all data from the start date onward.",
         "examples": ["2021-12-12"],
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "pattern_descriptor": "YYYY-MM-DD",
         "order": 2,
         "format": "date"
       },
@@ -113,14 +115,14 @@
         "order": 4,
         "type": "string",
         "title": "Custom Reports",
-        "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\">the docs</a> for more information about the exact format you can use to fill out this field."
+        "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See our <a href='https://docs.airbyte.com/integrations/sources/google-search-console'>documentation</a> for more information on formulating custom reports."
       },
       "data_state": {
         "type": "string",
-        "title": "Data State",
+        "title": "Data Freshness",
         "enum": ["final", "all"],
-        "description": "If \"final\" or if this parameter is omitted, the returned data will include only finalized data. Setting this parameter to \"all\" should not be used with Incremental Sync mode as it may cause data loss. If \"all\", data will include fresh data.",
-        "examples": ["final"],
+        "description": "If set to 'final', the returned data will include only finalized, stable data. If set to 'all', fresh data will be included. When using Incremental sync mode, we do not recommend setting this parameter to 'all' as it may cause data loss. More information can be found in our <a href='https://docs.airbyte.com/integrations/source/google-search-console'>full documentation</a>.",
+        "examples": ["final", "all"],
         "default": "final",
         "order": 5
       }

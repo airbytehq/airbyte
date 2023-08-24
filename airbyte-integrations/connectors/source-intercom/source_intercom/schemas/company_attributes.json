@@ -1,6 +1,9 @@
 {
   "type": "object",
   "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
     "admin_id": {
       "type": ["null", "string"]
     },

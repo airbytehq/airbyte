@@ -1,30 +1,30 @@
 [
   {
-    "_id" : null,
-    "fields" : [
+    "_id": null,
+    "fields": [
       {
-        "_id" : "string",
-        "name" : "string",
-        "last_updated" : "date",
-        "total" : "int",
-        "price" : "decimal",
-        "items" : "array",
-        "owners" : "object"
+        "_id": "string",
+        "name": "string",
+        "last_updated": "date",
+        "total": "int",
+        "price": "decimal",
+        "items": "array",
+        "owners": "object"
       }
     ]
   },
   {
-    "_id" : null,
-    "fields" : [
+    "_id": null,
+    "fields": [
       {
-        "_id" : "string",
-        "name" : "string",
-        "last_updated" : "date",
-        "total" : "int",
-        "price" : "decimal",
-        "items" : "array",
-        "owners" : "object",
-        "other" : "string"
+        "_id": "string",
+        "name": "string",
+        "last_updated": "date",
+        "total": "int",
+        "price": "decimal",
+        "items": "array",
+        "owners": "object",
+        "other": "string"
       }
     ]
   }

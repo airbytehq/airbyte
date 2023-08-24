@@ -153,7 +153,7 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv) {
     try {
       final ApiClient client = RocksetUtils.apiClientFromConfig(getConfig());
       String workspace = getConfig().get("workspace").asText();

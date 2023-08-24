@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,8 +11,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
@@ -33,7 +37,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   @Override
   protected JsonNode generateConfig() {
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(getConfigPath())));
-    ((ObjectNode)config).put("schema", "typing_deduping_default_schema" + getUniqueSuffix());
+    ((ObjectNode) config).put("schema", "typing_deduping_default_schema" + getUniqueSuffix());
     databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
     dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     database = SnowflakeDatabase.getDatabase(dataSource);
@@ -50,7 +54,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
     return SnowflakeTestUtils.dumpRawTable(
         database,
         // Explicitly wrap in quotes to prevent snowflake from upcasing
-        '"'+ schema + "\".\"" + tableName + '"');
+        '"' + schema + "\".\"" + tableName + '"');
   }
 
   @Override
@@ -68,10 +72,10 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
     }
     database.execute(
         String.format(
-          """
-              DROP TABLE IF EXISTS "%s"."%s";
-              DROP SCHEMA IF EXISTS "%s" CASCADE
-              """,
+            """
+            DROP TABLE IF EXISTS "%s"."%s";
+            DROP SCHEMA IF EXISTS "%s" CASCADE
+            """,
             getRawSchema(),
             StreamId.concatenateRawTableName(streamNamespace, streamName),
             streamNamespace));
@@ -86,10 +90,11 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
    * Subclasses using a config with a nonstandard raw table schema should override this method.
    */
   protected String getRawSchema() {
-    return CatalogParser.DEFAULT_RAW_TABLE_NAMESPACE;
+    return JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
   }
 
   private String getDefaultSchema() {
     return getConfig().get("schema").asText();
   }
+
 }

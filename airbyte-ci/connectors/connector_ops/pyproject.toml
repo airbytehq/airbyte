@@ -20,12 +20,10 @@ rich = "^11.0.1"
 pydash = "^7.0.4"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}
-
-[tool.poetry.group.dev.dependencies]
-pyinstrument = "^0.24.4"
+pandas = "^2.0.3"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^6.2.5"
+pytest = "^7.4.0"
 pytest-mock = "^3.10.0"
 freezegun = "^1.1.0"
 

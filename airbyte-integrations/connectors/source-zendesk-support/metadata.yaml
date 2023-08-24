@@ -24,7 +24,7 @@ data:
     - language:python
   ab_internal:
     sl: 300
-    ql: 300
+    ql: 400
   supportLevel: certified
   releases:
     breakingChanges:

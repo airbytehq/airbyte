@@ -115,9 +115,12 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
                                               final String actualNormalizedNamespace) {
     final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
     if (testCaseId.equals("S3A-1")) {
+      // See NamespaceTestCaseProvider for how this suffix is generated.
+      final int underscoreIndex = expectedNormalizedNamespace.lastIndexOf("_");
+      final String randomSuffix = expectedNormalizedNamespace.substring(underscoreIndex);
       // bigquery allows namespace starting with a number, and prepending underscore
       // will hide the dataset, so we don't do it as we do for other destinations
-      assertEquals("99namespace", actualNormalizedNamespace, message);
+      assertEquals("99namespace" + randomSuffix, actualNormalizedNamespace, message);
     } else {
       assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace, message);
     }
