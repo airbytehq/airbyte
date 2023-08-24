@@ -8,6 +8,7 @@ import pytest
 from tools.create_customers import (
     BankAccount,
     Customer,
+    HttpMethod,
     HttpRequest,
     StripeAPI,
     create_customer_and_bank_account,
@@ -44,7 +45,7 @@ class StripeApiTestCase(TestCase):
         customer = Customer.parse_obj(record)
 
         expected_request = HttpRequest(
-            method="POST",
+            method=HttpMethod.POST,
             url="https://api.stripe.com/v1/customers",
             headers=_AUTHENTICATION_HEADER,
             body={
@@ -77,7 +78,7 @@ class StripeApiTestCase(TestCase):
             },
         }
         expected_request = HttpRequest(
-            method="POST",
+            method=HttpMethod.POST,
             url="https://api.stripe.com/v1/customers/12345/sources",
             headers=_AUTHENTICATION_HEADER,
             body={
@@ -136,7 +137,7 @@ class StripeApiTestCase(TestCase):
         customer_name = "First Last"
 
         expected_request = HttpRequest(
-            method="GET",
+            method=HttpMethod.GET,
             url="https://api.stripe.com/v1/customers/search",
             headers=_AUTHENTICATION_HEADER,
             body={"query": "name: 'First Last'"},
@@ -153,7 +154,7 @@ class StripeApiTestCase(TestCase):
         customer_name = "First Last"
 
         expected_request = HttpRequest(
-            method="GET",
+            method=HttpMethod.GET,
             url="https://api.stripe.com/v1/customers/search",
             headers=_AUTHENTICATION_HEADER,
             body={"query": "name: 'First Last'"},

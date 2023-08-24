@@ -5,6 +5,7 @@
 import concurrent.futures
 import json
 from copy import deepcopy
+from enum import Enum
 from typing import Any, Dict, Optional
 
 import click
@@ -31,8 +32,13 @@ class Customer(BaseModel):
     bank_account: Optional[BankAccount]
 
 
+class HttpMethod(Enum):
+    GET = "GET"
+    POST = "POST"
+
+
 class HttpRequest(BaseModel):
-    method: str
+    method: HttpMethod
     url: str
     headers: Dict[str, str]
     body: Optional[Dict[str, Any]]
@@ -68,7 +74,7 @@ class StripeAPI:
         url = "https://api.stripe.com/v1/customers"
         customer_data = customer.dict(exclude_none=True)
         customer_data.pop("bank_account", {})
-        return HttpRequest(method="POST", url=url, headers=self._authentication_header, body=customer_data)
+        return HttpRequest(method=HttpMethod.POST, url=url, headers=self._authentication_header, body=customer_data)
 
     def search_customer(self, customer_name):
         request = self.prepare_search_customer(customer_name)
@@ -84,12 +90,12 @@ class StripeAPI:
         url = f"https://api.stripe.com/v1/customers/{customer.id}/sources"
         bank_account_data = {"source": customer.bank_account.dict(exclude_none=True)}
         bank_account_data["source"]["account_holder_name"] = customer.name
-        return HttpRequest(method="POST", url=url, headers=self._authentication_header, body=bank_account_data)
+        return HttpRequest(method=HttpMethod.POST, url=url, headers=self._authentication_header, body=bank_account_data)
 
     def prepare_search_customer(self, customer_name: str) -> HttpRequest:
         url = "https://api.stripe.com/v1/customers/search"
         data = {"query": f"name: '{customer_name}'"}
-        return HttpRequest(method="GET", url=url, headers=self._authentication_header, body=data)
+        return HttpRequest(method=HttpMethod.GET, url=url, headers=self._authentication_header, body=data)
 
 
 @click.group()
@@ -160,6 +166,7 @@ def populate_customer(customer: Customer, stripe_api: StripeAPI):
         print(f"Customer {customer.name} already exists. Skipping...")
         return None
     else:
+        exit()
         return create_customer_and_bank_account(customer, stripe_api)
 
 
