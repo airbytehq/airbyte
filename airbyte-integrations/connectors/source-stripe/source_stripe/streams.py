@@ -403,7 +403,7 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
         for future in done:
             # Each result is an iterable of record
             result = future.result()
-            #print(f"result: {result}")
+            # print(f"result: {result}")
             for partition_record_and_stream in result:
                 partition_record, stream = partition_record_and_stream
                 record_counter += 1

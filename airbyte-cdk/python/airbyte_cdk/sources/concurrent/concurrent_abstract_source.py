@@ -59,7 +59,7 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
             print(f"configured_stream: {configured_stream}")
             stream = stream_instances.get(configured_stream.stream.name)
             if not stream:
-                raise ValueError("unexpected. needs to be handled!") #FIXME
+                raise ValueError("unexpected. needs to be handled!")  # FIXME
             # FIXME: I think this could be done async too...
             stream_is_available, reason = stream.check_availability(logger, self)
             if not stream_is_available:
@@ -102,7 +102,7 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
                 for future in done:
                     # Each result is an iterable of record
                     result = future.result()
-                    #print(f"result: {result}")
+                    # print(f"result: {result}")
                     for partition_record_and_stream in result:
                         partition_record, stream = partition_record_and_stream
                         record_counter += 1

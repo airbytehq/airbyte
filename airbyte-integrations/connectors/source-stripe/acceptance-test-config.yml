@@ -1,20 +1,20 @@
 connector_image: airbyte/source-stripe:dev
 #test_strictness_level: high
 acceptance_tests:
-#  spec:
-#    tests:
-#      - spec_path: "source_stripe/spec.yaml"
-#  connection:
-#    tests:
-#      - config_path: "secrets/config.json"
-#        status: "succeed"
-#      - config_path: "integration_tests/invalid_config.json"
-#        status: "failed"
-#  discovery:
-#    tests:
-#      - config_path: "secrets/config.json"
-#        backward_compatibility_tests_config:
-#          disable_for_version: "3.17.0" # invoices schema fix
+  #  spec:
+  #    tests:
+  #      - spec_path: "source_stripe/spec.yaml"
+  #  connection:
+  #    tests:
+  #      - config_path: "secrets/config.json"
+  #        status: "succeed"
+  #      - config_path: "integration_tests/invalid_config.json"
+  #        status: "failed"
+  #  discovery:
+  #    tests:
+  #      - config_path: "secrets/config.json"
+  #        backward_compatibility_tests_config:
+  #          disable_for_version: "3.17.0" # invoices schema fix
   basic_read:
     tests:
       - config_path: "secrets/config.json"
