@@ -231,12 +231,12 @@ public class StateGeneratorUtils {
         useStreamCapableState);
     return typedState
         .map(state -> switch (state.getStateType()) {
-          case GLOBAL -> List.of(StateGeneratorUtils.convertStateMessage(state.getGlobal()));
-          case STREAM -> state.getStateMessages()
-              .stream()
-              .map(StateGeneratorUtils::convertStateMessage).toList();
-          default -> List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
-              .withData(state.getLegacyState()));
+        case GLOBAL -> List.of(StateGeneratorUtils.convertStateMessage(state.getGlobal()));
+        case STREAM -> state.getStateMessages()
+            .stream()
+            .map(StateGeneratorUtils::convertStateMessage).toList();
+        default -> List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
+            .withData(state.getLegacyState()));
         })
         .orElse(generateEmptyInitialState(supportedStateType));
   }

@@ -7,27 +7,15 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "fullname_and_valid": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "fullname": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "type": ["string", "null"]
               },
               "valid": {
-                "type": [
-                  "boolean",
-                  "null"
-                ]
+                "type": ["boolean", "null"]
               }
             },
             "_ab_source_file_last_modified": {
