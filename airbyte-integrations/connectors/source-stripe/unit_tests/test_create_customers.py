@@ -5,7 +5,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import pytest
-from source_stripe.seed.seed import (
+from tools.create_customers import (
     BankAccount,
     Customer,
     HttpRequest,
