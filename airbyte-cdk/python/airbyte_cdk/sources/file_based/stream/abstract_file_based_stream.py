@@ -80,12 +80,23 @@ class AbstractFileBasedStream(Stream):
         """
         if stream_slice is None:
             raise ValueError("stream_slice must be set")
+
+        if self.config.file_metadata_only:
+            return self.read_file_metadata_records_from_slice(stream_slice)
+
         return self.read_records_from_slice(stream_slice)
 
     @abstractmethod
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
+        """
+        ...
+
+    @abstractmethod
+    def read_file_metadata_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
+        """
+        Yield file metadata for all remote files in `list_files_for_this_sync`.
         """
         ...
 

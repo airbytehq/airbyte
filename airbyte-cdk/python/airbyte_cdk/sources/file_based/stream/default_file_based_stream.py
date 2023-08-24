@@ -138,6 +138,32 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         ),
                     )
 
+    def read_file_metadata_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
+        """
+        Yield file metadata for all remote files in `list_files_for_this_sync`.
+
+        Only read contents for purpose of collecting metadata and/or file schema.
+        """
+        # The stream only supports a single file type, so we assume the same schema
+        file_schema: dict | None = None
+        if not self.config.schemaless:
+            file_schema = self.infer_schema(files=stream_slice["files.."])
+
+        file_schema = file_schema or None
+
+        for file in stream_slice["files"]:
+            # only serialize the datetime once
+            file_datetime_string = file.last_modified.strftime(self.DATE_TIME_FORMAT)
+
+            # create a record with the file metadata:
+            record = {
+                "file_uri": file.uri,
+                "file_schema": file_schema,
+                self.ab_last_mod_col: file_datetime_string,
+                self.ab_file_name_col: file.uri,
+            }
+            yield stream_data_to_airbyte_message(self.name, record)
+
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         """
@@ -164,6 +190,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             return self.config.get_input_schema()  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
+        elif self.config.file_metadata_only:
+            return {
+                "type": "object",
+                "properties": {
+                    "file_uri": {"type": "string"},
+                    "file_record_schema": {"type": "object"},
+                    self.ab_last_mod_col: {"type": "string"},
+                    self.ab_file_name_col: {"type": "string"},
+                }
+            }
         else:
             files = self.list_files()
             total_n_files = len(files)

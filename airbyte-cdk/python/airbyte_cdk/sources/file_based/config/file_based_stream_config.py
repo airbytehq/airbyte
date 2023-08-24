@@ -63,6 +63,12 @@ class FileBasedStreamConfig(BaseModel):
         description="When enabled, syncs will not validate or structure records against the stream's schema.",
         default=False,
     )
+    file_metadata_only: bool = Field(
+        title="Stream File Metadata Only",
+        default=False,
+        description="Use this option to send a stream of file metadata instead of parsing the files themselves into individiual records.",
+        order=10,
+    )
 
     @validator("file_type", pre=True)
     def validate_file_type(cls, v: str) -> str:
