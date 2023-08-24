@@ -16,7 +16,7 @@ data:
   icon: babelforce.svg
   license: MIT
   name: Babelforce
-  releaseDate: TODO
+  releaseDate: 2022-05-09
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/babelforce
