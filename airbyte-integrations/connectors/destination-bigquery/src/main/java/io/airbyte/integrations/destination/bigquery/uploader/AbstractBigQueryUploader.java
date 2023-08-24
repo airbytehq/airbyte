@@ -18,6 +18,7 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
@@ -29,6 +30,9 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,6 +119,25 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     }
   }
 
+  public void close(final boolean hasFailed) {
+    try {
+      recordFormatter.printAndCleanFieldFails();
+
+      LOGGER.info("Closing connector: {}", this);
+      this.writer.close(hasFailed);
+
+      if (!hasFailed) {
+        uploadData();
+      }
+      this.postProcessAction(hasFailed);
+      LOGGER.info("Closed connector: {}", this);
+    } catch (final Exception e) {
+      LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
+      printHeapMemoryConsumption();
+      throw new RuntimeException(e);
+    }
+  }
+
   protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
     try {
       if (!use1s1t) {
@@ -125,6 +148,24 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       }
 
       outputRecordCollector.accept(lastStateMessage);
+      LOGGER.info("Final state message is accepted.");
+    } catch (final Exception e) {
+      LOGGER.error("Upload data is failed!");
+      throw e;
+    } finally {
+      dropTmpTable();
+    }
+  }
+
+  protected void uploadData() {
+    try {
+      if (!use1s1t) {
+        // This only needs to happen if we actually wrote to a tmp table.
+        LOGGER.info("Uploading data from the tmp table {} to the source table {}.", tmpTable.getTable(), table.getTable());
+        uploadDataToTableFromTmpTable();
+        LOGGER.info("Data is successfully loaded to the source table {}!", table.getTable());
+      }
+
       LOGGER.info("Final state message is accepted.");
     } catch (final Exception e) {
       LOGGER.error("Upload data is failed!");

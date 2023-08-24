@@ -50,6 +50,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
   private boolean hasStarted;
   private boolean hasClosed;
+  private boolean hasFailed = false;
+  private PartialAirbyteMessage lastState;
   // This is to account for the references when deserialization to a PartialAirbyteMessage. The
   // calculation is as follows:
   // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with
@@ -117,6 +119,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
               message.getRecord().setNamespace(defaultNamespace);
             }
             validateRecord(message);
+          } else if (Type.STATE.equals(message.getType())) {
+            lastState = message;
           }
           bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
         });
@@ -142,6 +146,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
           if (Type.RECORD.equals(partial.getType()) && partial.getRecord().getData() != null) {
             return partial.withSerialized(partial.getRecord().getData().toString());
           } else if (Type.STATE.equals(partial.getType())) {
+
             return partial.withSerialized(messageString);
           } else {
             return null;
@@ -166,7 +171,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     flushWorkers.close();
 
     bufferManager.close();
-    onClose.call();
+    onClose.accept(hasFailed);
 
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
@@ -175,6 +180,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {
     if (flushFailure.isFailed()) {
+      hasFailed = true;
       throw flushFailure.getException();
     }
   }

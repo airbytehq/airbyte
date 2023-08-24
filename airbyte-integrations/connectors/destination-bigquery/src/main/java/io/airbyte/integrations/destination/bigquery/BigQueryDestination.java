@@ -227,7 +227,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
-    if (uploadingMethod != UploadingMethod.GCS) {
+    if (uploadingMethod == UploadingMethod.STANDARD) {
       final String defaultNamespace = BigQueryUtils.getDatasetId(config);
       setDefaultStreamNamespace(catalog, defaultNamespace);
 
@@ -388,18 +388,23 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               });
             }
               },
-            () -> {
+            (hasFailed) -> {
               LOGGER.info("Started closing all connections");
               final List<Exception> exceptionsThrown = new ArrayList<>();
               writeConfigs.forEach((streamId, uploader) -> {
                 try {
                   typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+                  uploader.close(hasFailed, outputRecordCollector, null);
                 } catch (final Exception e) {
                   exceptionsThrown.add(e);
                   LOGGER.error("Exception while closing uploader {}", uploader, e);
                 }
               });
-              typerDeduper.commitFinalTables();
+              try {
+                typerDeduper.commitFinalTables();
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
               if (!exceptionsThrown.isEmpty()) {
                 throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
               }},
