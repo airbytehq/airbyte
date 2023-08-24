@@ -27,24 +27,24 @@ class TestingNamespacesTest {
   @Test
   void testGenerateWithPrefix() {
     final String[] namespace = TestingNamespaces.generate("myprefix").split("_");
-    assertEquals("test", namespace[0]);
-    assertEquals("myprefix", namespace[1]);
+    assertEquals("myprefix", namespace[0]);
+    assertEquals("test", namespace[1]);
     assertEquals(FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC")).toLocalDate()), namespace[2]);
     assertFalse(namespace[3].isBlank());
   }
 
   @Test
   void testIsOlderThan2Days() {
-    assertFalse(TestingNamespaces.isOlderThan2Days("test_myprefix_" + getDate(0) + "_12345"));
-    assertTrue(TestingNamespaces.isOlderThan2Days("test_myprefix_" + getDate(2) + "_12345"));
+    assertFalse(TestingNamespaces.isOlderThan2Days("myprefix_test_" + getDate(0) + "_12345"));
+    assertTrue(TestingNamespaces.isOlderThan2Days("myprefix_test_" + getDate(2) + "_12345"));
   }
 
   @Test
   void doesNotFailOnNonConventionalNames() {
     assertFalse(TestingNamespaces.isOlderThan2Days("12345"));
     assertFalse(TestingNamespaces.isOlderThan2Days("test_12345"));
-    assertFalse(TestingNamespaces.isOlderThan2Days("test_hello_12345"));
-    assertFalse(TestingNamespaces.isOlderThan2Days("test1_myprefix_" + getDate(2) + "_12345"));
+    assertFalse(TestingNamespaces.isOlderThan2Days("hello_test_12345"));
+    assertFalse(TestingNamespaces.isOlderThan2Days("myprefix_test1_" + getDate(2) + "_12345"));
 
   }
 

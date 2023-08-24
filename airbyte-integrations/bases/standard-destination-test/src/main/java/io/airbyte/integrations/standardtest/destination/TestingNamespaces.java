@@ -18,10 +18,9 @@ import org.apache.commons.lang3.RandomStringUtils;
  * This class is used to generate unique namespaces for tests that follow a convention so that we
  * can identify and delete old namespaces. Ideally tests would always clean up their own namespaces,
  * but there are exception cases that can prevent that from happening. We want to be able to
- * identify namespaces for which this has happened from their name so we can take action.
+ * identify namespaces for which this has happened from their name, so we can take action.
  * <p>
- * The convention we follow is `integration_test_<test-provided prefix>_YYYYMMDD_<8-character random
- * suffix>`.
+ * The convention we follow is `<test-provided prefix>_test_YYYYMMDD_<8-character random suffix>`.
  */
 public class TestingNamespaces {
 
@@ -46,7 +45,7 @@ public class TestingNamespaces {
    */
   public static String generate(final String prefix) {
     final String userDefinedPrefix = prefix != null ? prefix + "_" : "";
-    return STANDARD_PREFIX + userDefinedPrefix + FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC"))) + "_" + generateSuffix();
+    return userDefinedPrefix + STANDARD_PREFIX + FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC"))) + "_" + generateSuffix();
   }
 
   public static String generateFromOriginal(final String toOverwrite, final String oldPrefix, final String newPrefix) {
@@ -71,13 +70,14 @@ public class TestingNamespaces {
   }
 
   private static Optional<Instant> ifTestNamespaceGetDate(final String namespace) {
-    if (!namespace.startsWith(STANDARD_PREFIX)) {
+    final String[] parts = namespace.split("_");
+
+    if (parts.length < 3) {
       return Optional.empty();
     }
 
-    final String[] parts = namespace.split("_");
-
-    if (parts.length < 2) {
+    // need to re-add the _ since it gets pruned out by the split.
+    if (!STANDARD_PREFIX.equals(parts[parts.length - 3] + "_")) {
       return Optional.empty();
     }
 
