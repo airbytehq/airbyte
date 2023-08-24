@@ -36,7 +36,7 @@ public class BufferManager {
 
   public BufferManager() {
     this(104857600L); // 100mb
-//    this((long) (Runtime.getRuntime().maxMemory() * 0.8));
+    // this((long) (Runtime.getRuntime().maxMemory() * 0.8));
   }
 
   @VisibleForTesting
