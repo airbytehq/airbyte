@@ -124,7 +124,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final StreamId streamId = new SnowflakeSqlGenerator().buildStreamId(namespace, streamName, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
     return retrieveRecordsFromTable(streamId.rawName(), streamId.rawNamespace())
         .stream()
-        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
