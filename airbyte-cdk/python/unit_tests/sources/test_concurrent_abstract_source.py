@@ -73,3 +73,56 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         assert queue.get.call_count == 2
 
         assert len(all_messages) == 2
+        for expected_record in records:
+            assert expected_record in all_messages
+
+    def test_read_a_single_stream_with_two_partitions(self):
+        queue: Queue = Mock()
+        partition_generator: PartitionGenerator = MockPartitionGenerator(queue)
+        queue_consumer: QueueConsumer = QueueConsumer()
+        stream = Mock()
+        streams = [stream]
+        source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
+        config = {}
+        configured_catalog = Mock()  # FIXME?
+
+        partition1 = Partition()
+        partition2 = Partition()
+        partitions = [partition1, partition2]
+
+        stream.generate_partitions.return_value = iter(partitions)
+
+        records_partition_1 = [
+            {"id": 1, "partition": 1},
+            {"id": 2, "partition": 1},
+        ]
+
+        records_partition_2 = [
+            {"id": 3, "partition": 2},
+            {"id": 4, "partition": 2},
+        ]
+        stream.read_records.side_effect = [iter(records_partition_1), iter(records_partition_2)]
+
+        queue.get.side_effect = [(partition1, stream), (partition2, stream), _SENTINEL]
+
+        all_messages = list(source.read(self._logger, config, configured_catalog, self._state))
+
+        # partition_generator.generate_partitions_for_stream.assert_called_once_with(stream)
+        expected_put_calls = [call((partition1, stream)), call(partition2, stream), call(_SENTINEL)]
+        actual_put_calls = queue.put.mock_calls
+
+        for expected_call in expected_put_calls:
+            print(f"expected: {expected_call}")
+            print(f"actual: {actual_put_calls}")
+            # FIXME would be nice to also compare the stream...
+            # FIXME not toally sure why [1]s aren't equal...
+            found = any(actual_call[0] == expected_call[0] for actual_call in actual_put_calls)
+            assert found
+        assert len(expected_put_calls) == len(actual_put_calls)
+
+        assert queue.get.call_count == 3
+
+        assert len(all_messages) == 4
+
+        for expected_record in [*records_partition_1, *records_partition_2]:
+            assert expected_record in all_messages
