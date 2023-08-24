@@ -1,85 +1,105 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "address": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "street": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "state": {
-          "type": "null"
+          "type": ["null", "string"]
         },
         "postal_code": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country": {
-          "type": "null"
+          "type": ["null", "string"]
         }
       }
     },
     "assignee_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "contact_type_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "details": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email_domain": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "socials": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "url": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "category": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "tags": {
-      "type": "array",
-      "items": {}
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "websites": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["object", "null"],
+        "additionalProperties": true,
         "properties": {
           "url": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "category": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "interaction_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "date_created": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "date_modified": {
-      "type": "integer"
+      "type": ["null", "integer"]
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
+    },
+    "phone_numbers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     }
   }
 }

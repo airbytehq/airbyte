@@ -17,7 +17,7 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "currencyType":{
+    "currencyType": {
       "type": ["null", "string"]
     },
     "custom1": {

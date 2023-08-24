@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,8 +58,9 @@ public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
     private final MysqlDebeziumStateAttributes stateAttributes;
     private final MySqlCdcConnectorMetadataInjector metadataInjector;
 
-    public CdcMetadataInjector(final String transactionTimestamp, final MysqlDebeziumStateAttributes stateAttributes,
-        final MySqlCdcConnectorMetadataInjector metadataInjector) {
+    public CdcMetadataInjector(final String transactionTimestamp,
+                               final MysqlDebeziumStateAttributes stateAttributes,
+                               final MySqlCdcConnectorMetadataInjector metadataInjector) {
       this.transactionTimestamp = transactionTimestamp;
       this.stateAttributes = stateAttributes;
       this.metadataInjector = metadataInjector;
@@ -64,5 +69,7 @@ public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
     private void inject(final ObjectNode record) {
       metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(record, transactionTimestamp, stateAttributes);
     }
+
   }
+
 }
