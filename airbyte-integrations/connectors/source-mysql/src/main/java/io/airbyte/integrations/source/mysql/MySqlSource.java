@@ -38,7 +38,12 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
+import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -331,6 +336,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
+    final boolean trackSchemaHistory = true;
     final JsonNode sourceConfig = database.getSourceConfig();
     final MySqlFeatureFlags featureFlags = new MySqlFeatureFlags(sourceConfig);
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
@@ -341,19 +347,27 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
-          new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime, OptionalInt.empty());
+          new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), trackSchemaHistory, firstRecordWaitTime, OptionalInt.empty());
 
       final MySqlCdcStateHandler mySqlCdcStateHandler = new MySqlCdcStateHandler(stateManager);
       final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
+      final CdcSavedInfoFetcher cdcSavedInfoFetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-          new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
+      final DebeziumPropertiesManager incrementalDebeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(
+              MySqlCdcProperties.getSnapshotProperties(database),
+              sourceConfig,
+              new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot),
+              AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
+              AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory, new AirbyteDebeziumHandler.EmptySavedInfo()));
+
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+          cdcSavedInfoFetcher,
           new MySqlCdcStateHandler(stateManager),
           mySqlCdcConnectorMetadataInjector,
-          MySqlCdcProperties.getDebeziumProperties(database),
+              incrementalDebeziumPropertiesManager,
           emittedAt,
           false);
 
@@ -361,11 +375,19 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
 
+      final DebeziumPropertiesManager snapshotDebeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(
+              MySqlCdcProperties.getSnapshotProperties(database),
+              sourceConfig,
+              new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot),
+              AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose(),
+              AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory, new AirbyteDebeziumHandler.EmptySavedInfo())
+      );
+
       final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot),
           mySqlCdcConnectorMetadataInjector,
-          MySqlCdcProperties.getSnapshotProperties(database),
           mySqlCdcStateHandler,
+          new DebeziumRecordPublisher(snapshotDebeziumPropertiesManager),
           emittedAt);
 
       return Collections.singletonList(
