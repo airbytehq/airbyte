@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -18,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefinition> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryV2RawTableMigrator.class);
 
   private final BigQuery bq;
@@ -26,7 +31,6 @@ public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefin
     this.bq = bq;
   }
 
-
   @Override
   public void migrateIfNecessary(final StreamConfig streamConfig) throws InterruptedException {
     final Table rawTable = bq.getTable(TableId.of(streamConfig.id().rawNamespace(), streamConfig.id().rawName()));
@@ -34,22 +38,26 @@ public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefin
       final Schema existingRawSchema = rawTable.getDefinition().getSchema();
       final FieldList fields = existingRawSchema.getFields();
       if (fields.stream().noneMatch(f -> JavaBaseConstants.COLUMN_NAME_DATA.equals(f.getName()))) {
-        throw new IllegalStateException("Table does not have a column named _airbyte_data. We are likely colliding with a completely different table.");
+        throw new IllegalStateException(
+            "Table does not have a column named _airbyte_data. We are likely colliding with a completely different table.");
       }
       final Field dataColumn = fields.get(JavaBaseConstants.COLUMN_NAME_DATA);
       if (dataColumn.getType() == LegacySQLTypeName.JSON) {
         LOGGER.info("Raw table has _airbyte_data of type JSON. Migrating to STRING.");
-        final String tmpRawTableId = BigQuerySqlGenerator.QUOTE + streamConfig.id().rawNamespace() + BigQuerySqlGenerator.QUOTE + "." + BigQuerySqlGenerator.QUOTE + streamConfig.id().rawName() + "_airbyte_tmp" + BigQuerySqlGenerator.QUOTE;
+        final String tmpRawTableId = BigQuerySqlGenerator.QUOTE + streamConfig.id().rawNamespace() + BigQuerySqlGenerator.QUOTE + "."
+            + BigQuerySqlGenerator.QUOTE + streamConfig.id().rawName() + "_airbyte_tmp" + BigQuerySqlGenerator.QUOTE;
         bq.query(QueryJobConfiguration.of(
             new StringSubstitutor(Map.of(
                 "raw_table", streamConfig.id().rawTableId(BigQuerySqlGenerator.QUOTE),
                 "tmp_raw_table", tmpRawTableId,
-                "real_raw_table", BigQuerySqlGenerator.QUOTE + streamConfig.id().rawName() + BigQuerySqlGenerator.QUOTE
-            )).replace(
-                // In full refresh / append mode, standard inserts is creating a non-partitioned raw table. (possibly also in overwrite mode?).
-                // We can't just CREATE OR REPLACE the table because bigquery will complain that we're trying to change the partitioning scheme.
-                // Do an explicit CREATE tmp + DROP + RENAME, similar to how we overwrite the final tables in OVERWRITE mode.
-                """
+                "real_raw_table", BigQuerySqlGenerator.QUOTE + streamConfig.id().rawName() + BigQuerySqlGenerator.QUOTE)).replace(
+                    // In full refresh / append mode, standard inserts is creating a non-partitioned raw table.
+                    // (possibly also in overwrite mode?).
+                    // We can't just CREATE OR REPLACE the table because bigquery will complain that we're trying to
+                    // change the partitioning scheme.
+                    // Do an explicit CREATE tmp + DROP + RENAME, similar to how we overwrite the final tables in
+                    // OVERWRITE mode.
+                    """
                     CREATE TABLE ${tmp_raw_table}
                     PARTITION BY DATE(_airbyte_extracted_at)
                     CLUSTER BY _airbyte_extracted_at
@@ -63,13 +71,12 @@ public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefin
                     );
                     DROP TABLE IF EXISTS ${raw_table};
                     ALTER TABLE ${tmp_raw_table} RENAME TO ${real_raw_table};
-                    """
-            )
-        ));
+                    """)));
         LOGGER.info("Completed Data column Migration for stream {}", streamConfig.id().rawName());
       } else {
         LOGGER.info("No Data column Migration Required for stream {}", streamConfig.id().rawName());
       }
     }
   }
+
 }

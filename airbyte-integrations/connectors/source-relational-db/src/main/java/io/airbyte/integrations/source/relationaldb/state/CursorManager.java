@@ -11,7 +11,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -64,7 +63,8 @@ public class CursorManager<S> {
                        final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
                        final boolean onlyIncludeIncrementalStreams) {
     pairToCursorInfo = createCursorInfoMap(
-        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, onlyIncludeIncrementalStreams);
+        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction,
+        onlyIncludeIncrementalStreams);
   }
 
   /**
