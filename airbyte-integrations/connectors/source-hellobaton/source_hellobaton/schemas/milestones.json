@@ -37,6 +37,7 @@
     "finish_datetime": {"type": ["string", "null"], "format": "date-time"},
     "created_from": {"type": ["string", "null"]},
     "duration": {"type": ["integer", "null"]},
+    "feedback_list": {"type": ["string", "null"]},
     "created": {"type": ["string", "null"], "format": "date-time"},
     "modified": {"type": ["string", "null"], "format": "date-time"}
   }

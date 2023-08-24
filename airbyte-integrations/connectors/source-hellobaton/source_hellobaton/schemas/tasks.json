@@ -9,7 +9,12 @@
     "description": {"type": ["string", "null"]},
     "project": {"type": ["string", "null"]},
     "status": {"type": ["string", "null"]},
-    "dependency": {"type": ["string", "null"]},
+    "dependencies": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
     "start_datetime": {"type": ["string", "null"], "format": "date-time"},
     "due_datetime": {"type": ["string", "null"], "format": "date-time"},
     "started_datetime": {"type": ["string", "null"], "format": "date-time"},

@@ -7,6 +7,8 @@
     "_self": {"type": ["string", "null"]},
     "first_name": {"type": ["string", "null"]},
     "last_name": {"type": ["string", "null"]},
+    "capacity": {"type": ["integer", "null"]},
+    "department": {"type": ["object", "null"]},
     "email": {"type": ["string", "null"]},
     "account_type": {"type": ["string", "null"]},
     "job_title": {"type": ["string", "null"]},

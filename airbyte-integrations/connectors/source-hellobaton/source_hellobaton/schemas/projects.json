@@ -5,6 +5,7 @@
   "properties": {
     "_self": {"type": ["string", "null"]},
     "annual_contract_value": {"type": ["string", "null"]},
+    "archived": {"type": ["boolean", "null"]}, 
     "attachment_list": {"type": ["string", "null"]},
     "client_systems": {"type": ["string", "null"]},
     "companies": {
@@ -19,11 +20,13 @@
     "created_from": {"type": ["string", "null"]},
     "created_from_template": {"type": ["string", "null"]},
     "creator": {"type": ["string", "null"]},
+    "custom_field_list": { "type": ["string", "null"]}, 
     "deadline_datetime": {"type": ["string", "null"], "format": "date-time"},
     "estimated_duration": {"type": ["integer", "null"]},
     "id": {"type": ["integer", "null"]},
     "implementation_budget": {"type": ["string", "null"]},
-    "milestone_list": {"type": ["string", "null"]},
+    "milestone_feedback_list": { "type": ["string", "null"]},
+    "milestone_list": { "type": ["string", "null"]},
     "modified": {"type": ["string", "null"], "format": "date-time"},
     "phase": {
       "type": ["object", "null"],
@@ -36,6 +39,8 @@
         "modified": {"type": ["string", "null"], "format": "date-time"}
       }
     },
+    "project_phases_list": {"type": ["string", "null"]},
+    "project_user_list": { "type": ["string", "null"] },
     "risk_profiles": {
       "type": ["array", "null"],
       "items": {
