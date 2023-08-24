@@ -32,20 +32,20 @@ definitions:
     type: HttpRequester
     url_base: >-
       https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{ config['project_key'] }}
-    path: '{{ parameters.path }}'
+    path: "{{ parameters.path }}"
     http_method: GET
     request_parameters:
       sort: lastModifiedAt asc
       where: lastModifiedAt >= :date
     request_headers: {}
     authenticator:
-      type: OAuthAuthenticator
-      client_id: '{{ config[''client_id''] }}'
-      client_secret: '{{ config[''client_secret''] }}'
+      type: CustomAuthenticator
+      class_name: source_commercetools.components.CommerceToolsOauth2Authenticator
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
       refresh_request_body:
         scope: manage_project:{{ config['project_key'] }}
-      token_refresh_endpoint: >-
-        https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
+      token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
       grant_type: client_credentials
       access_token_name: access_token
     request_body_json: {}
@@ -63,26 +63,24 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: lastModifiedAt
     cursor_datetime_formats:
-      - '%Y-%m-%dT%H:%M:%S.%f%z'
-    datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     start_datetime:
       type: MinMaxDatetime
-      datetime: '{{ config[''start_date''] }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
     start_time_option:
       inject_into: request_parameter
       field_name: var.date
       type: RequestOption
     end_datetime:
       type: MinMaxDatetime
-      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   base_stream:
     type: DeclarativeStream
-    name: '{{ parameters.name }}'
-    primary_key:
-      - id
+    primary_key: id
     retriever:
       $ref: "#/definitions/retriever"
     incremental_sync:
@@ -93,7 +91,7 @@ definitions:
     $parameters:
       name: "customers"
       path: "customers"
-    
+
   discount_codes_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -120,7 +118,7 @@ definitions:
 
 streams:
   - "#/definitions/customers_stream"
-  - "#/definitions/discountcodes_stream"
+  - "#/definitions/discount_codes_stream"
   - "#/definitions/orders_stream"
   - "#/definitions/payments_stream"
   - "#/definitions/products_stream"
@@ -144,7 +142,7 @@ spec:
         type: string
         title: Start date
         format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         order: 0
       client_id:
         type: string
