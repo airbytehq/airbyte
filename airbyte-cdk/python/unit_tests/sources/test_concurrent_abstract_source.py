@@ -37,28 +37,33 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         self._logger = Mock()
         self._state = None
 
+    def _mock_stream(self, name: str, partitions, records_per_partition):
+        stream = Mock()
+        stream.name = name
+        stream.get_json_schema.return_value = {}
+        stream.generate_partitions.return_value = iter(partitions)
+        stream.read_records.side_effect = [iter(records) for records in records_per_partition]
+        return stream
+
     def test_read_a_single_stream_with_a_single_partition(self):
         queue: Queue = Mock()
         partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
-        stream = Mock()
-        stream.name = "A"
-        stream.get_json_schema.return_value = {}
-        streams = [stream]
-        source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
-        config = {}
-        configured_catalog = Mock()  # FIXME?
 
         partition = Partition()
         partitions = [partition]
-
-        stream.generate_partitions.return_value = iter(partitions)
 
         records = [
             {"id": 1, "partition": 1},
             {"id": 2, "partition": 1},
         ]
-        stream.read_records.return_value = iter(records)
+        records_per_partition = [records]
+
+        stream = self._mock_stream("A", partitions, records_per_partition)
+        streams = [stream]
+        source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
+        config = {}
+        configured_catalog = Mock()  # FIXME?
 
         queue.get.side_effect = [(partition, stream), _SENTINEL]
 
@@ -84,19 +89,9 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         queue: Queue = Mock()
         partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
-        stream = Mock()
-        stream.name = "A"
-        stream.get_json_schema.return_value = {}
-        streams = [stream]
-        source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
-        config = {}
-        configured_catalog = Mock()  # FIXME?
-
         partition1 = Partition()
         partition2 = Partition()
         partitions = [partition1, partition2]
-
-        stream.generate_partitions.return_value = iter(partitions)
 
         records_partition_1 = [
             {"id": 1, "partition": 1},
@@ -107,6 +102,13 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
             {"id": 3, "partition": 2},
             {"id": 4, "partition": 2},
         ]
+        records_per_partition = [records_partition_1, records_partition_2]
+        stream = self._mock_stream("A", partitions, records_per_partition)
+        streams = [stream]
+        source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
+        config = {}
+        configured_catalog = Mock()  # FIXME?
+
         stream.read_records.side_effect = [iter(records_partition_1), iter(records_partition_2)]
 
         queue.get.side_effect = [(partition1, stream), (partition2, stream), _SENTINEL]
@@ -146,25 +148,6 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         queue: Queue = Mock()
         partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
-        stream1 = Mock()
-        stream1.name = "A"
-        stream1.get_json_schema.return_value = {}
-        stream2 = Mock()
-        stream2.name = "B"
-        stream2.get_json_schema.return_value = {}
-        streams = [stream1, stream2]
-        source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
-        config = {}
-        configured_catalog = Mock()  # FIXME?
-
-        partition1_stream1 = Partition()
-        partition2_stream1 = Partition()
-        partitions_stream1 = [partition1_stream1, partition2_stream1]
-        partition1_stream2 = Partition()
-        partitions_stream2 = [partition1_stream2]
-
-        stream1.generate_partitions.return_value = iter(partitions_stream1)
-        stream2.generate_partitions.return_value = iter(partitions_stream2)
 
         records_partition_1 = [
             {"id": 1, "partition": 1, "stream": "A"},
@@ -175,14 +158,26 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
             {"id": 3, "partition": 2, "stream": "A"},
             {"id": 4, "partition": 2, "stream": "A"},
         ]
-
+        records_stream1_per_partition = [records_partition_1, records_partition_2]
         records_partition_1_stream_2 = [
             {"id": 1, "partition": 1, "stream": "B"},
             {"id": 2, "partition": 1, "stream": "B"},
             {"id": 3, "partition": 1, "stream": "B"},
         ]
-        stream1.read_records.side_effect = [iter(records_partition_1), iter(records_partition_2)]
-        stream2.read_records.side_effect = [iter(records_partition_1_stream_2)]
+        records_stream2_per_partition = [records_partition_1_stream_2]
+
+        partition1_stream1 = Partition()
+        partition2_stream1 = Partition()
+        partitions_stream1 = [partition1_stream1, partition2_stream1]
+        partition1_stream2 = Partition()
+        partitions_stream2 = [partition1_stream2]
+
+        stream1 = self._mock_stream("A", partitions_stream1, records_stream1_per_partition)
+        stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition)
+        streams = [stream1, stream2]
+        source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
+        config = {}
+        configured_catalog = Mock()  # FIXME?
 
         queue.get.side_effect = [(partition1_stream1, stream1), (partition2_stream1, stream1), (partition1_stream2, stream2), _SENTINEL]
 
@@ -190,7 +185,6 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         for message in all_messages:
             message.record.emitted_at = 1
 
-        # partition_generator.generate_partitions_for_stream.assert_called_once_with(stream)
         expected_put_calls = [
             call((partition1_stream1, stream1)),
             call(partition2_stream1, stream1),
