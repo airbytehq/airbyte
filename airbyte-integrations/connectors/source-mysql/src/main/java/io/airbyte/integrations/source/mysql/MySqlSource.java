@@ -334,8 +334,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final JsonNode sourceConfig = database.getSourceConfig();
     final MySqlFeatureFlags featureFlags = new MySqlFeatureFlags(sourceConfig);
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      if (featureFlags.isCdcSyncEnabled()) {
-        LOGGER.info("Using PK + CDC ");
+      if (featureFlags.isCdcInitialSyncViaPkEnabled()) {
+        LOGGER.info("Using PK + CDC");
         return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
       }
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);

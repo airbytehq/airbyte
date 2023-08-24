@@ -61,7 +61,7 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
 
     final List<AirbyteMessage> allMessages = super.runRead(catalog);
     if (allMessages.size() != 2) {
-      throw new RuntimeException("First sync should only generate 2 records");
+      throw new RuntimeException("First sync should only generate 2 records, instead " + allMessages.size() + " records were produced.");
     }
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(allMessages);
     if (stateAfterFirstBatch == null || stateAfterFirstBatch.isEmpty()) {
