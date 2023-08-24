@@ -11,7 +11,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 1.1.1
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-mssql-strict-encrypt
   githubIssueLabel: source-mssql
   icon: mssql.svg
@@ -21,4 +21,9 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   tags:
     - language:java
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Add default cursor for cdc"
+        upgradeDeadline: "2023-08-23"
 metadataSpecVersion: "1.0"

@@ -145,6 +145,20 @@
           "video": { "date": "2050-08-28" }
         }
       },
+      "stream_descriptor": { "name": "search_analytics_keyword_site_report_by_site" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "https://airbyte.io/": {
+          "web": { "date": "2050-08-28" },
+          "news": { "date": "2050-08-28" },
+          "image": { "date": "2050-08-28" },
+          "video": { "date": "2050-08-28" }
+        }
+      },
       "stream_descriptor": { "name": "search_analytics_keyword_page_report" }
     }
   },
