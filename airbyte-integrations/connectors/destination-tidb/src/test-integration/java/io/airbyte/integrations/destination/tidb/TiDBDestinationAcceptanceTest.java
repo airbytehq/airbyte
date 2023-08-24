@@ -143,7 +143,7 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv) {
     container.stop();
     container.close();
   }

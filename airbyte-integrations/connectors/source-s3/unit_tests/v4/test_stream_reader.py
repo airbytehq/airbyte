@@ -130,6 +130,25 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
     assert set(f.uri for f in files) == expected_uris
 
 
+@patch("boto3.client")
+def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_token(boto3_client_mock) -> None:
+    boto3_client_mock.return_value.list_objects_v2.side_effect = [
+        {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2, "NextContinuationToken": "a key"},
+        {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2},
+    ]
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        aws_access_key_id="aws_access_key_id",
+        aws_secret_access_key="aws_secret_access_key",
+        streams=[],
+        endpoint=None,
+    )
+    list(reader.get_matching_files(["**"], None, logger))
+    assert boto3_client_mock.return_value.list_objects_v2.call_count == 2
+    assert "ContinuationToken" in boto3_client_mock.return_value.list_objects_v2.call_args_list[1].kwargs
+
+
 def test_get_matching_files_exception():
     reader = SourceS3StreamReader()
     reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])

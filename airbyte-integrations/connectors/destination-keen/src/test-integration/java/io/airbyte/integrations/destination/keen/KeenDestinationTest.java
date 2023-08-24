@@ -96,7 +96,7 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     if (!Files.exists(Path.of(SECRET_FILE_PATH))) {
       throw new IllegalStateException(
           "Must provide path to a file containing Keen account credentials: Project ID and Master API Key. " +
@@ -109,7 +109,7 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     for (final String keenCollection : collectionsToDelete) {
       keenHttpClient.eraseStream(keenCollection, projectId, apiKey);
     }
