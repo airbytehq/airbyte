@@ -138,10 +138,7 @@
             "title": "verify-full",
             "additionalProperties": false,
             "description": "Verify-full SSL mode.",
-            "required": [
-              "mode",
-              "ssl_ca_certificate"
-            ],
+            "required": ["mode", "ssl_ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
@@ -160,7 +157,6 @@
               }
             }
           }
-
         ]
       },
       "jdbc_url_params": {

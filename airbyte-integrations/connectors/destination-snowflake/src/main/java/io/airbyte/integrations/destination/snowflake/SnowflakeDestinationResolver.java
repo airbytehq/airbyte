@@ -7,14 +7,13 @@ package io.airbyte.integrations.destination.snowflake;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
 import java.util.Map;
 
 public class SnowflakeDestinationResolver {
 
   public static DestinationType getTypeFromConfig(final JsonNode config) {
-      return DestinationType.INTERNAL_STAGING;
+    return DestinationType.INTERNAL_STAGING;
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination(final String airbyteEnvironment) {

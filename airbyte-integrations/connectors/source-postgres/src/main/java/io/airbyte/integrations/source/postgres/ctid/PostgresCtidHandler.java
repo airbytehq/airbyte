@@ -48,7 +48,6 @@ public class PostgresCtidHandler {
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
                              final CtidPostgresSourceOperations sourceOperations,

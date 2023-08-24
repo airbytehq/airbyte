@@ -1,11 +1,15 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import java.util.Map;
 import java.util.Objects;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 
 public abstract class CtidStateManager {
 
@@ -23,8 +27,8 @@ public abstract class CtidStateManager {
   }
 
   public static boolean validateRelationFileNode(final CtidStatus ctidstatus,
-      final AirbyteStreamNameNamespacePair pair,
-      final FileNodeHandler fileNodeHandler) {
+                                                 final AirbyteStreamNameNamespacePair pair,
+                                                 final FileNodeHandler fileNodeHandler) {
 
     if (fileNodeHandler.hasFileNode(pair)) {
       final Long fileNode = fileNodeHandler.getFileNode(pair);
