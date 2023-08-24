@@ -32,6 +32,8 @@ metadata_service = "metadata_service.commands:metadata_service"
 
 [tool.poe.tasks]
 generate-models = { shell = "./bin/generate-python-classes.sh" }
+replicate-prod = "gsutil -m rsync -r -d gs://prod-airbyte-cloud-connector-metadata-service gs://$TARGET_BUCKET"
+promote-connector-to-latest = "gsutil  -m rsync -r -d gs://$TARGET_BUCKET/metadata/$CONNECTOR/$VERSION gs://$TARGET_BUCKET/metadata/$CONNECTOR/latest"
 
 [build-system]
 requires = ["poetry-core"]

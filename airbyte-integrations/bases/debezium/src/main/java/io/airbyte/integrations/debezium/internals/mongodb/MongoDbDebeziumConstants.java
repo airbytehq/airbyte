@@ -32,7 +32,7 @@ public class MongoDbDebeziumConstants {
    * Constants for Debezium Offset State storage.
    */
   public static class OffsetState {
-
+    
     public static final String KEY_REPLICA_SET = SourceInfo.REPLICA_SET_NAME;
 
     public static final String KEY_SERVER_ID = SourceInfo.SERVER_ID_KEY;
