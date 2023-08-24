@@ -7,27 +7,28 @@
 from typing import List, Optional
 
 import anyio
+from dagger import File, QueryError
+
 from pipelines.actions import environments, secrets
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
-from pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImage
+from pipelines.builds.java_connectors import (
+    BuildConnectorDistributionTar,
+    BuildConnectorImage,
+)
 from pipelines.builds.normalization import BuildOrPullNormalization
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
 from pipelines.tests.common import AcceptanceTests
 from pipelines.utils import export_container_to_tarball
-from dagger import File, QueryError
 
 
-class IntegrationTest(GradleTask):
+class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     gradle_task_name = "integrationTest"
     DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
-
-    @property
-    def title(self) -> str:
-        return f"./gradlew :airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
+    title = "Java Connector Integration Tests"
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
@@ -52,6 +53,22 @@ class IntegrationTest(GradleTask):
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
 
+class UnitTests(GradleTask):
+    """A step to run unit tests for Java connectors."""
+
+    title = "Java Connector Unit Tests"
+    gradle_task_name = "test"
+    context: ConnectorContext
+
+    @property
+    def gradle_task_options(self) -> tuple[str, ...]:
+        """Return the Gradle task options to use when running unit tests."""
+        if self.context.fail_fast:
+            return ("--fail-fast",)
+
+        return ()
+
+
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """Run all tests for a Java connectors.
 
@@ -68,6 +85,13 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """
     context.connector_secrets = await secrets.get_connector_secrets(context)
     step_results = []
+
+    unit_tests_results = await UnitTests(context).run()
+    step_results.append(unit_tests_results)
+
+    if context.fail_fast and unit_tests_results.status is StepStatus.FAILURE:
+        return step_results
+
     build_distribution_tar_results = await BuildConnectorDistributionTar(context).run()
     step_results.append(build_distribution_tar_results)
     if build_distribution_tar_results.status is StepStatus.FAILURE:
@@ -94,7 +118,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
 
-    integration_tests_results = await IntegrationTest(context).run(connector_image_tar_file, normalization_tar_file)
+    integration_tests_results = await IntegrationTests(context).run(connector_image_tar_file, normalization_tar_file)
     step_results.append(integration_tests_results)
 
     acceptance_tests_results = await AcceptanceTests(context).run(connector_image_tar_file)

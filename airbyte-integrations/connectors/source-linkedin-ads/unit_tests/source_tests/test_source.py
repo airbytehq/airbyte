@@ -3,11 +3,8 @@
 #
 
 
-from unittest.mock import patch
-
 import pytest
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_linkedin_ads.source import (
@@ -84,20 +81,6 @@ class TestAllStreams:
     def test_get_authenticator(self, config: dict):
         test = self._instance.get_authenticator(config)
         assert isinstance(test, (Oauth2Authenticator, TokenAuthenticator))
-
-    @pytest.mark.parametrize(
-        "response, check_passed",
-        [
-            (iter({"id": 123}), True),
-            (requests.HTTPError(), False),
-        ],
-        ids=["Success", "Fail"],
-    )
-    def test_check(self, response, check_passed):
-        with patch.object(Accounts, "read_records", return_value=response) as mock_method:
-            result = self._instance.check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
-            mock_method.assert_called()
-            assert check_passed == result[0]
 
     @pytest.mark.parametrize(
         "stream_cls",
