@@ -56,6 +56,7 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+|  0.4.1  | 2023-08-24 | [28972](https://github.com/airbytehq/airbyte/pull/28972) | Fix Base URL  |
 |  0.4.0  | 2023-08-03 | [28972](https://github.com/airbytehq/airbyte/pull/28972) | Migrate to Low-Code CDK                                                        |
 |  0.3.0  | 2023-06-20 | [29001](https://github.com/airbytehq/airbyte/pull/29001) | Add Organizations, OrganizationMembers, OrganizationMemberRoles streams        |
 |  0.2.0  | 2023-05-23 | [26445](https://github.com/airbytehq/airbyte/pull/26445) | Add Clients stream                                                             |

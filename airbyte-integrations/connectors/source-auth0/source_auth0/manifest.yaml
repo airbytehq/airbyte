@@ -9,7 +9,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "{{ config['base_url'] }}"
+    url_base: "{{ config['base_url'] }}/api/v2"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
