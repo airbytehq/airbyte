@@ -258,7 +258,7 @@ public class MySqlDebeziumStateUtil {
     final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
     final DebeziumPropertiesManager propertiesManager = new RelationalDbDebeziumPropertiesManager(properties,
-            database.getSourceConfig(), catalog, offsetManager, Optional.of(schemaHistoryStorage));
+        database.getSourceConfig(), catalog, offsetManager, Optional.of(schemaHistoryStorage));
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(propertiesManager)) {
       publisher.start(queue);
       while (!publisher.hasClosed()) {

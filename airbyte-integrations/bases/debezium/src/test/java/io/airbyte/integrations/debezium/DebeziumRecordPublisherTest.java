@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;

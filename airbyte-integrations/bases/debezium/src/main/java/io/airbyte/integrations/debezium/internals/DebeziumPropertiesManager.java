@@ -101,4 +101,5 @@ public abstract class DebeziumPropertiesManager {
   protected abstract String getName(final JsonNode config);
 
   protected abstract Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config);
+
 }

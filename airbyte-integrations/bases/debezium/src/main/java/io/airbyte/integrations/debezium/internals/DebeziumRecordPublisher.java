@@ -4,14 +4,10 @@
 
 package io.airbyte.integrations.debezium.internals;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
