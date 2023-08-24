@@ -4,6 +4,15 @@
 
 package io.airbyte.integrations.destination.iceberg;
 
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FORMAT_TYPE_CONFIG_KEY;
+import static java.util.Map.entry;
+import static java.util.Map.ofEntries;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
@@ -20,6 +29,7 @@ import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
 import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.s3a.S3AFileSystem;
 import org.apache.iceberg.Table;
@@ -37,20 +47,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import java.util.Map;
-
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FORMAT_TYPE_CONFIG_KEY;
-import static java.util.Map.entry;
-import static java.util.Map.ofEntries;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 @Slf4j
-class IcebergRESTCatalogConfigTest
-{
+class IcebergRESTCatalogConfigTest {
 
   private static final String FAKE_WAREHOUSE_URI = "s3://fake-bucket";
   private static final String FAKE_ENDPOINT = "fake-endpoint";
@@ -117,6 +115,7 @@ class IcebergRESTCatalogConfigTest
       public IcebergCatalogConfig fromJsonNodeConfig(final @NotNull JsonNode jsonConfig) {
         return config;
       }
+
     };
   }
 

@@ -83,7 +83,7 @@
       "stream_descriptor": { "name": "team_templates" }
     }
   },
-    {
+  {
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },

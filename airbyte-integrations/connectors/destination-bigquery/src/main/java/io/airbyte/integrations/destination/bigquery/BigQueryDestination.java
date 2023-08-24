@@ -357,8 +357,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         outputRecordCollector,
         BigQueryUtils.getDatasetId(config),
         typerDeduper,
-        parsedCatalog
-    );
+        parsedCatalog);
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final BigQuery bigQuery,
@@ -414,8 +413,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         getTargetTableNameTransformer(namingResolver),
         typerDeduper,
         parsedCatalog,
-        BigQueryUtils.getDatasetId(config)
-    );
+        BigQueryUtils.getDatasetId(config));
   }
 
   protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {

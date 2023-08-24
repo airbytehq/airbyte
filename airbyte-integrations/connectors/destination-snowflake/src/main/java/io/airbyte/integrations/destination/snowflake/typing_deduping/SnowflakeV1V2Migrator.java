@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -20,7 +24,8 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
 
   private final String databaseName;
 
-  public SnowflakeV1V2Migrator(final NamingConventionTransformer namingConventionTransformer, final JdbcDatabase database,
+  public SnowflakeV1V2Migrator(final NamingConventionTransformer namingConventionTransformer,
+                               final JdbcDatabase database,
                                final String databaseName) {
     this.namingConventionTransformer = namingConventionTransformer;
     this.database = database;
@@ -33,14 +38,13 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
     return !database
         .queryJsons(
             """
-                SELECT SCHEMA_NAME
-                FROM information_schema.schemata
-                WHERE schema_name = ?
-                AND catalog_name = ?;
-                """,
+            SELECT SCHEMA_NAME
+            FROM information_schema.schemata
+            WHERE schema_name = ?
+            AND catalog_name = ?;
+            """,
             StringUtils.wrap(streamConfig.id().rawNamespace(), "\""),
-            databaseName
-        )
+            databaseName)
         .isEmpty();
   }
 
@@ -52,27 +56,27 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
   @SneakyThrows
   @Override
   protected Optional<SnowflakeTableDefinition> getTableIfExists(final String namespace, final String tableName) {
-    // TODO this is mostly copied from SnowflakeDestinationHandler#findExistingTable, we should probably reuse this logic
-    // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates VARIANT as VARCHAR
+    // TODO this is mostly copied from SnowflakeDestinationHandler#findExistingTable, we should probably
+    // reuse this logic
+    // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
+    // VARIANT as VARCHAR
     LinkedHashMap<String, String> columns =
         database.queryJsons(
-                    """
-                        SELECT column_name, data_type
-                        FROM information_schema.columns
-                        WHERE table_catalog = ?
-                          AND table_schema = ?
-                          AND table_name = ?
-                        ORDER BY ordinal_position;
-                        """,
-                    databaseName,
-                    namespace,
-                    tableName
-                )
-                .stream()
-                .collect(LinkedHashMap::new,
-                         (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
-                         LinkedHashMap::putAll
-                );
+            """
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_catalog = ?
+              AND table_schema = ?
+              AND table_name = ?
+            ORDER BY ordinal_position;
+            """,
+            databaseName,
+            namespace,
+            tableName)
+            .stream()
+            .collect(LinkedHashMap::new,
+                (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
+                LinkedHashMap::putAll);
     if (columns.isEmpty()) {
       return Optional.empty();
     } else {
@@ -85,8 +89,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
     // The implicit upper-casing happens for this in the SqlGenerator
     return new NamespacedTableName(
         this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
-        this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName())
-    );
+        this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName()));
   }
 
   @Override
@@ -95,4 +98,5 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
     // In v2 we preserve cases
     return super.doesValidV1RawTableExist(namespace.toUpperCase(), tableName.toUpperCase());
   }
+
 }

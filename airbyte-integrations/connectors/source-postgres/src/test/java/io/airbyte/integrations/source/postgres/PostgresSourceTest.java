@@ -832,10 +832,10 @@ class PostgresSourceTest {
           .put(JdbcUtils.JDBC_URL_PARAMS_KEY, "options=-c%20statement_timeout=90000%20-c%20bytea_output=escape")
           .build());
       final AirbyteStream airbyteStream = CatalogHelpers.createAirbyteStream(
-              "id_and_bytes",
-              SCHEMA_NAME,
-              Field.of("id", JsonSchemaType.NUMBER),
-              Field.of("bytes", JsonSchemaType.STRING))
+          "id_and_bytes",
+          SCHEMA_NAME,
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("bytes", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id")));
       final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(airbyteStream));
@@ -845,10 +845,11 @@ class PostgresSourceTest {
 
       // Check that the 'options' JDBC URL parameter was parsed correctly
       // and that the bytea value is not in the default 'hex' format.
-      assertEquals(1,actualMessages.size());
+      assertEquals(1, actualMessages.size());
       final AirbyteMessage actualMessage = actualMessages.stream().findFirst().get();
       assertTrue(actualMessage.getRecord().getData().has("bytes"));
       assertEquals("\\336\\255\\276\\357", actualMessage.getRecord().getData().get("bytes").asText());
     }
   }
+
 }
