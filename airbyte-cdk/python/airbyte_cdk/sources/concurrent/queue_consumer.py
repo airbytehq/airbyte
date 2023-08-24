@@ -1,0 +1,37 @@
+import threading
+from queue import Empty, Queue
+
+from airbyte_cdk.models import (
+    SyncMode,
+)
+
+_SENTINEL = ("SENTINEL", "SENTINEL")
+
+class QueueConsumer:
+    def __init__(self, name: str = "unknown"):
+        self._iterations = 0
+        self._name = name
+
+    def consume_from_queue(self, queue: Queue, executor):
+        current_thread = threading.current_thread().ident
+        print(f"consume from queue {self._name} from {current_thread}")
+        records_and_streams = []
+        while True:
+            self._iterations += 1
+            try:
+                partition_and_stream = queue.get(timeout=2)
+                if partition_and_stream == _SENTINEL:
+                    print(f"found sentinel for {self._name} from {current_thread}")
+                    return records_and_streams
+                else:
+                    print(f"partition_and_stream for {self._name}: {partition_and_stream} from {current_thread}")
+                    partition, stream = partition_and_stream
+                    # cursor_field = None
+                    # stream_slice = None
+                    for record in stream.read_records(SyncMode.full_refresh, stream_slice=partition):
+                        records_and_streams.append((record, stream))
+                    print(f"{self._name} done reading partition {partition_and_stream} from {current_thread}")
+            except Empty:
+                print(f"queue {self._name} is empty from {current_thread}")
+                # FIXME the queue could be empty because the partition generation is slow...
+                #return records_and_streams

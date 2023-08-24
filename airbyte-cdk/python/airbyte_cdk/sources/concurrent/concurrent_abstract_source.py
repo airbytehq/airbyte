@@ -73,7 +73,7 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
 
             # Then put the sentinel on the queue
             print("putting sentinel on queue")
-            for _ in range(self._max_workers):
+            for _ in range(self._max_workers + 1000):
                 # FIXME: need a test to verify we put many sentinels..
                 self._queue.put(_SENTINEL)
             partitions_are_generated_time = time.time()
@@ -96,4 +96,4 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
                     partition_record, stream = partition_record_and_stream
                     record_counter += 1
                     yield self._get_message(partition_record, stream)
-            print(f"Read {record_counter} records")
+            print(f"Read {record_counter} records for {stream.name}")
