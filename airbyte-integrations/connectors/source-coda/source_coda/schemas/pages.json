@@ -165,10 +165,7 @@
     },
     "contentType": {
       "type": ["null", "string"],
-      "enum": [
-        "canvas",
-        "embed"
-      ]
+      "enum": ["canvas", "embed"]
     },
     "createdBy": {
       "type": "object",

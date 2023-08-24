@@ -1,45 +1,45 @@
 {
-  "$schema" : "http://json-schema.org/draft-04/schema#",
-  "type" : "array",
-  "contains" : {
-    "type" : ["null", "object"],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "contains": {
+    "type": ["null", "object"],
     "additionalProperties": true,
-    "properties" : {
-      "blockNumber" : {
-        "type" : ["null", "integer"]
+    "properties": {
+      "blockNumber": {
+        "type": ["null", "integer"]
       },
-      "blockHash" : {
-        "type" : ["null", "string"]
+      "blockHash": {
+        "type": ["null", "string"]
       },
-      "transactionIndex" : {
-        "type" : ["null", "integer"]
+      "transactionIndex": {
+        "type": ["null", "integer"]
       },
-      "removed" : {
-        "type" : ["null", "boolean"]
+      "removed": {
+        "type": ["null", "boolean"]
       },
-      "address" : {
-        "type" : ["null", "string"]
+      "address": {
+        "type": ["null", "string"]
       },
-      "data" : {
-        "type" : ["null", "string"]
+      "data": {
+        "type": ["null", "string"]
       },
-      "topics" : {
-        "type" : ["null", "array"],
-        "items" : {
-          "type" : ["null", "string"]
+      "topics": {
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "string"]
         }
       },
-      "transactionHash" : {
-        "type" : ["null", "string"]
+      "transactionHash": {
+        "type": ["null", "string"]
       },
-      "logIndex" : {
-        "type" : ["null", "integer"]
+      "logIndex": {
+        "type": ["null", "integer"]
       },
-      "parsedEvent" : {
-        "type" : ["null", "object"]
+      "parsedEvent": {
+        "type": ["null", "object"]
       }
     },
-    "required" : [
+    "required": [
       "blockNumber",
       "blockHash",
       "transactionIndex",
