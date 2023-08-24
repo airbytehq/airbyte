@@ -50,7 +50,9 @@
     },
     "tags": {
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "win_probability": {
       "type": ["null", "number"]
