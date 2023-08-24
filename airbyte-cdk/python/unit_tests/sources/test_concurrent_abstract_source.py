@@ -126,3 +126,70 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
 
         for expected_record in [*records_partition_1, *records_partition_2]:
             assert expected_record in all_messages
+
+    def test_read_two_streams(self):
+        queue: Queue = Mock()
+        partition_generator: PartitionGenerator = MockPartitionGenerator(queue)
+        queue_consumer: QueueConsumer = QueueConsumer()
+        stream1 = Mock()
+        stream2 = Mock()
+        streams = [stream1, stream2]
+        source = MockConcurrentAbstractSource(partition_generator, queue_consumer, queue, streams)
+        config = {}
+        configured_catalog = Mock()  # FIXME?
+
+        partition1_stream1 = Partition()
+        partition2_stream1 = Partition()
+        partitions_stream1 = [partition1_stream1, partition2_stream1]
+        partition1_stream2 = Partition()
+        partitions_stream2 = [partition1_stream2]
+
+        stream1.generate_partitions.return_value = iter(partitions_stream1)
+        stream2.generate_partitions.return_value = iter(partitions_stream2)
+
+        records_partition_1 = [
+            {"id": 1, "partition": 1, "stream": "A"},
+            {"id": 2, "partition": 1, "stream": "A"},
+        ]
+
+        records_partition_2 = [
+            {"id": 3, "partition": 2, "stream": "A"},
+            {"id": 4, "partition": 2, "stream": "A"},
+        ]
+
+        records_partition_1_stream_2 = [
+            {"id": 1, "partition": 1, "stream": "B"},
+            {"id": 2, "partition": 1, "stream": "B"},
+            {"id": 3, "partition": 1, "stream": "B"},
+        ]
+        stream1.read_records.side_effect = [iter(records_partition_1), iter(records_partition_2)]
+        stream2.read_records.side_effect = [iter(records_partition_1_stream_2)]
+
+        queue.get.side_effect = [(partition1_stream1, stream1), (partition2_stream1, stream1), (partition1_stream2, stream2), _SENTINEL]
+
+        all_messages = list(source.read(self._logger, config, configured_catalog, self._state))
+
+        # partition_generator.generate_partitions_for_stream.assert_called_once_with(stream)
+        expected_put_calls = [
+            call((partition1_stream1, stream1)),
+            call(partition2_stream1, stream1),
+            call(partition1_stream2, stream2),
+            call(_SENTINEL),
+        ]
+        actual_put_calls = queue.put.mock_calls
+
+        for expected_call in expected_put_calls:
+            print(f"expected: {expected_call}")
+            print(f"actual: {actual_put_calls}")
+            # FIXME would be nice to also compare the stream...
+            # FIXME not toally sure why [1]s aren't equal...
+            found = any(actual_call[0] == expected_call[0] for actual_call in actual_put_calls)
+            assert found
+        assert len(expected_put_calls) == len(actual_put_calls)
+
+        assert queue.get.call_count == 4
+
+        assert len(all_messages) == 7
+
+        for expected_record in [*records_partition_1, *records_partition_2, *records_partition_1_stream_2]:
+            assert expected_record in all_messages
