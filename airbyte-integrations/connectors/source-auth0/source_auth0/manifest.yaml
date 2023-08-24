@@ -7,13 +7,25 @@ definitions:
       type: DpathExtractor
       field_path: []
 
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: ""
+
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+
   requester:
     type: HttpRequester
-    url_base: "{{ config['base_url'] }}"
+    url_base: "{{ config['base_url'] }}/api/v2"
     http_method: "GET"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['credentials']['access_token'] }}"
+      class_name: source_auth0.components.AuthenticatorAuth0
+      bearer: "#/definitions/bearer_authenticator"
+      oauth: "#/definitions/oauth_authenticator"
 
   retriever:
     type: SimpleRetriever
