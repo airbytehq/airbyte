@@ -20,7 +20,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: ["templates", "time_entries"]
+        empty_streams:
+          - name: "templates"
+          - name: "time_entries"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
