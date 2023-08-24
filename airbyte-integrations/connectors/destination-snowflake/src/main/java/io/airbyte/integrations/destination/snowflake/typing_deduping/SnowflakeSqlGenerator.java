@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static java.util.stream.Collectors.joining;
@@ -96,20 +100,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "final_table_id", stream.id().finalTableId(QUOTE, suffix),
         "force_create_table", forceCreateTable,
         "column_declarations", columnDeclarations)).replace(
-        """
-        CREATE SCHEMA IF NOT EXISTS ${final_namespace};
+            """
+            CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
-        CREATE ${force_create_table} TABLE ${final_table_id} (
-          "_airbyte_raw_id" TEXT NOT NULL,
-          "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
-          "_airbyte_meta" VARIANT NOT NULL
-          ${column_declarations}
-        );
-        """);
+            CREATE ${force_create_table} TABLE ${final_table_id} (
+              "_airbyte_raw_id" TEXT NOT NULL,
+              "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
+              "_airbyte_meta" VARIANT NOT NULL
+              ${column_declarations}
+            );
+            """);
   }
 
   @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable) throws TableNotMigratedException {
+  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable)
+      throws TableNotMigratedException {
 
     // Check that the columns match, with special handling for the metadata columns.
     final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
@@ -158,16 +163,16 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "cdc_deletes", cdcDeletes,
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
-        """
-        BEGIN TRANSACTION;
-        ${validate_primary_keys}
-        ${insert_new_records}
-        ${dedup_final_table}
-        ${dedupe_raw_table}
-        ${cdc_deletes}
-        ${commit_raw_table}
-        COMMIT;
-        """);
+            """
+            BEGIN TRANSACTION;
+            ${validate_primary_keys}
+            ${insert_new_records}
+            ${dedup_final_table}
+            ${dedupe_raw_table}
+            ${cdc_deletes}
+            ${commit_raw_table}
+            COMMIT;
+            """);
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
@@ -177,7 +182,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       return extractAndCast(column, chosenType);
     } else if (airbyteType == AirbyteProtocolType.TIME_WITH_TIMEZONE) {
       // We're using TEXT for this type, so need to explicitly check the string format.
-      // There's a bunch of ways we could do this; this regex is approximately correct and easy to implement.
+      // There's a bunch of ways we could do this; this regex is approximately correct and easy to
+      // implement.
       // It'll match anything like HH:MM:SS[.SSS](Z|[+-]HH[:]MM), e.g.:
       // 12:34:56Z
       // 12:34:56.7+08:00
@@ -195,26 +201,26 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
         case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
-          // Handle offsets in +/-HHMM and +/-HH formats
-          // The four cases, in order, match:
-          // 2023-01-01T12:34:56-0800
-          // 2023-01-01T12:34:56-08
-          // 2023-01-01T12:34:56.7890123-0800
-          // 2023-01-01T12:34:56.7890123-08
-          // And the ELSE will try to handle everything else.
+            // Handle offsets in +/-HHMM and +/-HH formats
+            // The four cases, in order, match:
+            // 2023-01-01T12:34:56-0800
+            // 2023-01-01T12:34:56-08
+            // 2023-01-01T12:34:56.7890123-0800
+            // 2023-01-01T12:34:56.7890123-08
+            // And the ELSE will try to handle everything else.
             """
-                CASE
-                  WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
-                    THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
-                  WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
-                    THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
-                  WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
-                    THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
-                  WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
-                    THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
-                  ELSE TRY_CAST("_airbyte_data":"${column_name}"::TEXT AS TIMESTAMP_TZ)
-                END
-                """);
+            CASE
+              WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
+                THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+              WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
+                THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
+              WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
+                THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
+              WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
+                THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
+              ELSE TRY_CAST("_airbyte_data":"${column_name}"::TEXT AS TIMESTAMP_TZ)
+            END
+            """);
         // try_cast doesn't support variant/array/object, so handle them specially
         case "VARIANT" -> "\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"";
         // We need to validate that the struct is actually a struct.
@@ -264,29 +270,29 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "raw_table_id", id.rawTableId(QUOTE),
         "pk_null_checks", pkNullChecks)).replace(
             // Wrap this inside a script block so that we can use the scripting language
-        """
-        BEGIN
-        LET missing_pk_count INTEGER := (
-          SELECT COUNT(1)
-          FROM ${raw_table_id}
-          WHERE
-            "_airbyte_loaded_at" IS NULL
-            ${pk_null_checks}
-        );
+            """
+            BEGIN
+            LET missing_pk_count INTEGER := (
+              SELECT COUNT(1)
+              FROM ${raw_table_id}
+              WHERE
+                "_airbyte_loaded_at" IS NULL
+                ${pk_null_checks}
+            );
 
-        IF (missing_pk_count > 0) THEN
-          RAISE STATEMENT_ERROR;
-        END IF;
-        RETURN 'SUCCESS';
-        END;
-        """);
+            IF (missing_pk_count > 0) THEN
+              RAISE STATEMENT_ERROR;
+            END IF;
+            RETURN 'SUCCESS';
+            END;
+            """);
     return "EXECUTE IMMEDIATE '" + escapeSingleQuotedString(script) + "';";
   }
 
   @VisibleForTesting
   String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
-            col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
+        col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
     final String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
@@ -294,8 +300,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
             "col_type", toDialectType(col.getValue()),
             "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
-            // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
-            """
+                // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
+                """
                 CASE
                   WHEN (TYPEOF("_airbyte_data":"${raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
                     AND (${json_extract} IS NULL)
@@ -304,18 +310,17 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 END"""))
         .reduce(
             "ARRAY_CONSTRUCT()",
-            (acc, col) -> "ARRAY_CAT(" + acc + ", " + col + ")"
-        );
+            (acc, col) -> "ARRAY_CAT(" + acc + ", " + col + ")");
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
       cdcConditionalOrIncludeStatement = """
-      OR (
-        "_airbyte_loaded_at" IS NOT NULL
-        AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE')
-      )
-      """;
+                                         OR (
+                                           "_airbyte_loaded_at" IS NOT NULL
+                                           AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE')
+                                         )
+                                         """;
     }
 
     return new StringSubstitutor(Map.of(
@@ -325,7 +330,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
         "column_list", columnList)).replace(
-        """
+            """
             INSERT INTO ${final_table_id}
             (
             ${column_list}
@@ -365,19 +370,18 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
-        "cursor_order_clause", cursorOrderClause
-    )).replace(
-        """
-        DELETE FROM ${final_table_id}
-        WHERE "_airbyte_raw_id" IN (
-          SELECT "_airbyte_raw_id" FROM (
-            SELECT "_airbyte_raw_id", row_number() OVER (
-              PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} "_airbyte_extracted_at" DESC
-            ) as row_number FROM ${final_table_id}
-          )
-          WHERE row_number != 1
-        );
-        """);
+        "cursor_order_clause", cursorOrderClause)).replace(
+            """
+            DELETE FROM ${final_table_id}
+            WHERE "_airbyte_raw_id" IN (
+              SELECT "_airbyte_raw_id" FROM (
+                SELECT "_airbyte_raw_id", row_number() OVER (
+                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} "_airbyte_extracted_at" DESC
+                ) as row_number FROM ${final_table_id}
+              )
+              WHERE row_number != 1
+            );
+            """);
   }
 
   @VisibleForTesting
@@ -385,36 +389,35 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                     final String finalSuffix,
                     final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
 
-    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP){
+    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
 
-    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
 
     final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
     final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
 
-    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
+    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
+    // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
         "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "pk_list", pkList,
         "pk_extracts", pkCasts,
-        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)
-    ).replace(
-        """
-        DELETE FROM ${final_table_id}
-        WHERE ARRAY_CONSTRUCT(${pk_list}) IN (
-          SELECT ARRAY_CONSTRUCT(
-              ${pk_extracts}
-            )
-          FROM  ${raw_table_id}
-          WHERE "_airbyte_data":"_ab_cdc_deleted_at" != 'null'
-        );
-        """
-    );
+        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)).replace(
+            """
+            DELETE FROM ${final_table_id}
+            WHERE ARRAY_CONSTRUCT(${pk_list}) IN (
+              SELECT ARRAY_CONSTRUCT(
+                  ${pk_extracts}
+                )
+              FROM  ${raw_table_id}
+              WHERE "_airbyte_data":"_ab_cdc_deleted_at" != 'null'
+            );
+            """);
   }
 
   @VisibleForTesting
@@ -422,26 +425,26 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
-        // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
-        // would be painful,
-        // and it only matters in a few edge cases.
-        """
-        DELETE FROM ${raw_table_id}
-        WHERE "_airbyte_raw_id" NOT IN (
-          SELECT "_airbyte_raw_id" FROM ${final_table_id}
-        );
-        """);
+            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
+            // would be painful,
+            // and it only matters in a few edge cases.
+            """
+            DELETE FROM ${raw_table_id}
+            WHERE "_airbyte_raw_id" NOT IN (
+              SELECT "_airbyte_raw_id" FROM ${final_table_id}
+            );
+            """);
   }
 
   @VisibleForTesting
   String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE))).replace(
-        """
-        UPDATE ${raw_table_id}
-        SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
-        WHERE "_airbyte_loaded_at" IS NULL
-        ;""");
+            """
+            UPDATE ${raw_table_id}
+            SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
+            WHERE "_airbyte_loaded_at" IS NULL
+            ;""");
   }
 
   @Override
@@ -450,12 +453,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "final_table", stream.finalTableId(QUOTE),
         "tmp_final_table", stream.finalTableId(QUOTE, finalSuffix))).replace(
             """
-                BEGIN TRANSACTION;
-                DROP TABLE IF EXISTS ${final_table};
-                ALTER TABLE ${tmp_final_table} RENAME TO ${final_table};
-                COMMIT;
-                """
-        );
+            BEGIN TRANSACTION;
+            DROP TABLE IF EXISTS ${final_table};
+            ALTER TABLE ${tmp_final_table} RENAME TO ${final_table};
+            COMMIT;
+            """);
   }
 
   @Override
@@ -470,8 +472,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   private String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
         .replace("""
-            UPDATE ${raw_table_id} SET "_airbyte_loaded_at" = NULL;
-            """);
+                 UPDATE ${raw_table_id} SET "_airbyte_loaded_at" = NULL;
+                 """);
   }
 
   @Override
@@ -487,10 +489,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "data", JavaBaseConstants.COLUMN_NAME_DATA,
         "v1_raw_id", JavaBaseConstants.COLUMN_NAME_AB_ID,
         "emitted_at", JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-        "v1_raw_table", String.join(".", namespace, tableName)
-    ))
-        .replace(
-            """
+        "v1_raw_table", String.join(".", namespace, tableName)))
+            .replace(
+                """
                 CREATE SCHEMA IF NOT EXISTS ${raw_namespace};
 
                 CREATE OR REPLACE TABLE ${raw_table_name} (
@@ -509,8 +510,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                   FROM ${v1_raw_table}
                 )
                 ;
-                """
-        );
+                """);
   }
 
   public static String escapeIdentifier(final String identifier) {
@@ -528,4 +528,5 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public static String escapeDollarString(final String str) {
     return str.replace("$$", "\\$\\$");
   }
+
 }

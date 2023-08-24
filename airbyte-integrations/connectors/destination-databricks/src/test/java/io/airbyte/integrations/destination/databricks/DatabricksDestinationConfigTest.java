@@ -82,7 +82,7 @@ class DatabricksDestinationConfigTest {
     assertEquals("1000", config2.port());
     assertEquals("testing_schema", config2.schema());
     assertEquals(true, config2.enableSchemaEvolution());
-    
+
     assertEquals(DatabricksAzureBlobStorageConfigProvider.class, config2.storageConfig().getClass());
   }
 

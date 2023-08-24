@@ -44,7 +44,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final ParsedCatalog catalog;
   private final TyperDeduper typerDeduper;
 
-
   public BigQueryRecordConsumer(final BigQuery bigquery,
                                 final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
@@ -80,8 +79,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       }
     });
   }
-
-
 
   /**
    * Processes STATE and RECORD {@link AirbyteMessage} with all else logged as unexpected

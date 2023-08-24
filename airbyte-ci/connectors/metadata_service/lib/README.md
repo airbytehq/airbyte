@@ -34,3 +34,27 @@ poetry run pytest
 ```bash
 poetry run metadata_service validate tests/fixtures/valid/metadata_registry_override.yaml
 ```
+
+## Useful Commands
+
+### Replicate Production Data in your Development Bucket
+This will replicate all the production data to your development bucket. This is useful for testing the metadata service with real up to date data.
+
+_💡 Note: A prerequisite is you have [gsutil](https://cloud.google.com/storage/docs/gsutil) installed and have run `gsutil auth login`_
+
+_⚠️ Warning: Its important to know that this will remove ANY files you have in your destination buckets as it calls `gsutil rsync` with `-d` enabled._
+
+```bash
+TARGET_BUCKET=<YOUR-DEV_BUCKET> poetry poe replicate-prod
+```
+
+### Promote Connector Version to Latest
+This will promote the specified connector version to the latest version in the registry. This is useful for creating a mocked registry in which a prerelease connector is treated as if it was already published. 
+
+_💡 Note: A prerequisite is you have [gsutil](https://cloud.google.com/storage/docs/gsutil) installed and have run `gsutil auth login`_
+
+_⚠️ Warning: Its important to know that this will remove ANY existing files in the latest folder that are not in the versioned folder as it calls `gsutil rsync` with `-d` enabled._
+
+```bash
+TARGET_BUCKET=<YOUR-DEV_BUCKET> CONNECTOR="airbyte/source-stripe" VERSION="3.17.0-dev.ea013c8741" poetry poe promote-connector-to-latest
+```
