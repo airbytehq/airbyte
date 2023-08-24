@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+from queue import Queue
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources import ConcurrentAbstractSource
+from airbyte_cdk.sources.concurrent.concurrent_abstract_source import *
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
@@ -61,7 +61,18 @@ from source_stripe.streams import (
 )
 
 
-class SourceStripe(AbstractSource):
+class StripePartitionGenerator(PartitionGenerator):
+    pass
+
+
+class SourceStripe(ConcurrentAbstractSource):
+    def __init__(self):
+        queue = Queue()
+        partition_generator = StripePartitionGenerator(queue)
+        queue_consumer = QueueConsumer()
+        max_workers = 5
+        super().__init__(partition_generator, queue_consumer, queue, max_workers)
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stripe.api_key = config["client_secret"]
@@ -82,49 +93,49 @@ class SourceStripe(AbstractSource):
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
             Accounts(**args),
-            ApplicationFees(**incremental_args),
-            ApplicationFeesRefunds(**args),
-            Authorizations(**incremental_args),
+            # ApplicationFees(**incremental_args),
+            # ApplicationFeesRefunds(**args),
+            # Authorizations(**incremental_args),
             BalanceTransactions(**incremental_args),
-            BankAccounts(**args),
-            Cardholders(**incremental_args),
-            Cards(**incremental_args),
+            # BankAccounts(**args),
+            # Cardholders(**incremental_args),
+            # Cards(**incremental_args),
             Charges(**incremental_args),
-            CheckoutSessions(**args),
-            CheckoutSessionsLineItems(**args),
-            Coupons(**incremental_args),
-            CreditNotes(**args),
-            CustomerBalanceTransactions(**args),
+            # CheckoutSessions(**args),
+            # CheckoutSessionsLineItems(**args),
+            # Coupons(**incremental_args),
+            # CreditNotes(**args),
+            # CustomerBalanceTransactions(**args),
             Customers(**incremental_args),
-            Disputes(**incremental_args),
-            EarlyFraudWarnings(**args),
-            Events(**incremental_args),
-            ExternalAccountBankAccounts(**args),
-            ExternalAccountCards(**args),
-            FileLinks(**incremental_args),
-            Files(**incremental_args),
-            InvoiceItems(**incremental_args),
-            InvoiceLineItems(**args),
-            Invoices(**incremental_args),
-            PaymentIntents(**incremental_args),
-            PaymentMethods(**args),
-            Payouts(**incremental_args),
-            Persons(**incremental_args),
-            Plans(**incremental_args),
-            Prices(**incremental_args),
+            # Disputes(**incremental_args),
+            # EarlyFraudWarnings(**args),
+            # Events(**incremental_args),
+            # ExternalAccountBankAccounts(**args),
+            # ExternalAccountCards(**args),
+            # FileLinks(**incremental_args),
+            # Files(**incremental_args),
+            # InvoiceItems(**incremental_args),
+            # InvoiceLineItems(**args),
+            # Invoices(**incremental_args),
+            # PaymentIntents(**incremental_args),
+            # PaymentMethods(**args),
+            # Payouts(**incremental_args),
+            # Persons(**incremental_args),
+            # Plans(**incremental_args),
+            # Prices(**incremental_args),
             Products(**incremental_args),
-            PromotionCodes(**incremental_args),
-            Refunds(**incremental_args),
-            Reviews(**incremental_args),
-            SetupAttempts(**incremental_args),
-            SetupIntents(**incremental_args),
-            ShippingRates(**incremental_args),
-            SubscriptionItems(**args),
-            Subscriptions(**incremental_args),
-            SubscriptionSchedule(**incremental_args),
-            TopUps(**incremental_args),
-            Transactions(**incremental_args),
-            TransferReversals(**args),
-            Transfers(**incremental_args),
-            UsageRecords(**args),
+            # PromotionCodes(**incremental_args),
+            # Refunds(**incremental_args),
+            # Reviews(**incremental_args),
+            # SetupAttempts(**incremental_args),
+            # SetupIntents(**incremental_args),
+            # ShippingRates(**incremental_args),
+            # SubscriptionItems(**args),
+            # Subscriptions(**incremental_args),
+            # SubscriptionSchedule(**incremental_args),
+            # TopUps(**incremental_args),
+            # Transactions(**incremental_args),
+            # TransferReversals(**args),
+            # Transfers(**incremental_args),
+            # UsageRecords(**args),
         ]

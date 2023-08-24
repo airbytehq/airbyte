@@ -79,7 +79,8 @@ class Stream(ABC):
     """
 
     def generate_partitions(self):
-        pass
+        # FIXME
+        return self.stream_slices(sync_mode=SyncMode.full_refresh)
 
     # Use self.logger in subclasses to log any messages
     @property

@@ -169,6 +169,9 @@ class Customers(IncrementalStripeStream):
     API docs: https://stripe.com/docs/api/customers/list
     """
 
+    def __init__(self, **kwargs):
+        super().__init__(**{**kwargs, **{"slice_range": 30}})
+
     cursor_field = "created"
     use_cache = True
 

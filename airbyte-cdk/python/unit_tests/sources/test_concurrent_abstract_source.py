@@ -3,7 +3,7 @@
 #
 import logging
 from queue import Queue
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 from unittest import TestCase
 from unittest.mock import Mock, call
 
@@ -29,22 +29,15 @@ class MockConcurrentAbstractSource(ConcurrentAbstractSource):
         return self._streams
 
 
-class MockPartitionGenerator(PartitionGenerator):
-    def __init__(self, queue: Queue):
-        self._queue = queue
-
-    def generate_partitions_for_stream(self, stream: Stream) -> Iterable[Partition]:
-        yield from stream.generate_partitions()
-
-
 class ConcurrentFullRefreshReadTestCase(TestCase):
+    # FIXME: need a test to confirm there are multiple sentinels added to the queue if there's many workers..
     def setUp(self):
         self._logger = Mock()
         self._state = None
 
     def test_read_a_single_stream_with_a_single_partition(self):
         queue: Queue = Mock()
-        partition_generator: PartitionGenerator = MockPartitionGenerator(queue)
+        partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
         stream = Mock()
         streams = [stream]
@@ -78,7 +71,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
 
     def test_read_a_single_stream_with_two_partitions(self):
         queue: Queue = Mock()
-        partition_generator: PartitionGenerator = MockPartitionGenerator(queue)
+        partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
         stream = Mock()
         streams = [stream]
@@ -129,7 +122,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
 
     def test_read_two_streams(self):
         queue: Queue = Mock()
-        partition_generator: PartitionGenerator = MockPartitionGenerator(queue)
+        partition_generator: PartitionGenerator = PartitionGenerator(queue)
         queue_consumer: QueueConsumer = QueueConsumer()
         stream1 = Mock()
         stream2 = Mock()
