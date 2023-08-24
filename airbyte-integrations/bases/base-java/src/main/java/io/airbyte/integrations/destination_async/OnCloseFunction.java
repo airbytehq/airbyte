@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.destination_async;
 
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
