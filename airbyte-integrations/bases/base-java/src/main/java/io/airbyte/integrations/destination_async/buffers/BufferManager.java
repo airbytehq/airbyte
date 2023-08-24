@@ -35,7 +35,7 @@ public class BufferManager {
   private final ScheduledExecutorService debugLoop;
 
   public BufferManager() {
-    //  this(104857600L); // 100mb
+    // this(104857600L); // 100mb
     this((long) (Runtime.getRuntime().maxMemory() * 0.8));
   }
 
