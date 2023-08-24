@@ -52,4 +52,5 @@ public class MongoDbDebeziumStateUtil {
     LOGGER.info("Initial Debezium state constructed: {}", state);
     return state;
   }
+
 }
