@@ -3,7 +3,6 @@
 #
 
 from typing import Any, List, Mapping
-from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
@@ -32,8 +31,19 @@ def initialize_processor():
     return DocumentProcessor(config=config, catalog=catalog)
 
 
-def test_process_single_chunk_without_metadata():
+@pytest.mark.parametrize(
+    "metadata_fields, expected_metadata",
+    [
+        (None, {"_airbyte_stream": "namespace1_stream1", "id": 1, "text": "This is the text"}),
+        (["id"], {"_airbyte_stream": "namespace1_stream1", "id": 1}),
+        (["id", "non_existing"], {"_airbyte_stream": "namespace1_stream1", "id": 1}),
+        (["id", "complex.test"], {"_airbyte_stream": "namespace1_stream1", "id": 1, "complex.test": "abc"}),
+        (["id", "arr.*.test"], {"_airbyte_stream": "namespace1_stream1", "id": 1, "arr.*.test": ["abc", "def"]}),
+    ]
+)
+def test_process_single_chunk_with_metadata(metadata_fields, expected_metadata):
     processor = initialize_processor()
+    processor.metadata_fields = metadata_fields
 
     record = AirbyteRecordMessage(
         stream="stream1",
@@ -41,6 +51,8 @@ def test_process_single_chunk_without_metadata():
         data={
             "id": 1,
             "text": "This is the text",
+            "complex": {"test": "abc"},
+            "arr": [{"test": "abc"}, {"test": "def"}],
         },
         emitted_at=1234,
     )
@@ -50,8 +62,7 @@ def test_process_single_chunk_without_metadata():
     assert len(chunks) == 1
     # natural id is only set for dedup mode
     assert "_record_id" not in chunks[0].metadata
-    assert chunks[0].metadata["_airbyte_stream"] == "namespace1_stream1"
-    assert chunks[0].page_content == "id: 1\ntext: This is the text"
+    assert chunks[0].metadata == expected_metadata
     assert id_to_delete is None
 
 
@@ -127,7 +138,7 @@ b: abc"""
     }
 
 
-def test_non_text_fields():
+def test_no_text_fields():
     processor = initialize_processor()
 
     record = AirbyteRecordMessage(
@@ -141,13 +152,10 @@ def test_non_text_fields():
     )
 
     processor.text_fields = ["another_field"]
-    processor.logger = MagicMock()
 
-    chunks, id_to_delete = processor.process(record)
-
-    assert len(chunks) == 0
-    assert id_to_delete is None
-    assert processor.logger.warning.called
+    # assert process is throwing with no text fields found
+    with pytest.raises(ValueError):
+        processor.process(record)
 
 
 def test_metadata_normalization():

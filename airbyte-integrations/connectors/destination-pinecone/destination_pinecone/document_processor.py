@@ -45,69 +45,32 @@ class DocumentProcessor:
         """
         doc = self._generate_document(record)
         if doc is None:
-            self.logger.warning(f"Record {str(record.data)[:250]}... does not contain any text fields. Skipping.")
-            return [], None
+            raise ValueError(f"Record {str(record.data)[:250]}... does not contain any text fields.")
         chunks = self._split_document(doc)
         id_to_delete = doc.metadata[METADATA_RECORD_ID_FIELD] if METADATA_RECORD_ID_FIELD in doc.metadata else None
         return chunks, id_to_delete
 
     def _generate_document(self, record: AirbyteRecordMessage) -> Optional[Document]:
-        relevant_fields = self._extract_relevant_fields(record)
+        relevant_fields = self._extract_relevant_fields(record, self.text_fields)
         if len(relevant_fields) == 0:
             return None
         metadata = self._truncate_metadata(self._extract_metadata(record))
         text = stringify_dict(relevant_fields)
         return Document(page_content=text, metadata=metadata)
 
-    def _extract_relevant_fields(self, record: AirbyteRecordMessage) -> dict:
+    def _extract_relevant_fields(self, record: AirbyteRecordMessage, fields: Optional[List[str]]) -> dict:
         relevant_fields = {}
-        if self.text_fields:
-            for field in self.text_fields:
+        if fields and len(fields) > 0:
+            for field in fields:
                 values = dpath.util.values(record.data, field, separator=".")
                 if values and len(values) > 0:
-                    relevant_fields[field] = values
+                    relevant_fields[field] = values if len(values) > 1 else values[0]
         else:
             relevant_fields = record.data
         return relevant_fields
 
-    def _extract_pattern(self, data, pattern):
-        # Initialize the values with the input data
-        values = [data]
-
-        # Iterate through each part of the pattern
-        for key in pattern.split("."):
-            new_values = []
-
-            # Iterate through the current values
-            for value in values:
-                # If the key is a wildcard '*' and the value is a list or dictionary
-                if isinstance(value, (dict, list)) and key == "*":
-                    # Extend the new_values with the list itself or the values of the dictionary
-                    new_values.extend(value if isinstance(value, list) else value.values())
-                # If the key is in the dictionary
-                elif isinstance(value, dict) and key in value:
-                    # Append the value for the key to new_values
-                    new_values.append(value[key])
-
-            # Update values with new_values for the next iteration
-            values = new_values
-
-        return values
-
     def _extract_metadata(self, record: AirbyteRecordMessage) -> dict:
-        metadata = {}
-
-        if self.metadata_fields:
-            for field in self.metadata_fields:
-                # Extract the values that match the pattern
-                values = self._extract_pattern(record.data, field)
-
-                # Assign the values to metadata based on the pattern
-                # If the pattern includes a wildcard '*', use the values as an array
-                # Otherwise, use the first value if there are any values, else use None
-                metadata[field] = values if "*" in field else values[0] if values else None
-
-        # Additional processing for stream identifier and primary key
+        metadata = self._extract_relevant_fields(record, self.metadata_fields)
         stream_identifier = self._stream_identifier(record)
         current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
         metadata[METADATA_STREAM_FIELD] = stream_identifier
@@ -133,7 +96,7 @@ class DocumentProcessor:
         current_size = 0
 
         for key, value in metadata.items():
-            if isinstance(value, (str, int, float, bool)):
+            if isinstance(value, (str, int, float, bool)) or (isinstance(value, list) and all(isinstance(item, str) for item in value)):
                 # Calculate the size of the key and value
                 item_size = len(str(key)) + len(str(value))
 
