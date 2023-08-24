@@ -132,9 +132,9 @@ definitions:
       transformations:
         - class_name: "source_posthog.components.EventsSimpleRetriever"
           fields:
-            - path: [ "name"]
+            - path: ["name"]
               value: "{{ parameters['name'] }}"
-            - path: [ "primary_key"]
+            - path: ["primary_key"]
               value: "{{ parameters['primary_key'] }}"
       name: "{{ parameters['name'] }}"
       primary_key: "{{ parameters['primary_key'] }}"

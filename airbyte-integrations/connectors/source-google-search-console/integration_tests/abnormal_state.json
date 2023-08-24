@@ -10,7 +10,6 @@
           "video": { "date": "2050-08-28" },
           "discover": { "date": "2050-08-28" },
           "googleNews": { "date": "2050-08-28" }
-
         }
       },
       "stream_descriptor": { "name": "search_analytics_by_date" }
@@ -131,7 +130,9 @@
           "video": { "date": "2050-08-28" }
         }
       },
-      "stream_descriptor": { "name": "search_analytics_keyword_site_report_by_page" }
+      "stream_descriptor": {
+        "name": "search_analytics_keyword_site_report_by_page"
+      }
     }
   },
   {
@@ -145,7 +146,9 @@
           "video": { "date": "2050-08-28" }
         }
       },
-      "stream_descriptor": { "name": "search_analytics_keyword_site_report_by_site" }
+      "stream_descriptor": {
+        "name": "search_analytics_keyword_site_report_by_site"
+      }
     }
   },
   {

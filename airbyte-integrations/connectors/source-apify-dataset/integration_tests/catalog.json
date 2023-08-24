@@ -9,8 +9,8 @@
         "type": "object",
         "properties": {
           "data": {
-              "type": "object",
-              "additionalProperties": true
+            "type": "object",
+            "additionalProperties": true
           }
         },
         "additionalProperties": true
