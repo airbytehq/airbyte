@@ -49,6 +49,10 @@ public class TestingNamespaces {
     return STANDARD_PREFIX + userDefinedPrefix + FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC"))) + "_" + generateSuffix();
   }
 
+  public static String generateFromOriginal(final String toOverwrite, final String oldPrefix, final String newPrefix) {
+    return toOverwrite.replace(oldPrefix, newPrefix);
+  }
+
   /**
    * Checks if a namespace is older than 2 days.
    *

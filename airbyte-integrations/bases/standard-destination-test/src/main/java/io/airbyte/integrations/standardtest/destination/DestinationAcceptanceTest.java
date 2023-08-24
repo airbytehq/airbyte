@@ -1061,7 +1061,8 @@ public abstract class DestinationAcceptanceTest {
       throws Exception {
     final Optional<NamingConventionTransformer> nameTransformer = getNameTransformer();
     nameTransformer.ifPresent(
-        namingConventionTransformer -> assertNamespaceNormalization(testCaseId, normalizedNamespace,
+        namingConventionTransformer -> assertNamespaceNormalization(testCaseId,
+            normalizedNamespace,
             namingConventionTransformer.getNamespace(namespace)));
 
     if (!implementsNamespaces() || !supportNamespaceTest()) {
@@ -1801,11 +1802,15 @@ public abstract class DestinationAcceptanceTest {
           Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON));
       return MoreIterators.toList(testCases.elements()).stream()
           .filter(testCase -> testCase.get("enabled").asBoolean())
-          .map(testCase -> Arguments.of(
-              testCase.get("id").asText(),
-              // Add uniqueness to namespace to avoid collisions between tests.
-              TestingNamespaces.generate(testCase.get("namespace").asText()),
-              TestingNamespaces.generate(testCase.get("normalized").asText())));
+          .map(testCase -> {
+            final String normal = TestingNamespaces.generate(testCase.get("namespace").asText());
+            final String normalized = TestingNamespaces.generateFromOriginal(normal, testCase.get("namespace").asText(), testCase.get("normalized").asText());
+            return Arguments.of(
+                testCase.get("id").asText(),
+                // Add uniqueness to namespace to avoid collisions between tests.
+                normal,
+                normalized);
+          });
     }
 
   }
