@@ -7,7 +7,7 @@ data:
   connectorType: source
   maxSecondsBetweenMessages: 10800
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 0.12.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-zendesk-support
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
@@ -26,4 +26,9 @@ data:
     sl: 300
     ql: 400
   supportLevel: certified
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "`cursor_field` for `Tickets` stream is changed to `generated_timestamp`"
+        upgradeDeadline: "2023-07-19"
 metadataSpecVersion: "1.0"

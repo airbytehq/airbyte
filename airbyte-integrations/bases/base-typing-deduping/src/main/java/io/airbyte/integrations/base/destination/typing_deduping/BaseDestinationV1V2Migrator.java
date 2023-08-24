@@ -27,6 +27,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
       migrate(sqlGenerator, destinationHandler, streamConfig);
+      LOGGER.info("V2 Migration completed successfully for stream {}", streamConfig.id().finalName());
     } else {
       LOGGER.info("No Migration Required for stream: {}", streamConfig.id().finalName());
     }

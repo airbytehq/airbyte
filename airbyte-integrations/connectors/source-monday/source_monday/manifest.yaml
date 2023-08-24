@@ -37,7 +37,7 @@ definitions:
             https://github.com/airbytehq/alpha-beta-issues/issues/846
             "
           response_filters:
-            - http_codes: [ 403 ]
+            - http_codes: [403]
               action: IGNORE
         - type: "DefaultErrorHandler"
           description: "
@@ -45,7 +45,7 @@ definitions:
             https://github.com/airbytehq/alpha-beta-issues/issues/245
             "
           response_filters:
-            - http_codes: [ 500 ]
+            - http_codes: [500]
               action: RETRY
           backoff_strategies:
             - type: ExponentialBackoffStrategy
@@ -150,7 +150,7 @@ definitions:
       parent_key: "board_id"
       items_per_page: 10
       nested_items_per_page: 10
-      field_path: [ "data", "boards", "*" ]
+      field_path: ["data", "boards", "*"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -173,8 +173,8 @@ definitions:
       page_size: 20
       nested_items_per_page: 20
       parent_key: "pulse_id"
-      field_path: [ "data", "items", "*" ]
-      additional_field_path: [ "data", "boards", "*", "items", "*" ]
+      field_path: ["data", "items", "*"]
+      additional_field_path: ["data", "boards", "*", "items", "*"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -183,7 +183,6 @@ definitions:
         $ref: "#/definitions/selector"
         extractor:
           $ref: "#/definitions/incremental_extractor"
-
 
 streams:
   - "#/definitions/items_stream"

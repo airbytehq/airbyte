@@ -41,15 +41,15 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
         NULL_IF=('')
       )""";
   private static final String COPY_QUERY = """
-      COPY INTO %s.%s FROM '@%s/%s'
-      file_format = (
-        type = csv
-        compression = auto
-        field_delimiter = ','
-        skip_header = 0
-        FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-        NULL_IF=('')
-      )""";
+                                           COPY INTO %s.%s FROM '@%s/%s'
+                                           file_format = (
+                                             type = csv
+                                             compression = auto
+                                             field_delimiter = ','
+                                             skip_header = 0
+                                             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+                                             NULL_IF=('')
+                                           )""";
   private static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
   private static final String REMOVE_QUERY = "REMOVE @%s;";
 
