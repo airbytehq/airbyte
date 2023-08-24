@@ -27,14 +27,14 @@ def test_custom_batch_size(client):
 
 @patch("typesense.Client")
 def test_queue_write_operation(client):
-    writer = TypesenseWriter(client, "steam_name")
-    writer.queue_write_operation({"a": "a"})
+    writer = TypesenseWriter(client)
+    writer.queue_write_operation("stream_name", {"a": "a"})
     assert len(writer.write_buffer) == 1
 
 
 @patch("typesense.Client")
 def test_flush(client):
-    writer = TypesenseWriter(client, "steam_name")
-    writer.queue_write_operation({"a": "a"})
+    writer = TypesenseWriter(client)
+    writer.queue_write_operation("stream_name", {"a": "a"})
     writer.flush()
-    client.collections.__getitem__.assert_called_once_with("steam_name")
+    client.collections.__getitem__.assert_called_once_with("stream_name")
