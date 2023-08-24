@@ -3,6 +3,8 @@
 #
 import concurrent.futures
 import logging
+import os
+import sys
 import time
 from abc import ABC
 from queue import Queue
@@ -55,45 +57,45 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
         print(f"read with {self._max_workers} workers")
         partition_generation_futures = []
         queue_consumer_futures = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers + 10, thread_name_prefix="workerpool") as executor:
-            start_time = time.time()
-            for stream in streams:
+        for stream in streams:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers + 10, thread_name_prefix="workerpool") as executor:
+                start_time = time.time()
                 print(f"generating partitions for stream: {stream.name}")
                 # Submit partition generation tasks
                 f = executor.submit(PartitionGenerator.generate_partitions_for_stream, self._partitions_generator, stream, executor)
                 partition_generation_futures.append(f)
 
-            # Submit record generator tasks
-            for i in range(self._get_num_dedicated_consumer_worker()):  # FIXME?
-                f = executor.submit(QueueConsumer.consume_from_queue, self._queue_consumer, self._queue, executor)
-                queue_consumer_futures.append(f)
+                # Submit record generator tasks
+                for i in range(self._get_num_dedicated_consumer_worker()):  # FIXME?
+                    f = executor.submit(QueueConsumer.consume_from_queue, self._queue_consumer, self._queue, executor)
+                    queue_consumer_futures.append(f)
 
-            # Wait for all partitions to be generated
-            done, unfinished = concurrent.futures.wait(partition_generation_futures)
+                # Wait for all partitions to be generated
+                done, unfinished = concurrent.futures.wait(partition_generation_futures)
 
-            # Then put the sentinel on the queue
-            print("putting sentinel on queue")
-            for _ in range(self._max_workers + 1000):
-                # FIXME: need a test to verify we put many sentinels..
-                self._queue.put(_SENTINEL)
-            partitions_are_generated_time = time.time()
-            print(f"printing partitions generated. it took {partitions_are_generated_time - start_time}")
-            for future in done:
-                print(future.result())
-            print("done printing partitions")
+                # Then put the sentinel on the queue
+                print("putting sentinel on queue because the source generated all partitions")
+                for _ in range(self._get_num_dedicated_consumer_worker()):
+                    # FIXME: need a test to verify we put many sentinels..
+                    self._queue.put(_SENTINEL)
+                partitions_are_generated_time = time.time()
+                print(f"printing partitions generated. it took {partitions_are_generated_time - start_time}")
+                for future in done:
+                    print(future.result())
+                print("done printing partitions")
 
-            # Wait for the consumers to finish
-            # FIXME: We should start yielding as soon as the first ones are done...
-            done, unfinished = concurrent.futures.wait(queue_consumer_futures)
-            print(f"done: {done}")
-            print(f"unfinished: {unfinished}")
-            record_counter = 0
-            for future in done:
-                # Each result is an iterable of record
-                result = future.result()
-                print(f"result: {result}")
-                for partition_record_and_stream in result:
-                    partition_record, stream = partition_record_and_stream
-                    record_counter += 1
-                    yield self._get_message(partition_record, stream)
-            print(f"Read {record_counter} records for {stream.name}")
+                # Wait for the consumers to finish
+                # FIXME: We should start yielding as soon as the first ones are done...
+                done, unfinished = concurrent.futures.wait(queue_consumer_futures)
+                print(f"done: {done}")
+                print(f"unfinished: {unfinished}")
+                record_counter = 0
+                for future in done:
+                    # Each result is an iterable of record
+                    result = future.result()
+                    print(f"result: {result}")
+                    for partition_record_and_stream in result:
+                        partition_record, stream = partition_record_and_stream
+                        record_counter += 1
+                        yield self._get_message(partition_record, stream)
+                print(f"Read {record_counter} records for {stream.name}")

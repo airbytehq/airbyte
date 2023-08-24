@@ -1,14 +1,16 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 import threading
 from queue import Empty, Queue
 
-from airbyte_cdk.models import (
-    SyncMode,
-)
+from airbyte_cdk.models import SyncMode
 
 _SENTINEL = ("SENTINEL", "SENTINEL")
 
+
 class QueueConsumer:
-    def __init__(self, name: str = "unknown"):
+    def __init__(self, name: str):
         self._iterations = 0
         self._name = name
 
@@ -34,4 +36,4 @@ class QueueConsumer:
             except Empty:
                 print(f"queue {self._name} is empty from {current_thread}")
                 # FIXME the queue could be empty because the partition generation is slow...
-                #return records_and_streams
+                # return records_and_streams

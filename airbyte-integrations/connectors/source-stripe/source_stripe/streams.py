@@ -173,7 +173,7 @@ class Customers(IncrementalStripeStream):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(**{**kwargs, **{"slice_range": 30}})
+        super().__init__(**{**kwargs, **{"slice_range": 365}})
 
     cursor_field = "created"
     use_cache = True
@@ -379,18 +379,21 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
     def generate_partitions(self, executor):
         parent_stream = self.get_parent_stream_instance()
         queue = Queue()
-        partition_generator = PartitionGenerator(queue)
-        queue_consumer = QueueConsumer()
-        max_workers = 10
+        partition_generator = PartitionGenerator(queue, self.name)
+        queue_consumer = QueueConsumer(self.name)
+        max_workers = 3
         queue_consumer_futures = []
-        f = executor.submit(PartitionGenerator.generate_partitions_for_stream, partition_generator, parent_stream, executor)
+        f_partitions = executor.submit(PartitionGenerator.generate_partitions_for_stream, partition_generator, parent_stream, executor)
         for i in range(max_workers):  # FIXME should it be allowed more?
             f = executor.submit(QueueConsumer.consume_from_queue, queue_consumer, queue, executor)
             queue_consumer_futures.append(f)
 
         print(f"waiting for f...")
+        done, unfinished = concurrent.futures.wait([f_partitions])
+        exit()
         parent_partitions = [p for p in f.result()]
-        for _ in range(max_workers):
+        for _ in range(max_workers + 4):
+            print(f"{self.name} adding sentinels to the queue")
             queue.put(_SENTINEL)
         print(f"parent_partitions: {parent_partitions}")
         done, unfinished = concurrent.futures.wait(queue_consumer_futures)
@@ -406,6 +409,7 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
                 partition_record, stream = partition_record_and_stream
                 record_counter += 1
                 all_partitions.append(partition_record)
+        print(f"num partitions for {self.name}: {len(all_partitions)}")
         return all_partitions
 
     def stream_slices(
