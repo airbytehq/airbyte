@@ -87,10 +87,14 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: objects/query
-        request_parameters:
-          query: '{"_type": {"$eq": {{ stream_partition.type }} }'
+        http_method: POST
+        request_body_json:
+          query:
+            _type:
+              $eq: '{{ stream_partition.type }}'
           sort_by: _updated_at asc
-          _updated_at: '{ "start": {{ stream_interval.start_time }} }'
+          _updated_at:
+            start: '{{ stream_interval.start_time.strftime(''%Y-%m-%d %H:%M:%s.%f'')[:-3] }}'
       record_selector:
         $ref: "#/definitions/selector"
       paginator:

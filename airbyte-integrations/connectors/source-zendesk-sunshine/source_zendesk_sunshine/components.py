@@ -16,7 +16,7 @@ class AuthenticatorZendeskSunshine(DeclarativeAuthenticator):
     oauth2: BearerAuthenticator
 
     def __new__(cls, basic_auth, oauth2, config, *args, **kwargs):
-        if config["credentials"]["email"] and config["credentials"]["api_token"]:
+        if config["credentials"]["auth_method"] == "api_token":
             return basic_auth
         else:
             return oauth2
