@@ -18,8 +18,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.CursorBasedStreams;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
-import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
+import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -29,7 +29,6 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -83,17 +82,17 @@ public class CursorBasedCtidUtilsTest {
   public void correctEmptyCtidTest() {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2));
     final JsonNode standardStatus = Jsons.jsonNode(new CursorBasedStatus()
-                                                          .withStateType(StateType.CURSOR_BASED)
-                                                          .withStreamName(STREAM_2.getStream().getName())
-                                                          .withStreamNamespace(STREAM_2.getStream().getNamespace())
-                                                          .withCursorField(List.of("COL_ID"))
-                                                          .withCursor("1")
-                                                          .withCursorRecordCount(1L));
+        .withStateType(StateType.CURSOR_BASED)
+        .withStreamName(STREAM_2.getStream().getName())
+        .withStreamNamespace(STREAM_2.getStream().getNamespace())
+        .withCursorField(List.of("COL_ID"))
+        .withCursor("1")
+        .withCursorRecordCount(1L));
 
     final AirbyteStateMessage stream1CtidState = generateStateMessage(STREAM_1.getStream().getName(), STREAM_1.getStream().getNamespace(),
-                                                                      standardStatus);
+        standardStatus);
     final AirbyteStateMessage stream2StandardState = generateStateMessage(STREAM_2.getStream().getName(), STREAM_2.getStream().getNamespace(),
-                                                                          standardStatus);
+        standardStatus);
     final StreamStateManager streamStateManager = new StreamStateManager(List.of(stream1CtidState, stream2StandardState), configuredCatalog);
     final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
 
@@ -109,7 +108,8 @@ public class CursorBasedCtidUtilsTest {
     final StreamStateManager streamStateManager = new StreamStateManager(Collections.emptyList(), configuredCatalog);
     final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
 
-    List<AirbyteStreamNameNamespacePair> reclassify = Collections.singletonList(new AirbyteStreamNameNamespacePair(STREAM_1.getStream().getName(), STREAM_1.getStream().getNamespace()));
+    List<AirbyteStreamNameNamespacePair> reclassify =
+        Collections.singletonList(new AirbyteStreamNameNamespacePair(STREAM_1.getStream().getName(), STREAM_1.getStream().getNamespace()));
     reclassifyCategorisedCtidStreams(streamsCategorised, reclassify);
     assertEquals(1, streamsCategorised.ctidStreams().streamsForCtidSync().size());
     assertEquals(1, streamsCategorised.remainingStreams().streamsForCursorBasedSync().size());
@@ -121,15 +121,16 @@ public class CursorBasedCtidUtilsTest {
   @Test
   public void fullRefreshStreamCategorisationTest() {
     final ConfiguredAirbyteStream STREAM_3_FULL_REFRESH = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
-            "STREAM_3",
-            "SCHEMA",
-            Field.of("COL_ID", JsonSchemaType.INTEGER),
-            Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
-            Field.of("COL_MODEL", JsonSchemaType.STRING))
+        "STREAM_3",
+        "SCHEMA",
+        Field.of("COL_ID", JsonSchemaType.INTEGER),
+        Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
+        Field.of("COL_MODEL", JsonSchemaType.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
 
-    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2, STREAM_3_FULL_REFRESH));
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2, STREAM_3_FULL_REFRESH));
     final JsonNode stream1CtidStatus = Jsons.jsonNode(new CtidStatus()
         .withStateType(StateType.CTID)
         .withCtid("(0,0)")

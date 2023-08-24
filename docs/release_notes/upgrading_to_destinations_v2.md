@@ -51,6 +51,12 @@ After upgrading the out-of-date destination to a [Destinations V2 compatible ver
 4. The new raw tables will be typed and de-duplicated according to the Destinations V2 format.
 5. Once typing and de-duplication has completed successfully, your previous final table will be replaced with the updated data.
 
+:::note
+
+The first sync after the upgade to Destination V2 will be longer than normal, as your tables will be migrated to the new format.  After the migtration, subsequent syncs will return to thier normal speed. 
+
+:::
+
 Pre-existing raw tables, SCD tables and "unnested" tables will always be left untouched. You can delete these at your convenience, but these tables will no longer be kept up-to-date by Airbyte syncs.
 Each destination version is managed separately, so if you have multiple destinations, they all need to be upgraded one by one.
 

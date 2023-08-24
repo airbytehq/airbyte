@@ -10,7 +10,7 @@ connectionSpecification:
       type: string
       title: API Key
       description: >-
-         Everhour API Key. See the <a
-         href="https://everhour.docs.apiary.io/#introduction/authentication">docs</a>
-         for information on how to generate this key.
+        Everhour API Key. See the <a
+        href="https://everhour.docs.apiary.io/#introduction/authentication">docs</a>
+        for information on how to generate this key.
       airbyte_secret: true

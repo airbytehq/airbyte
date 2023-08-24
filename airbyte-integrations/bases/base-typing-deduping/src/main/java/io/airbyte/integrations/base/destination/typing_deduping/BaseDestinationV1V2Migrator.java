@@ -27,6 +27,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
       migrate(sqlGenerator, destinationHandler, streamConfig);
+      LOGGER.info("V2 Migration completed successfully for stream {}", streamConfig.id().finalName());
     } else {
       LOGGER.info("No Migration Required for stream: {}", streamConfig.id().finalName());
     }
@@ -129,7 +130,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param tableName
    * @return whether it exists and is in the correct format
    */
-  private boolean doesValidV1RawTableExist(final String namespace, final String tableName) {
+  protected boolean doesValidV1RawTableExist(final String namespace, final String tableName) {
     final var existingV1RawTable = getTableIfExists(namespace, tableName);
     return existingV1RawTable.isPresent() && doesV1RawTableMatchExpectedSchema(existingV1RawTable.get());
   }
