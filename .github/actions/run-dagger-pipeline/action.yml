@@ -70,6 +70,7 @@ runs:
       if: github.event_name == 'pull_request'
       shell: bash
       run: |
+        echo "Full repository name of head branch: ${{ github.event.pull_request.head.repo.full_name }}"
         if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
           echo "PR is from a fork. Exiting workflow..."
           exit 78
