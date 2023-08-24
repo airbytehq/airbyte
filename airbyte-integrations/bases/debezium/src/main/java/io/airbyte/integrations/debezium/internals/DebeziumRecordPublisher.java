@@ -37,13 +37,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final CountDownLatch engineLatch;
   private final DebeziumPropertiesManager debeziumPropertiesManager;
 
-  public DebeziumRecordPublisher(final Properties properties,
-                                 final JsonNode config,
-                                 final ConfiguredAirbyteCatalog catalog,
-                                 final AirbyteFileOffsetBackingStore offsetManager,
-                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
-    this.debeziumPropertiesManager = new DebeziumPropertiesManager(properties, config, catalog, offsetManager,
-        schemaHistoryManager);
+  public DebeziumRecordPublisher(final DebeziumPropertiesManager debeziumPropertiesManager) {
+    this.debeziumPropertiesManager = debeziumPropertiesManager;
     this.hasClosed = new AtomicBoolean(false);
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();

@@ -5,19 +5,11 @@
 package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import org.codehaus.plexus.util.StringUtils;
 
-public class DebeziumPropertiesManager {
+public abstract class DebeziumPropertiesManager {
 
   private static final String BYTE_VALUE_256_MB = Integer.toString(256 * 1024 * 1024);
 
@@ -104,90 +96,9 @@ public class DebeziumPropertiesManager {
     return props;
   }
 
-  protected Properties getConnectionConfiguration(final JsonNode config) {
-    final Properties properties = new Properties();
+  protected abstract Properties getConnectionConfiguration(final JsonNode config);
 
-    // db connection configuration
-    properties.setProperty("database.hostname", config.get(JdbcUtils.HOST_KEY).asText());
-    properties.setProperty("database.port", config.get(JdbcUtils.PORT_KEY).asText());
-    properties.setProperty("database.user", config.get(JdbcUtils.USERNAME_KEY).asText());
-    properties.setProperty("database.dbname", config.get(JdbcUtils.DATABASE_KEY).asText());
+  protected abstract String getName(final JsonNode config);
 
-    if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      properties.setProperty("database.password", config.get(JdbcUtils.PASSWORD_KEY).asText());
-    }
-
-    return properties;
-  }
-
-  protected String getName(final JsonNode config) {
-    return config.get(JdbcUtils.DATABASE_KEY).asText();
-  }
-
-  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
-    final Properties properties = new Properties();
-
-    // table selection
-    properties.setProperty("table.include.list", getTableIncludelist(catalog));
-    // column selection
-    properties.setProperty("column.include.list", getColumnIncludeList(catalog));
-
-    return properties;
-  }
-
-  public static String getTableIncludelist(final ConfiguredAirbyteCatalog catalog) {
-    // Turn "stream": {
-    // "namespace": "schema1"
-    // "name": "table1
-    // },
-    // "stream": {
-    // "namespace": "schema2"
-    // "name": "table2
-    // } -------> info "schema1.table1, schema2.table2"
-
-    return catalog.getStreams().stream()
-        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
-        .map(ConfiguredAirbyteStream::getStream)
-        .map(stream -> stream.getNamespace() + "." + stream.getName())
-        // debezium needs commas escaped to split properly
-        .map(x -> StringUtils.escape(Pattern.quote(x), ",".toCharArray(), "\\,"))
-        .collect(Collectors.joining(","));
-  }
-
-  public static String getColumnIncludeList(final ConfiguredAirbyteCatalog catalog) {
-    // Turn "stream": {
-    // "namespace": "schema1"
-    // "name": "table1"
-    // "jsonSchema": {
-    // "properties": {
-    // "column1": {
-    // },
-    // "column2": {
-    // }
-    // }
-    // }
-    // } -------> info "schema1.table1.(column1 | column2)"
-
-    return catalog.getStreams().stream()
-        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
-        .map(ConfiguredAirbyteStream::getStream)
-        .map(s -> {
-          final String fields = parseFields(s.getJsonSchema().get("properties").fieldNames());
-          // schema.table.(col1|col2)
-          return Pattern.quote(s.getNamespace() + "." + s.getName()) + (StringUtils.isNotBlank(fields) ? "\\." + fields : "");
-        })
-        .map(x -> StringUtils.escape(x, ",".toCharArray(), "\\,"))
-        .collect(Collectors.joining(","));
-  }
-
-  private static String parseFields(final Iterator<String> fieldNames) {
-    if (fieldNames == null || !fieldNames.hasNext()) {
-      return "";
-    }
-    final Iterable<String> iter = () -> fieldNames;
-    return StreamSupport.stream(iter.spliterator(), false)
-        .map(f -> Pattern.quote(f))
-        .collect(Collectors.joining("|", "(", ")"));
-  }
-
+  protected abstract Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config);
 }
