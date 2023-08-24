@@ -103,7 +103,8 @@ public class StagingConsumerFactory {
                                                       final boolean useDestinationsV2Columns) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog, useDestinationsV2Columns);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, useDestinationsV2Columns);
+    final var flusher =
+        new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, useDestinationsV2Columns);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
