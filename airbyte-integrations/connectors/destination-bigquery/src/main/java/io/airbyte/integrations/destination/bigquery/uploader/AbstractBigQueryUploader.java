@@ -90,6 +90,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     try {
       writer.write(recordFormatter.formatRecord(airbyteMessage.getRecord()));
     } catch (final IOException | RuntimeException e) {
+      LOGGER.error(airbyteMessage.toString());
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
               "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
