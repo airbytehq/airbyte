@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams import Stream
 
 class MockConcurrentAbstractSource(ConcurrentAbstractSource):
     def __init__(self, partition_generator, queue_consumer: QueueConsumer, queue: Queue, streams: List[Stream]):
-        super().__init__(partition_generator, queue_consumer, queue)
+        super().__init__(partition_generator, queue_consumer, queue, max_workers=1)
         self._streams = streams
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
