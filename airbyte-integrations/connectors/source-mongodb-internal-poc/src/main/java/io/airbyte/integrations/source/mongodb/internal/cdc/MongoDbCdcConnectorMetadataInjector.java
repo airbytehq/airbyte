@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * MongoDB specific implementation of the {@link CdcMetadataInjector} that stores the MongoDB resume
- * token timestamp in the {@link DebeziumEventUtils#CDC_LSN} metadata field.
+ * token timestamp in the {@link #CDC_UPDATED_AT} metadata field.
  */
 public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<BsonTimestamp> {
 
