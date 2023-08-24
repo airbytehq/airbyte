@@ -15,6 +15,7 @@ import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.debezium.connector.mongodb.ResumeTokens;
+import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
