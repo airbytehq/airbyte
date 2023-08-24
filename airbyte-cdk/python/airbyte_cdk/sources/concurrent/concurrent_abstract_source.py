@@ -3,12 +3,9 @@
 #
 import concurrent.futures
 import logging
-import os
-import sys
 import time
 from abc import ABC
 from queue import Queue
-from threading import Semaphore
 from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
@@ -56,7 +53,8 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
         stream_instances = {s.name: s for s in self.streams(config)}
         # FIXME NEed a test to make sure this only reads from streams in the configured catalog
         for configured_stream in catalog.streams:
-            print(f"configured_stream: {configured_stream}")
+            print(f"configured_stream.stream: {configured_stream.stream}")
+            print(f"configured_stream.name: {configured_stream.stream}")
             stream = stream_instances.get(configured_stream.stream.name)
             if not stream:
                 raise ValueError("unexpected. needs to be handled!")  # FIXME
