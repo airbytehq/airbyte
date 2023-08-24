@@ -3,114 +3,49 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "_self": {
-      "type": "string"
-    },
-    "title": {
-      "type": "string"
-    },
-    "description": {
-      "type": ["string", "null"]
-    },
-    "project": {
-      "type": "string"
-    },
-    "status": {
-      "type": "string"
-    },
-    "dependency": {
-      "type": ["string", "null"]
-    },
-    "start_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "due_datetime": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "started_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "finished_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "started_overridden_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "finished_overridden_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "estimated_duration": {
-      "type": ["integer", "null"]
-    },
-    "milestone": {
-      "type": "string"
-    },
-    "created_by": {
-      "type": ["string", "null"]
-    },
-    "assigned_to": {
-      "type": ["string", "null"]
-    },
-    "created_from": {
-      "type": ["string", "null"]
-    },
-    "risk_profiles": {
-      "type": "array",
+    "id": {"type": ["integer", "null"]},
+    "_self": {"type": ["string", "null"]},
+    "title": {"type": ["string", "null"]},
+    "description": {"type": ["string", "null"]},
+    "project": {"type": ["string", "null"]},
+    "status": {"type": ["string", "null"]},
+    "dependencies": {
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["string", "null"]
+      }
+    },
+    "start_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "due_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "started_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "finished_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "started_overridden_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "finished_overridden_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "estimated_duration": {"type": ["integer", "null"]},
+    "milestone": {"type": ["string", "null"]},
+    "created_by": {"type": ["string", "null"]},
+    "assigned_to": {"type": ["string", "null"]},
+    "created_from": {"type": ["string", "null"]},
+    "risk_profiles": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
         "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "risk_level": {
-            "type": "string"
-          },
-          "formula": {
-            "type": "string"
-          },
-          "over_run": {
-            "type": "integer"
-          },
-          "task_variance": {
-            "type": "integer"
-          },
-          "cool_down": {
-            "type": "integer"
-          },
-          "reason": {
-            "type": "integer"
-          },
-          "duration": {
-            "type": "integer"
-          },
-          "estimated_duration": {
-            "type": "integer"
-          }
+          "id": {"type": ["integer", "null"]},
+          "risk_level": {"type": ["string", "null"]},
+          "formula": {"type": ["string", "null"]},
+          "over_run": {"type": ["integer", "null"]},
+          "task_variance": {"type": ["integer", "null"]},
+          "cool_down": {"type": ["integer", "null"]},
+          "reason": {"type": ["integer", "null"]},
+          "duration": {"type": ["integer", "null"]},
+          "estimated_duration": {"type": ["integer", "null"]}
         }
       }
     },
-    "time_entry_list": {
-      "type": "string"
-    },
-    "attachment_list": {
-      "type": "string"
-    },
-    "created": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "modified": {
-      "type": "string",
-      "format": "date-time"
-    }
+    "time_entry_list": {"type": ["string", "null"]},
+    "attachment_list": {"type": ["string", "null"]},
+    "created": {"type": ["string", "null"], "format": "date-time"},
+    "modified": {"type": ["string", "null"], "format": "date-time"}
   }
 }
