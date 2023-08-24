@@ -16,7 +16,7 @@ public class MySqlFeatureFlags {
     this.sourceConfig = sourceConfig;
   }
 
-  public boolean isCdcSyncEnabled() {
+  public boolean isCdcInitialSyncViaPkEnabled() {
     return getFlagValue(CDC_VIA_PK);
   }
 

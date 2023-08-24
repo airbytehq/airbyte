@@ -242,6 +242,20 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
     return paths
 
 
+def flatten_tuples(to_flatten):
+    """Flatten a tuple of tuples into a single tuple."""
+    types = set()
+
+    if not isinstance(to_flatten, tuple):
+        to_flatten = (to_flatten,)
+    for thing in to_flatten:
+        if isinstance(thing, tuple):
+            types.update(flatten_tuples(thing))
+        else:
+            types.add(thing)
+    return tuple(types)
+
+
 def get_paths_in_connector_config(schema: dict) -> List[str]:
     """
     Traverse through the provided schema's values and extract the path_in_connector_config paths

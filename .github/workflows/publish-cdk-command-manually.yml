@@ -308,7 +308,7 @@ jobs:
           commit-message: Updating CDK version following release
           title: Updating CDK version following release
           body: This is an automatically generated PR triggered by a CDK release
-          branch: automatic-cdk-release-${{needs.bump-version.outputs.new_cdk_version}}
+          branch: automatic-cdk-release
           base: master
           delete-branch: true
       - name: Post success to Slack channel dev-connectors-extensibility

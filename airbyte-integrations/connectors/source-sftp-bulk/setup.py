@@ -13,7 +13,7 @@ MAIN_REQUIREMENTS = [
     "pandas==1.5.0",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "docker==5.0.3"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "docker==5.0.3"]
 
 setup(
     name="source_sftp_bulk",
