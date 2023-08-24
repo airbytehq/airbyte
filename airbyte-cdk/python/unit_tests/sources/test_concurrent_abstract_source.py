@@ -186,3 +186,52 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         ]
 
         self._verify_output_messages(all_messages, expected_messages)
+
+    def test_only_streams_in_configured_catalog_are_synced(self):
+        records_partition_1 = [
+            {"id": 1, "partition": 1, "stream": "A"},
+            {"id": 2, "partition": 1, "stream": "A"},
+        ]
+
+        records_partition_2 = [
+            {"id": 3, "partition": 2, "stream": "A"},
+            {"id": 4, "partition": 2, "stream": "A"},
+        ]
+        records_stream1_per_partition = [records_partition_1, records_partition_2]
+        records_partition_1_stream_2 = [
+            {"id": 1, "partition": 1, "stream": "B"},
+            {"id": 2, "partition": 1, "stream": "B"},
+            {"id": 3, "partition": 1, "stream": "B"},
+        ]
+        records_stream2_per_partition = [records_partition_1_stream_2]
+
+        partition1_stream1 = Partition()
+        partition2_stream1 = Partition()
+        partitions_stream1 = [partition1_stream1, partition2_stream1]
+        partition1_stream2 = Partition()
+        partitions_stream2 = [partition1_stream2]
+
+        stream1 = self._mock_stream("A", partitions_stream1, records_stream1_per_partition)
+        stream2 = self._mock_stream("B", partitions_stream2, records_stream2_per_partition)
+        streams = [stream1, stream2]
+        source = MockConcurrentAbstractSource(self._partition_generator, self._queue_consumer, self._queue, streams)
+        configured_catalog = self._mock_configured_catalog([stream2])
+
+        all_messages = self._read_messages_with_mocked_emitted_at(source, configured_catalog)
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 1, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 2, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(stream="B", data={"id": 3, "partition": 1, "stream": "B"}, emitted_at=1),
+            ),
+        ]
+
+        self._verify_output_messages(all_messages, expected_messages)
