@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import concurrent
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
@@ -12,7 +11,8 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
-from airbyte_cdk.sources.concurrent.queue_consumer import _SENTINEL, QueueConsumer
+from airbyte_cdk.sources.concurrent.queue_consumer import QueueConsumer
+from airbyte_cdk.sources.concurrent.stream_reader import StreamReader
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -382,40 +382,13 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
         partition_generator = PartitionGenerator(queue, self.name)
         queue_consumer = QueueConsumer(self.name)
         max_workers = 3
-        queue_consumer_futures = []
-        f_partitions = executor.submit(PartitionGenerator.generate_partitions_for_stream, partition_generator, parent_stream, executor)
-        for i in range(max_workers):  # FIXME should it be allowed more?
-            f = executor.submit(QueueConsumer.consume_from_queue, queue_consumer, queue, executor)
-            queue_consumer_futures.append(f)
-
-        print(f"waiting for f...")
-        done, unfinished = concurrent.futures.wait([f_partitions])
-        parent_partitions = [p for p in f_partitions.result()]
-        for _ in range(max_workers + 4):
-            print(f"{self.name} adding sentinels to the queue")
-            queue.put(_SENTINEL)
-        print(f"parent_partitions: {parent_partitions}")
-        done, unfinished = concurrent.futures.wait(queue_consumer_futures)
-        print(f"done: {done}")
-        print(f"unfinished: {unfinished}")
-        record_counter = 0
-        all_partitions = []
-        for future in done:
-            # Each result is an iterable of record
-            result = future.result()
-            # print(f"result: {result}")
-            for partition_record_and_stream in result:
-                partition_record, stream = partition_record_and_stream
-                record_counter += 1
-                all_partitions.append(partition_record)
-        print(f"num partitions for {self.name}: {len(all_partitions)}")
-        return all_partitions
+        stream_reader = StreamReader(partition_generator, queue_consumer, queue, max_workers)
+        all_partitions = stream_reader.read_stream(parent_stream)
+        return [record for (record, stream) in all_partitions]
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        print(f"calling wrong stream_slices!")
-        self.logger.error("calling wrong stream_slices")
         parent_stream = self.get_parent_stream_instance()
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:

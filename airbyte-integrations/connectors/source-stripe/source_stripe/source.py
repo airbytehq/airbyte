@@ -8,7 +8,7 @@ import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import ConcurrentAbstractSource
-from airbyte_cdk.sources.concurrent.concurrent_abstract_source import *
+from airbyte_cdk.sources.concurrent.concurrent_abstract_source import PartitionGenerator, QueueConsumer
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
@@ -66,12 +66,11 @@ class StripePartitionGenerator(PartitionGenerator):
 
 
 class SourceStripe(ConcurrentAbstractSource):
-    # class SourceStripe(AbstractSource):
     def __init__(self):
         queue = Queue()
         partition_generator = StripePartitionGenerator(queue, "SourceStripe")
         queue_consumer = QueueConsumer("SourceStripe")
-        max_workers = 3
+        max_workers = 6
         super().__init__(partition_generator, queue_consumer, queue, max_workers)
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:

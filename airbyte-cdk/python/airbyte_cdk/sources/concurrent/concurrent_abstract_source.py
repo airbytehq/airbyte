@@ -57,7 +57,7 @@ class ConcurrentAbstractSource(AbstractSource, ABC):
                 logger.warning(f"Skipped syncing stream '{stream.name}' because it was unavailable. {reason}")
                 continue
             record_counter = 0
-            for record in self._stream_reader.read_stream(stream):
+            for (record, stream) in self._stream_reader.read_stream(stream):
                 record_counter += 1
-                yield record
+                yield self._get_message(record, stream)
             print(f"Read {record_counter} records for {stream.name}")
