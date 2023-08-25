@@ -4,6 +4,7 @@
 
 
 import json
+import uuid
 import dpath.util
 import re
 from typing import Any, Iterable, List, Literal, Mapping, Optional, Union
@@ -27,13 +28,14 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
-from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, DocumentProcessor
+from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, DocumentProcessor, METADATA_STREAM_FIELD, METADATA_RECORD_ID_FIELD
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, FakeEmbedder, OpenAIEmbedder, CohereEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
+from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
-from pymilvus import MilvusClient
+from pymilvus import MilvusClient, connections, Collection
 from pymilvus.exceptions import DescribeCollectionException
 
 
@@ -58,6 +60,8 @@ class MilvusIndexingConfigModel(BaseModel):
     auth: Union[UsernamePasswordAuth, TokenAuth] = Field(
         ..., title="Authentication", description="Authentication method", discriminator="mode", type="object"
     )
+    vector_field: str = Field(title="Vector Field", description="The field in the entity that contains the vector", default="vector")
+    text_field: str = Field(title="Text Field", description="The field in the entity that contains the embedded text", default="text")
 
     class Config:
         title = "Indexing"
@@ -117,27 +121,52 @@ class MilvusIndexer(Indexer):
         super().__init__(config, embedder)
 
     def _create_client(self):
-        self._client = MilvusClient(
+        connections.connect(
             uri=self.config.host,
-            db=self.config.db if self.config.db else "",
+            db_name=self.config.db if self.config.db else "",
             user=self.config.auth.username if self.config.auth.mode == "username_password" else "",
             password=self.config.auth.password if self.config.auth.mode == "username_password" else "",
             token=self.config.auth.token if self.config.auth.mode == "token" else "",
         )
+        self._collection = Collection(self.config.collection)
 
     def check(self) -> Optional[str]:
         try:
             self._create_client()
-            self._client.describe_collection(self.config.collection)
+            self._collection.describe()
         except DescribeCollectionException as e:
             return f"Collection {self.config.collection} does not exist"
         except Exception as e:
             return format_exception(e)
         return None
+
+    def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
+        self._create_client()
+        for stream in catalog.streams:
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                self._delete_for_filter(f'{METADATA_STREAM_FIELD} == "{stream.stream.name}"')
+    
+    def _delete_for_filter(self, expr: str) -> None:
+        iterator = self._collection.query_iterator(expr=expr)
+        page = iterator.next()
+        while len(page) > 0:
+            self._collection.delete(ids=[next(iter(entity.values())) for entity in page])
+            page = iterator.next()
+
     
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
-        pass
-
+        if len(delete_ids) > 0:
+            id_list_expr = ", ".join([f'"{id}"' for id in delete_ids])
+            id_expr = f'{METADATA_RECORD_ID_FIELD} in [{id_list_expr}]'
+            self._delete_for_filter(id_expr)
+        embedding_vectors = self.embedder.embed_texts([chunk.page_content for chunk in document_chunks])
+        entities = []
+        for i in range(len(document_chunks)):
+            chunk = document_chunks[i]
+            metadata = chunk.metadata
+            metadata["text"] = chunk.page_content
+            entities.append({**chunk.metadata, self.config.vector_field: embedding_vectors[i], self.config.text_field: chunk.page_content})
+        self._collection.insert(entities)
 
 embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
 
@@ -154,7 +183,10 @@ class DestinationMilvus(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-        pass
+        config_model = ConfigModel.parse_obj(config)
+        self._init_indexer(config_model)
+        writer = Writer(config_model.processing, self.indexer, batch_size=5)
+        yield from writer.write(configured_catalog, input_messages)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         self._init_indexer(ConfigModel.parse_obj(config))
