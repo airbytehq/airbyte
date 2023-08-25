@@ -155,7 +155,7 @@ Run a code formatter on one or multiple connectors.
 
 For Python connectors we run the following tools, using the configuration defined in `pyproject.toml`:
 * `black` for code formatting
-* `ruff` for import sorting (replaces `isort`), linting (replaces `flake8`), and auto-formatting (in addition to `black`).
+* `isort` for import sorting
 * `licenseheaders` for adding license headers
 
 For Java connectors we run `./gradlew format`.
