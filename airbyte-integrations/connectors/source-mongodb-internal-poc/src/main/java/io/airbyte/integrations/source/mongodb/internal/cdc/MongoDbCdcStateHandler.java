@@ -4,10 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS;
-
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;

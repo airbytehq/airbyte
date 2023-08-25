@@ -22,7 +22,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class MongoDbStateManagerTest {
@@ -38,8 +37,8 @@ class MongoDbStateManagerTest {
     final int seconds = 123456789;
     final int order = 1;
     final Map<String, String> offset = Map.of(SOURCE_SECONDS, String.valueOf(seconds),
-            SOURCE_ORDER, String.valueOf(order),
-            SOURCE_RESUME_TOKEN, RESUME_TOKEN);
+        SOURCE_ORDER, String.valueOf(order),
+        SOURCE_RESUME_TOKEN, RESUME_TOKEN);
     final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
     final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID);
     final JsonNode sharedState = Jsons.jsonNode(cdcState);
@@ -93,8 +92,8 @@ class MongoDbStateManagerTest {
     assertNull(stateManager.getCdcState());
 
     final Map<String, String> offset = Map.of(SOURCE_SECONDS, String.valueOf(123456789),
-            SOURCE_ORDER, String.valueOf(1),
-            SOURCE_RESUME_TOKEN, RESUME_TOKEN);
+        SOURCE_ORDER, String.valueOf(1),
+        SOURCE_RESUME_TOKEN, RESUME_TOKEN);
     final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
     stateManager.updateCdcState(cdcState);
     assertNotNull(stateManager.getCdcState());
@@ -107,8 +106,8 @@ class MongoDbStateManagerTest {
     final int seconds = 123456789;
     final int order = 1;
     final Map<String, String> offset = Map.of(SOURCE_SECONDS, String.valueOf(seconds),
-            SOURCE_ORDER, String.valueOf(order),
-            SOURCE_RESUME_TOKEN, RESUME_TOKEN);
+        SOURCE_ORDER, String.valueOf(order),
+        SOURCE_RESUME_TOKEN, RESUME_TOKEN);
     final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
     final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID);
     final JsonNode sharedState = Jsons.jsonNode(cdcState);
@@ -125,8 +124,8 @@ class MongoDbStateManagerTest {
     assertEquals(airbyteStateMessage, generated);
 
     final Map<String, String> offset2 = Map.of(SOURCE_SECONDS, String.valueOf(1112223334),
-            SOURCE_ORDER, String.valueOf(2),
-            SOURCE_RESUME_TOKEN, RESUME_TOKEN);
+        SOURCE_ORDER, String.valueOf(2),
+        SOURCE_RESUME_TOKEN, RESUME_TOKEN);
     final MongoDbCdcState updatedCdcState = new MongoDbCdcState(Jsons.jsonNode(offset2));
     stateManager.updateCdcState(updatedCdcState);
 

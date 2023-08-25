@@ -13,9 +13,8 @@ import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import java.time.Instant;
-import org.bson.BsonTimestamp;
-
 import java.util.concurrent.atomic.AtomicLong;
+import org.bson.BsonTimestamp;
 
 /**
  * MongoDB specific implementation of the {@link CdcMetadataInjector} that stores the MongoDB resume

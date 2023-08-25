@@ -33,6 +33,8 @@ public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector
   }
 
   @Override
-  public String name(JsonNode source) { return source.get("table").asText(); }
+  public String name(JsonNode source) {
+    return source.get("table").asText();
+  }
 
 }

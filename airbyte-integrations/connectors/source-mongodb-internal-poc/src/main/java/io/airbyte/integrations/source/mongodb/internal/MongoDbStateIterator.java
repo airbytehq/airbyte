@@ -74,7 +74,8 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     this.checkpointInterval = checkpointInterval;
     this.emittedAt = emittedAt;
     this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
-    this.lastId = stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
+    this.lastId =
+        stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
   }
 
   @Override
