@@ -16,4 +16,4 @@ class PartitionGenerator:
         for partition in stream.generate_partitions(sync_mode=sync_mode, cursor_field=cursor_field):
             print(f"putting partition and stream on queue for {partition}. stream: {stream.name}")
             self._queue.put((partition, stream))
-            yield partition
+            yield partition  # FIXME: Why is this needed?
