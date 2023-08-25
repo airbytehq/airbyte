@@ -41,6 +41,11 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   }
 
   @Override
+  public String getTmpTableName(final String streamName, final String randomSuffix) {
+    return convertStreamName("_airbyte_tmp" + "_" + randomSuffix + "_" + streamName);
+  }
+
+  @Override
   public String convertStreamName(final String input) {
     return Names.toAlphanumericAndUnderscore(input);
   }

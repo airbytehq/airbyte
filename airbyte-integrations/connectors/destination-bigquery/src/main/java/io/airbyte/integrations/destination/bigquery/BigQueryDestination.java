@@ -70,6 +70,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -291,12 +292,16 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                                             final ParsedCatalog parsedCatalog,
                                                                                             final boolean use1s1t)
       throws IOException {
+    ConcurrentMap<AirbyteStreamNameNamespacePair, String> randomSuffixMap = new ConcurrentHashMap<>();
     return () -> {
       final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
       for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
 
+        randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
+
+        String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
         final String streamName = stream.getName();
         final String targetTableName;
         if (use1s1t) {
@@ -314,7 +319,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                 .parsedStream(parsedStream)
                 .config(config)
                 .formatterMap(getFormatterMap(stream.getJsonSchema()))
-                .tmpTableName(namingResolver.getTmpTableName(streamName))
+                .tmpTableName(namingResolver.getTmpTableName(streamName, randomSuffix))
                 .targetTableName(targetTableName)
                 // This refers to whether this is BQ denormalized or not
                 .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
@@ -389,6 +394,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                   // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
                   // 1s1t mode.
                   final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+                  LOGGER.error("++++++++++++++++++++ ___________");
                   bigquery.delete(rawTableId);
                   BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
                 } else {
