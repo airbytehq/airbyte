@@ -16,7 +16,7 @@
         }
     },
 
-    "workspaceFolder": "/workspace/airbyte-integrations/connectors/destination-duckdb",
+    "workspaceFolder": "/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
 
     // Configure tool-specific properties.
     "customizations": {
@@ -31,7 +31,8 @@
                 // Disable nagging to recommend extensions not listed here.
                 "extensions.ignoreRecommendations": true,
                 "python.defaultInterpreterPath": ".venv/bin/python",
-                "python.interpreter.infoVisibility": "always"
+                "python.interpreter.infoVisibility": "always",
+                "git.openRepositoryInParentFolders": "always"
             }
         }
     },
