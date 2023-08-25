@@ -6,10 +6,10 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "success":{
+            "success": {
               "type": ["null", "boolean"]
             },
-            "timestamp":{
+            "timestamp": {
               "type": ["null", "integer"]
             },
             "base": {
