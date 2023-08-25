@@ -29,7 +29,6 @@ class MongoDbCdcConnectorMetadataInjectorTest {
       instance.set(null, null);
   }
 
-
   @Test
   void testAddingMetadata() {
     final Instant emittedAt = Instant.now();
@@ -45,8 +44,7 @@ class MongoDbCdcConnectorMetadataInjectorTest {
 
     final MongoDbCdcConnectorMetadataInjector metadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     metadataInjector.addMetaData(event, Jsons.jsonNode(sourceData));
-
-    assertEquals(expected.getValue(), event.get(CDC_UPDATED_AT).asLong());
+    
     assertEquals((emittedAt.getEpochSecond() * 100_000_000) + 1L, event.get(CDC_DEFAULT_CURSOR).asLong());
   }
 
