@@ -13,9 +13,8 @@ import requests
 from pydantic import BaseModel, Field
 
 
-class BankAccount(BaseModel):
+class BankAccountCreateConfig(BaseModel):
     object: str = "bank_account"
-    id: Optional[str]
     country: str = Field()
     currency: str = Field()
     account_holder_type: str = Field()
@@ -23,13 +22,31 @@ class BankAccount(BaseModel):
     account_number: str = Field()
 
 
-class Customer(BaseModel):
-    id: Optional[str]
+class CustomerCreateConfig(BaseModel):
     description: str
     email: str
     name: str
     balance: str
-    bank_account: Optional[BankAccount]
+    bank_account: Optional[BankAccountCreateConfig]
+
+
+class BankAccount(BaseModel):
+    object: str = "bank_account"
+    id: str
+    country: str
+    currency: str
+    account_holder_name: str
+    account_holder_type: str
+    routing_number: str
+    account_number: str
+
+
+class Customer(BaseModel):
+    id: str
+    description: str
+    email: str
+    name: str
+    balance: str
 
 
 class HttpMethod(Enum):
@@ -60,17 +77,17 @@ class StripeAPI:
         self._authentication_header = {"Authorization": f"Bearer {secret_key}"}
         self._requester = requester
 
-    def create_customer(self, customer):
+    def create_customer(self, customer: CustomerCreateConfig) -> Customer:
         request = self.prepare_create_customer(customer)
-        return self._requester.submit(request)
+        return Customer.parse_obj(self._requester.submit(request))
 
-    def create_bank_account(self, customer: Customer):
-        if customer.id is None:
-            raise ValueError(f"Cannot create bank account for uninitialized customer {customer}")
-        request = self.prepare_create_bank_account(customer)
-        return self._requester.submit(request)
+    def create_bank_account(self, customer: Customer, bank_account_create_config: BankAccountCreateConfig) -> BankAccount:
+        request = self.prepare_create_bank_account(customer, bank_account_create_config)
+        return BankAccount.parse_obj(self._requester.submit(request))
 
-    def prepare_create_customer(self, customer: Customer):
+    def prepare_create_customer(self, customer: CustomerCreateConfig):
+        if customer.bank_account is None:
+            raise ValueError(f"Cannot create bank account for customer without bank account information: {customer}")
         url = "https://api.stripe.com/v1/customers"
         customer_data = customer.dict(exclude_none=True)
         customer_data.pop("bank_account", {})
@@ -81,14 +98,9 @@ class StripeAPI:
         response = self._requester.submit(request)
         return response.get("data", [])
 
-    def prepare_create_bank_account(self, customer: Customer):
-        if customer.id is None:
-            raise ValueError(f"Cannot create bank account for uninitialized customer {customer}")
-        if customer.bank_account is None:
-            raise ValueError(f"Cannot create bank account for customer without bank account information: {customer}")
-
+    def prepare_create_bank_account(self, customer: Customer, bank_account: BankAccountCreateConfig):
         url = f"https://api.stripe.com/v1/customers/{customer.id}/sources"
-        bank_account_data = {"source": customer.bank_account.dict(exclude_none=True)}
+        bank_account_data = {"source": bank_account.dict(exclude_none=True)}
         bank_account_data["source"]["account_holder_name"] = customer.name
         return HttpRequest(method=HttpMethod.POST, url=url, headers=self._authentication_header, body=bank_account_data)
 
@@ -129,30 +141,21 @@ def recursive_url_encode(data, parent_key=None):
     return items
 
 
-def is_customer_already_created(customer_name: str, stripe_api: StripeAPI):
+def is_customer_already_created(customer_name: str, stripe_api: StripeAPI) -> bool:
     customer = stripe_api.search_customer(customer_name)
     return len(customer) > 0
 
 
-def create_customer_and_bank_account(customer: Customer, stripe_api: StripeAPI):
-    if customer.id is not None:
-        raise ValueError(f"Cannot create customer {customer} because it already has an ID")
-    if customer.bank_account and customer.bank_account.id is not None:
-        raise ValueError(f"Cannot create bank account for {customer} because it already has an ID")
-    customer_output = stripe_api.create_customer(customer)
-    if "id" in customer_output:
-        customer.id = customer_output["id"]
+def create_customer_and_bank_account(
+    customer_create_config: CustomerCreateConfig, stripe_api: StripeAPI
+) -> (Customer, Optional[BankAccount]):
+    customer = stripe_api.create_customer(customer_create_config)
+    print(f"created customer: {customer_create_config}")
+    if customer_create_config.bank_account:
+        bank_account = stripe_api.create_bank_account(customer, customer_create_config.bank_account)
+        return customer, bank_account
     else:
-        raise RuntimeError(f"Failed to created customer {customer}. Response: {customer_output}")
-    print(f"created customer: {customer}")
-    if customer.bank_account:
-        bank_account_output = stripe_api.create_bank_account(customer)
-        if "id" in bank_account_output:
-            customer.bank_account.id = bank_account_output["id"]
-        else:
-            raise RuntimeError(f"Failed to created bank account for customer {customer}. Response: {bank_account_output}")
-        print(f"created bank account {bank_account_output}")
-    return customer
+        return customer, None
 
 
 def _load_json_file(path_to_config):
@@ -160,7 +163,7 @@ def _load_json_file(path_to_config):
         return json.loads(f.read())
 
 
-def populate_customer(customer: Customer, stripe_api: StripeAPI):
+def populate_customer(customer: CustomerCreateConfig, stripe_api: StripeAPI):
     customer_exists = is_customer_already_created(customer.name, stripe_api)
     if customer_exists:
         print(f"Customer {customer.name} already exists. Skipping...")
@@ -182,7 +185,7 @@ def populate_customers(config_path, data_path, concurrency):
     with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
         for record in records:
             customer_data = record
-            customer = Customer.parse_obj(customer_data)
+            customer = CustomerCreateConfig.parse_obj(customer_data)
             f = executor.submit(populate_customer, customer, stripe_api)
             futures.append(f)
         concurrent.futures.wait(futures)
