@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from typing import Dict, List
 
@@ -9,7 +10,6 @@ from googleapiclient import errors
 from requests import codes as status_codes
 
 from .helpers import SCOPES, Helpers
-
 
 logger = logging.getLogger("airbyte")
 
