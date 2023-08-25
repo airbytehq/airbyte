@@ -1,8 +1,12 @@
-import pytest
-import unittest
-from pydantic import ValidationError
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+import unittest
+
+import pytest
 from airbyte_cdk.sources.file_based.config.csv_format import CsvHeaderDefinition, CsvHeaderDefinitionType
+from pydantic import ValidationError
 
 
 class CsvHeaderDefinitionTest(unittest.TestCase):

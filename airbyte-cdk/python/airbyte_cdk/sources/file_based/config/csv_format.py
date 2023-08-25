@@ -6,10 +6,9 @@ import codecs
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
+from airbyte_cdk.sources.file_based.config.config_helper import replace_enum_allOf_and_anyOf
 from pydantic import BaseModel, Field, ValidationError, root_validator, validator
 from typing_extensions import Literal
-
-from airbyte_cdk.sources.file_based.config.config_helper import replace_enum_allOf_and_anyOf
 
 
 class InferenceType(Enum):
@@ -30,9 +29,7 @@ class CsvHeaderDefinition(BaseModel):
         description="How to infer column names.",
     )
     column_names: Optional[List[str]] = Field(
-        title="Column Names",
-        description="Given type is user-provided, column names will be provided using this field",
-        default=None
+        title="Column Names", description="Given type is user-provided, column names will be provided using this field", default=None
     )
 
     @classmethod
@@ -51,9 +48,7 @@ class CsvHeaderDefinition(BaseModel):
         definition_type = values.get("definition_type")
         column_names = values.get("column_names")
         if definition_type == CsvHeaderDefinitionType.USER_PROVIDED and not column_names:
-            raise ValidationError(
-                "`column_names` should be defined if the definition 'User Provided'.", model=CsvHeaderDefinition
-            )
+            raise ValidationError("`column_names` should be defined if the definition 'User Provided'.", model=CsvHeaderDefinition)
         if definition_type != CsvHeaderDefinitionType.USER_PROVIDED and column_names:
             raise ValidationError(
                 "`column_names` should not be defined if the definition is not 'User Provided'.", model=CsvHeaderDefinition

@@ -76,7 +76,12 @@ class AbstractFileBasedSpec(BaseModel):
                 schema["properties"]["streams"]["items"]["properties"][property_to_change]["oneOf"] = property_object.pop("anyOf")
             AbstractFileBasedSpec.move_enum_to_root(property_object)
 
-        csv_format_schemas = list(filter(lambda format: format["properties"]["filetype"]["default"] == "csv", schema["properties"]["streams"]["items"]["properties"]["format"]["oneOf"]))
+        csv_format_schemas = list(
+            filter(
+                lambda format: format["properties"]["filetype"]["default"] == "csv",
+                schema["properties"]["streams"]["items"]["properties"]["format"]["oneOf"],
+            )
+        )
         if len(csv_format_schemas) != 1:
             raise ValueError(f"Expecting only one CSV format but got {csv_format_schemas}")
         header_definitions = csv_format_schemas[0]["properties"]["header_definition"]
