@@ -38,7 +38,9 @@ public class BigQueryTableWriter implements DestinationWriter {
   public void write(JsonNode formattedData) throws IOException {
 
     try {
-      writeChannel.write(ByteBuffer.wrap((Jsons.serialize(formattedData) + "\n").getBytes(Charsets.UTF_8)));
+      synchronized (this) {
+        writeChannel.write(ByteBuffer.wrap((Jsons.serialize(formattedData) + "\n").getBytes(Charsets.UTF_8)));
+      }
     } catch (Exception e) {
       LOGGER.error("BigQueryTableWriter");
       LOGGER.error(formattedData.toPrettyString());
