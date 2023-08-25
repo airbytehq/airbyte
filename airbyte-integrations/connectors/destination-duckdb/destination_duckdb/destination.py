@@ -25,7 +25,7 @@ class DestinationDuckdb(Destination):
         Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
-        if destionation_path.startswith("md:") or destionation_path.startswith("motherduck:"):
+        if destination_path.startswith("md:") or destination_path.startswith("motherduck:"):
             return destination_path
 
         if not destination_path.startswith("/local"):
