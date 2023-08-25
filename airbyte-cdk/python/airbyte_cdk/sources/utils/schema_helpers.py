@@ -175,6 +175,17 @@ class InternalConfig(BaseModel):
         kwargs["exclude_unset"] = True
         return super().dict(*args, **kwargs)
 
+    def limit_reached(self, records_counter: int) -> bool:
+        """
+        Check if record count reached limit set by internal config.
+        :records_counter - number of records already red
+        :return True if limit reached, False otherwise
+        """
+        if self.limit:
+            if records_counter >= self.limit:
+                return True
+        return False
+
 
 def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
     """

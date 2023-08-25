@@ -28,12 +28,8 @@ class QueueConsumer:
                 else:
                     print(f"partition_and_stream for {self._name}: {partition_and_stream} from {current_thread}")
                     partition, stream = partition_and_stream
-                    # cursor_field = None
-                    # stream_slice = None
                     for record in stream.read_records(SyncMode.full_refresh, stream_slice=partition):
                         records_and_streams.append((record, stream))
                     print(f"{self._name} done reading partition {partition_and_stream} from {current_thread}")
             except Empty:
                 print(f"queue {self._name} is empty from {current_thread}")
-                # FIXME the queue could be empty because the partition generation is slow...
-                # return records_and_streams

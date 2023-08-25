@@ -21,6 +21,7 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.concurrent.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
@@ -206,19 +207,6 @@ class AbstractSource(Source, ABC):
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
-    @staticmethod
-    def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
-        """
-        Check if record count reached limit set by internal config.
-        :param internal_config - internal CDK configuration separated from user defined config
-        :records_counter - number of records already red
-        :return True if limit reached, False otherwise
-        """
-        if internal_config.limit:
-            if records_counter >= internal_config.limit:
-                return True
-        return False
-
     def _read_incremental(
         self,
         logger: logging.Logger,
@@ -279,12 +267,12 @@ class AbstractSource(Source, ABC):
                     # This functionality should ideally live outside of this method
                     # but since state is managed inside this method, we keep track
                     # of it here.
-                    if self._limit_reached(internal_config, total_records_counter):
+                    if internal_config.limit_reached(total_records_counter):
                         # Break from slice loop to save state and exit from _read_incremental function.
                         break
 
             yield self._checkpoint_state(stream_instance, stream_state, state_manager)
-            if self._limit_reached(internal_config, total_records_counter):
+            if internal_config.limit_reached(total_records_counter):
                 return
 
         if not has_slices:
@@ -305,6 +293,9 @@ class AbstractSource(Source, ABC):
             yield from self.message_repository.consume_queue()
         return
 
+    def get_full_refresh_stream_reader(self):
+        return SyncrhonousFullRefreshReader()
+
     def _read_full_refresh(
         self,
         logger: logging.Logger,
@@ -312,26 +303,7 @@ class AbstractSource(Source, ABC):
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
-        logger.debug(
-            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
-        )
-        total_records_counter = 0
-        for _slice in slices:
-            if self.should_log_slice_message(logger):
-                yield self._create_slice_log_message(_slice)
-            record_data_or_messages = stream_instance.read_records(
-                stream_slice=_slice,
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=configured_stream.cursor_field,
-            )
-            for record_data_or_message in record_data_or_messages:
-                message = self._get_message(record_data_or_message, stream_instance)
-                yield message
-                if message.type == MessageType.RECORD:
-                    total_records_counter += 1
-                    if self._limit_reached(internal_config, total_records_counter):
-                        return
+        return self.get_full_refresh_stream_reader().read_stream(stream_instance, configured_stream.cursor_field, internal_config, logger)
 
     def _create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:
         """

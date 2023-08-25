@@ -11,7 +11,7 @@ from airbyte_cdk.sources.concurrent.queue_consumer import _SENTINEL, QueueConsum
 from airbyte_cdk.sources.streams import Stream
 
 
-class StreamReader:
+class ConcurrentStreamReader:
     def __init__(self, partition_generator: PartitionGenerator, queue_consumer: QueueConsumer, queue: Queue, max_workers: int):
         self._partitions_generator = partition_generator
         self._queue_consumer = queue_consumer

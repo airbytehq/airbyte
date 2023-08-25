@@ -8,9 +8,9 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent.concurrent_stream_reader import ConcurrentStreamReader
 from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.concurrent.queue_consumer import QueueConsumer
-from airbyte_cdk.sources.concurrent.stream_reader import StreamReader
 
 
 class Partition:
@@ -19,7 +19,7 @@ class Partition:
 
 class ConcurrentAbstractSource(AbstractSource, ABC):
     def __init__(self, partitions_generator: PartitionGenerator, queue_consumer: QueueConsumer, queue: Queue, max_workers: int):
-        self._stream_reader = StreamReader(partitions_generator, queue_consumer, queue, max_workers)
+        self._stream_reader = ConcurrentStreamReader(partitions_generator, queue_consumer, queue, max_workers)
 
     # FIXME: can we safely replace Mappings with types?
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:

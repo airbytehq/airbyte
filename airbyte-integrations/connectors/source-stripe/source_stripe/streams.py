@@ -10,9 +10,9 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.concurrent.concurrent_stream_reader import ConcurrentStreamReader
 from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.concurrent.queue_consumer import QueueConsumer
-from airbyte_cdk.sources.concurrent.stream_reader import StreamReader
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -382,7 +382,7 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
         partition_generator = PartitionGenerator(queue, self.name)
         queue_consumer = QueueConsumer(self.name)
         max_workers = 3
-        stream_reader = StreamReader(partition_generator, queue_consumer, queue, max_workers)
+        stream_reader = ConcurrentStreamReader(partition_generator, queue_consumer, queue, max_workers)
         all_partitions = stream_reader.read_stream(parent_stream)
         return [record for (record, stream) in all_partitions]
 
