@@ -1,9 +1,8 @@
-import React, { useEffect, useCallback } from "react";
-// import useRouter from "hooks/useRouter";
+import React, { useEffect, useCallback, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { LoadingPage } from "components";
-// import MessageBox from "components/base/MessageBox";
+import MessageBox from "components/base/MessageBox";
 
 import { useUser } from "core/AuthContext";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
@@ -13,7 +12,7 @@ const LoginNewPage: React.FC = () => {
   const token = searchParams.get("token");
   const { setUser } = useUser();
   const authService = useAuthenticationService();
-  // const [errorMessage, setErrorMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const getUserInfo = useCallback(() => {
     if (token) {
@@ -24,11 +23,11 @@ const LoginNewPage: React.FC = () => {
         })
         .catch((err) => {
           if (err.message) {
-            // setErrorMessage(err.message);
+            setErrorMessage(err.message);
           }
-          //  setTimeout(() => {
-          window.open(process.env.REACT_APP_WEBSITE_URL, "_self");
-          // }, 1000);
+          setTimeout(() => {
+            window.open(process.env.REACT_APP_WEBSITE_URL, "_self");
+          }, 1500);
         });
     }
   }, [authService, setUser, token]);
@@ -45,8 +44,8 @@ const LoginNewPage: React.FC = () => {
   }
 
   return (
-    <LoadingPage position="center" full>
-      {/* {errorMessage && (
+    <>
+      {errorMessage && (
         <MessageBox
           type="error"
           message={errorMessage}
@@ -54,8 +53,9 @@ const LoginNewPage: React.FC = () => {
             setErrorMessage("");
           }}
         />
-      )} */}
-    </LoadingPage>
+      )}
+      <LoadingPage full position="center" />
+    </>
   );
 };
 
