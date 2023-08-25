@@ -303,7 +303,9 @@ class AbstractSource(Source, ABC):
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        for data_or_message in self.get_full_refresh_stream_reader().read_stream(stream_instance, configured_stream.cursor_field, internal_config, logger):
+        for data_or_message in self.get_full_refresh_stream_reader().read_stream(
+            stream_instance, configured_stream.cursor_field, logger, internal_config
+        ):
             yield self._get_message(data_or_message, stream_instance)
 
     def _create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:

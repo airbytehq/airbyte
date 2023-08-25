@@ -2,16 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from queue import Queue
-from unittest import TestCase
 from unittest.mock import Mock
 
 from airbyte_cdk.sources.concurrent.concurrent_stream_reader import ConcurrentStreamReader
 from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.concurrent.queue_consumer import QueueConsumer
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from unit_tests.sources.concurrent.utils import ConcurrentCdkTestCase
 
 
-class ConcurrentFullRefreshReadTestCase(TestCase):
+class ConcurrentFullRefreshReadTestCase(ConcurrentCdkTestCase):
     # FIXME: need a test to confirm there are multiple sentinels added to the queue if there's many workers..
 
     _NO_CURSOR_FIELD = None
@@ -24,18 +24,6 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         self._name = "Source"
         self._partition_generator = PartitionGenerator(self._queue, self._name)
         self._queue_consumer = QueueConsumer(self._name)
-
-    def _mock_stream(self, name: str, partitions, records_per_partition, available):
-        stream = Mock()
-        stream.name = name
-        stream.get_json_schema.return_value = {}
-        stream.generate_partitions.return_value = iter(partitions)
-        stream.read_records.side_effect = [iter(records) for records in records_per_partition]
-        if available:
-            stream.check_availability.return_value = True, None
-        else:
-            stream.check_availability.return_value = False, "A reason why the stream is unavailable"
-        return stream
 
     def _mock_configured_catalog(self, streams_to_sync):
         configured_catalog = Mock()
@@ -70,7 +58,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         ]
         records_per_partition = [records]
 
-        stream = self._mock_stream("A", partitions, records_per_partition, True)
+        stream = self.mock_stream("A", partitions, records_per_partition, available=True)
         stream_reader = ConcurrentStreamReader(self._partition_generator, self._queue_consumer, self._queue, 1)
 
         all_messages = stream_reader.read_stream(stream, self._NO_CURSOR_FIELD, self._INTERNAL_CONFIG, self._logger)
@@ -99,7 +87,7 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
             {"id": 4, "partition": 2},
         ]
         records_per_partition = [records_partition_1, records_partition_2]
-        stream = self._mock_stream("A", partitions, records_per_partition, True)
+        stream = self.mock_stream("A", partitions, records_per_partition, available=True)
         stream_reader = ConcurrentStreamReader(self._partition_generator, self._queue_consumer, self._queue, 1)
 
         all_messages = stream_reader.read_stream(stream, self._NO_CURSOR_FIELD, self._INTERNAL_CONFIG, self._logger)

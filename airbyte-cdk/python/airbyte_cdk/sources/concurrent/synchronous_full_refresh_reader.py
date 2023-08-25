@@ -3,23 +3,20 @@
 #
 import json
 import logging
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 
 
 class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
     # FIXME this is duplicate from AbstractSource
     SLICE_LOG_PREFIX = "slice:"
 
-    def read_stream(self, stream: Stream, cursor_field, internal_config, logger):
-        #FIXME should use stream's loggger!
-        #FIXME: should internal_config be null?
+    def read_stream(self, stream: Stream, cursor_field, logger, internal_config=InternalConfig()):
         slices = stream.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         total_records_counter = 0
@@ -33,7 +30,11 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
             )
             for record_data_or_message in record_data_or_messages:
                 yield record_data_or_message
-                if isinstance(record_data_or_message, AirbyteMessage) and record_data_or_message.type == MessageType.RECORD or isinstance(record_data_or_message, dict):
+                if (
+                    isinstance(record_data_or_message, AirbyteMessage)
+                    and record_data_or_message.type == MessageType.RECORD
+                    or isinstance(record_data_or_message, dict)
+                ):
                     total_records_counter += 1
                     if internal_config and internal_config.limit_reached(total_records_counter):
                         return
