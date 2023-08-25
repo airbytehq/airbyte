@@ -24,9 +24,9 @@ class MongoDbCdcConnectorMetadataInjectorTest {
 
   @BeforeEach
   public void reset() throws NoSuchFieldException, IllegalAccessException {
-      Field instance = MongoDbCdcConnectorMetadataInjector.class.getDeclaredField("mongoDbCdcConnectorMetadataInjector");
-      instance.setAccessible(true);
-      instance.set(null, null);
+    Field instance = MongoDbCdcConnectorMetadataInjector.class.getDeclaredField("mongoDbCdcConnectorMetadataInjector");
+    instance.setAccessible(true);
+    instance.set(null, null);
   }
 
   @Test

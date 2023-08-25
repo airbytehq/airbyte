@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import java.time.Instant;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -67,4 +66,5 @@ public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector 
   private Long getCdcDefaultCursor() {
     return this.emittedAtConverted + this.recordCounter.getAndIncrement();
   }
+
 }
