@@ -41,10 +41,9 @@ This command will:
 1. Install a virtual environment at `airbyte-integrations/connectors/<your-connector-dir>/.venv`
 2. Install local development dependencies specified in `airbyte-integrations/connectors/your-connector-dir/requirements.txt`
 3. Runs the following pip modules:
-    1. [Black](https://pypi.org/project/black/) to lint the code
-    2. [isort](https://pypi.org/project/isort/) to sort imports
-    3. [Flake8](https://pypi.org/project/flake8/) to check formatting
-    4. [MyPy](https://pypi.org/project/mypy/) to check type usage
+    1. [Black](https://pypi.org/project/black/) to lint the code.
+    2. [`Ruff`](https://beta.ruff.rs/docs/) for import sorting (replaces `isort`), linting (replaces `flake8`), and auto-formatting (in addition to `black`).
+    3. [MyPy](https://pypi.org/project/mypy/) to check type usage.
 
 ## Formatting/linting
 
