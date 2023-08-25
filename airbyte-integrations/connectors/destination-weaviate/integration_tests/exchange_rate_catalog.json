@@ -1,23 +1,23 @@
 {
-  "type" : "object",
-  "properties" : {
-    "id" : {
-      "type" : "integer"
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
     },
-    "currency" : {
-      "type" : "string"
+    "currency": {
+      "type": "string"
     },
-    "date" : {
-      "type" : "string"
+    "date": {
+      "type": "string"
     },
-    "HKD" : {
-      "type" : "number"
+    "HKD": {
+      "type": "number"
     },
-    "NZD" : {
-      "type" : "number"
+    "NZD": {
+      "type": "number"
     },
-    "USD" : {
-      "type" : "number"
+    "USD": {
+      "type": "number"
     }
   }
 }
