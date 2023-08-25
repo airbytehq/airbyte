@@ -5,7 +5,7 @@ info:
     [https://airbyte.io](https://airbyte.io).
 
     The Configuration API is an internal Airbyte API that is designed for communications between different Airbyte components.
-    * Its main purpose is to enable the Airbyte's Engineering team to configure the internal state of [Airbyte Cloud](https://airbyte.com/airbyte-cloud)
+    * Its main purpose is to enable the Airbyte Engineering team to configure the internal state of [Airbyte Cloud](https://airbyte.com/airbyte-cloud)
     * It is also sometimes used by OSS users to configure their own Self-Hosted Airbyte deployment (internal state, etc)
 
     WARNING
