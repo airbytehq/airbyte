@@ -51,7 +51,9 @@ These iterations are more conveniently achieved by remaining in the current dire
     * `acceptance-test-config.yaml` structure is defined in `./connector_acceptance_test/config.py`
 5. Unit test your changes by adding tests to `./unit_tests`
 6. Run the unit tests on the acceptance tests again: `python -m pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `python -m pytest unit_tests -m "not slow"`.
-7. Manually test the changes you made by running acceptance tests on a specific connector. e.g. `python -m pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
+7. Manually test the changes you made by running acceptance tests on a specific connector:
+    * First build the connector to ensure your local image is up-to-date: `./gradlew :airbyte-integrations:connectors:source-pokeapi:airbyteDocker`
+    * Then run the acceptance tests on the connector: `python -m pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
 8. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
 9. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
 10. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
