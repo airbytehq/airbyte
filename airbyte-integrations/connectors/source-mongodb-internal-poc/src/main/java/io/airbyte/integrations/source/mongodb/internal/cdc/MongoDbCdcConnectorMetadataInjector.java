@@ -11,14 +11,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 import org.bson.BsonTimestamp;
 
 /**
- * MongoDB specific implementation of the {@link CdcMetadataInjector} that stores the MongoDB resume
- * token timestamp in the {@link #CDC_UPDATED_AT} metadata field.
+ * MongoDB specific implementation of the {@link CdcMetadataInjector} that stores cursor information
+ * for MongoDB source event data.
  */
 public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector {
 
@@ -45,8 +44,6 @@ public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector 
 
   @Override
   public void addMetaData(final ObjectNode event, final JsonNode source) {
-    final BsonTimestamp timestamp = MongoDbResumeTokenHelper.extractTimestampFromSource(source);
-    event.put(CDC_UPDATED_AT, timestamp.getValue());
     event.put(CDC_DEFAULT_CURSOR, getCdcDefaultCursor());
   }
 
