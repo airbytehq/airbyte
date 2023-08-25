@@ -79,8 +79,6 @@ class Stream(ABC):
     """
 
     def generate_partitions(self, sync_mode, cursor_field):
-        # FIXME
-        print(f"streaam {self.name} .generate_partitions with {sync_mode} and {cursor_field}")
         yield from self.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field)
 
     # Use self.logger in subclasses to log any messages
