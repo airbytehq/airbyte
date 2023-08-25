@@ -5,19 +5,23 @@ import concurrent
 import concurrent.futures
 import logging
 from queue import Queue
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.concurrent.queue_consumer import _SENTINEL, QueueConsumer
+from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logging import create_slice_log_message, should_log_slice_message
 
 
 class ConcurrentStreamReader(FullRefreshStreamReader):
-    def __init__(self, partition_generator: PartitionGenerator, queue_consumer: QueueConsumer, queue: Queue, max_workers: int):
+    def __init__(
+        self, partition_generator: PartitionGenerator, queue_consumer: QueueConsumer, queue: Queue[StreamPartition], max_workers: int
+    ):
         self._partitions_generator = partition_generator
         self._queue_consumer = queue_consumer
         self._queue = queue
@@ -25,7 +29,7 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
 
     def read_stream(
         self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
-    ):
+    ) -> Iterable[StreamData]:
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         partition_generation_futures = []
         queue_consumer_futures = []

@@ -3,9 +3,12 @@
 #
 import threading
 from queue import Empty, Queue
+from typing import List, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import StreamData
 
 _SENTINEL = ("SENTINEL", "SENTINEL")
 
@@ -14,10 +17,12 @@ class QueueConsumer:
     def __init__(self, name: str):
         self._name = name
 
-    def consume_from_queue(self, queue: Queue[StreamPartition]):
+    def consume_from_queue(
+        self, queue: Queue[StreamPartition]
+    ) -> List[Tuple[StreamData, Stream]]:  # FIXME the return type is weird here...
         current_thread = threading.current_thread().ident
         print(f"consume from queue {self._name} from {current_thread}")
-        records_and_streams = []
+        records_and_streams: List[Tuple[StreamData, Stream]] = []
         while True:
             try:
                 stream_partition = queue.get(timeout=2)

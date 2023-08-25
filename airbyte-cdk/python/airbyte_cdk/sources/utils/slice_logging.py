@@ -23,7 +23,7 @@ def create_slice_log_message(_slice: Optional[Mapping[str, Any]]) -> AirbyteMess
     )
 
 
-def should_log_slice_message(logger: logging.Logger):
+def should_log_slice_message(logger: logging.Logger) -> bool:
     """
 
     :param logger:

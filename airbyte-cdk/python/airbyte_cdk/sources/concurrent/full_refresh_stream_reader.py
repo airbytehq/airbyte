@@ -3,7 +3,7 @@
 #
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Type as MessageType
@@ -16,7 +16,7 @@ class FullRefreshStreamReader(ABC):
     @abstractmethod
     def read_stream(
         self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
-    ):
+    ) -> Iterable[StreamData]:
         """
         Read a stream in full refresh mode
         :param stream: The stream to read data from
@@ -27,10 +27,10 @@ class FullRefreshStreamReader(ABC):
         """
 
     @staticmethod
-    def is_record(record_data_or_message: StreamData):
+    def is_record(record_data_or_message: StreamData) -> bool:
         if isinstance(record_data_or_message, dict):
             return True
         elif isinstance(record_data_or_message, AirbyteMessage):
-            return record_data_or_message.type == MessageType.RECORD
+            return bool(record_data_or_message.type == MessageType.RECORD)
         else:
             return False

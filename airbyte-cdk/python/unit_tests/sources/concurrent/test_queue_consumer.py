@@ -13,6 +13,9 @@ from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
 
 
 class QueueConsumerTestCase(TestCase):
+
+    _A_CURSOR = ["NESTED", "CURSOR"]
+
     def setUp(self):
         self._name = "A"
         self._queue = Queue()
@@ -31,13 +34,13 @@ class QueueConsumerTestCase(TestCase):
 
         stream = self._mock_stream([])
 
-        queue.put(StreamPartition(stream, partition))
+        queue.put(StreamPartition(stream, partition, self._A_CURSOR))
         queue.put(_SENTINEL)
 
         actual_records = list(self._queue_consumer.consume_from_queue(queue))
         # FIXME need to pass cursor fieeld..
 
-        stream.read_records.assert_has_calls([call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=None)])
+        stream.read_records.assert_has_calls([call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=self._A_CURSOR)])
 
         assert len(actual_records) == 0
 
@@ -50,14 +53,14 @@ class QueueConsumerTestCase(TestCase):
         ]
         stream = self._mock_stream(records)
 
-        self._queue.put(StreamPartition(stream, partition))
+        self._queue.put(StreamPartition(stream, partition, self._A_CURSOR))
         self._queue.put(_SENTINEL)
 
         stream.read_records.return_value = iter(records)
 
         actual_records = list(self._queue_consumer.consume_from_queue(self._queue))
 
-        stream.read_records.assert_has_calls([call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=None)])
+        stream.read_records.assert_has_calls([call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=self._A_CURSOR)])
 
         expected_records = [(r, stream) for r in records]
 

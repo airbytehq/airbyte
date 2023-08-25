@@ -78,7 +78,7 @@ class Stream(ABC):
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
-    def generate_partitions(self, sync_mode, cursor_field):
+    def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field)
 
     # Use self.logger in subclasses to log any messages
