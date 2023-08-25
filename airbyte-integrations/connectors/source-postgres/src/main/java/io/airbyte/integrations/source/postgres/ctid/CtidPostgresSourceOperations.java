@@ -62,8 +62,9 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
     private final long lsn;
     private final PostgresCdcConnectorMetadataInjector metadataInjector;
 
-    public CdcMetadataInjector(final String transactionTimestamp, final long lsn,
-        final PostgresCdcConnectorMetadataInjector metadataInjector) {
+    public CdcMetadataInjector(final String transactionTimestamp,
+                               final long lsn,
+                               final PostgresCdcConnectorMetadataInjector metadataInjector) {
       this.transactionTimestamp = transactionTimestamp;
       this.lsn = lsn;
       this.metadataInjector = metadataInjector;
@@ -72,6 +73,7 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
     private void inject(final ObjectNode record) {
       metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(record, transactionTimestamp, lsn);
     }
+
   }
 
 }
