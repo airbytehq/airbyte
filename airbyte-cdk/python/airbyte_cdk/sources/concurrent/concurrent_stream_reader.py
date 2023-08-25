@@ -63,10 +63,9 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
             for future in concurrent.futures.as_completed(queue_consumer_futures):
                 # Each result is an iterable of record
                 result = future.result()
-                for partition_record_and_stream in result:
-                    partition_record, stream = partition_record_and_stream
-                    yield partition_record
-                    if FullRefreshStreamReader.is_record(partition_record):
+                for record in result:
+                    yield record.stream_data
+                    if FullRefreshStreamReader.is_record(record.stream_data):
                         total_records_counter += 1
                         if internal_config and internal_config.limit_reached(total_records_counter):
                             return

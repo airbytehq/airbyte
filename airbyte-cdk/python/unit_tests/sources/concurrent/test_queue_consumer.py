@@ -9,12 +9,13 @@ from unittest.mock import Mock, call
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.queue_consumer import _SENTINEL, QueueConsumer
+from airbyte_cdk.sources.concurrent.record import Record
 from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
 
 
 class QueueConsumerTestCase(TestCase):
 
-    _A_CURSOR = ["NESTED", "CURSOR"]
+    _A_CURSOR_FIELD = ["NESTED", "CURSOR"]
 
     def setUp(self):
         self._name = "A"
@@ -34,13 +35,14 @@ class QueueConsumerTestCase(TestCase):
 
         stream = self._mock_stream([])
 
-        queue.put(StreamPartition(stream, partition, self._A_CURSOR))
+        queue.put(StreamPartition(stream, partition, self._A_CURSOR_FIELD))
         queue.put(_SENTINEL)
 
         actual_records = list(self._queue_consumer.consume_from_queue(queue))
-        # FIXME need to pass cursor fieeld..
 
-        stream.read_records.assert_has_calls([call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=self._A_CURSOR)])
+        stream.read_records.assert_has_calls(
+            [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=self._A_CURSOR_FIELD)]
+        )
 
         assert len(actual_records) == 0
 
@@ -53,16 +55,18 @@ class QueueConsumerTestCase(TestCase):
         ]
         stream = self._mock_stream(records)
 
-        self._queue.put(StreamPartition(stream, partition, self._A_CURSOR))
+        self._queue.put(StreamPartition(stream, partition, self._A_CURSOR_FIELD))
         self._queue.put(_SENTINEL)
 
         stream.read_records.return_value = iter(records)
 
         actual_records = list(self._queue_consumer.consume_from_queue(self._queue))
 
-        stream.read_records.assert_has_calls([call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=self._A_CURSOR)])
+        stream.read_records.assert_has_calls(
+            [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=self._A_CURSOR_FIELD)]
+        )
 
-        expected_records = [(r, stream) for r in records]
+        expected_records = [Record(r, StreamPartition(stream, partition, self._A_CURSOR_FIELD)) for r in records]
 
         assert actual_records == expected_records
 

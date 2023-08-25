@@ -3,12 +3,11 @@
 #
 import threading
 from queue import Empty, Queue
-from typing import List, Tuple
+from typing import List
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.concurrent.record import Record
 from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.core import StreamData
 
 _SENTINEL = ("SENTINEL", "SENTINEL")
 
@@ -17,12 +16,10 @@ class QueueConsumer:
     def __init__(self, name: str):
         self._name = name
 
-    def consume_from_queue(
-        self, queue: Queue[StreamPartition]
-    ) -> List[Tuple[StreamData, Stream]]:  # FIXME the return type is weird here...
+    def consume_from_queue(self, queue: Queue[StreamPartition]) -> List[Record]:
         current_thread = threading.current_thread().ident
         print(f"consume from queue {self._name} from {current_thread}")
-        records_and_streams: List[Tuple[StreamData, Stream]] = []
+        records_and_streams: List[Record] = []
         while True:
             try:
                 stream_partition = queue.get(timeout=2)
@@ -34,7 +31,7 @@ class QueueConsumer:
                     for record in stream_partition.stream.read_records(
                         stream_slice=stream_partition.slice, sync_mode=SyncMode.full_refresh, cursor_field=stream_partition.cursor_field
                     ):
-                        records_and_streams.append((record, stream_partition.stream))  # FIXME: I think this should include the partition...
+                        records_and_streams.append(Record(record, stream_partition))
                     print(f"{self._name} done reading partition {stream_partition} from {current_thread}")
             except Empty:
                 print(f"queue {self._name} is empty from {current_thread}")
