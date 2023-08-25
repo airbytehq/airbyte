@@ -1,7 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  page_size: 50
   selector:
     type: RecordSelector
     extractor:
@@ -31,48 +30,52 @@ definitions:
     record_selector:
       $ref: "#/definitions/selector"
 
-    paginator:
-      type: "DefaultPaginator"
-      page_size_option:
-        inject_into: "request_parameter"
-        field_name: "maxResult"
-      pagination_strategy:
-        type: "OffsetIncrement"
-        page_size: 100
-      page_token_option:
-        type: RequestOption
-        field_name: "offset"
-        inject_into: "request_parameter"
-        stop_condition: "{{ headers.link.next.results != 'true' }}"
-
     requester:
       $ref: "#/definitions/requester"
-
-  paginator:
-    type: DefaultPaginator
-    page_size: "#/definitions/page_size"
-    limit_option:
-      inject_into: "request_parameter"
-      field_name: "start"
-    page_token_option:
-      type: RequestOption
-      inject_into: "request_parameter"
-      field_name: "maxResults"
 
   base_stream:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
 
+#'page_token_option': {'anyOf': [{'$ref': '#/definitions/RequestOption'},
+#                                                    {'$ref': '#/definitions/RequestPath'}]},
+#                    'pagination_strategy': {'anyOf': [{'$ref': '#/definitions/CursorPagination'},
+#                                                      {'$ref': '#/definitions/CustomPaginationStrategy'},
+#                                                      {'$ref': '#/definitions/OffsetIncrement'},
+#                                                      {'$ref': '#/definitions/PageIncrement'}],
+
+  default_paginator:
+    type: "DefaultPaginator"
+    pagination_strategy:
+      type: "PageIncrement"
+      start_from_page: 0
+      page_size: 100
+
+  double_paginator:
+    $ref: "#/definitions/default_paginator"
+    pagination_strategy:
+      class_name: "source_audience_project.item_pagination_strategy.ItemPaginationStrategy"
+      type: "CustomPaginationStrategy"
+
+  path:
+    type: HttpRequester
+    class_name: "source_audience_project.item_pagination_strategy.ItemPathStrategy"
+
   campaigns_stream:
+    $ref: "#/definitions/base_stream"
     $parameters:
-      $ref: "#/definitions/base_stream"
       name: "campaigns"
       primary_key: "id"
-      # path: "views?gridId={{ config['grid_id'] }}"
-      type: CustomParseResponse
-      class_name: source_audience_project.components.Campaigns
-      path: "campaigns"
+      start_from_page: 0
+      page_size: 100
+      path: ""
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      paginator:
+        $ref: "#/definitions/double_paginator"
+
+
 
 
 streams:
