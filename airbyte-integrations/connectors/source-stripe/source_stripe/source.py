@@ -9,7 +9,9 @@ import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.concurrent.concurrent_abstract_source import PartitionGenerator, QueueConsumer
+from airbyte_cdk.sources.concurrent.concurrent_stream_reader import ConcurrentStreamReader
+from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.concurrent.queue_consumer import QueueConsumer
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
@@ -60,19 +62,12 @@ from source_stripe.streams import (
     Transfers,
     UsageRecords,
 )
-from airbyte_cdk.sources.concurrent.concurrent_stream_reader import ConcurrentStreamReader
-from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
-from airbyte_cdk.sources.concurrent.queue_consumer import QueueConsumer
-
-
-class StripePartitionGenerator(PartitionGenerator):
-    pass
 
 
 class SourceStripe(AbstractSource):
     def get_full_refresh_stream_reader(self):
         queue = Queue()
-        partition_generator = StripePartitionGenerator(queue, "SourceStripe")
+        partition_generator = PartitionGenerator(queue, "SourceStripe")
         queue_consumer = QueueConsumer("SourceStripe")
         max_workers = 10
         return ConcurrentStreamReader(partition_generator, queue_consumer, queue, max_workers)
