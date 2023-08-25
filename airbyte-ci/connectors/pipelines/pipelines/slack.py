@@ -3,8 +3,8 @@
 #
 
 import json
-import requests
 
+import requests
 from pipelines import main_logger
 
 
