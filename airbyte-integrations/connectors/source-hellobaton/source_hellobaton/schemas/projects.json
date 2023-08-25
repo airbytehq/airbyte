@@ -3,135 +3,63 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "_self": {
-      "type": "string"
-    },
-    "annual_contract_value": {
-      "type": "string"
-    },
-    "attachment_list": {
-      "type": "string"
-    },
-    "client_systems": {
-      "type": ["string", "null"]
-    },
+    "_self": {"type": ["string", "null"]},
+    "annual_contract_value": {"type": ["string", "null"]},
+    "archived": {"type": ["boolean", "null"]}, 
+    "attachment_list": {"type": ["string", "null"]},
+    "client_systems": {"type": ["string", "null"]},
     "companies": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
-    "completed_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "cost": {
-      "type": ["integer", "null"]
-    },
-    "created": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "created_from": {
-      "type": ["string", "null"]
-    },
-    "created_from_template": {
-      "type": ["string", "null"]
-    },
-    "creator": {
-      "type": ["string", "null"]
-    },
-    "deadline_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "estimated_duration": {
-      "type": ["integer", "null"]
-    },
-    "id": {
-      "type": "integer"
-    },
-    "implementation_budget": {
-      "type": "string"
-    },
-    "milestone_list": {
-      "type": "string"
-    },
-    "modified": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
+    "completed_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "cost": {"type": ["integer", "null"]},
+    "created": {"type": ["string", "null"], "format": "date-time"},
+    "created_from": {"type": ["string", "null"]},
+    "created_from_template": {"type": ["string", "null"]},
+    "creator": {"type": ["string", "null"]},
+    "custom_field_list": { "type": ["string", "null"]}, 
+    "deadline_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "estimated_duration": {"type": ["integer", "null"]},
+    "id": {"type": ["integer", "null"]},
+    "implementation_budget": {"type": ["string", "null"]},
+    "milestone_feedback_list": { "type": ["string", "null"]},
+    "milestone_list": { "type": ["string", "null"]},
+    "modified": {"type": ["string", "null"], "format": "date-time"},
     "phase": {
       "type": ["object", "null"],
       "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "_self": {
-          "type": "string"
-        },
-        "name": {
-          "type": ["string", "null"]
-        },
-        "order": {
-          "type": "integer"
-        },
-        "created": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "modified": {
-          "type": "string",
-          "format": "date-time"
-        }
+        "id": {"type": ["integer", "null"]},
+        "_self": {"type": ["string", "null"]},
+        "name": {"type": ["string", "null"]},
+        "order": {"type": ["integer", "null"]},
+        "created": {"type": ["string", "null"], "format": "date-time"},
+        "modified": {"type": ["string", "null"], "format": "date-time"}
       }
     },
+    "project_phases_list": {"type": ["string", "null"]},
+    "project_user_list": { "type": ["string", "null"] },
     "risk_profiles": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "risk_score": {
-            "type": "number"
-          },
-          "level": {
-            "type": "string"
-          },
-          "variance": {
-            "type": "integer"
-          },
-          "formula": {
-            "type": "string"
-          },
-          "projected_golive_datetime": {
-            "type": ["string", "null"],
-            "format": "date-time"
-          }
+          "id": {"type": ["integer", "null"]},
+          "risk_score": {"type": ["number", "null"]},
+          "level": {"type": ["string", "null"]},
+          "variance": {"type": ["integer", "null"]},
+          "formula": {"type": ["string", "null"]},
+          "projected_golive_datetime": {"type": ["string", "null"], "format": "date-time"}
         }
       }
     },
-    "start_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "started_datetime": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "status": {
-      "type": "string"
-    },
-    "task_list": {
-      "type": "string"
-    },
-    "time_entry_list": {
-      "type": "string"
-    },
-    "title": {
-      "type": "string"
-    }
+    "start_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "started_datetime": {"type": ["string", "null"], "format": "date-time"},
+    "status": {"type": ["string", "null"]},
+    "task_list": {"type": ["string", "null"]},
+    "time_entry_list": {"type": ["string", "null"]},
+    "title": {"type": ["string", "null"]}
   }
 }

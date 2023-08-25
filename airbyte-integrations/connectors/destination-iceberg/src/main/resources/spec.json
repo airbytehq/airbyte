@@ -402,10 +402,7 @@
             "title": "Server-managed",
             "type": "object",
             "description": "Server-managed object storage",
-            "required": [
-              "storage_type",
-              "managed_warehouse_name"
-            ],
+            "required": ["storage_type", "managed_warehouse_name"],
             "properties": {
               "storage_type": {
                 "title": "Storage Type",
