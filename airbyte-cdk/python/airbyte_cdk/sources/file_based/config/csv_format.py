@@ -32,19 +32,11 @@ class CsvHeaderDefinition(BaseModel):
         title="Column Names", description="Given type is user-provided, column names will be provided using this field", default=None
     )
 
-    @classmethod
-    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        raise ValueError()
-        schema = super().schema(*args, **kwargs)
-        replace_enum_allOf_and_anyOf(schema)
-
-        return schema
-
     def csv_has_header_row(self) -> bool:
         return self.definition_type == CsvHeaderDefinitionType.FROM_CSV
 
     @root_validator
-    def validate_optional_args(cls, values):
+    def validate_optional_args(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         definition_type = values.get("definition_type")
         column_names = values.get("column_names")
         if definition_type == CsvHeaderDefinitionType.USER_PROVIDED and not column_names:
