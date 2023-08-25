@@ -99,7 +99,7 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
     // resource the connector will usually at most fill up around 150 MB in a single queue. By lowering
     // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
     // freed earlier similar to a sliding window effect
-    return 25 * 1024 * 1024;
+    return 50 * 1024 * 1024;
   }
 
 }
