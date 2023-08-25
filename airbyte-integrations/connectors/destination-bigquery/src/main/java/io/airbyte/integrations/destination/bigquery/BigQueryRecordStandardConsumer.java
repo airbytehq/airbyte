@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Slf4j
 public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
@@ -23,7 +24,7 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
                                           BigQuery bigQuery,
                                           ConfiguredAirbyteCatalog catalog,
                                           String defaultNamespace,
-                                          ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
+                                          Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
         super(outputRecordCollector,
                 onStart,
                 onClose,

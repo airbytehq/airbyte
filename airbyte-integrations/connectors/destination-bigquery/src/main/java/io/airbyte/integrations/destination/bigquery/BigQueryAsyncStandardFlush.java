@@ -13,24 +13,26 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @Slf4j
 public class BigQueryAsyncStandardFlush  implements DestinationFlushFunction {
 
     private final BigQuery bigQuery;
-    private final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
+    private final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap;
 
-    public BigQueryAsyncStandardFlush(BigQuery bigQuery, ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
+    public BigQueryAsyncStandardFlush(BigQuery bigQuery, Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
         this.bigQuery = bigQuery;
         this.uploaderMap = uploaderMap;
     }
 
     @Override
     public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
+        ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMapSupplied = uploaderMap.get();
         stream.forEach(aibyteMessage -> {
             try {
-                uploaderMap.get(
+                uploaderMapSupplied.get(
                         new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
                                 aibyteMessage.getRecord().getNamespace())).upload(aibyteMessage);
             } catch (Exception e) {
