@@ -12,17 +12,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonTimestamp;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MongoDbCdcConnectorMetadataInjectorTest {
 
+  @BeforeEach
+  public void reset() throws NoSuchFieldException, IllegalAccessException {
+      Field instance = MongoDbCdcConnectorMetadataInjector.class.getDeclaredField("mongoDbCdcConnectorMetadataInjector");
+      instance.setAccessible(true);
+      instance.set(null, null);
+  }
+
+
   @Test
   void testAddingMetadata() {
-    final Long emittedAtConverted = 1L;
+    final Instant emittedAt = Instant.now();
     final BsonTimestamp expected = new BsonTimestamp(
         Long.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())).intValue(),
         1);
@@ -33,32 +43,33 @@ class MongoDbCdcConnectorMetadataInjectorTest {
         MongoDbDebeziumConstants.ChangeEvent.SOURCE_TIMESTAMP_MS, TimeUnit.SECONDS.toMillis(expected.getTime()),
         MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, expected.getInc());
 
-    final MongoDbCdcConnectorMetadataInjector metadataInjector = new MongoDbCdcConnectorMetadataInjector(emittedAtConverted);
+    final MongoDbCdcConnectorMetadataInjector metadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     metadataInjector.addMetaData(event, Jsons.jsonNode(sourceData));
 
     assertEquals(expected.getValue(), event.get(CDC_UPDATED_AT).asLong());
-    assertEquals(emittedAtConverted + 1, event.get(CDC_DEFAULT_CURSOR).asLong());
+    assertEquals((emittedAt.getEpochSecond() * 100_000_000) + 1L, event.get(CDC_DEFAULT_CURSOR).asLong());
   }
 
   @Test
   void testAddingMetadataToRowsFetchedOutsideDebezium() {
-    final Long emittedAtConverted = 1L;
+    final Instant emittedAt = Instant.now();
     final BsonTimestamp expected = new BsonTimestamp(
         Long.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())).intValue(),
         1);
     final String transactionTimestamp = Instant.now().toString();
     final ObjectNode record = Jsons.emptyObject().withObject("");
 
-    final MongoDbCdcConnectorMetadataInjector metadataInjector = new MongoDbCdcConnectorMetadataInjector(emittedAtConverted);
+    final MongoDbCdcConnectorMetadataInjector metadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(record, transactionTimestamp, expected);
 
     assertEquals(transactionTimestamp, record.get(CDC_UPDATED_AT).asText());
     assertEquals("null", record.get(CDC_DELETED_AT).asText());
-    assertEquals(emittedAtConverted + 1, record.get(CDC_DEFAULT_CURSOR).asLong());
+    assertEquals((emittedAt.getEpochSecond() * 100_000_000) + 1L, record.get(CDC_DEFAULT_CURSOR).asLong());
   }
 
   @Test
   void testGetNamespaceFromSource() {
+    final Instant emittedAt = Instant.now();
     final String databaseName = "test-database";
     final BsonTimestamp expected = new BsonTimestamp(
         Long.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())).intValue(),
@@ -69,7 +80,7 @@ class MongoDbCdcConnectorMetadataInjectorTest {
         MongoDbDebeziumConstants.ChangeEvent.SOURCE_TIMESTAMP_MS, TimeUnit.SECONDS.toMillis(expected.getTime()),
         MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, expected.getInc());
 
-    final MongoDbCdcConnectorMetadataInjector metadataInjector = new MongoDbCdcConnectorMetadataInjector(System.currentTimeMillis());
+    final MongoDbCdcConnectorMetadataInjector metadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     assertEquals(databaseName, metadataInjector.namespace(Jsons.jsonNode(sourceData)));
   }
 

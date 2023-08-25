@@ -10,9 +10,9 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
-import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
+import java.time.Instant;
 import org.bson.BsonTimestamp;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * MongoDB specific implementation of the {@link CdcMetadataInjector} that stores the MongoDB resume
  * token timestamp in the {@link #CDC_UPDATED_AT} metadata field.
  */
-public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<BsonTimestamp> {
+public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector {
 
   static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
 
@@ -29,9 +29,19 @@ public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<
 
   // This now makes this class stateful. Please make sure to use the same instance within a sync
   private final AtomicLong recordCounter = new AtomicLong(1);
+  private static final long ONE_HUNDRED_MILLION = 100_000_000;
+  private static MongoDbCdcConnectorMetadataInjector mongoDbCdcConnectorMetadataInjector;
 
-  public MongoDbCdcConnectorMetadataInjector(long emittedAtConverted) {
-    this.emittedAtConverted = emittedAtConverted;
+  private MongoDbCdcConnectorMetadataInjector(final Instant emittedAt) {
+    this.emittedAtConverted = emittedAt.getEpochSecond() * ONE_HUNDRED_MILLION;
+  }
+
+  public static MongoDbCdcConnectorMetadataInjector getInstance(final Instant emittedAt) {
+    if (mongoDbCdcConnectorMetadataInjector == null) {
+      mongoDbCdcConnectorMetadataInjector = new MongoDbCdcConnectorMetadataInjector(emittedAt);
+    }
+
+    return mongoDbCdcConnectorMetadataInjector;
   }
 
   @Override
@@ -42,7 +52,7 @@ public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<
   }
 
   @Override
-  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final BsonTimestamp metadataToAdd) {
+  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final Object ignored) {
     record.put(CDC_UPDATED_AT, transactionTimestamp);
     record.put(CDC_DELETED_AT, (String) null);
     record.put(CDC_DEFAULT_CURSOR, getCdcDefaultCursor());
