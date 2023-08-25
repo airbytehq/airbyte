@@ -150,7 +150,10 @@ class MilvusIndexer(Indexer):
         iterator = self._collection.query_iterator(expr=expr)
         page = iterator.next()
         while len(page) > 0:
-            self._collection.delete(ids=[next(iter(entity.values())) for entity in page])
+            id_field = next(iter(page[0].keys()))
+            ids = [next(iter(entity.values())) for entity in page]
+            id_list_expr = ", ".join([str(id) for id in ids])
+            self._collection.delete(expr=f"{id_field} in [{id_list_expr}]")
             page = iterator.next()
 
     
