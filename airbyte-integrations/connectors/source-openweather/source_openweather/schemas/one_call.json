@@ -56,8 +56,28 @@
         "wind_deg": {
           "type": "number"
         },
+        "wind_gust": {
+          "type": "number"
+        },
         "weather": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              },
+              "main": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              }
+            }
+          }
         },
         "rain": {
           "type": "object",
@@ -70,16 +90,230 @@
       }
     },
     "minutely": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dt": {
+            "type": "number"
+          },
+          "precipitation": {
+            "type": "number"
+          }
+        }
+      }
     },
     "hourly": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dt": {
+            "type": "number"
+          },
+          "temp": {
+            "type": "number"
+          },
+          "feels_like": {
+            "type": "number"
+          },
+          "pressure": {
+            "type": "number"
+          },
+          "humidity": {
+            "type": "number"
+          },
+          "dew_point": {
+            "type": "number"
+          },
+          "uvi": {
+            "type": "number"
+          },
+          "clouds": {
+            "type": "number"
+          },
+          "visibility": {
+            "type": "number"
+          },
+          "wind_speed": {
+            "type": "number"
+          },
+          "wind_deg": {
+            "type": "number"
+          },
+          "wind_gust": {
+            "type": "number"
+          },
+          "weather": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "main": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "pop": {
+            "type": "number"
+          }
+        }
+      }
     },
     "daily": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dt": {
+            "type": "number"
+          },
+          "sunrise": {
+            "type": "number"
+          },
+          "sunset": {
+            "type": "number"
+          },
+          "moonrise": {
+            "type": "number"
+          },
+          "moonset": {
+            "type": "number"
+          },
+          "moon_phase": {
+            "type": "number"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "temp": {
+            "type": "object",
+            "properties": {
+              "day": {
+                "type": "number"
+              },
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              },
+              "night": {
+                "type": "number"
+              },
+              "eve": {
+                "type": "number"
+              },
+              "morn": {
+                "type": "number"
+              }
+            }
+          },
+          "feels_like": {
+            "type": "object",
+            "properties": {
+              "day": {
+                "type": "number"
+              },
+              "night": {
+                "type": "number"
+              },
+              "eve": {
+                "type": "number"
+              },
+              "morn": {
+                "type": "number"
+              }
+            }
+          },
+          "pressure": {
+            "type": "number"
+          },
+          "humidity": {
+            "type": "number"
+          },
+          "dew_point": {
+            "type": "number"
+          },
+          "wind_speed": {
+            "type": "number"
+          },
+          "wind_deg": {
+            "type": "number"
+          },
+          "wind_gust": {
+            "type": "number"
+          },
+          "weather": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "main": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "clouds": {
+            "type": "number"
+          },
+          "pop": {
+            "type": "number"
+          },
+          "rain": {
+            "type": "number"
+          },
+          "uvi": {
+            "type": "number"
+          }
+        }
+      }
     },
     "alerts": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sender_name": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "start": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array"
+          }
+        }
+      }
     }
   }
 }
