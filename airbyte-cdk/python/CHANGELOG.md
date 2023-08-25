@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.6
+File-based CDK: allow for extension mismatch
+
 ## 0.51.5
 File-based CDK: Remove CSV noisy log
 
