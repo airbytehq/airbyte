@@ -24,7 +24,6 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.configoss.JobGetSpecConfig;
 import io.airbyte.configoss.OperatorDbt;
@@ -983,9 +982,8 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    // A randomized namespace is required otherwise you can generate a "false success" with data from a
-    // previous run.
-    final String namespace = Strings.addRandomSuffix("airbyte_source_namespace", "_", 8);
+    // A unique namespace is required to avoid test isolation problems.
+    final String namespace = TestingNamespaces.generate("source_namespace");
     TEST_SCHEMAS.add(namespace);
 
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
@@ -1019,12 +1017,12 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    final var namespace1 = Strings.addRandomSuffix("sourcenamespace", "_", 8);
+    final var namespace1 = TestingNamespaces.generate("source_namespace");
     TEST_SCHEMAS.add(namespace1);
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
 
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
-    final var namespace2 = Strings.addRandomSuffix("diff_sourcenamespace", "_", 8);
+    final var namespace2 = TestingNamespaces.generate("diff_source_namespace");
     TEST_SCHEMAS.add(namespace2);
     final var mapper = MoreMappers.initMapper();
     for (final AirbyteStream stream : catalog.getStreams()) {
@@ -1055,16 +1053,30 @@ public abstract class DestinationAcceptanceTest {
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
   }
 
+  /**
+   * The goal of this test is to verify the expected conversions of a namespace as it appears in the
+   * catalog to how it appears in the destination. Each database has its own rules, so this test runs
+   * through several "edge" case sorts of names and checks the behavior.
+   *
+   * @param testCaseId - the id of each test case in namespace_test_cases.json so that we can handle
+   *        an individual case specially for a specific database.
+   * @param namespaceInCatalog - namespace as it would appear in the catalog
+   * @param namespaceInDst - namespace as we would expect it to appear in the destination (this may be
+   *        overridden for different databases).
+   * @throws Exception - broad catch of exception to hydrate log information with additional test case
+   *         context.
+   */
   @ParameterizedTest
   @ArgumentsSource(NamespaceTestCaseProvider.class)
   public void testNamespaces(final String testCaseId,
-                             final String namespace,
-                             final String normalizedNamespace)
+                             final String namespaceInCatalog,
+                             final String namespaceInDst)
       throws Exception {
     final Optional<NamingConventionTransformer> nameTransformer = getNameTransformer();
     nameTransformer.ifPresent(
-        namingConventionTransformer -> assertNamespaceNormalization(testCaseId, normalizedNamespace,
-            namingConventionTransformer.getNamespace(namespace)));
+        namingConventionTransformer -> assertNamespaceNormalization(testCaseId,
+            namespaceInDst,
+            namingConventionTransformer.getNamespace(namespaceInCatalog)));
 
     if (!implementsNamespaces() || !supportNamespaceTest()) {
       return;
@@ -1073,7 +1085,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteCatalog catalog = Jsons.deserialize(
         MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
         AirbyteCatalog.class);
-    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespaceInCatalog));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
 
@@ -1081,17 +1093,17 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.NAMESPACE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespaceInCatalog);
 
     final JsonNode config = getConfig();
     try {
       runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
       // Add to the list of schemas to clean up.
-      TEST_SCHEMAS.add(namespace);
+      TEST_SCHEMAS.add(namespaceInCatalog);
     } catch (final Exception e) {
       throw new IOException(String.format(
           "[Test Case %s] Destination failed to sync data to namespace %s, see \"namespace_test_cases.json for details\"",
-          testCaseId, namespace), e);
+          testCaseId, namespaceInCatalog), e);
     }
   }
 
@@ -1804,12 +1816,14 @@ public abstract class DestinationAcceptanceTest {
       return MoreIterators.toList(testCases.elements()).stream()
           .filter(testCase -> testCase.get("enabled").asBoolean())
           .map(testCase -> {
-            final String randomSuffix = Strings.addRandomSuffix("", "_", 5);
+            final String namespaceInCatalog = TestingNamespaces.generate(testCase.get("namespace").asText());
+            final String namespaceInDst = TestingNamespaces
+                .generateFromOriginal(namespaceInCatalog, testCase.get("namespace").asText(), testCase.get("normalized").asText());
             return Arguments.of(
                 testCase.get("id").asText(),
-                // Randomise namespace to avoid collisions between tests.
-                testCase.get("namespace").asText() + randomSuffix,
-                testCase.get("normalized").asText() + randomSuffix);
+                // Add uniqueness to namespace to avoid collisions between tests.
+                namespaceInCatalog,
+                namespaceInDst);
           });
     }
 
