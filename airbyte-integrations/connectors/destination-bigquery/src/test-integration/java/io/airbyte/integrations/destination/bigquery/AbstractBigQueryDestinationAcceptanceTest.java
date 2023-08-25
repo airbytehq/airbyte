@@ -9,6 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQuery.DatasetDeleteOption;
+import com.google.cloud.bigquery.BigQuery.DatasetListOption;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.ConnectionProperty;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.FieldList;
@@ -23,6 +26,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.TestingNamespaces;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -115,11 +119,17 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
                                               final String actualNormalizedNamespace) {
     final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
     if (testCaseId.equals("S3A-1")) {
-      // See NamespaceTestCaseProvider for how this suffix is generated.
-      final int underscoreIndex = expectedNormalizedNamespace.lastIndexOf("_");
+      /*
+       * See NamespaceTestCaseProvider for how this suffix is generated. <p> expectedNormalizedNamespace
+       * will look something like this: `_99namespace_test_20230824_bicrt`. We want to grab the part after
+       * `_99namespace`.
+       */
+      final int underscoreIndex = expectedNormalizedNamespace.indexOf("_", 1);
       final String randomSuffix = expectedNormalizedNamespace.substring(underscoreIndex);
-      // bigquery allows namespace starting with a number, and prepending underscore
-      // will hide the dataset, so we don't do it as we do for other destinations
+      /*
+       * bigquery allows namespace starting with a number, and prepending underscore will hide the
+       * dataset, so we don't do it as we do for other destinations
+       */
       assertEquals("99namespace" + randomSuffix, actualNormalizedNamespace, message);
     } else {
       assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace, message);
@@ -182,6 +192,23 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
+  }
+
+  protected void removeOldNamespaces() {
+    int datasetsDeletedCount = 0;
+    // todo (cgardens) - hardcoding to testing project to de-risk this running somewhere unexpected.
+    for (final Dataset dataset1 : bigquery.listDatasets("dataline-integration-testing", DatasetListOption.all())
+        .iterateAll()) {
+      if (TestingNamespaces.isOlderThan2Days(dataset1.getDatasetId().getDataset())) {
+        try {
+          bigquery.delete(dataset1.getDatasetId(), DatasetDeleteOption.deleteContents());
+          datasetsDeletedCount++;
+        } catch (final BigQueryException e) {
+          LOGGER.error("Failed to delete old dataset: {}", dataset1.getDatasetId().getDataset(), e);
+        }
+      }
+    }
+    LOGGER.info("Deleted {} old datasets.", datasetsDeletedCount);
   }
 
   protected void tearDownBigQuery() {
