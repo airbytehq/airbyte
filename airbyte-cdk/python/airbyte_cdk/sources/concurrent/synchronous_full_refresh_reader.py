@@ -17,7 +17,7 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
     SLICE_LOG_PREFIX = "slice:"
 
     def read_stream(self, stream: Stream, cursor_field, logger, internal_config=InternalConfig()):
-        slices = stream.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
+        slices = stream.generate_partitions(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         total_records_counter = 0
         for _slice in slices:

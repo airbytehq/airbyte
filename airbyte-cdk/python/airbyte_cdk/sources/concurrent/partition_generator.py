@@ -11,12 +11,9 @@ class PartitionGenerator:
         self._queue = queue
         self._name = name
 
-    def generate_partitions_for_stream(self, stream: Stream, executor):
+    def generate_partitions_for_stream(self, stream: Stream, sync_mode, cursor_field):
         print(f"generate_partitions_for_stream for {self._name} for stream {stream.name}")
-        all_partitions = []
-        for partition in stream.generate_partitions(executor):
+        for partition in stream.generate_partitions(sync_mode=sync_mode, cursor_field=cursor_field):
             print(f"putting partition and stream on queue for {partition}. stream: {stream.name}")
             self._queue.put((partition, stream))
-            all_partitions.append(partition)
-        print(f"{self._name} is done generating partitions for stream {stream.name}. returning from task")
-        return all_partitions
+            yield partition

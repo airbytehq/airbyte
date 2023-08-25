@@ -376,14 +376,14 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
     def get_parent_stream_instance(self):
         return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
 
-    def generate_partitions(self, executor):
+    def generate_partitions(self, sync_mode, cursor_field):
         parent_stream = self.get_parent_stream_instance()
         queue = Queue()
         partition_generator = PartitionGenerator(queue, self.name)
         queue_consumer = QueueConsumer(self.name)
-        max_workers = 3
+        max_workers = 3  # FIXME
         stream_reader = ConcurrentStreamReader(partition_generator, queue_consumer, queue, max_workers)
-        yield from stream_reader.read_stream(parent_stream, None, None, parent_stream.logger)
+        yield from stream_reader.read_stream(parent_stream, None, parent_stream.logger)
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

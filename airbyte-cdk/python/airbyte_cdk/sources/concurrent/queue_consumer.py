@@ -17,6 +17,7 @@ class QueueConsumer:
     def consume_from_queue(self, queue: Queue):
         current_thread = threading.current_thread().ident
         print(f"consume from queue {self._name} from {current_thread}")
+        cursor_field = None  # FIXME!
         records_and_streams = []
         while True:
             self._iterations += 1
@@ -28,7 +29,7 @@ class QueueConsumer:
                 else:
                     print(f"partition_and_stream for {self._name}: {partition_and_stream} from {current_thread}")
                     partition, stream = partition_and_stream
-                    for record in stream.read_records(SyncMode.full_refresh, stream_slice=partition):
+                    for record in stream.read_records(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=cursor_field):
                         records_and_streams.append((record, stream))
                     print(f"{self._name} done reading partition {partition_and_stream} from {current_thread}")
             except Empty:
