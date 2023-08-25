@@ -1,9 +1,9 @@
 # CLI documentation
 
-## Disclaimer
-
-The project is in **alpha** version.
-Readers can refer to our [opened GitHub issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Foctavia-cli) to check the ongoing work on this project.
+> [!WARNING]
+> The Octavia CLI is an alpha, unofficial CLI that won't be maintained.
+> 
+>  👉 We advise all users to leverage the official [Airbyte Terraform Provider](https://reference.airbyte.com/reference/using-the-terraform-provider), instead of this CLI.
 
 ## What is `octavia` CLI?
 
@@ -27,7 +27,7 @@ These are non-exhaustive use cases `octavia` can be convenient for:
 - Integrating the Airbyte configuration deployment in a dev ops tooling stack: Helm, Ansible etc.
 - Streamlining the deployment of Airbyte configurations to multiple Airbyte instance.
 
-Feel free to share your use cases with the community in [#octavia-cli](https://airbytehq.slack.com/archives/C02RRUG9CP5) or on [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+Readers can refer to our [opened GitHub issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Foctavia-cli) to check the ongoing work on this project.
 
 ## Table of content
 
@@ -706,20 +706,3 @@ The telemetry sends data about:
 - The current Airbyte workspace id if the user has not set the _anonymous data collection_ on their Airbyte instance.
 
 You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment variable to `False` or using the `--disable-telemetry` flag.
-
-## Changelog
-
-| Version | Date       | Description                                                                           | PR                                                          |
-| ------- | ---------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| 0.41.0  | 2022-10-13 | Use Basic Authentication for making API requests                                      | [#17982](https://github.com/airbytehq/airbyte/pull/17982)   |
-| 0.40.32 | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
-| 0.39.33 | 2022-07-05 | Add `octavia import all` command                                                      | [#14374](https://github.com/airbytehq/airbyte/pull/14374)   |
-| 0.39.32 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
-| 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation                          | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |
-| 0.39.19 | 2022-06-16 | Allow connection management on multiple workspaces                                    | [#13070](https://github.com/airbytehq/airbyte/pull/12727)   |
-| 0.39.19 | 2022-06-15 | Allow users to set custom HTTP headers                                                | [#12893](https://github.com/airbytehq/airbyte/pull/12893)   |
-| 0.39.14 | 2022-05-12 | Enable normalization on connection                                                    | [#12727](https://github.com/airbytehq/airbyte/pull/12727)   |
-| 0.37.0  | 2022-05-05 | Use snake case in connection fields                                                   | [#12133](https://github.com/airbytehq/airbyte/pull/12133)   |
-| 0.35.68 | 2022-04-15 | Improve telemetry                                                                     | [#12072](https://github.com/airbytehq/airbyte/issues/11896) |
-| 0.35.68 | 2022-04-12 | Add telemetry                                                                         | [#11896](https://github.com/airbytehq/airbyte/issues/11896) |
-| 0.35.61 | 2022-04-07 | Alpha release                                                                         | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)   |
