@@ -8,8 +8,8 @@ from airbyte_cdk.sources.streams import Stream
 
 class StreamPartition:
     def __init__(self, stream: Stream, _slice: Optional[Mapping[str, Any]], cursor_field: Optional[List[str]]):
-        self.stream = stream  # FIXME can we not expose this?
-        self.slice = _slice  # FIXME can we make this not a dict?
+        self.stream = stream
+        self.slice = _slice
         self.cursor_field = cursor_field
 
     def __eq__(self, other: Any) -> bool:
