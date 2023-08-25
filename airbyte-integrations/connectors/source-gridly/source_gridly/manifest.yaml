@@ -21,7 +21,18 @@ definitions:
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: NoPagination
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 5
+      page_token_option:
+        type: "RequestOption"
+        field_name: "offset"
+        inject_into: "request_parameter"
     requester:
       $ref: "#/definitions/requester"
 
@@ -35,7 +46,6 @@ definitions:
     $parameters:
       name: "views"
       primary_key: "id"
-      # path: "views?gridId={{ config['grid_id'] }}"
       path: "views"
     retriever:
       $ref: "#/definitions/retriever"
