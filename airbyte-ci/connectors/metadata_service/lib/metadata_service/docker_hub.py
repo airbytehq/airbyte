@@ -1,6 +1,11 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import os
-import requests
 from typing import List
+
+import requests
 
 
 def get_docker_hub_auth_token() -> str:

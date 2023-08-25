@@ -1,25 +1,23 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from pathlib import Path
-from typing import Tuple, Optional
-from pydash.objects import get
 
 import base64
 import hashlib
 import json
 import os
-import yaml
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional, Tuple
 
+import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
-
-from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, ICON_FILE_NAME
-from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, validate_and_load, ValidatorOptions
-from metadata_service.models.transform import to_json_sanitized_dict
+from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME, METADATA_FOLDER
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-
-from dataclasses import dataclass
+from metadata_service.models.transform import to_json_sanitized_dict
+from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
+from pydash.objects import get
 
 
 @dataclass(frozen=True)

@@ -4,10 +4,10 @@
   "additionalProperties": true,
   "required": ["base", "date", "rates"],
   "properties": {
-    "success":{
+    "success": {
       "type": ["null", "boolean"]
     },
-    "timestamp":{
+    "timestamp": {
       "type": ["null", "integer"]
     },
     "base": {

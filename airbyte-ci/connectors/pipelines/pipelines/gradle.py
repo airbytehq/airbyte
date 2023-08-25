@@ -8,7 +8,6 @@ from abc import ABC
 from typing import ClassVar, Tuple
 
 from dagger import CacheVolume, Container, Directory, QueryError
-
 from pipelines import consts
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
@@ -29,10 +28,7 @@ class GradleTask(Step, ABC):
     gradle_task_name: ClassVar
     gradle_task_options: Tuple[str, ...] = ()
 
-    def __init__(
-            self, context: PipelineContext,
-            with_java_cdk_snapshot: bool = True
-    ) -> None:
+    def __init__(self, context: PipelineContext, with_java_cdk_snapshot: bool = True) -> None:
         super().__init__(context)
         self.with_java_cdk_snapshot = with_java_cdk_snapshot
 
@@ -95,9 +91,7 @@ class GradleTask(Step, ABC):
             .with_(environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets"))
         )
         if self.with_java_cdk_snapshot:
-            connector_under_test = connector_under_test.with_exec(
-                ["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"]
-            )
+            connector_under_test = connector_under_test.with_exec(["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"])
         connector_under_test = connector_under_test.with_exec(self._get_gradle_command())
 
         results = await self.get_step_result(connector_under_test)

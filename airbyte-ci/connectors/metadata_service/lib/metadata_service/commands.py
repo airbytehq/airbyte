@@ -1,12 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import pathlib
 
 import click
-from metadata_service.gcs_upload import upload_metadata_to_gcs, MetadataUploadInfo
-from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, validate_and_load, ValidatorOptions
 from metadata_service.constants import METADATA_FILE_NAME
+from metadata_service.gcs_upload import MetadataUploadInfo, upload_metadata_to_gcs
+from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 from pydantic import ValidationError
 
 
