@@ -171,6 +171,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.6.1   | 2023-08-23 | [29600](https://github.com/airbytehq/airbyte/pull/29600) | Update field descriptions                                                                                       |
 | 0.6.0   | 2023-08-22 | [29721](https://github.com/airbytehq/airbyte/pull/29721) | Add `Conversions` stream                                                                                        |
 | 0.5.0   | 2023-08-14 | [29175](https://github.com/airbytehq/airbyte/pull/29175) | Add Custom report Constructor                                                                                   |
 | 0.4.0   | 2023-08-08 | [29175](https://github.com/airbytehq/airbyte/pull/29175) | Add analytics streams                                                                                           |
