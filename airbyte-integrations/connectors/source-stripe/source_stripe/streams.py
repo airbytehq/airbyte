@@ -383,7 +383,7 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
         queue_consumer = QueueConsumer(self.name)
         max_workers = 3
         stream_reader = ConcurrentStreamReader(partition_generator, queue_consumer, queue, max_workers)
-        return stream_reader.read_stream(parent_stream, None, None, parent_stream.logger)
+        yield from stream_reader.read_stream(parent_stream, None, None, parent_stream.logger)
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

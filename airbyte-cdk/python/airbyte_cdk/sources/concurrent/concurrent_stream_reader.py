@@ -19,50 +19,38 @@ class ConcurrentStreamReader:
         self._max_workers = max_workers
 
     def read_stream(self, stream: Stream, cursor_field, internal_config, logger):
-        all_records = []
+        # FIXME do something with the cursor field
+        # FIXME do something with the internal config
         partition_generation_futures = []
         queue_consumer_futures = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers + 10, thread_name_prefix="workerpool") as executor:
-            start_time = time.time()
-            print(f"generating partitions for stream: {stream.name}")
             # Submit partition generation tasks
             f = executor.submit(PartitionGenerator.generate_partitions_for_stream, self._partitions_generator, stream, executor)
             partition_generation_futures.append(f)
 
             # Submit record generator tasks
             for i in range(self._get_num_dedicated_consumer_worker()):  # FIXME?
-                f = executor.submit(QueueConsumer.consume_from_queue, self._queue_consumer, self._queue, executor)
+                f = executor.submit(QueueConsumer.consume_from_queue, self._queue_consumer, self._queue)
                 queue_consumer_futures.append(f)
 
             # Wait for all partitions to be generated
             done, unfinished = concurrent.futures.wait(partition_generation_futures)
+            # FIXME: handle done and unifishined
 
             # Then put the sentinel on the queue
-            print("putting sentinel on queue because the source generated all partitions")
             for _ in range(self._get_num_dedicated_consumer_worker()):
                 # FIXME: need a test to verify we put many sentinels..
                 self._queue.put(_SENTINEL)
-            partitions_are_generated_time = time.time()
-            print(f"printing partitions generated. it took {partitions_are_generated_time - start_time}")
-            for future in done:
-                print(future.result())
-            print("done printing partitions")
-
             # Wait for the consumers to finish
             # FIXME: We should start yielding as soon as the first ones are done...
-            done, unfinished = concurrent.futures.wait(queue_consumer_futures)
-            print(f"done: {done}")
-            print(f"unfinished: {unfinished}")
-            for future in done:
+            # FIXME handle done and unfinished
+            for future in concurrent.futures.as_completed(queue_consumer_futures):
                 # Each result is an iterable of record
                 result = future.result()
-                # print(f"result: {result}")
                 for partition_record_and_stream in result:
                     partition_record, stream = partition_record_and_stream
-                    # FIXME we should wrap the output in a dataclass!
-                    #all_records.append((partition_record, stream))
-                    all_records.append(partition_record)
-        return all_records
+                    yield partition_record
 
     def _get_num_dedicated_consumer_worker(self) -> int:
+        # FIXME figure this out and add a unit test
         return int(max(self._max_workers / 2, 1))

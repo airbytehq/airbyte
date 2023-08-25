@@ -14,7 +14,7 @@ class QueueConsumer:
         self._iterations = 0
         self._name = name
 
-    def consume_from_queue(self, queue: Queue, executor):
+    def consume_from_queue(self, queue: Queue):
         current_thread = threading.current_thread().ident
         print(f"consume from queue {self._name} from {current_thread}")
         records_and_streams = []
