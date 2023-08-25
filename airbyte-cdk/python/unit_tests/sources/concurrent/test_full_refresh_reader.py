@@ -29,7 +29,7 @@ from airbyte_cdk.sources.concurrent.queue_consumer import QueueConsumer
 from airbyte_cdk.sources.concurrent.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 
-_NO_CURSOR_FIELD = None
+_A_CURSOR_FIELD = ["NESTED", "CURSOR"]
 _DEFAULT_INTERNAL_CONFIG = InternalConfig()
 _STREAM_NAME = "STREAM"
 
@@ -75,7 +75,7 @@ def test_full_refresh_read_a_single_slice_with_debug(reader):
 
     stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
 
-    actual_records = list(reader.read_stream(stream, _NO_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
 
     assert expected_records == actual_records
 
@@ -103,11 +103,11 @@ def test_full_refresh_read_a_single_slice(reader):
 
     stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
 
-    actual_records = list(reader.read_stream(stream, _NO_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
 
     assert expected_records == actual_records
 
-    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_NO_CURSOR_FIELD)]
+    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD)]
 
     stream.read_records.assert_has_calls(expected_read_records_calls)
 
@@ -143,13 +143,13 @@ def test_full_refresh_read_a_two_slices(reader):
 
     stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
 
-    actual_records = list(reader.read_stream(stream, _NO_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
 
     assert expected_records == actual_records
 
     expected_read_records_calls = [
-        call(stream_slice=partition1, sync_mode=SyncMode.full_refresh, cursor_field=_NO_CURSOR_FIELD),
-        call(stream_slice=partition2, sync_mode=SyncMode.full_refresh, cursor_field=_NO_CURSOR_FIELD),
+        call(stream_slice=partition1, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD),
+        call(stream_slice=partition2, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD),
     ]
 
     stream.read_records.assert_has_calls(expected_read_records_calls)
@@ -181,11 +181,11 @@ def test_only_read_up_to_limit(reader):
 
     stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
 
-    actual_records = list(reader.read_stream(stream, _NO_CURSOR_FIELD, logger, internal_config))
+    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, internal_config))
 
     assert expected_records == actual_records
 
-    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_NO_CURSOR_FIELD)]
+    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD)]
 
     stream.read_records.assert_has_calls(expected_read_records_calls)
 
@@ -237,11 +237,11 @@ def test_limit_only_considers_data(reader):
 
     stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
 
-    actual_records = list(reader.read_stream(stream, _NO_CURSOR_FIELD, logger, internal_config))
+    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, internal_config))
 
     assert expected_records == actual_records
 
-    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_NO_CURSOR_FIELD)]
+    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD)]
 
     stream.read_records.assert_has_calls(expected_read_records_calls)
 
