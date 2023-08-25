@@ -127,8 +127,8 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "double_quote": False,
                 "newlines_in_values": True,
                 "additional_reader_options": '{"strings_can_be_null": true, "null_values": ["NULL", "NONE"], "true_values": ["yes", "y"], "false_values": ["no", "n"]}',
-                "advanced_options": '{"skip_rows": 3, "skip_rows_after_names": 5, "autogenerate_column_names": true}',
-                "blocksize": 20000,
+                "advanced_options": '{"skip_rows": 3, "skip_rows_after_names": 5, "autogenerate_column_names": true, "block_size": 20000}',
+                "block_size": 20000,
             },
             {
                 "filetype": "csv",

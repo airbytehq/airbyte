@@ -151,7 +151,7 @@ class LegacyConfigTransformer:
 
     @staticmethod
     def _filter_legacy_noops(advanced_options: Dict[str, Any]):
-        ignore_all = ("auto_dict_encode", "timestamp_parsers")
+        ignore_all = ("auto_dict_encode", "timestamp_parsers", "block_size")
         ignore_by_value = (("check_utf8", False),)
 
         for option in ignore_all:
