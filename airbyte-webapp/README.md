@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.08.25
+1. remove comment "// @ts-expect-error"
 #### 2023.08.16
 1. Remove signup and signin page on airbyte-webapp
 #### 2023.08.15
