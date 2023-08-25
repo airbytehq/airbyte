@@ -37,6 +37,13 @@ definitions:
           parent_key: "id"
           partition_field: "doc_id"
 
+  rows_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/tables_stream"
+        parent_key: "id"
+        partition_field: "table_id"
+
   parent_base_stream:
     type: DeclarativeStream
     retriever:
@@ -81,7 +88,7 @@ definitions:
         $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
-        path: "docs/{{ stream_slice.doc_id }}/acl/permissions"
+        path: "docs/{{ stream_partition.doc_id }}/acl/permissions"
 
   pages_stream:
     $parameters:
@@ -94,7 +101,7 @@ definitions:
         $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
-        path: "docs/{{ stream_slice.doc_id }}/pages"
+        path: "docs/{{ stream_partition.doc_id }}/pages"
 
   tables_stream:
     $parameters:
@@ -107,7 +114,7 @@ definitions:
         $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
-        path: "docs/{{ stream_slice.doc_id }}/tables"
+        path: "docs/{{ stream_partition.doc_id }}/tables"
 
   formulas_stream:
     $parameters:
@@ -120,7 +127,7 @@ definitions:
         $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
-        path: "docs/{{ stream_slice.doc_id }}/formulas"
+        path: "docs/{{ stream_partition.doc_id }}/formulas"
 
   controls_stream:
     $parameters:
@@ -133,7 +140,7 @@ definitions:
         $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
-        path: "docs/{{ stream_slice.doc_id }}/controls"
+        path: "docs/{{ stream_partition.doc_id }}/controls"
 
   rows_stream:
     $parameters:
@@ -142,11 +149,13 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever_with_partition"
+      partition_router:
+        $ref: "#/definitions/rows_partition_router"
       paginator:
         $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
-        path: "docs/{{ stream_slice.doc_id }}/tables/{{ stream_slice.tableid }}/rows"
+        path: "docs/{{ stream_partition.parent_slice.doc_id }}/tables/{{ stream_partition.table_id }}/rows"
 
 streams:
   - "#/definitions/docs_stream"
