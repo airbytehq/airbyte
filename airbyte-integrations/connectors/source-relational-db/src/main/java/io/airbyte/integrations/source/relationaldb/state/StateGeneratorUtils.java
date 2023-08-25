@@ -229,20 +229,16 @@ public class StateGeneratorUtils {
                                                                   final AirbyteStateType supportedStateType) {
     final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson,
         useStreamCapableState);
-    return typedState.map((state) -> {
-      switch (state.getStateType()) {
-        case GLOBAL:
-          return List.of(StateGeneratorUtils.convertStateMessage(state.getGlobal()));
-        case STREAM:
-          return state.getStateMessages()
+    return typedState
+        .map(state -> switch (state.getStateType()) {
+          case GLOBAL -> List.of(StateGeneratorUtils.convertStateMessage(state.getGlobal()));
+          case STREAM -> state.getStateMessages()
               .stream()
-              .map(stateMessage -> StateGeneratorUtils.convertStateMessage(stateMessage)).toList();
-        case LEGACY:
-        default:
-          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
+              .map(StateGeneratorUtils::convertStateMessage).toList();
+          default -> List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
               .withData(state.getLegacyState()));
-      }
-    }).orElse(generateEmptyInitialState(supportedStateType));
+        })
+        .orElse(generateEmptyInitialState(supportedStateType));
   }
 
   /**

@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -175,6 +176,11 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testFullRefreshRead() throws Exception {
+    if (!sourceSupportsFullRefresh()) {
+      LOGGER.info("Test skipped. Source does not support full refresh.");
+      return;
+    }
+
     final ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalog());
     final List<AirbyteMessage> allMessages = runRead(catalog);
 
@@ -196,6 +202,11 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testIdenticalFullRefreshes() throws Exception {
+    if (!sourceSupportsFullRefresh()) {
+      LOGGER.info("Test skipped. Source does not support full refresh.");
+      return;
+    }
+
     if (IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES.contains(getImageName().split(":")[0])) {
       return;
     }
@@ -275,15 +286,20 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
       return;
     }
 
+    if (!sourceSupportsFullRefresh()) {
+      LOGGER.info("Test skipped. Source does not support full refresh.");
+      return;
+    }
+
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     final ConfiguredAirbyteCatalog fullRefreshCatalog = withFullRefreshSyncModes(configuredCatalog);
 
     final List<AirbyteRecordMessage> fullRefreshRecords = filterRecords(runRead(fullRefreshCatalog));
     final List<AirbyteRecordMessage> emptyStateRecords = filterRecords(runRead(configuredCatalog, Jsons.jsonNode(new HashMap<>())));
-    final String assertionMessage = "Expected a full refresh sync and incremental sync with no input state to produce identical records";
-    assertFalse(fullRefreshRecords.isEmpty(), assertionMessage);
-    assertFalse(emptyStateRecords.isEmpty(), assertionMessage);
-    assertSameRecords(fullRefreshRecords, emptyStateRecords, assertionMessage);
+    assertFalse(fullRefreshRecords.isEmpty(), "Expected a full refresh sync to produce records");
+    assertFalse(emptyStateRecords.isEmpty(), "Expected state records to not be empty");
+    assertSameRecords(fullRefreshRecords, emptyStateRecords,
+        "Expected a full refresh sync and incremental sync with no input state to produce identical records");
   }
 
   /**
@@ -327,9 +343,17 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
   }
 
   private boolean sourceSupportsIncremental() throws Exception {
+    return sourceSupports(INCREMENTAL);
+  }
+
+  private boolean sourceSupportsFullRefresh() throws Exception {
+    return sourceSupports(FULL_REFRESH);
+  }
+
+  private boolean sourceSupports(final SyncMode syncMode) throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      if (stream.getStream().getSupportedSyncModes().contains(INCREMENTAL)) {
+      if (stream.getStream().getSupportedSyncModes().contains(syncMode)) {
         return true;
       }
     }

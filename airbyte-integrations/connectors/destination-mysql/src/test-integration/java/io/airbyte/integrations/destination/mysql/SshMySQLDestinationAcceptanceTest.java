@@ -136,7 +136,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
     final var config = getConfig();
     SshTunnel.sshWrap(
@@ -149,7 +149,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,

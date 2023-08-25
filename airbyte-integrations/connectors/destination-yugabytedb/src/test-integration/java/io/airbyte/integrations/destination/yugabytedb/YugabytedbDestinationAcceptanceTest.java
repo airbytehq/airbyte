@@ -49,7 +49,7 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     jsonConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", yugabytedbContainer.getHost())
         .put("port", yugabytedbContainer.getMappedPort(5433))
@@ -69,13 +69,13 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     database.execute(connection -> {
-      var statement = connection.createStatement();
+      final var statement = connection.createStatement();
       cleanupTables.forEach(tb -> {
         try {
           statement.execute("DROP TABLE " + tb + ";");
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
           throw new RuntimeException(e);
         }
       });
@@ -126,14 +126,14 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws SQLException {
 
-    String tableName = namingResolver.getRawTableName(streamName);
-    String schemaName = namingResolver.getNamespace(namespace);
+    final String tableName = namingResolver.getRawTableName(streamName);
+    final String schemaName = namingResolver.getNamespace(namespace);
     cleanupTables.add(schemaName + "." + tableName);
     return retrieveRecordsFromTable(tableName, schemaName);
   }
@@ -143,7 +143,7 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
 
     return database.bufferedResultSetQuery(
         connection -> {
-          var statement = connection.createStatement();
+          final var statement = connection.createStatement();
           return statement.executeQuery(
               String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
                   JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
