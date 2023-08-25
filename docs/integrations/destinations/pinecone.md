@@ -29,7 +29,7 @@ You'll need the following information to configure the destination:
 | :----------------------------- | :------------------- | :---- |
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  | Deleting records via CDC is not supported (see issue [#29827](https://github.com/airbytehq/airbyte/issues/29827))  |
 | Namespaces                     | No                   |       |
 
 ## Data type mapping
