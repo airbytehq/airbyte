@@ -12,6 +12,20 @@
       "destination_sync_mode": "overwrite",
       "primary_key": [["change_status.resource_name"]],
       "cursor_field": ["change_status.last_change_date_time"]
+    },
+    {
+      "stream": {
+        "name": "display_topics_performance_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["customer.id"], ["ad_group.id"], ["ad_group_criterion.criterion_id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"]],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["segments.date"]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["customer.id"], ["ad_group.id"], ["ad_group_criterion.criterion_id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"]],
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["segments.date"]
     }
   ]
 }
