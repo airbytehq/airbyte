@@ -62,7 +62,7 @@
       },
       "jdbc_url_params": {
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>.",
-        "title": "JDBC URL Parameters (Advanced)",
+        "title": "JDBC URL Parameters",
         "type": "string",
         "order": 6,
         "group": "advanced",
@@ -223,26 +223,16 @@
       },
       "replication_method": {
         "type": "object",
-        "title": "Replication Method",
+        "title": "Update Method",
         "description": "Replication method for extracting data from the database.",
         "order": 9,
         "group": "advanced",
+        "default": "CDC",
+        "display_type": "radio",
         "oneOf": [
           {
-            "title": "Standard (Xmin)",
-            "description": "Xmin replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Xmin",
-                "order": 0
-              }
-            }
-          },
-          {
-            "title": "Logical Replication (CDC)",
-            "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">docs</a>.",
+            "title": "Read Changes using WAL (CDC)",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#cdc\">write-ahead log (WAL)</a>. This needs to be configured on the source database itself. Only available on Postgres 10 and above.",
             "required": ["method", "replication_slot", "publication"],
             "additionalProperties": true,
             "properties": {
@@ -273,7 +263,7 @@
               },
               "initial_waiting_seconds": {
                 "type": "integer",
-                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "title": "Initial Waiting Time in Seconds",
                 "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
                 "default": 300,
                 "order": 5,
@@ -282,7 +272,7 @@
               },
               "queue_size": {
                 "type": "integer",
-                "title": "Size of the queue (Advanced)",
+                "title": "Size of the queue",
                 "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
                 "default": 10000,
                 "order": 6,
@@ -303,8 +293,20 @@
             }
           },
           {
-            "title": "Standard",
-            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "title": "Detect changes with XMIN system column",
+            "description": "Incrementally reads new inserts and updates via Postgres XMIN system column.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Xmin",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Scan Changes with User Defined Cursor",
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
             "required": ["method"],
             "properties": {
               "method": {
