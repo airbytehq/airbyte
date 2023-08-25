@@ -36,7 +36,7 @@ Build your connector image if needed.
 docker build .
 ```
 
-and test via one of the two following options
+And test via one of the two following Options
 
 ### (Prefered) Option 1: Run against the production acceptance test image
 
@@ -47,7 +47,13 @@ From the root of your connector run:
 
 This will run you local connector image against the same test suite that Airbyte uses in production
 
-### (Debugging) Option 2: Run against the acceptance tests on your branch
+### Option 2: Run against the Airbyte CI test suite
+```bash
+pipx install airbyte-ci/connectors/pipelines/
+airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> --use-remote-secrets=false test
+```
+
+### (Debugging) Option 3: Run against the acceptance tests on your branch
 
 This will run the acceptance test suite directly with pytest. Allowing you to set breakpoints and debug your connector locally.
 

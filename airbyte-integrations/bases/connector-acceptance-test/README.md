@@ -1,4 +1,4 @@
-# Connector Acceptance Tests
+# Connector Acceptance Tests (CAT)
 This package gathers multiple test suites to assess the sanity of any Airbyte connector.
 It is shipped as a [pytest](https://docs.pytest.org/en/7.1.x/) plugin and relies on pytest to discover, configure and execute tests.
 Test-specific documentation can be found [here](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/)).
@@ -27,22 +27,41 @@ airbyte-ci connectors --name=<connector-name> test
 ```
 
 ### Running CAT locally for Debugging/Development Purposes
+
+**Pre-requisites:**
+
+To learn how to set up `ci_credentials` and your GSM Service account see [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md)
+
 ```bash
 # Hook up your GSM service account
 export GCP_GSM_CREDENTIALS=`cat <path-to-gsm-service-account-key-file>`
 
 # Install the credentials tool
 pipx install airbyte-ci/connectors/ci_credentials/
+```
+
+**Retrieve a connectors sandbox secrets**
+
+```bash
+# From the root of the airbyte repo
 
 # Writes the secrets to airbyte-integrations/connectors/source-faker/secrets
 VERSION=dev ci_credentials connectors/source-faker write-to-storage
+```
 
+**Run install dependencies**
+
+```bash
 # Navigate to our CAT test directory
 cd airbyte-integrations/bases/connector-acceptance-test/
 
 # Install dependencies
 poetry install
+```
 
+**Run the tests**
+
+```bash
 # Run tests against your connector
 poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-faker --pdb
 ```
@@ -50,10 +69,12 @@ poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=.
 ### Running CAT via the production docker image (deprecated)
 This is the old method and is not useful outside of helping third party connector developers run their tests.
 
-```
-# Hook up your GSM service account
-export GCP_GSM_CREDENTIALS=`cat<path-to-gsm-service-account-key-file>`
+Ideally you should use `airbyte-ci` as described above.
 
+_Note: To use `FETCH_SECRETS=1` you must have `ci_credentials` and your GSM Service account setup see [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md)_
+
+
+```bash
 # Navigate to the connectors folder
 cd airbyte-integrations/connectors/source-faker
 
