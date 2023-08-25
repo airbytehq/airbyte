@@ -62,7 +62,7 @@
       },
       "jdbc_url_params": {
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>.",
-        "title": "JDBC URL Parameters",
+        "title": "JDBC URL Parameters (Advanced)",
         "type": "string",
         "order": 6,
         "group": "advanced",
@@ -224,7 +224,7 @@
       "replication_method": {
         "type": "object",
         "title": "Update Method",
-        "description": "Replication method for extracting data from the database.",
+        "description": "Configures how data is extracted from the database.",
         "order": 9,
         "group": "advanced",
         "default": "CDC",
@@ -263,7 +263,7 @@
               },
               "initial_waiting_seconds": {
                 "type": "integer",
-                "title": "Initial Waiting Time in Seconds",
+                "title": "Initial Waiting Time in Seconds (Advanced)",
                 "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
                 "default": 300,
                 "order": 5,
@@ -272,7 +272,7 @@
               },
               "queue_size": {
                 "type": "integer",
-                "title": "Size of the queue",
+                "title": "Size of the queue (Advanced)",
                 "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
                 "default": 10000,
                 "order": 6,
