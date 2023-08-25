@@ -11,7 +11,6 @@ import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy;
-
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -45,8 +44,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
                                  final AirbyteFileOffsetBackingStore offsetManager,
                                  final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager,
                                  final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
-    this.debeziumPropertiesManager = createDebeziumPropertiesManager(debeziumConnectorType,properties, config, catalog, offsetManager,
-            schemaHistoryManager);
+    this.debeziumPropertiesManager = createDebeziumPropertiesManager(debeziumConnectorType, properties, config, catalog, offsetManager,
+        schemaHistoryManager);
     this.hasClosed = new AtomicBoolean(false);
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
@@ -60,7 +59,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
                                                                     final ConfiguredAirbyteCatalog catalog,
                                                                     final AirbyteFileOffsetBackingStore offsetManager,
                                                                     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
-    return switch(debeziumConnectorType) {
+    return switch (debeziumConnectorType) {
       case MONGODB -> new MongoDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
       default -> new RelationalDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
     };

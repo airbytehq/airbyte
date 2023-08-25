@@ -154,7 +154,7 @@ public class MySqlInitialReadUtil {
         new MySqlCdcStateHandler(stateManager),
         metadataInjector,
         MySqlCdcProperties.getDebeziumProperties(database),
-            DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
+        DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
         emittedAt,
         false);
 
